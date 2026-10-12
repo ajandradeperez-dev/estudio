@@ -7,6 +7,7 @@ const tarjetas=[['redes','Redes','Modelo OSI, puertos y protocolos que todo fire
     ['subred','Calculadora de subredes','Escribe una IP y máscara y ve red, broadcast y hosts.'],
     ['vlan','VLANs y Wi-Fi','Separa redes con 802.1Q y protege el Wi-Fi con WPA3 y redes de invitados.'],
     ['fw','Simulador de políticas','Crea reglas, envía un paquete y mira qué regla lo atrapa. Cambia entre FortiGate, Palo Alto, Cisco ASA y pfSense.'],
+    ['vpn','Simulador de VPN IPsec','Configura las dos puntas de un túnel entre FortiGate, levántalo y descubre en qué fase falla.'],
     ['marcas','Comparar marcas','Cómo se llama lo mismo en cada fabricante.'],
     ['forti','FortiGate a fondo','Políticas, NAT/VIP, VPN y perfiles de seguridad explicados.'],
     ['incidentes','Laboratorio de incidentes','Lee registros simulados, identifica el ataque y elige la defensa correcta.'],

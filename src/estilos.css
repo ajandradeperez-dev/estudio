@@ -66,6 +66,16 @@ button.ghost{background:transparent;color:var(--accent)}
 .barra span{display:block;height:100%;background:var(--accent)}
 .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
 .tag.on{background:var(--accent-soft);color:var(--accent)}
+/* Simulador de VPN IPsec */
+.vpn-mapa{display:flex;align-items:center;gap:10px;margin:6px 0 16px}
+.vpn-nodo{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-size:13px;min-width:0}
+.vpn-nodo .mono{font-size:12px;color:var(--muted)}
+.vpn-enlace{flex:1;min-width:70px;padding-top:6px;border-top:2px dashed var(--line);text-align:center;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.vpn-enlace.up{border-top:2px solid var(--ok);color:var(--ok)}
+.vpn-enlace.down{border-top-color:var(--bad);color:var(--bad)}
+.vpn-datos{margin:0 0 4px;font-size:12px;color:var(--muted)}
+.vpn-fase{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:14px 0 6px}
+.vpn-campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 @media (max-width:760px){
   .app{grid-template-columns:1fr}
   nav{position:static;height:auto;flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid var(--line);padding:12px 16px}

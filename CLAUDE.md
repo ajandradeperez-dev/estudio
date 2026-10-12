@@ -15,6 +15,7 @@ App educativa de seguridad de redes. Todo es simulado en el navegador (paquetes,
 | `subred` | Calculadora de subredes CIDR | `src/secciones/subredes.js` |
 | `vlan` | VLANs y Wi-Fi: 802.1Q, acceso/troncal, SSID por VLAN, WPA3, invitados; ejemplo de VLAN en FortiGate | `src/secciones/vlans.js` |
 | `fw` | Simulador de políticas: tabla ordenable, alta de reglas, paquete de prueba y CLI en FortiGate / Palo Alto / Cisco ASA / pfSense | `src/secciones/firewall.js` |
+| `vpn` | Simulador de VPN IPsec Matriz ↔ Sucursal: fase 1/fase 2 en cada FortiGate, diagnóstico con log tipo FortiOS, 3 escenarios con errores y CLI de cada lado | `src/secciones/vpn.js` |
 | `marcas` | Tabla comparativa de conceptos entre fabricantes | `src/secciones/marcas.js` |
 | `forti` | FortiGate a fondo (políticas, NAT/VIP, VPN, perfiles, diagnóstico) | `src/secciones/fortigate.js` |
 | `incidentes` | Laboratorio de incidentes: leer logs, identificar el ataque y elegir la defensa | `src/secciones/incidentes.js` |
@@ -37,6 +38,7 @@ src/
     incidentes.js     Casos del laboratorio de incidentes
     preguntas.js      Preguntas del examen
     fortigate.js      Temas y ejemplos de CLI de "FortiGate a fondo"
+    vpn.js            Sedes, configuración correcta, opciones y escenarios del simulador de VPN
 ```
 
 ## Cómo funciona una sección

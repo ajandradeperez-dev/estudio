@@ -1,4 +1,5 @@
 import {$} from './utilidades.js';
+import {marcarVisita} from './progreso.js';
 import * as inicio from './secciones/inicio.js';
 import * as redes from './secciones/redes.js';
 import * as subred from './secciones/subredes.js';
@@ -17,6 +18,7 @@ const S={inicio,redes,subred,vlan,fw,marcas,forti,incidentes,quiz};
 let cur='inicio';
 function go(s){
   cur=S[s]?s:'inicio';
+  marcarVisita(cur);
   $('#main').innerHTML=S[cur].vista();
   document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.s===cur));
   try{localStorage.setItem('ciberlab-s',cur)}catch(e){}

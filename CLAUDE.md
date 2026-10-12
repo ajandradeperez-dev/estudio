@@ -30,6 +30,7 @@ src/
   main.js             Registro de secciones, navegación (go) y delegación de eventos
   estilos.css         Todo el CSS (variables en :root, modo oscuro, responsive a 760px)
   utilidades.js       $, esc (escapar HTML) y utilidades IP: ip2n, n2ip, mask, inNet
+  progreso.js         Progreso guardado en localStorage (secciones visitadas, mejor examen, casos resueltos)
   secciones/          Una sección por archivo
   datos/
     politicas.js      Servicios, políticas iniciales, marcas y paquetes de ejemplo
@@ -47,6 +48,14 @@ Cada módulo de `src/secciones/` exporta:
 - `alClic(t, ir)` (opcional) → recibe el elemento clicado (`button`, `[data-go]` o `tr[data-pid]`) y la función `ir(clave)` para volver a renderizar o cambiar de sección.
 
 `main.js` tiene un único listener de clic sobre `#main` y lo reenvía a la sección activa. El estado (políticas, marca elegida, pregunta actual, caso de incidente…) vive en variables de cada módulo y se pierde al recargar la página, igual que en la versión original de un solo archivo.
+
+Lo único que persiste es el progreso (`src/progreso.js`, clave `ciberlab-progreso` en `localStorage`), que se muestra en el panel de Inicio y se puede reiniciar desde ahí:
+
+- `main.js` marca cada sección visitada en `go()`.
+- `examen.js` registra el puntaje al terminar; se guarda el mejor porcentaje.
+- `incidentes.js` marca un caso como resuelto al acertar la respuesta defensiva.
+
+Los casos se guardan por su posición en `datos/incidentes.js`: agrega casos nuevos al final para no desfasar el progreso existente. Todo acceso a `localStorage` va en `try/catch` para que la app funcione aunque esté bloqueado.
 
 Para agregar una sección: crea el módulo, impórtalo y regístralo en el objeto `S` de `main.js`, y añade su botón `data-s` en `index.html`.
 

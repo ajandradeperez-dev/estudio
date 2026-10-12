@@ -1,5 +1,6 @@
 import {$,esc} from '../utilidades.js';
 import {incidents} from '../datos/incidentes.js';
+import {marcarCaso} from '../progreso.js';
 
 // barajar opciones una vez para que la correcta no sea siempre la primera
 incidents.forEach(c=>{[['o','a'],['do','da']].forEach(([k,a])=>{const right=c[k][c[a]];c[k]=c[k].map(v=>[Math.random(),v]).sort((p,q)=>p[0]-q[0]).map(v=>v[1]);c[a]=c[k].indexOf(right)})});
@@ -23,5 +24,5 @@ export function alClic(t,ir){
     if(i===x.a)$('#stage2').hidden=false;return true}
   if(t.dataset.b!==undefined){const x=incidents[incIdx],i=+t.dataset.b;
     document.querySelectorAll('#o2 button').forEach(b=>b.className=+b.dataset.b===x.da?'right':(b===t?'wrong':''));
-    if(i===x.da){$('#iexp').hidden=false;$('#iexp').innerHTML=`<span class="allow">Correcto.</span> ${x.ex}${incIdx<incidents.length-1?` <button class="btn ghost" data-i="${incIdx+1}">Siguiente caso</button>`:''}`}return true}
+    if(i===x.da){marcarCaso(incIdx);$('#iexp').hidden=false;$('#iexp').innerHTML=`<span class="allow">Correcto.</span> ${x.ex}${incIdx<incidents.length-1?` <button class="btn ghost" data-i="${incIdx+1}">Siguiente caso</button>`:''}`}return true}
 }

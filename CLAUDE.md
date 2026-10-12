@@ -13,6 +13,7 @@ App educativa de seguridad de redes. Todo es simulado en el navegador (paquetes,
 | `inicio` | Portada con tarjetas a cada sección | `src/secciones/inicio.js` |
 | `redes` | Modelo OSI, puertos comunes, stateful | `src/secciones/redes.js` |
 | `subred` | Calculadora de subredes CIDR | `src/secciones/subredes.js` |
+| `vlan` | VLANs y Wi-Fi: 802.1Q, acceso/troncal, SSID por VLAN, WPA3, invitados; ejemplo de VLAN en FortiGate | `src/secciones/vlans.js` |
 | `fw` | Simulador de políticas: tabla ordenable, alta de reglas, paquete de prueba y CLI en FortiGate / Palo Alto / Cisco ASA / pfSense | `src/secciones/firewall.js` |
 | `marcas` | Tabla comparativa de conceptos entre fabricantes | `src/secciones/marcas.js` |
 | `forti` | FortiGate a fondo (políticas, NAT/VIP, VPN, perfiles, diagnóstico) | `src/secciones/fortigate.js` |

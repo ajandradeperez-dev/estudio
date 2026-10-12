@@ -4,6 +4,7 @@ export const vista=()=>`
 <div class="grid">
  ${[['redes','Redes','Modelo OSI, puertos y protocolos que todo firewall usa.'],
     ['subred','Calculadora de subredes','Escribe una IP y máscara y ve red, broadcast y hosts.'],
+    ['vlan','VLANs y Wi-Fi','Separa redes con 802.1Q y protege el Wi-Fi con WPA3 y redes de invitados.'],
     ['fw','Simulador de políticas','Crea reglas, envía un paquete y mira qué regla lo atrapa. Cambia entre FortiGate, Palo Alto, Cisco ASA y pfSense.'],
     ['marcas','Comparar marcas','Cómo se llama lo mismo en cada fabricante.'],
     ['forti','FortiGate a fondo','Políticas, NAT/VIP, VPN y perfiles de seguridad explicados.'],

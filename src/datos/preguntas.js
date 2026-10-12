@@ -7,5 +7,8 @@ export const quiz=[
  ['¿Cuántos hosts útiles tiene una red /26?',['62','64','30'],0],
  ['¿Por qué RDP no debería estar abierto a Internet?',['Es muy lento','Es blanco frecuente de fuerza bruta y vulnerabilidades','Solo funciona en LAN'],1],
  ['Un firewall stateful…',['Necesita reglas de ida y de regreso','Recuerda la sesión y deja pasar la respuesta','Solo mira la capa 7'],1],
- ['¿Qué necesitan los perfiles de seguridad para ver dentro de HTTPS?',['Inspección SSL profunda','Más RAM','Un puerto distinto'],0]
+ ['¿Qué necesitan los perfiles de seguridad para ver dentro de HTTPS?',['Inspección SSL profunda','Más RAM','Un puerto distinto'],0],
+ ['¿Qué estándar agrega la etiqueta de VLAN a las tramas Ethernet?',['802.1Q','802.11ax','802.3af'],0],
+ ['Un enlace que lleva varias VLAN etiquetadas entre un switch y un firewall es un puerto…',['De acceso','Troncal (trunk)','Espejo (SPAN)'],1],
+ ['¿Cuál es la opción más segura para el Wi-Fi de los empleados de una empresa?',['WPA2-Personal con la misma clave para todos','Red abierta con el SSID oculto','WPA3-Enterprise con 802.1X y RADIUS'],2]
 ];

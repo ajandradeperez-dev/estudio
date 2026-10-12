@@ -2,6 +2,7 @@ import {$} from './utilidades.js';
 import * as inicio from './secciones/inicio.js';
 import * as redes from './secciones/redes.js';
 import * as subred from './secciones/subredes.js';
+import * as vlan from './secciones/vlans.js';
 import * as fw from './secciones/firewall.js';
 import * as marcas from './secciones/marcas.js';
 import * as forti from './secciones/fortigate.js';
@@ -10,7 +11,7 @@ import * as quiz from './secciones/examen.js';
 
 /* Cada sección exporta vista() y, si las necesita, alMostrar() y alClic(t, ir).
    La clave es la misma de data-s en el menú, del #hash de la URL y de localStorage. */
-const S={inicio,redes,subred,fw,marcas,forti,incidentes,quiz};
+const S={inicio,redes,subred,vlan,fw,marcas,forti,incidentes,quiz};
 
 /* ---------- navegación y eventos ---------- */
 let cur='inicio';

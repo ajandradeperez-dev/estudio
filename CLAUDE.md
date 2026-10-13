@@ -6,66 +6,120 @@
 
 ## Qué es
 
-App educativa de seguridad de redes. Todo es simulado en el navegador (paquetes, firewalls, registros); no hay backend ni llamadas a equipos reales. Secciones:
+App para estudiar cualquier tema, organizada en **materias**. Todo corre en el navegador: no hay backend y el progreso se guarda en `localStorage`.
 
-| Clave (`data-s` / `#hash`) | Sección | Archivo |
-|---|---|---|
-| `inicio` | Portada con tarjetas a cada sección | `src/secciones/inicio.js` |
-| `redes` | Modelo OSI, puertos comunes, stateful | `src/secciones/redes.js` |
-| `subred` | Calculadora de subredes CIDR | `src/secciones/subredes.js` |
-| `vlan` | VLANs y Wi-Fi: 802.1Q, acceso/troncal, SSID por VLAN, WPA3, invitados; ejemplo de VLAN en FortiGate | `src/secciones/vlans.js` |
-| `fw` | Simulador de políticas: tabla ordenable, alta de reglas, paquete de prueba y CLI en FortiGate / Palo Alto / Cisco ASA / pfSense | `src/secciones/firewall.js` |
-| `vpn` | Simulador de VPN IPsec Matriz ↔ Sucursal: fase 1/fase 2 en cada FortiGate, diagnóstico con log tipo FortiOS, 3 escenarios con errores y CLI de cada lado | `src/secciones/vpn.js` |
-| `marcas` | Tabla comparativa de conceptos entre fabricantes | `src/secciones/marcas.js` |
-| `forti` | FortiGate a fondo (políticas, NAT/VIP, VPN, perfiles, diagnóstico) | `src/secciones/fortigate.js` |
-| `incidentes` | Laboratorio de incidentes: leer logs, identificar el ataque y elegir la defensa | `src/secciones/incidentes.js` |
-| `quiz` | Examen rápido | `src/secciones/examen.js` |
-
-Las claves son internas y no deben cambiar: se usan en el menú, en el `#hash` de la URL y en `localStorage` (`ciberlab-s`, última sección visitada).
+- **Materias**: Ciberseguridad (simuladores de firewall/VPN, laboratorio de incidentes, examen), Inglés, Álgebra y Ciencia de datos.
+- **Lecciones en formato común**: explicación corta, ejemplos y práctica (opción múltiple, completar respuesta o tarjetas).
+- **Enganche**: racha de días cumpliendo una meta diaria (ejercicios o minutos), XP y nivel por materia, "Repasar hoy" con repetición espaciada, "Continuar donde te quedaste" y la página "Mi progreso".
 
 ## Estructura
 
 ```
-index.html            Esqueleto: <head>, menú lateral (#nav) y <main id="main">
+index.html                Esqueleto: menú (#nav), barra superior (#barra) y vista (#vista)
+vite.config.js            Puertos fijos (5173 dev, 4173 preview) con strictPort
 src/
-  main.js             Registro de secciones, navegación (go) y delegación de eventos
-  estilos.css         Todo el CSS (variables en :root, modo oscuro, responsive a 760px)
-  utilidades.js       $, esc (escapar HTML) y utilidades IP: ip2n, n2ip, mask, inNet
-  progreso.js         Progreso guardado en localStorage (secciones visitadas, mejor examen, casos resueltos)
-  secciones/          Una sección por archivo
-  datos/
-    politicas.js      Servicios, políticas iniciales, marcas y paquetes de ejemplo
-    incidentes.js     Casos del laboratorio de incidentes
-    preguntas.js      Preguntas del examen
-    fortigate.js      Temas y ejemplos de CLI de "FortiGate a fondo"
-    vpn.js            Sedes, configuración correcta, opciones y escenarios del simulador de VPN
+  main.js                 Rutas, menú, delegación de eventos y conteo de minutos activos
+  estilos.css             Todo el CSS (variables en :root, modo oscuro, responsive a 760px)
+  utilidades.js           $, esc (escapar HTML) y utilidades IP
+  nucleo/                 Motor común a todas las materias
+    materias.js           Registro automático de materias (import.meta.glob) y búsqueda de ejercicios por referencia
+    cargar.js             cargarLecciones(): carga la carpeta lecciones/ de una materia
+    progreso.js           Todo lo que se guarda: racha, meta, XP, lecciones, repaso, "continuar"
+    ejercicios.js         Los tres tipos de ejercicio: HTML, corrección y resultado
+    leccion.js            Vista de lección (aprender → practicar → resumen)
+    repaso.js             "Repasar hoy"
+    portada.js            Portada, página de materia y barra superior
+    miprogreso.js         "Mi progreso"
+    ui.js                 barra() de progreso
+  materias/
+    ciberseguridad/       materia.js, secciones/ (simuladores), datos/, progreso.js (ganchos propios)
+    ingles/               materia.js + lecciones/01-….js
+    algebra/
+    ciencia-datos/
 ```
 
-## Cómo funciona una sección
+### Rutas (`#hash`)
 
-Cada módulo de `src/secciones/` exporta:
+| Ruta | Vista |
+|---|---|
+| (vacía) | Portada: continuar + materias |
+| `repaso` / `progreso` | Repasar hoy / Mi progreso |
+| `<materia>` | Página de la materia: nivel, lecciones y secciones |
+| `<materia>/l/<lección>` | Lección en formato común |
+| `<materia>/<sección>` | Sección propia (p. ej. `ciberseguridad/fw`) |
 
-- `vista()` → devuelve el HTML de la sección como string (se asigna a `#main.innerHTML`).
-- `alMostrar()` (opcional) → se llama después de pintar; p. ej. el simulador dibuja la tabla y la calculadora calcula el valor inicial.
-- `alClic(t, ir)` (opcional) → recibe el elemento clicado (`button`, `[data-go]` o `tr[data-pid]`) y la función `ir(clave)` para volver a renderizar o cambiar de sección.
+Las rutas antiguas de una palabra (`#fw`, `#vpn`…) siguen funcionando y llevan a Ciberseguridad.
 
-`main.js` tiene un único listener de clic sobre `#main` y lo reenvía a la sección activa. El estado (políticas, marca elegida, pregunta actual, caso de incidente…) vive en variables de cada módulo y se pierde al recargar la página, igual que en la versión original de un solo archivo.
+## Agregar una materia
 
-Lo único que persiste es el progreso (`src/progreso.js`, clave `ciberlab-progreso` en `localStorage`), que se muestra en el panel de Inicio y se puede reiniciar desde ahí:
+Crea una carpeta en `src/materias/` y no toques nada más: se registra sola. **El nombre de la carpeta es el id** de la materia (va en la URL y en el progreso guardado), así que no lo cambies después de publicarla.
 
-- `main.js` marca cada sección visitada en `go()`.
-- `examen.js` registra el puntaje al terminar; se guarda el mejor porcentaje.
-- `incidentes.js` marca un caso como resuelto al acertar la respuesta defensiva.
+```
+src/materias/fisica/
+  materia.js
+  lecciones/
+    01-velocidad.js
+    02-aceleracion.js
+```
 
-Los casos se guardan por su posición en `datos/incidentes.js`: agrega casos nuevos al final para no desfasar el progreso existente. Todo acceso a `localStorage` va en `try/catch` para que la app funcione aunque esté bloqueado.
+`materia.js`:
 
-Para agregar una sección: crea el módulo, impórtalo y regístralo en el objeto `S` de `main.js`, y añade su botón `data-s` en `index.html`.
+```js
+import {cargarLecciones} from '../../nucleo/cargar.js';
+
+export default {
+  nombre:'Física',sigla:'FÍ',orden:5,          // sigla: 2 letras para el ícono; orden: posición en la portada
+  descripcion:'Una línea para la tarjeta de la portada.',
+  intro:'Párrafo opcional para la página de la materia.',
+  lecciones:cargarLecciones(import.meta.glob('./lecciones/*.js',{eager:true}))
+};
+```
+
+Opcionales, para materias con secciones propias como Ciberseguridad:
+
+- `secciones: {clave:{titulo, grupo, desc, modulo}}`: cada `modulo` exporta `vista()`, y si las necesita `alMostrar()` y `alClic(t, ir)`. `ir('otraClave')` navega dentro de la misma materia.
+- `ejercicioRepaso(clave)`: devuelve `{titulo, ej}` para las preguntas propias que guardaste en el repaso.
+- `progresoHtml(datos)`: devuelve un bloque HTML para "Mi progreso".
+
+## Agregar una lección
+
+Crea un archivo en `lecciones/` de la materia. El número del nombre define el orden y el resto es el id: `04-futuro.js` → `futuro`. **No renombres un archivo ya publicado**: el progreso y el repaso guardados usan ese id. Para insertar una lección en medio, usa el siguiente número libre o renumera solo el prefijo, nunca el resto del nombre.
+
+```js
+export default {
+  titulo:'Futuro con will',
+  resumen:'Una línea que aparece bajo el título y en la tarjeta.',
+  explicacion:['Párrafo 1 (HTML permitido: <b>, <i>, <code>)','Párrafo 2'],
+  ejemplos:[['I will call you.','nota opcional'],['Texto sin nota']],
+  practica:[
+    {tipo:'opcion',pregunta:'…',opciones:['a','b','c'],correcta:1,explicacion:'opcional'},
+    {tipo:'completar',pregunta:'…',respuestas:['will go',"'ll go"],pista:'opcional',explicacion:'opcional'},
+    {tipo:'tarjeta',frente:'¿…?',reverso:'Respuesta'}
+  ]
+};
+```
+
+- Los textos son HTML escrito en el repositorio (contenido de confianza). Un fragmento de código largo va en `codigo:'…'` (se muestra escapado en un `<pre>`).
+- `completar` compara sin distinguir mayúsculas, acentos, espacios sobrantes ni punto final. Los números se comparan por valor y aceptan `x = 6`, `6`, `+6`, `0,5` o `1/2`. Pon en `respuestas` todas las variantes válidas; la primera es la que se muestra como solución.
+- Los ejercicios se guardan en el repaso por su posición (`<materia>/l/<lección>/<índice>`): agrega ejercicios nuevos **al final** de `practica` para no desfasar el repaso existente.
+
+## Progreso (`src/nucleo/progreso.js`)
+
+Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 2`; el formato anterior, de cuando solo existía Ciberseguridad, se migra solo). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
+
+- **Meta diaria**: 10/20/30 ejercicios o 5/10/15 minutos. Los minutos solo cuentan con la pestaña visible y actividad en el último minuto (`main.js`).
+- **Racha**: días seguidos con la meta cumplida. Si hoy aún no se cumple, sigue viva desde ayer.
+- **XP**: 10 por acierto en lecciones y en las preguntas de Ciberseguridad, +20 la primera vez que se termina una lección, 5 por acierto en el repaso; 20 por cada caso del laboratorio y 15 por cada escenario de VPN, solo la primera vez. Para subir de nivel hacen falta 100, 300, 600, 1000… XP.
+- **Repaso**: un ejercicio fallado entra para hoy. Si lo aciertas en el repaso, vuelve en 1, 3, 7, 14 y 30 días; tras acertarlo a los 30 días queda dominado y sale del repaso. Si lo fallas, vuelve mañana y empieza de nuevo.
+- En Ciberseguridad, los casos del laboratorio y los escenarios de VPN se guardan por posición: agrégalos al final de sus listas en `datos/`.
+- Todo acceso a `localStorage` va en `try/catch` para que la app funcione aunque esté bloqueado.
+- El progreso depende del origen (`localhost:5173` y `localhost:4173` tienen progresos distintos). Por eso los puertos están fijos con `strictPort`: si el 5173 está ocupado, Vite falla en vez de abrir otro puerto con el progreso vacío.
 
 ## Convenciones
 
 - JavaScript puro con módulos ES, sin frameworks ni dependencias de runtime; Vite solo para desarrollo y build.
-- Estilo compacto heredado del original: plantillas con template strings y `.map(...).join('')`.
-- Todo texto que venga del usuario se pasa por `esc()` antes de meterlo en HTML.
+- Estilo compacto: plantillas con template strings y `.map(...).join('')`.
+- Todo texto que escriba el usuario se pasa por `esc()` antes de meterlo en HTML.
 - Los colores siempre salen de las variables CSS (`--accent`, `--ok`, `--bad`…) para que funcione el modo oscuro.
 - El laboratorio de incidentes es **defensivo**: identificar ataques y elegir respuestas, nunca enseñar a ejecutarlos.
 
@@ -73,7 +127,7 @@ Para agregar una sección: crea el módulo, impórtalo y regístralo en el objet
 
 ```
 npm install       # primera vez
-npm run dev       # servidor de desarrollo (http://localhost:5173)
+npm run dev       # servidor de desarrollo: http://localhost:5173 (puerto fijo)
 npm run build     # genera dist/
-npm run preview   # sirve dist/ para probar el build
+npm run preview   # sirve dist/ en http://localhost:4173 (puerto fijo)
 ```

@@ -1,38 +1,77 @@
 import {$} from './utilidades.js';
-import {marcarVisita} from './progreso.js';
-import * as inicio from './secciones/inicio.js';
-import * as redes from './secciones/redes.js';
-import * as subred from './secciones/subredes.js';
-import * as vlan from './secciones/vlans.js';
-import * as fw from './secciones/firewall.js';
-import * as vpn from './secciones/vpn.js';
-import * as marcas from './secciones/marcas.js';
-import * as forti from './secciones/fortigate.js';
-import * as incidentes from './secciones/incidentes.js';
-import * as quiz from './secciones/examen.js';
+import {materias,materia,leccion} from './nucleo/materias.js';
+import {visitar,guardarUltimo,sumarSegundos} from './nucleo/progreso.js';
+import {portada,vistaMateria,htmlBarraSup} from './nucleo/portada.js';
+import {vistaLeccion} from './nucleo/leccion.js';
+import {repaso} from './nucleo/repaso.js';
+import {miProgreso} from './nucleo/miprogreso.js';
 
-/* Cada sección exporta vista() y, si las necesita, alMostrar() y alClic(t, ir).
-   La clave es la misma de data-s en el menú, del #hash de la URL y de localStorage. */
-const S={inicio,redes,subred,vlan,fw,vpn,marcas,forti,incidentes,quiz};
+/* Rutas (van en el #hash de la URL):
+   ''                      portada con las materias
+   'repaso' / 'progreso'   Repasar hoy / Mi progreso
+   '<materia>'             página de la materia
+   '<materia>/l/<lección>' lección en formato común
+   '<materia>/<sección>'   sección propia de la materia (p. ej. ciberseguridad/fw)
+   Cada vista exporta vista() y, si las necesita, alEntrar(), alMostrar() y alClic(t, ir, repintar). */
+function resolver(ruta){
+  if(!ruta||ruta==='inicio')return {ruta:'',v:portada};
+  if(ruta==='repaso')return {ruta,v:repaso};
+  if(ruta==='progreso')return {ruta,v:miProgreso};
+  // Rutas antiguas de una sola palabra (#fw, #vpn…) de cuando solo existía Ciberseguridad
+  if(!ruta.includes('/')&&!materia(ruta)){const m=materias.find(x=>x.secciones?.[ruta]);if(m)ruta=`${m.id}/${ruta}`}
+  const [mid,a,b]=ruta.split('/'),m=materia(mid);
+  if(!m)return resolver('');
+  if(a==='l'&&leccion(m,b))return {ruta:`${m.id}/l/${b}`,m,v:vistaLeccion(m,leccion(m,b)),ultimo:true};
+  const s=a&&m.secciones?.[a];
+  // Las secciones llaman a ir('clave') con claves de su propia materia
+  if(s)return {ruta:`${m.id}/${a}`,m,seccion:a,ultimo:true,ir:k=>go(`${m.id}/${k}`),
+    v:{titulo:s.titulo,vista:s.modulo.vista,alMostrar:s.modulo.alMostrar,alClic:s.modulo.alClic}};
+  return {ruta:m.id,m,v:vistaMateria(m)};
+}
 
-/* ---------- navegación y eventos ---------- */
-let cur='inicio';
-function go(s){
-  cur=S[s]?s:'inicio';
-  marcarVisita(cur);
-  $('#main').innerHTML=S[cur].vista();
-  document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.s===cur));
-  try{localStorage.setItem('ciberlab-s',cur)}catch(e){}
-  S[cur].alMostrar?.();
+/* ---------- navegación ---------- */
+let cur;
+function pintar(){$('#vista').innerHTML=cur.v.vista();cur.v.alMostrar?.()}
+const pintarBarra=()=>{$('#barra').innerHTML=htmlBarraSup()};
+function pintarNav(){
+  const b=(ruta,txt,cls='')=>`<button data-go="${ruta}"${cls?` class="${cls}"`:''} aria-current="${ruta===cur.ruta}">${txt}</button>`;
+  const sub=m=>{
+    const ls=(m.lecciones||[]).map((l,i)=>b(`${m.id}/l/${l.id}`,`${i+1}. ${l.titulo}`,'sub')).join('');
+    const ss=Object.entries(m.secciones||{}),grupos=[...new Set(ss.map(([,s])=>s.grupo))];
+    return ls+grupos.map(g=>`${g?`<div class="navsub">${g}</div>`:''}${ss.filter(([,s])=>s.grupo===g).map(([k,s])=>b(`${m.id}/${k}`,s.titulo,'sub')).join('')}`).join('');
+  };
+  $('#nav').innerHTML=`<div class="brand">Ciber<span>Lab</span></div>
+${b('','Inicio')}${b('repaso','Repasar hoy')}${b('progreso','Mi progreso')}
+<div class="navlabel">Materias</div>
+${materias.map(m=>b(m.id,m.nombre,m===cur.m?'abierta':'')+(m===cur.m?sub(m):'')).join('')}`;
+}
+function go(ruta){
+  cur=resolver(ruta);
+  if(cur.seccion)visitar(cur.m.id,cur.seccion);
+  if(cur.ultimo)guardarUltimo({ruta:cur.ruta,materia:cur.m.id});
+  cur.v.alEntrar?.();
+  pintar();pintarNav();pintarBarra();
+  document.title=cur.ruta?`${cur.v.titulo} · CiberLab`:'CiberLab';
+  try{history.replaceState(null,'',cur.ruta?'#'+cur.ruta:location.pathname+location.search)}catch(e){}
   window.scrollTo(0,0);
 }
-$('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-s]');if(b)go(b.dataset.s)});
-$('#main').addEventListener('keydown',e=>{if(e.key==='Enter'){const c=e.target.closest('[data-go]');if(c)go(c.dataset.go)}});
+
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)go(b.dataset.go)});
+$('#main').addEventListener('keydown',e=>{if(e.key==='Enter'){const c=e.target.closest('[data-go]');if(c&&c.tagName!=='BUTTON')go(c.dataset.go)}});
+$('#main').addEventListener('submit',e=>e.preventDefault()); // Enter en una respuesta escrita = clic en "Comprobar"
 $('#main').addEventListener('click',e=>{
   const t=e.target.closest('button,[data-go],tr[data-pid]'); if(!t)return;
-  if(t.dataset.go){go(t.dataset.go);return}
-  S[cur].alClic?.(t,go);
+  if(t.dataset.go!==undefined){go(t.dataset.go);return}
+  cur.v.alClic?.(t,cur.ir||go,pintar);
 });
-let start='inicio';try{start=localStorage.getItem('ciberlab-s')||'inicio'}catch(e){}
-const h=location.hash.slice(1); if(S[h])start=h;
-go(start);
+window.addEventListener('progreso',pintarBarra);
+
+/* ---------- minutos para la meta diaria: solo cuenta con la pestaña visible y actividad en el último minuto ---------- */
+let ultimaAccion=Date.now();
+for(const ev of ['pointerdown','keydown','scroll'])document.addEventListener(ev,()=>{ultimaAccion=Date.now()},{passive:true,capture:true});
+setInterval(()=>{if(document.visibilityState==='visible'&&Date.now()-ultimaAccion<60000)sumarSegundos(15)},15000);
+
+const rutaDelHash=()=>{try{return decodeURIComponent(location.hash.slice(1))}catch(e){return ''}};
+// Si alguien cambia el #hash a mano o abre un enlace con la app ya abierta (replaceState no dispara este evento)
+window.addEventListener('hashchange',()=>{const r=rutaDelHash();if(r!==cur.ruta)go(r)});
+go(rutaDelHash());

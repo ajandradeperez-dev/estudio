@@ -1,4 +1,4 @@
-import {$,esc,ip2n,n2ip,mask,inNet} from '../utilidades.js';
+import {$,esc,ip2n,n2ip,mask,inNet} from '../../../utilidades.js';
 import {services,policies,vendors,examples} from '../datos/politicas.js';
 
 let vendor='forti';

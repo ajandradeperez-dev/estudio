@@ -1,4 +1,4 @@
-import {esc} from '../utilidades.js';
+import {esc} from '../../../utilidades.js';
 import {fortiTopics} from '../datos/fortigate.js';
 
 let fTopic='pol';

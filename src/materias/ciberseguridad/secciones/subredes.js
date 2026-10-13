@@ -1,4 +1,4 @@
-import {$,ip2n,n2ip,mask} from '../utilidades.js';
+import {$,ip2n,n2ip,mask} from '../../../utilidades.js';
 
 export const vista=()=>`
 <h1>Calculadora de subredes</h1>

@@ -12,7 +12,7 @@
   --accent:#43c99c; --accent-soft:#16312a; --ok:#5bd17d; --bad:#ff8a80; --warn:#e3b341; --code:#1c2622; color-scheme:dark}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
 .app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
-nav{border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;box-sizing:border-box;background:var(--panel)}
+nav{border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;box-sizing:border-box;background:var(--panel);overflow-y:auto}
 .brand{font-family:var(--f-display);font-size:20px;letter-spacing:.5px;margin:0 8px 16px}
 .brand span{color:var(--accent)}
 nav button{all:unset;cursor:pointer;padding:9px 10px;border-radius:6px;color:var(--muted);font-weight:500}
@@ -54,10 +54,7 @@ button.ghost{background:transparent;color:var(--accent)}
 .osi div{display:grid;grid-template-columns:34px 140px 1fr;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);align-items:center;font-size:13.5px}
 .osi b{font-family:var(--f-mono);color:var(--accent)}
 .progress{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
-/* Panel de progreso en Inicio */
-.prog{margin-bottom:14px}
-.prog-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.prog-top h3{margin:0}
+/* Estadísticas (Mi progreso, resultados) */
 .prog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-top:14px}
 .prog-k{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted)}
 .prog-v{font-family:var(--f-display);font-size:24px;margin:2px 0 6px}
@@ -76,10 +73,54 @@ button.ghost{background:transparent;color:var(--accent)}
 .vpn-datos{margin:0 0 4px;font-size:12px;color:var(--muted)}
 .vpn-fase{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:14px 0 6px}
 .vpn-campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+/* Menú: submenú de la materia abierta */
+nav button.abierta{color:var(--ink);font-weight:600}
+nav button.sub{padding:7px 10px 7px 22px;font-size:14px}
+.navsub{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:8px 10px 2px 22px}
+/* Barra superior: racha, meta diaria y repaso */
+.barra-sup{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;margin:0 0 22px;padding:10px 14px;border:1px solid var(--line);border-radius:8px;background:var(--panel);position:sticky;top:8px;z-index:5}
+.sup-item{display:flex;flex-direction:column;min-width:0}
+.sup-k{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted)}
+.sup-meta{flex:1;min-width:150px;max-width:320px}
+.sup-meta .barra{margin-top:4px}
+.sup-repaso{margin-left:auto}
+/* Portada y materias */
+.continuar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;border-color:var(--accent)}
+.materia-cab{display:flex;align-items:center;gap:10px}
+.sigla{display:inline-grid;place-items:center;flex:none;width:36px;height:36px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-family:var(--f-display);font-size:15px}
+.nivel{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+/* Lecciones y ejercicios */
+.miga{margin:0 0 6px;font-size:13px;color:var(--muted)}
+.enlace{all:unset;cursor:pointer;color:var(--accent)}
+.enlace:hover{text-decoration:underline}
+.enlace:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lec-p{margin:0 0 10px;max-width:70ch}
+.lec-p:last-child{margin-bottom:0}
+.ejemplos{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.ejemplos li{display:flex;flex-direction:column;gap:2px;padding:8px 12px;border-left:3px solid var(--accent);border-radius:4px;background:var(--code)}
+.ejemplos .nota{font-size:13px;color:var(--muted)}
+.lec-teoria summary{cursor:pointer;font-weight:600}
+.lec-teoria .card{border:0;padding:0;margin-top:12px!important}
+.ej-preg{font-size:16px;font-weight:600;margin:0 0 10px}
+.ej-codigo{margin:0 0 10px}
+.ej-pista{margin:8px 0 0;font-size:13px;color:var(--muted)}
+.ej-k{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:6px}
+#ej-form label{flex:1;min-width:180px}
+.tarjeta{padding:16px;border:1px dashed var(--line);border-radius:8px;background:var(--code)}
+.tarjeta .ej-preg{margin:0}
+.tarjeta-reverso{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:15px}
+/* Calendario de actividad en Mi progreso */
+.dias{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;max-width:420px}
+.dia{display:block;aspect-ratio:1;border:1px solid var(--line);border-radius:3px;background:var(--code)}
+.dia.algo{background:var(--accent-soft)}
+.dia.ok{background:var(--accent);border-color:var(--accent)}
+.progress .dia{display:inline-block;width:10px;height:10px;vertical-align:middle}
 @media (max-width:760px){
   .app{grid-template-columns:1fr}
-  nav{position:static;height:auto;flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid var(--line);padding:12px 16px}
+  nav{position:static;height:auto;flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid var(--line);padding:12px 16px;overflow:visible}
   .brand{width:100%;margin:0 0 6px}.navlabel{display:none}
+  nav button.sub{padding:7px 10px;font-size:13px}.navsub{display:none}
+  .barra-sup{top:0;gap:8px 16px}.sup-repaso{margin-left:0}
   .osi div{grid-template-columns:28px 1fr}.osi div span:last-child{grid-column:1/-1}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}

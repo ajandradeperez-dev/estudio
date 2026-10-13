@@ -1,9 +1,11 @@
-import {$,esc,ip2n,n2ip,mask} from '../utilidades.js';
+import {$,esc,ip2n,n2ip,mask} from '../../../utilidades.js';
 import {sitios,configBase,cifrados,hashes,gruposDH,versionesIKE,escenarios} from '../datos/vpn.js';
+import {marcarEscenarioVpn} from '../progreso.js';
 
 const clonar=x=>JSON.parse(JSON.stringify(x));
 let cfg=clonar(configBase);
 let resultado=null; // {estado:'up'|'down'|'config'|'info', fase, html}
+let escActivo=null; // escenario cargado; al levantar el túnel con él se marca como resuelto
 
 /* ---------- utilidades ---------- */
 // "192.168.10.0/24" → {txt, red, mascara, rango} o null si no es una red CIDR válida
@@ -222,10 +224,11 @@ export function alMostrar(){
 }
 
 export function alClic(t){
-  if(t.id==='vup'){resultado=levantar();pintar();return true}
+  if(t.id==='vup'){resultado=levantar();if(resultado.estado==='up'&&escActivo!=null)marcarEscenarioVpn(escActivo);pintar();return true}
   if(t.dataset.esc!==undefined){
     cfg=clonar(configBase);
     const e=escenarios[+t.dataset.esc];
+    escActivo=e?+t.dataset.esc:null;
     if(e)for(const k of ['m','s'])Object.assign(cfg[k],e.cambios[k]||{});
     document.querySelectorAll('[data-campo]').forEach(el=>{const [k,f]=el.dataset.campo.split('.');el.value=cfg[k][f]});
     document.querySelectorAll('#vesc button').forEach(x=>x.setAttribute('aria-pressed',x===t));

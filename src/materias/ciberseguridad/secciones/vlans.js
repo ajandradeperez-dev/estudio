@@ -1,4 +1,4 @@
-import {esc} from '../utilidades.js';
+import {esc} from '../../../utilidades.js';
 
 const cliVlan=`config system interface
     edit "vlan20-usuarios"

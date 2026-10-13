@@ -144,6 +144,49 @@ nav button.sub{padding:7px 10px 7px 22px;font-size:14px}
 .palabra.parecida{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent);text-decoration:underline dotted 2px}
 .palabra.mal{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent);text-decoration:underline wavy 2px}
 .oir{display:inline-flex;flex-wrap:wrap;gap:6px}
+/* Sección Hablar */
+.nota{display:block;font-size:13px;color:var(--muted)}
+.row.centro{justify-content:center}
+.frase-objetivo{margin:6px 0;font-size:22px;font-weight:600;line-height:1.35;text-align:center}
+.hablar-item>.nota,.hablar-item>.frase-objetivo+.nota{text-align:center}
+.puntaje{margin:4px 0;font-size:15px;text-align:center}
+.puntaje b{font-family:var(--f-display);font-size:28px}
+.puntaje.ok b{color:var(--ok)}.puntaje.casi b{color:var(--warn)}.puntaje.bajo b{color:var(--bad)}
+.detecciones{margin:8px 0;padding-left:20px;font-size:14px}
+.detecciones li{margin-bottom:6px}
+.premio{display:inline-block;margin:6px 0;padding:3px 10px;border-radius:20px;background:var(--accent-soft);color:var(--accent);font-family:var(--f-mono);font-weight:600;animation:pop .35s ease-out}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+.opts-grandes button{padding:14px;font-size:18px;text-align:center}
+.destacado{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;width:100%;margin-bottom:14px;padding:18px;border:2px solid var(--accent);border-radius:10px;background:var(--accent-soft);cursor:pointer}
+.destacado:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.destacado-titulo{font-family:var(--f-display);font-size:22px;color:var(--accent)}
+.card.aviso{border-color:var(--warn)}
+.chat{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.burbuja{display:flex;flex-direction:column;gap:4px;max-width:88%;padding:10px 12px;border-radius:12px;font-size:16px}
+.burbuja .quien{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.burbuja.pj{align-self:flex-start;background:var(--panel);border:1px solid var(--line);border-bottom-left-radius:4px}
+.burbuja.yo{align-self:flex-end;background:var(--accent-soft);border-bottom-right-radius:4px}
+.burbuja.yo.mal{background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.turno-actual{position:sticky;bottom:0}
+.tu-turno{font-size:16px}
+.result.pista{border-color:var(--warn)}
+.lista-frases{padding-left:20px}.lista-frases li{margin-bottom:8px}
+.mejoras{margin:0 0 4px;padding:8px 12px;border:1px dashed var(--line);border-radius:8px;font-size:14px}
+.mejoras summary{cursor:pointer;font-weight:600}
+.mejoras li{margin-bottom:6px}
+.cargando{color:var(--muted);text-align:center}
+.cargando::after{content:'…';animation:pop 1s infinite}
+.card.click.escenario{all:unset;box-sizing:border-box;display:block;padding:16px;border:1px solid var(--line);border-radius:8px;background:var(--panel);cursor:pointer}
+.card.click.escenario:hover{border-color:var(--accent)}
+.card.click.escenario[disabled]{opacity:.5;cursor:not-allowed}
+.card.click.escenario h3{margin:0 0 4px}
+.pasos{padding-left:20px}.pasos li{margin-bottom:4px}
+.ajustes-ia{display:flex;flex-direction:column;gap:12px}
+.modelos{border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.opcion-radio{flex-direction:row;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
+.sonido-info p{margin:0 0 8px}
+.par{display:inline-flex;align-items:center;gap:4px;margin-right:8px}
+.grid.sonidos{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
 /* Calendario de actividad en Mi progreso */
 .dias{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;max-width:420px}
 .dia{display:block;aspect-ratio:1;border:1px solid var(--line);border-radius:3px;background:var(--code)}

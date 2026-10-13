@@ -65,16 +65,17 @@ export function vistaMateria(m){
         if(ejs&&e.i<ejs.length)return `<span class="tag on">En curso · ejercicio ${e.i+1} de ${ejs.length}</span>`;
         return h?`<span class="tag warn-tag">Por repetir · ${Math.round(h.mejor*100)}%</span>`:'<span class="tag">Nueva</span>'};
       const sig=ls.find(l=>!d.lecciones[l.id]?.dominada),u=d.ubicacion,k=repartoUbicacion(ls.length).reduce((a,b)=>a+b,0);
-      const grupos=[...new Set(secciones(m).map(([,s])=>s.grupo))];
+      const ss=secciones(m).filter(([k])=>`${m.id}/${k}`!==m.destacado?.ruta),grupos=[...new Set(ss.map(([,s])=>s.grupo))];
       return `<div class="materia-cab"><span class="sigla">${m.sigla}</span><h1 style="margin:0">${m.nombre}</h1></div>
 <p class="lead" style="margin-top:8px">${m.intro||m.descripcion}</p>
+${m.destacado?`<button class="card destacado" data-go="${m.destacado.ruta}"><span class="destacado-titulo">${m.destacado.titulo}</span><span class="nota">${m.destacado.desc}</span></button>`:''}
 <div class="card" style="margin-bottom:14px">${htmlNivel(d.xp)}
 ${ls.length?`<div class="row materia-acciones">${sig?`<button class="btn" data-go="${m.id}/l/${sig.id}">${d.lecciones[sig.id]||d.enCurso?.leccion===sig.id?'Seguir':'Empezar'}: ${sig.titulo}</button>`:'<span class="allow">✓ Dominaste todas las lecciones</span>'}
 <button class="btn ghost" data-go="${m.id}/ubicacion">${u?'Repetir examen de ubicación':`Examen de ubicación · ${k} preguntas`}</button></div>
 <p class="progress" style="margin:8px 0 0">${u?`Ubicación del ${u.fecha}: ${u.aciertos} de ${u.total} aciertos · ${u.dominadas.length} lecciones marcadas como dominadas.`:'¿Ya sabes algo? El examen de ubicación marca como dominadas las lecciones que ya sabes para que no pierdas tiempo.'}</p>`:''}</div>
 ${ls.length?`<h2>Lecciones</h2><div class="grid">${ls.map((l,i)=>`<div class="card click" data-go="${m.id}/l/${l.id}" tabindex="0">
 <div class="progress">Lección ${i+1}${l.nivel?` · ${l.nivel}`:''}</div><h3 style="margin:4px 0">${l.titulo}</h3><p style="margin:0 0 10px;color:var(--muted)">${l.resumen}</p>${estado(l)}</div>`).join('')}</div>`:''}
-${grupos.map(g=>`<h2>${g||'Herramientas'}</h2><div class="grid">${secciones(m).filter(([,s])=>s.grupo===g).map(([k,s])=>`<div class="card click" data-go="${m.id}/${k}" tabindex="0"><h3>${s.titulo}${d.visitadas.includes(k)?' <span class="tag on">✓ Visitada</span>':''}</h3><p style="margin:0;color:var(--muted)">${s.desc}</p></div>`).join('')}</div>`).join('')}`;
+${grupos.map(g=>`<h2>${g||'Herramientas'}</h2><div class="grid">${ss.filter(([,s])=>s.grupo===g).map(([k,s])=>`<div class="card click" data-go="${m.id}/${k}" tabindex="0"><h3>${s.titulo}${d.visitadas.includes(k)?' <span class="tag on">✓ Visitada</span>':''}</h3><p style="margin:0;color:var(--muted)">${s.desc}</p></div>`).join('')}</div>`).join('')}`;
     }
   };
 }

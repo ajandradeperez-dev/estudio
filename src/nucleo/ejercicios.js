@@ -2,8 +2,15 @@
    {tipo:'opcion',    pregunta, opciones:[…], correcta, porque:{índice:'por qué está mal'}, regla, codigo?}
    {tipo:'completar', pregunta, respuestas:[aceptadas…], errores?:{'respuesta típica':'por qué está mal'}, regla, pista?, codigo?}
    {tipo:'tarjeta',   frente, reverso}   (no cuenta como producción)
-   Producción = completar (escribir, traducir, resolver). La opción múltiple solo se usa para introducir. */
+   {tipo:'hablar',    frase, es?, regla, sonidos?, materia?}                      decir una frase en voz alta (pronunciación ≥ 80)
+   {tipo:'hablar',    pregunta, oir?, acepta, errores?, modelo, pista?, regla}    responder hablando (diálogos)
+   Producción = completar o hablar. La opción múltiple solo se usa para introducir.
+   hablar usa el micrófono; si el navegador no reconoce voz, se responde escribiendo. */
 import {$,esc} from '../utilidades.js';
+import {soporte,htmlMic,htmlOir,htmlFraseEvaluada,escucharConBoton} from './voz.js';
+import {evaluar,evaluarRespuesta} from './pronunciacion.js';
+import {registrarHabla,registrarSonidos} from './progreso.js';
+export const META_PRONUNCIACION=80;
 
 // opciones.pista=false oculta el botón de pista (examen de ubicación)
 export function htmlEjercicio(ej,{pista=true}={}){
@@ -13,6 +20,14 @@ export function htmlEjercicio(ej,{pista=true}={}){
   else if(ej.tipo==='completar')cuerpo=`<p class="ej-preg">${ej.pregunta}</p>${codigo}
 <form class="row" id="ej-form"><label for="ej-resp">Tu respuesta<input id="ej-resp" autocomplete="off" autocapitalize="off" spellcheck="false"></label><button class="btn" id="ej-ok">Comprobar</button>${pista&&ej.pista?'<button type="button" class="btn ghost" id="ej-ver-pista">Ver pista</button>':''}</form>
 ${pista&&ej.pista?`<p class="ej-pista" id="ej-pista" hidden>Pista: ${ej.pista} <span class="progress">(con pista, este ejercicio no cuenta para dominar la lección)</span></p>`:''}`;
+  else if(ej.tipo==='hablar'){
+    const formulario=`<form class="row" id="ej-form"${soporte.escuchar?' hidden':''}><label for="ej-resp">${ej.frase?'Escribe la frase':'Tu respuesta'}<input id="ej-resp" autocomplete="off" autocapitalize="off" spellcheck="false" lang="en"></label><button class="btn" id="ej-ok">Comprobar</button></form>`;
+    cuerpo=(ej.frase?`<p class="ej-preg">Di en voz alta:</p><p class="frase-objetivo" lang="en">${esc(ej.frase)}</p>${ej.es?`<p class="nota">${ej.es}</p>`:''}${htmlOir(ej.frase)}`
+      :`<p class="ej-preg">${ej.pregunta}</p>${ej.oir?htmlOir(ej.oir):''}`)
+      +(soporte.escuchar?`${htmlMic('ej-mic')}<div class="row centro"><button type="button" class="btn ghost btn-chico" id="ej-escribir">Prefiero escribir</button>${pista&&ej.pista?'<button type="button" class="btn ghost btn-chico" id="ej-ver-pista">Ver pista</button>':''}</div>`
+        :`<p class="ej-pista">${esc('Micrófono no disponible en este navegador: escribe la respuesta.')}</p>`)
+      +formulario+(pista&&ej.pista?`<p class="ej-pista" id="ej-pista" hidden>Pista: ${ej.pista} <span class="progress">(con pista no cuenta como dominado)</span></p>`:'');
+  }
   else cuerpo=`<div class="tarjeta"><div class="ej-k">Tarjeta</div><div class="ej-preg">${ej.frente}</div><div class="tarjeta-reverso" id="ej-reverso" hidden>${ej.reverso}</div></div>
 <div class="row" style="margin-top:12px"><button class="btn" id="ej-voltear">Mostrar respuesta</button><button class="btn" data-sabia="1" hidden>La sabía</button><button class="btn ghost" data-sabia="0" hidden>No la sabía</button></div>`;
   return `<div id="ej" data-tipo="${ej.tipo}">${cuerpo}<div id="ej-fb" class="result" hidden></div></div>`;
@@ -38,11 +53,41 @@ export function coincide(valor,respuestas){
 }
 
 /* ---------- interacción ---------- */
+// Evalúa lo dicho (o escrito) en un ejercicio de hablar
+function evaluarHablar(ej,alternativas,r){
+  if(ej.frase){
+    const ev=evaluar(ej.frase,alternativas,{sonidos:ej.sonidos||[]});
+    return Object.assign(r,{correcto:ev.puntaje>=META_PRONUNCIACION,respuesta:ev.transcripcion,eval:ev});
+  }
+  const er=evaluarRespuesta(alternativas,ej);
+  return Object.assign(r,{correcto:er.ok,respuesta:er.dicho,errorTipico:er.error});
+}
+
 // Recibe el elemento clicado. Devuelve {correcto, pista, respuesta?, op?} si el usuario acaba de responder; null si no.
+// En ejercicios de hablar con micrófono devuelve una promesa (las vistas hacen await).
 export function manejarEjercicio(t,ej){
   const caja=$('#ej'); if(!caja||caja.dataset.hecho)return null;
-  if(t.id==='ej-ver-pista'){$('#ej-pista').hidden=false;t.hidden=true;caja.dataset.pista='1';$('#ej-resp').focus();return null}
+  if(t.id==='ej-ver-pista'){$('#ej-pista').hidden=false;t.hidden=true;caja.dataset.pista='1';$('#ej-resp')?.focus();return null}
   const r={pista:caja.dataset.pista==='1'};
+  if(ej.tipo==='hablar'){
+    if(t.id==='ej-escribir'){$('#ej-form').hidden=false;t.hidden=true;$('#ej-resp').focus();return null}
+    if(t.id==='ej-ok'){
+      const inp=$('#ej-resp'); if(!inp.value.trim()){inp.focus();return null}
+      inp.readOnly=true;t.hidden=true;caja.dataset.hecho='1';
+      return evaluarHablar(ej,[{transcripcion:inp.value.trim(),confianza:1}],r);
+    }
+    if(t.id==='ej-mic')return (async()=>{
+      let res;
+      try{res=await escucharConBoton(t)}catch(e){const est=$('#ej-mic-estado');if(est)est.textContent=e.message;return null}
+      if(!res||caja.dataset.hecho)return null;
+      caja.dataset.hecho='1';t.disabled=true;
+      evaluarHablar(ej,res.alternativas,r);r.hablado=true;
+      registrarHabla({frases:1,seg:res.segundos});
+      if(r.eval)registrarSonidos(ej.materia||'ingles',r.eval.sonidos);
+      return r;
+    })();
+    return null;
+  }
   if(ej.tipo==='opcion'&&t.dataset.op!==undefined){
     r.op=+t.dataset.op;r.correcto=r.op===ej.correcta;
     caja.querySelectorAll('#ej-ops button').forEach(b=>b.className=+b.dataset.op===ej.correcta?'right':(b===t?'wrong':''));
@@ -66,17 +111,29 @@ export function rendirse(){const caja=$('#ej');if(!caja||caja.dataset.hecho)retu
 
 // Por qué está mal: la explicación de esa opción o de ese error típico, si existe
 function porQue(ej,r){
+  if(ej.tipo==='hablar'){
+    if(r.errorTipico)return r.errorTipico;
+    const d=r.eval?.detecciones?.[0],s=d&&(ej.sonidos||[]).find(x=>x.id===d.sonido);
+    if(s)return `${d.oido?`Se entendió «${esc(d.oido)}» en vez de «${esc(d.palabra)}»`:`No se entendió «${esc(d.palabra)}»`}. ${s.causa} <b>Tip:</b> ${s.tip}`;
+    return r.eval?`Puntaje ${r.eval.puntaje} de 100: necesitas ${META_PRONUNCIACION}. Las palabras en rojo no se entendieron bien.`:'Tu respuesta no encaja con lo que se pedía.';
+  }
   if(ej.tipo==='opcion')return ej.porque?.[r.op]||'';
   if(ej.tipo==='completar'&&ej.errores)for(const [mal,motivo] of Object.entries(ej.errores))if(coincide(r.respuesta,[mal]))return motivo;
   return ej.tipo==='completar'?'Tu respuesta no coincide con ninguna forma correcta.':'';
 }
-const solucion=ej=>ej.tipo==='opcion'?ej.opciones[ej.correcta]:ej.tipo==='completar'?esc(ej.respuestas[0]):'';
+const solucion=ej=>ej.tipo==='opcion'?ej.opciones[ej.correcta]:ej.tipo==='completar'?esc(ej.respuestas[0])
+  :ej.tipo==='hablar'?`${esc(ej.modelo||ej.frase)} ${htmlOir(ej.modelo||ej.frase)}`:'';
 
 // Resultado: si acierta, corto; si falla, qué escribió, por qué está mal, la regla y la respuesta correcta
 export function mostrarResultado(ej,r,extra=''){
   const fb=$('#ej-fb'),regla=ej.regla||ej.explicacion||'';
   let html;
-  if(ej.tipo==='tarjeta')html=r.correcto?'<span class="allow">¡Bien!</span>':'<span class="warn">Te falta practicarla.</span>';
+  const evaluada=r.eval?`${htmlFraseEvaluada(r.eval)}<div class="progress">Pronunciación: ${r.eval.puntaje}/100${r.hablado?'':' (escrita)'}</div>`:'';
+  if(ej.tipo==='hablar'&&r.correcto)html=`<span class="allow">¡Bien dicho!</span>${evaluada}${!ej.frase&&ej.modelo&&r.respuesta?`<div class="fb-linea nota">Otra forma natural: ${esc(ej.modelo)}</div>`:''}`;
+  else if(ej.tipo==='hablar')html=`<span class="deny">Todavía no.</span>${r.respuesta?` ${r.hablado?'Se entendió':'Escribiste'} «${esc(r.respuesta)}».`:''}${evaluada}
+<div class="fb-linea"><b>Por qué:</b> ${porQue(ej,r)}</div>${regla?`<div class="fb-linea"><b>Regla:</b> ${regla}</div>`:''}
+<div class="fb-linea"><b>${ej.frase?'Frase':'Respuesta modelo'}:</b> ${solucion(ej)}</div>`;
+  else if(ej.tipo==='tarjeta')html=r.correcto?'<span class="allow">¡Bien!</span>':'<span class="warn">Te falta practicarla.</span>';
   else if(r.correcto)html=r.pista?'<span class="warn">Correcto, con pista.</span> No cuenta para dominar la lección.':'<span class="allow">¡Correcto!</span>';
   else{const pq=porQue(ej,r);
     html=`<span class="deny">No es correcto.</span>${r.respuesta?` Escribiste «${esc(r.respuesta)}».`:''}

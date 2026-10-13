@@ -214,7 +214,8 @@ export function registrarSesion(materia,tipo){
 }
 
 /* ---------- notas ---------- */
-export function guardarNota(materia,leccion,texto){cambiar(p=>{p.notas[`${materia}/${leccion}`]={texto,fecha:hoy()}})}
+// titulo: para notas que no son de una lección (p. ej. el resumen de una conversación con IA)
+export function guardarNota(materia,leccion,texto,titulo){cambiar(p=>{p.notas[`${materia}/${leccion}`]={texto,fecha:hoy(),...(titulo?{titulo}:{})}})}
 export function borrarNota(clave){cambiar(p=>{delete p.notas[clave]})}
 
 /* ---------- secciones y "continuar" ---------- */

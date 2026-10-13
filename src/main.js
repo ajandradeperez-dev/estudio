@@ -25,11 +25,13 @@ function resolver(ruta){
   if(ruta==='notas')return {ruta,v:notas};
   // Rutas antiguas de una sola palabra (#fw, #vpn…) de cuando solo existía Ciberseguridad
   if(!ruta.includes('/')&&!materia(ruta)){const m=materias.find(x=>x.secciones?.[ruta]);if(m)ruta=`${m.id}/${ruta}`}
-  const [mid,a,b]=ruta.split('/'),m=materia(mid);
+  const [mid,a,b,...resto]=ruta.split('/'),m=materia(mid);
   if(!m)return resolver('');
   if(a==='l'&&leccion(m,b))return {ruta:`${m.id}/l/${b}`,m,v:vistaLeccion(m,leccion(m,b)),ultimo:true};
   if(a==='ubicacion'&&m.lecciones?.length)return {ruta:`${m.id}/ubicacion`,m,v:vistaUbicacion(m)};
   const s=a&&m.secciones?.[a];
+  // Secciones con subrutas (p. ej. ingles/hablar/dialogo/<id>): el módulo exporta ruta(resto) → {ruta, v}
+  if(s&&s.modulo.ruta){const r=s.modulo.ruta([b,...resto].filter(x=>x!==undefined));return {...r,m,seccion:a,ultimo:true}}
   // Las secciones llaman a ir('clave') con claves de su propia materia
   if(s)return {ruta:`${m.id}/${a}`,m,seccion:a,ultimo:true,ir:k=>go(`${m.id}/${k}`),
     v:{titulo:s.titulo,vista:s.modulo.vista,alMostrar:s.modulo.alMostrar,alClic:s.modulo.alClic}};
@@ -75,8 +77,9 @@ $('#main').addEventListener('submit',e=>e.preventDefault()); // Enter en una res
 $('#main').addEventListener('click',e=>{
   const t=e.target.closest('button,[data-go],tr[data-pid]'); if(!t)return;
   if(t.dataset.go!==undefined){go(t.dataset.go);return}
-  // Cualquier botón con data-decir lee su texto en inglés (data-lento = velocidad lenta)
-  if(t.dataset.decir!==undefined){hablar(t.dataset.decir,{lento:!!t.dataset.lento});return}
+  // Cualquier botón con data-decir lee su texto en inglés (data-lento = velocidad lenta).
+  // La vista también recibe el clic (p. ej. para saber si se usó "lento").
+  if(t.dataset.decir!==undefined)hablar(t.dataset.decir,{lento:!!t.dataset.lento});
   cur.v.alClic?.(t,cur.ir||go,pintar);
 });
 window.addEventListener('progreso',pintarBarra);

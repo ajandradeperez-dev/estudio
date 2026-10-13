@@ -86,12 +86,28 @@ export function evaluar(objetivo,alternativas,{sonidos=[]}={}){
     extra:mejor.extra,detecciones:mejor.detecciones,sonidos:stats};
 }
 
+/* Respuesta libre de un turno: primero los errores típicos (en cualquier alternativa del reconocedor),
+   después los patrones aceptados. Devuelve {ok, error: explicación|null, dicho: la transcripción usada}. */
+export function evaluarRespuesta(alternativas,{acepta,errores={}}){
+  const alts=(alternativas||[]).map(a=>typeof a==='string'?a:a.transcripcion).filter(Boolean);
+  for(const dicho of alts)if(encaja(dicho,acepta)){
+    const err=Object.entries(errores).find(([p])=>encaja(dicho,[p]));
+    if(!err)return {ok:true,error:null,dicho};
+  }
+  for(const dicho of alts){const err=Object.entries(errores).find(([p])=>encaja(dicho,[p]));if(err)return {ok:false,error:err[1],dicho}}
+  return {ok:false,error:null,dicho:alts[0]||''};
+}
+
 /* Respuesta libre (diálogos): ¿lo que dijo encaja con alguno de los patrones aceptados?
-   Patrones en inglés con * como comodín de una o más palabras: "my name is *", "i am from *". */
+   Patrones en inglés con * como comodín de una o más palabras: "my name is *", "i am from *".
+   Un patrón que empieza con = exige la frase completa ("=yes" no encaja con "yes please");
+   con ^ tiene que estar al principio ("^is delicious *" no encaja con "yes it is delicious"). */
 export function encaja(dicho,patrones){
   const t=' '+normalizar(dicho)+' ';
   return patrones.some(p=>{
-    const partes=normalizar(p.replace(/\*/g,' ESTRELLA ')).split(' ').map(w=>w==='estrella'?'(?:\\S+ )*?\\S+':w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
-    return new RegExp(' '+partes.join(' ')+' ').test(t);
+    if(p.startsWith('='))return t.trim()===normalizar(p.slice(1));
+    const inicio=p.startsWith('^');
+    const partes=normalizar((inicio?p.slice(1):p).replace(/\*/g,' ESTRELLA ')).split(' ').map(w=>w==='estrella'?'(?:\\S+ )*?\\S+':w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+    return new RegExp((inicio?'^ ':' ')+partes.join(' ')+' ').test(t);
   });
 }

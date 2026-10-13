@@ -48,10 +48,10 @@ export const repaso={
     return `${cab}<div class="card"><p class="progress">Ejercicio ${i+1} de ${cola.length} · ${x.materia.nombre} · ${x.titulo}</p>${barra(i,cola.length)}
 <div style="margin-top:14px">${htmlEjercicio(x.ej)}</div></div>`;
   },
-  alClic(t,ir,repintar){
+  async alClic(t,ir,repintar){
     if(t.id==='rep-sig'){i++;repintar();return true}
     const x=cola[i]; if(!x)return;
-    const r=manejarEjercicio(t,x.ej); if(!r)return;
+    const r=await manejarEjercicio(t,x.ej); if(!r)return;
     const bien=r.correcto&&!r.pista; // con pista no se aleja: vuelve mañana
     registrarEjercicio({materia:x.materia.id,ref:x.ref,correcto:bien,xp:bien?5:0,repasar:false});
     const res=responderRepaso(x.ref,bien);

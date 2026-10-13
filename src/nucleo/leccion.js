@@ -71,7 +71,7 @@ ${formNota()}
       if(e.i>=ejs.length)terminar(); // respondió todo pero no llegó a ver el resultado
     },
     vista,
-    alClic(t,ir,repintar){
+    async alClic(t,ir,repintar){
       const s=st();
       if(t.id==='lec-empezar'||t.id==='lec-repetir'){empezar(rondaSiguiente());repintar();window.scrollTo(0,0);return true}
       if(t.id==='lec-sig'){s.i++;if(s.i>=l.rondas[s.ronda].length)terminar();repintar();return true}
@@ -82,7 +82,7 @@ ${formNota()}
         else{guardarNota(m.id,l.id,txt);msg.textContent='✓ Guardado en Mis notas'}
         return true}
       if(s.fase!=='practica')return;
-      const ej=l.rondas[s.ronda][s.i],r=manejarEjercicio(t,ej); if(!r)return;
+      const ej=l.rondas[s.ronda][s.i],r=await manejarEjercicio(t,ej); if(!r)return;
       const bien=r.correcto&&!r.pista,xp=r.correcto?(r.pista?5:10):0;
       // Con pista no cuenta para el dominio y vuelve en el repaso, igual que un fallo
       registrarEjercicio({materia:m.id,ref:`${m.id}/l/${l.id}/${indiceGlobal(l,s.ronda,s.i)}`,correcto:bien,xp});

@@ -31,12 +31,12 @@ export function vistaUbicacion(m){
 <ul class="lista-ubicacion">${ls.map(fila).join('')}</ul>
 <div class="row" style="margin-top:14px">${pendiente?`<button class="btn" data-go="${m.id}/l/${pendiente.id}">Empezar: ${pendiente.titulo}</button>`:''}<button class="btn ghost" data-go="${m.id}">Volver a ${m.nombre}</button></div></div>`;
     },
-    alClic(t,ir,repintar){
+    async alClic(t,ir,repintar){
       if(i>=preguntas.length)return;
       if(t.id==='ub-sig'){siguiente(repintar);return true}
       const x=preguntas[i];
       if(t.id==='ub-nose'){if(!respondida&&rendirse()){resultados[x.leccion.id][1]++;registrarEjercicio({materia:m.id,correcto:false,repasar:false})}siguiente(repintar);return true}
-      const r=manejarEjercicio(t,x.ej); if(!r)return;
+      const r=await manejarEjercicio(t,x.ej); if(!r)return;
       respondida=true;
       resultados[x.leccion.id][1]++;if(r.correcto)resultados[x.leccion.id][0]++;
       // Lo que no sabes todavía no va al repaso: lo aprenderás en la lección

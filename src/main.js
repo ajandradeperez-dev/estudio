@@ -7,6 +7,7 @@ import {repaso} from './nucleo/repaso.js';
 import {miProgreso} from './nucleo/miprogreso.js';
 import {notas} from './nucleo/notas.js';
 import {vistaUbicacion} from './nucleo/ubicacion.js';
+import {registerSW} from 'virtual:pwa-register';
 
 /* Rutas (van en el #hash de la URL):
    ''                      portada con las materias
@@ -51,7 +52,13 @@ ${b('','Inicio')}${b('repaso','Repasar hoy')}${b('notas','Mis notas')}${b('progr
 ${materias.map(m=>b(m.id,m.nombre,m===cur.m?'abierta':'')+(m===cur.m?sub(m):'')).join('')}`;
 }
 function go(ruta){
-  cur=resolver(ruta);
+  const nueva=resolver(ruta);
+  // Hay una versión nueva instalada: se aplica al cambiar de pantalla, nunca en medio de un ejercicio
+  if(hayVersionNueva&&cur&&nueva.ruta!==cur.ruta){
+    try{history.replaceState(null,'',nueva.ruta?'#'+nueva.ruta:location.pathname+location.search)}catch(e){}
+    location.reload();return;
+  }
+  cur=nueva;
   if(cur.seccion)visitar(cur.m.id,cur.seccion);
   if(cur.ultimo)guardarUltimo({ruta:cur.ruta,materia:cur.m.id});
   cur.v.alEntrar?.();
@@ -75,6 +82,20 @@ window.addEventListener('progreso',pintarBarra);
 let ultimaAccion=Date.now();
 for(const ev of ['pointerdown','keydown','scroll'])document.addEventListener(ev,()=>{ultimaAccion=Date.now()},{passive:true,capture:true});
 setInterval(()=>{if(document.visibilityState==='visible'&&Date.now()-ultimaAccion<60000)sumarSegundos(15)},15000);
+
+/* ---------- PWA: funciona sin internet y se actualiza sola ---------- */
+// El service worker nuevo toma el control solo (autoUpdate); en vez de recargar de golpe, go() recarga al cambiar de pantalla.
+let hayVersionNueva=false;
+registerSW({
+  immediate:true,
+  onNeedReload(){hayVersionNueva=true},
+  onRegisteredSW(url,reg){
+    if(!reg)return;
+    const buscar=()=>{if(navigator.onLine)reg.update().catch(()=>{})};
+    setInterval(buscar,60*60*1000);
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')buscar()});
+  }
+});
 
 const rutaDelHash=()=>{try{return decodeURIComponent(location.hash.slice(1))}catch(e){return ''}};
 // Si alguien cambia el #hash a mano o abre un enlace con la app ya abierta (replaceState no dispara este evento)

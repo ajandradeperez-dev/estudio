@@ -43,7 +43,8 @@ ${materias.map(m=>{const d=datosMateria(p,m.id),ls=m.lecciones||[];
 ${ls.length?`<div class="chips" style="margin-top:12px">${ls.map((l,i)=>{const x=d.lecciones[l.id];return `<span class="tag${x?.dominada?' on':''}" title="${l.titulo}">${x?.dominada?`✓ L${i+1} dominada`:x?`L${i+1} · ${Math.round(x.mejor*100)}%`:`L${i+1} · pendiente`}</span>`}).join('')}</div>`:''}
 ${m.progresoHtml?m.progresoHtml(d):''}</div>`}).join('')}
 
-<div class="row" style="margin-top:20px"><button class="btn ghost" id="preset">Reiniciar todo el progreso</button></div>`;
+<div class="row" style="margin-top:20px"><button class="btn ghost" id="preset">Reiniciar todo el progreso</button></div>
+<p class="progress" style="margin-top:16px">Versión ${__VERSION__}${navigator.serviceWorker?.controller?' · disponible sin internet':''}</p>`;
   },
   alClic(t,ir,repintar){
     if(t.dataset.meta){const [tipo,c]=t.dataset.meta.split(':');cambiarMeta(tipo,+c);repintar();return true}

@@ -10,6 +10,7 @@
     "revisar": "node scripts/revisar-contenido.mjs"
   },
   "devDependencies": {
-    "vite": "^8.3.4"
+    "vite": "^8.3.4",
+    "vite-plugin-pwa": "^2.0.0"
   }
 }

@@ -136,7 +136,7 @@ export default {
 
 ## Progreso (`src/nucleo/progreso.js`)
 
-Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 3`; los formatos anteriores se migran solos). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
+Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 4`; los formatos anteriores se migran solos en `migrar()`. Si cambias el significado de algo guardado, sube `VERSION` y agrega su paso de migración). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
 
 - **Meta diaria**: 10/20/30 ejercicios o 5/10/15 minutos. Los minutos solo cuentan con la pestaña visible y actividad en el último minuto (`main.js`).
 - **Racha**: días seguidos con la meta cumplida. Si hoy aún no se cumple, sigue viva desde ayer.
@@ -147,6 +147,15 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 3`; los formatos a
 - En Ciberseguridad, los casos del laboratorio y los escenarios de VPN se guardan por posición: agrégalos al final de sus listas en `datos/`.
 - Todo acceso a `localStorage` va en `try/catch` para que la app funcione aunque esté bloqueado.
 - El progreso depende del origen (`localhost:5173` y `localhost:4173` tienen progresos distintos). Por eso los puertos están fijos con `strictPort`: si el 5173 está ocupado, Vite falla en vez de abrir otro puerto con el progreso vacío.
+
+## PWA y publicación
+
+- **PWA** con `vite-plugin-pwa` (configuración en `vite.config.js`): manifest con nombre, colores e íconos (`public/icons/`, generados desde `public/favicon.svg`; el `maskable` no tiene esquinas redondeadas y deja el dibujo dentro del círculo seguro). El service worker guarda en caché toda la app y, la primera vez que cargan, las fuentes de Google: funciona sin internet.
+- **Actualización automática**: `skipWaiting` + `clientsClaim` activan la versión nueva en cuanto se instala. `main.js` no recarga de golpe: espera a que el usuario cambie de pantalla (`go()` con otra ruta) para no cortar un ejercicio. Busca actualizaciones al volver a la app y cada hora. La versión instalada se ve al final de "Mi progreso".
+- En `npm run dev` no se registra el service worker (para que la caché no confunda al programar). Para probar la PWA: `npm run build` y `npm run preview`.
+- **Publicación**: `.github/workflows/publicar.yml` publica en GitHub Pages en cada push a `main`. Pasa `npm run revisar` (si falla, no publica), compila con `BASE_PATH=/<repositorio>/` porque Pages sirve la app en `https://<usuario>.github.io/<repositorio>/`, y pone `APP_VERSION` con la fecha y el commit.
+- Las rutas son con `#hash`, así que Pages no necesita `404.html`.
+- El progreso de la versión publicada vive en el navegador de cada persona (origen `https://<usuario>.github.io`) y es independiente del de `localhost`.
 
 ## Convenciones
 

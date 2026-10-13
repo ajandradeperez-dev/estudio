@@ -8,6 +8,7 @@ import {htmlEjercicio,manejarEjercicio,mostrarResultado} from './ejercicios.js';
 import {progreso,datosMateria,registrarEjercicio,guardarEnCurso,terminarIntento,programarRepaso,guardarNota} from './progreso.js';
 import {DOMINIO,indiceGlobal,esProduccion,frases} from './metodo.js';
 import {barra} from './ui.js';
+import {htmlCierre} from './cierre.js';
 
 const estados={}; // estado de cada lección mientras la app está abierta
 
@@ -24,6 +25,8 @@ export function vistaLeccion(m,l){
 <textarea id="lec-nota" rows="3" maxlength="300">${esc(nota()?.texto||'')}</textarea></label>
 <div class="row"><button class="btn" id="lec-guardar-nota">Guardar en Mis notas</button><span id="lec-nota-msg" class="progress" role="status"></span></div></div>`;
 
+  // "Lo que aprendiste": las reglas distintas de la ronda (las 3 primeras)
+  const reglasRonda=r=>[...new Set(l.rondas[r].map(e=>e.regla).filter(Boolean))].slice(0,3);
   function empezar(ronda){
     estados[clave]={fase:'practica',ronda,i:0,ok:0,xp:0};
     guardarEnCurso(m.id,{leccion:l.id,ronda,i:0,ok:0,xp:0});
@@ -53,11 +56,13 @@ ${nota()?`<div class="card nota-propia" style="margin-top:14px"><div class="ej-k
     if(s.dominada)return `${cab}<div class="card"><h3>✓ Lección dominada</h3>
 <p class="prog-v">${s.ok} <small>de ${s.total} sin pista (${pct}%) · +${s.xp} XP${s.extra?` (incluye +${s.extra} por dominarla)`:''}</small></p>${barra(s.ok,s.total)}
 ${formNota()}
-<div class="row" style="margin-top:16px">${sig?`<button class="btn" data-go="${m.id}/l/${sig.id}">Siguiente: ${sig.titulo}</button>`:''}<button class="btn ghost" data-go="${m.id}">Volver a ${m.nombre}</button></div></div>`;
+${htmlCierre({xp:s.xp,aprendido:reglasRonda(s.ronda),excluir:`${m.id}/l/${l.id}`})}
+<div class="row" style="margin-top:12px"><button class="btn ghost" data-go="${m.id}">Volver a ${m.nombre}</button></div></div>`;
     return `${cab}<div class="card"><h3>Aún no la dominas</h3>
 <p class="prog-v">${pct}% <small>sin pista · necesitas ${meta}% (${s.ok} de ${s.total})</small></p>${barra(s.ok,s.total)}
 <p style="color:var(--muted)">Repite con ejercicios distintos. Los que fallaste ya están en <strong>Repasar hoy</strong>.</p>
-<div class="row"><button class="btn" id="lec-repetir">Repetir con otros ejercicios</button><button class="btn ghost" data-go="${m.id}">Volver a ${m.nombre}</button></div></div>`;
+<div class="row"><button class="btn" id="lec-repetir">Repetir con otros ejercicios</button><button class="btn ghost" data-go="${m.id}">Volver a ${m.nombre}</button></div>
+${htmlCierre({xp:s.xp,aprendido:reglasRonda(s.ronda),excluir:`${m.id}/l/${l.id}`})}</div>`;
   }
 
   return {

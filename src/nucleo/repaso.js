@@ -4,8 +4,9 @@ import {htmlEjercicio,manejarEjercicio,mostrarResultado} from './ejercicios.js';
 import {progreso,pendientes,registrarEjercicio,responderRepaso,quitarRepaso,hoy} from './progreso.js';
 import {ejercicioPorRef} from './materias.js';
 import {barra} from './ui.js';
+import {htmlCierre,xpHoy} from './cierre.js';
 
-let cola=[],i=0,aciertos=0;
+let cola=[],i=0,aciertos=0,xp0=0,reglas=[];
 
 const fechaLarga=f=>{const [a,m,d]=f.split('-').map(Number);return new Date(a,m-1,d).toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'})};
 const enDias=n=>n===1?'mañana':`en ${n} días`;
@@ -31,7 +32,7 @@ export const repaso={
   alEntrar(){
     // Se arma la cola al entrar; los ejercicios que ya no existen (lección borrada) se descartan
     cola=mezclar(pendientes().map(ref=>({ref,...ejercicioPorRef(ref)})).filter(x=>{if(!x.ej)quitarRepaso(x.ref);return x.ej}));
-    i=0;aciertos=0;
+    i=0;aciertos=0;xp0=xpHoy();reglas=[];
   },
   vista(){
     const cab=`<h1>Repasar hoy</h1><p class="lead">Vuelven los ejercicios que fallaste y los de lecciones que dominaste, mezclados entre materias. Si aciertas sin pista, regresan más tarde (1, 3, 7, 14 y 30 días); si fallas, mañana.</p>`;
@@ -43,7 +44,8 @@ export const repaso={
 <button class="btn" data-go="">Ir a mis materias</button></div>`;
     }
     if(i>=cola.length)return `${cab}<div class="card"><h3>Repaso terminado</h3><p class="prog-v">${aciertos} <small>de ${cola.length} sin pista</small></p>
-<p style="color:var(--muted)">${aciertos===cola.length?'¡Todo bien! Esos ejercicios volverán dentro de unos días.':'Los que fallaste volverán mañana.'}</p><button class="btn" data-go="">Ir a mis materias</button></div>`;
+<p style="color:var(--muted)">${aciertos===cola.length?'¡Todo bien! Esos ejercicios volverán dentro de unos días.':'Los que fallaste volverán mañana.'}</p>
+${htmlCierre({xp:xpHoy()-xp0,aprendido:reglas,excluir:'repaso'})}</div>`;
     const x=cola[i];
     return `${cab}<div class="card"><p class="progress">Ejercicio ${i+1} de ${cola.length} · ${x.materia.nombre} · ${x.titulo}</p>${barra(i,cola.length)}
 <div style="margin-top:14px">${htmlEjercicio(x.ej)}</div></div>`;
@@ -55,7 +57,7 @@ export const repaso={
     const bien=r.correcto&&!r.pista; // con pista no se aleja: vuelve mañana
     registrarEjercicio({materia:x.materia.id,ref:x.ref,correcto:bien,xp:bien?5:0,repasar:false});
     const res=responderRepaso(x.ref,bien);
-    if(bien)aciertos++;
+    if(bien)aciertos++;else if(x.ej.regla)reglas.push(x.ej.regla);
     const nota=res.dominado?'¡Dominado! Ya no aparecerá en tu repaso.':`Volverá ${enDias(res.dias)}.`;
     mostrarResultado(x.ej,r,`<div class="fb-pie"><span class="progress">${bien?'+5 XP · ':''}${nota}</span>
 <button class="btn" id="rep-sig">${i+1<cola.length?'Siguiente':'Ver resultado'}</button></div>`);

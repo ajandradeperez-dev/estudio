@@ -127,6 +127,21 @@ export function ruta(resto){
   return {ruta:RAIZ,v:portada};
 }
 
+// Candidatos de Inglés para "¿Qué sigue?" (ver nucleo/recomendador.js)
+export function recomendarIngles(p=progreso()){
+  const c=[],m=misionHabla(p),u=unidadActual(p),dl=datosMateria(p,'ingles').extra.dialogos||{};
+  const dialogoSugerido=u?(u.dialogos.find(id=>!dl[id])||u.dialogos[0]):DIALOGOS[0].id;
+  if(!m.cumplida){
+    const faltan=Math.max(0,MISION.frases-m.frases);
+    c.push({regla:2,titulo:`Hablar: ${dialogo(dialogoSugerido).titulo}`,porque:`Te faltan ${faltan} frases (o una conversación de ${MISION.turnos} turnos) para tu misión de habla de hoy: en Inglés, hablar pesa más.`,ruta:`${RAIZ}/dialogo/${dialogoSugerido}`});
+  }
+  for(const [id,x] of Object.entries(fuerzaSonidos(p))){const s=sonido(id);
+    if(s&&x.n>=5&&x.prom<0.8)c.push({regla:3,valor:x.prom,titulo:`Practicar ${s.nombre}`,porque:`${s.nombre} te cuesta (${pct(x.prom)} % reciente): 5 minutos de pares mínimos.`,ruta:`${RAIZ}/sonido/${id}`})}
+  if(u)c.push({regla:6,titulo:`Jefe: ${u.titulo}`,porque:`Estás al día: vence al jefe de la unidad para abrir la siguiente (${u.tarea.charAt(0).toLowerCase()}${u.tarea.slice(1)})`,ruta:`${RAIZ}/jefe/${u.id}`});
+  if(leerAjustes().clave)c.push({regla:6,titulo:'Conversación libre con IA',porque:'Estás al día: practica una conversación libre con tu tutor IA.',ruta:`${RAIZ}/ia`});
+  return c;
+}
+
 // Ejercicios de habla que vuelven en "Repasar hoy"
 export function ejercicioHabla(tipo,partes,p=progreso()){
   const base={tipo:'hablar',sonidos:SONIDOS,materia:'ingles'};

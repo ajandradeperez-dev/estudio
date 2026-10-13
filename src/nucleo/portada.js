@@ -3,6 +3,7 @@ import {esc} from '../utilidades.js';
 import {materias,materia,leccion} from './materias.js';
 import {progreso,datosMateria,nivel,racha,estadoHoy,pendientes} from './progreso.js';
 import {barra} from './ui.js';
+import {recomendar} from './recomendador.js';
 import {repartoUbicacion} from './metodo.js';
 
 const secciones=m=>Object.entries(m.secciones||{});
@@ -43,9 +44,9 @@ function resumenMateria(m,d){
 export const portada={
   titulo:'Inicio',
   vista(){
-    const p=progreso(),c=continuar(p);
+    const p=progreso(),r=recomendar({},p),c0=continuar(p),c=c0&&c0.ruta!==r.ruta?c0:null;
     return `<h1>¿Qué quieres estudiar hoy?</h1>
-<p class="lead">Elige una materia. Cada lección tiene una explicación corta, ejemplos y práctica; lo que falles vuelve en <strong>Repasar hoy</strong> hasta que lo domines.</p>
+<button class="card siguiente-para-ti" data-go="${esc(r.ruta)}"><span class="sup-k">👉 Lo siguiente para ti</span><span class="siguiente-titulo">${esc(r.titulo)}</span><span class="nota">${esc(r.porque)}</span><span class="btn">Empezar</span></button>
 ${c?`<div class="card continuar"><div><div class="sup-k">Continuar donde te quedaste</div><h3 style="margin:4px 0 2px">${esc(c.titulo)}</h3><p style="margin:0;color:var(--muted)">${esc(c.detalle)}</p></div>
 <button class="btn" data-go="${c.ruta}">Continuar</button></div>`:''}
 <div class="grid">${materias.map(m=>{const d=datosMateria(p,m.id);

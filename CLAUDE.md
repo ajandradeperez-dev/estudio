@@ -64,6 +64,10 @@ src/
     portada.js            Portada, página de materia y barra superior
     miprogreso.js         "Mi progreso"
     ui.js                 barra() de progreso
+    recomendador.js       "👉 ¿Qué sigue?": 1 repasos (≥5) → 2 lo urgente de cada materia → 3 punto más débil → 4 continuar
+                          → 5 siguiente lección → 6 retos; alterna materias tras 3 sesiones seguidas. Cada materia aporta
+                          candidatos con recomendar(p) → [{regla, valor?, titulo, porque, ruta}]
+    cierre.js             Pantalla de cierre común: XP ganada (xpHoy al empezar vs. al terminar), lo aprendido (1–3) y "Seguir"
     voz.js                Voz: hablar() (speechSynthesis en-US, normal/lento), escuchar() (SpeechRecognition, promesa con alternativas),
                           errores en español, botón de micrófono y frase coloreada; si no hay soporte, las vistas caen a modo escrito
     pronunciacion.js      Evaluador aproximado (sin DOM): normaliza (contracciones, números, homófonos), alinea palabra a palabra

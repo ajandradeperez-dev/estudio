@@ -1,6 +1,6 @@
 import {$} from './utilidades.js';
 import {materias,materia,leccion} from './nucleo/materias.js';
-import {visitar,guardarUltimo,sumarSegundos} from './nucleo/progreso.js';
+import {visitar,guardarUltimo,sumarSegundos,registrarSesion} from './nucleo/progreso.js';
 import {portada,vistaMateria,htmlBarraSup} from './nucleo/portada.js';
 import {vistaLeccion} from './nucleo/leccion.js';
 import {repaso} from './nucleo/repaso.js';
@@ -63,6 +63,8 @@ function go(ruta){
   }
   cur=nueva;
   if(cur.seccion)visitar(cur.m.id,cur.seccion);
+  // Historial de sesiones por materia (para que "¿Qué sigue?" alterne materias)
+  if(cur.m&&cur.ruta!==cur.m.id)registrarSesion(cur.m.id,cur.ruta);
   if(cur.ultimo)guardarUltimo({ruta:cur.ruta,materia:cur.m.id});
   cur.v.alEntrar?.();
   pintar();pintarNav();pintarBarra();

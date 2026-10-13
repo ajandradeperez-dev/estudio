@@ -7,13 +7,14 @@ import {soporte,hablar,htmlMic,htmlOir,escucharConBoton} from '../../../nucleo/v
 import {evaluarRespuesta} from '../../../nucleo/pronunciacion.js';
 import {registrarEjercicio,registrarHabla,cambiarExtra} from '../../../nucleo/progreso.js';
 import {barra} from '../../../nucleo/ui.js';
+import {htmlCierre,xpHoy} from '../../../nucleo/cierre.js';
 import {premiarTurno,htmlPremio,cerrarCombo,terminarConversacion} from './juego.js';
 
 export const META_JEFE=0.8;
 
 export function vistaDialogo(d,{jefe=false,volver='ingles/hablar',alTerminar}={}){
   let st;
-  const nuevo=()=>({t:-1,intento:1,fase:'inicio',log:[],res:[],pistas:0,traduccion:false,escribir:!soporte.escuchar,decir:false,premio:null,error:null,fin:null});
+  const nuevo=()=>({xp0:xpHoy(),t:-1,intento:1,fase:'inicio',log:[],res:[],pistas:0,traduccion:false,escribir:!soporte.escuchar,decir:false,premio:null,error:null,fin:null});
   const turno=()=>d.turnos[st.t];
 
   function avanzar(){
@@ -66,7 +67,8 @@ ${!st.escribir?`${htmlMic('dl-mic',st.fase==='pista'?'Toca e inténtalo otra vez
 <p class="prog-v">${f.ok} <small>de ${f.n} turnos bien${jefe?` · necesitas ${Math.ceil(f.n*META_JEFE)}`:''}${f.sinPistas?' · ¡sin pistas!':''}</small></p>${barra(f.ok,f.n)}
 ${bien.length?`<h4>Lo que dijiste bien</h4><ul class="lista-frases">${bien.map(r=>`<li lang="en">${esc(r.dicho)}</li>`).join('')}</ul>`:''}
 ${mal.length?`<h4>Para practicar (ya están en Repasar hoy)</h4><ul class="lista-frases">${mal.map(r=>`<li><span lang="en">${esc(d.turnos[r.k].modelo)}</span> ${htmlOir(d.turnos[r.k].modelo)}<span class="nota">${d.turnos[r.k].regla}</span></li>`).join('')}</ul>`:''}
-<div class="row"><button class="btn" id="dl-otra">${jefe&&!f.pasa?'Intentar de nuevo':'Repetir'}</button><button class="btn ghost" data-go="${volver}">Volver</button></div></div>`;
+${htmlCierre({xp:xpHoy()-st.xp0,aprendido:mal.length?mal.map(r=>d.turnos[r.k].regla):d.turnos.slice(0,2).map(t=>t.regla),excluir:location.hash.slice(1)})}
+<div class="row" style="margin-top:12px"><button class="btn ghost" id="dl-otra">${jefe&&!f.pasa?'Intentar de nuevo':'Repetir'}</button><button class="btn ghost" data-go="${volver}">Volver</button></div></div>`;
   }
 
   return {

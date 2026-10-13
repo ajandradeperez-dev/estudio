@@ -8,13 +8,14 @@ import {evaluar} from '../../../nucleo/pronunciacion.js';
 import {registrarEjercicio,registrarHabla,registrarSonidos} from '../../../nucleo/progreso.js';
 import {META_PRONUNCIACION} from '../../../nucleo/ejercicios.js';
 import {barra} from '../../../nucleo/ui.js';
+import {htmlCierre,xpHoy} from '../../../nucleo/cierre.js';
 import {SONIDOS,sonido} from '../errores-pronunciacion.js';
 import {premiarFrase,htmlPremio,cerrarCombo} from './juego.js';
 
 const MAX_INTENTOS=3;
 
 export function sesionPronunciacion({titulo,cabecera='',volver,items:crearItems,alTerminar}){
-  let items=[],i=0,st=null,resultados=[];
+  let items=[],i=0,st=null,resultados=[],xp0=0;
   const nuevoEstado=()=>({intentos:0,mejor:null,lento:false,respondido:null,premio:null});
   const item=()=>items[i];
 
@@ -56,7 +57,8 @@ ${soporte.escuchar?(st.intentos<MAX_INTENTOS&&!pasada?htmlMic('hp-mic',st.intent
 ${dificiles.length?`<p><b>Para practicar:</b> ${dificiles.map(s=>`<button class="enlace" data-go="ingles/hablar/sonido/${s.id}">${s.nombre}</button>`).join(', ')}</p>`:''}
 ${rep.length-ok?`<p class="nota">Las ${rep.length-ok} frases que no pasaron ya están en <strong>Repasar hoy</strong>.</p>`:''}
 ${alTerminar?alTerminar(resultados):''}
-<div class="row"><button class="btn" id="hp-otra">Practicar otra vez</button><button class="btn ghost" data-go="${volver}">Volver</button></div></div>`;
+${htmlCierre({xp:xpHoy()-xp0,aprendido:dificiles.length?dificiles.map(s=>`<b>${s.nombre}:</b> ${s.tip}`):[ok?`Dijiste ${ok} frases con buena pronunciación.`:''],excluir:location.hash.slice(1)})}
+<div class="row" style="margin-top:12px"><button class="btn ghost" id="hp-otra">Practicar otra vez</button><button class="btn ghost" data-go="${volver}">Volver</button></div></div>`;
   }
 
   async function intentar(boton,alternativas,hablado,segundos){
@@ -80,7 +82,7 @@ ${alTerminar?alTerminar(resultados):''}
 
   return {
     titulo,
-    alEntrar(){items=crearItems();i=0;resultados=[];st=nuevoEstado()},
+    alEntrar(){items=crearItems();i=0;resultados=[];st=nuevoEstado();xp0=xpHoy()},
     vista:()=>`${cabecera}<div class="card hablar-item" id="hp">${i<items.length?htmlItem():''}</div>${i>=items.length?htmlFin():''}`,
     async alClic(t,ir,repintar){
       if(t.id==='hp-otra'){this.alEntrar();repintar();return true}

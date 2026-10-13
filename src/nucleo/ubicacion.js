@@ -4,9 +4,10 @@ import {htmlEjercicio,manejarEjercicio,mostrarResultado,rendirse} from './ejerci
 import {progreso,datosMateria,registrarEjercicio,guardarUbicacion} from './progreso.js';
 import {repartoUbicacion,preguntasUbicacion} from './metodo.js';
 import {barra} from './ui.js';
+import {htmlCierre,xpHoy} from './cierre.js';
 
 export function vistaUbicacion(m){
-  let preguntas=[],i=0,resultados={},nuevas=null,respondida=false;
+  let preguntas=[],i=0,resultados={},nuevas=null,respondida=false,xp0=0;
   const ls=m.lecciones||[];
   function siguiente(repintar){i++;respondida=false;if(i>=preguntas.length)nuevas=guardarUbicacion(m.id,resultados);repintar()}
 
@@ -15,7 +16,7 @@ export function vistaUbicacion(m){
     alEntrar(){
       const k=repartoUbicacion(ls.length);
       preguntas=ls.flatMap((l,j)=>preguntasUbicacion(l,k[j]).map(x=>({leccion:l,...x})));
-      resultados=Object.fromEntries(ls.map(l=>[l.id,[0,0]]));i=0;nuevas=null;respondida=false;
+      resultados=Object.fromEntries(ls.map(l=>[l.id,[0,0]]));i=0;nuevas=null;respondida=false;xp0=xpHoy();
     },
     vista(){
       const cab=`<p class="miga"><button class="enlace" data-go="${m.id}">${m.nombre}</button> › Examen de ubicación</p><h1>Examen de ubicación</h1>`;
@@ -29,7 +30,8 @@ export function vistaUbicacion(m){
       const dom=datosMateria(progreso(),m.id).lecciones,pendiente=ls.find(l=>!dom[l.id]?.dominada);
       return `${cab}<div class="card"><h3>${nuevas.length?`${nuevas.length} ${nuevas.length===1?'lección dominada':'lecciones dominadas'}`:'Empieza desde la primera lección'}</h3>
 <ul class="lista-ubicacion">${ls.map(fila).join('')}</ul>
-<div class="row" style="margin-top:14px">${pendiente?`<button class="btn" data-go="${m.id}/l/${pendiente.id}">Empezar: ${pendiente.titulo}</button>`:''}<button class="btn ghost" data-go="${m.id}">Volver a ${m.nombre}</button></div></div>`;
+${htmlCierre({xp:xpHoy()-xp0,aprendido:nuevas.length?[`Ya dominas ${nuevas.length} ${nuevas.length===1?'lección':'lecciones'}: puedes saltarlas.`]:[],excluir:`${m.id}/ubicacion`})}
+<div class="row" style="margin-top:12px">${pendiente?`<button class="btn ghost" data-go="${m.id}/l/${pendiente.id}">Empezar: ${pendiente.titulo}</button>`:''}<button class="btn ghost" data-go="${m.id}">Volver a ${m.nombre}</button></div></div>`;
     },
     async alClic(t,ir,repintar){
       if(i>=preguntas.length)return;

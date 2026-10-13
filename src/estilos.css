@@ -217,6 +217,16 @@ nav button.sub{padding:7px 10px 7px 22px;font-size:14px}
 #aviso-flotante{position:fixed;left:50%;bottom:20px;z-index:50;max-width:calc(100% - 32px);padding:12px 18px;border-radius:12px;background:var(--ink);color:var(--bg);font-size:15px;box-shadow:0 6px 20px rgb(0 0 0 / .25);transform:translate(-50%,140%);transition:transform .3s ease-out}
 #aviso-flotante.visible{transform:translate(-50%,0)}
 .medalla-nueva{display:block}
+/* "¿Qué sigue?": tarjeta de la portada y pantalla de cierre */
+.siguiente-para-ti{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;width:100%;margin-bottom:14px;padding:18px;border:2px solid var(--accent);border-radius:12px;background:var(--accent-soft);cursor:pointer}
+.siguiente-para-ti:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.siguiente-titulo{font-family:var(--f-display);font-size:22px;color:var(--ink)}
+.siguiente-para-ti .btn{align-self:flex-start;margin-top:4px}
+.cierre{display:flex;flex-direction:column;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.cierre-xp{align-self:flex-start;padding:4px 14px;border-radius:20px;background:var(--accent-soft);color:var(--accent);font-family:var(--f-display);font-size:22px;animation:pop .35s ease-out}
+.cierre-aprendido ul{margin:6px 0 0;padding-left:20px}.cierre-aprendido li{margin-bottom:4px}
+.cierre-siguiente{display:flex;flex-direction:column;gap:4px;padding:14px;border:2px solid var(--accent);border-radius:10px}
+.cierre-siguiente .btn{align-self:flex-start;margin-top:6px}
 /* Calendario de actividad en Mi progreso */
 .dias{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;max-width:420px}
 .dia{display:block;aspect-ratio:1;border:1px solid var(--line);border-radius:3px;background:var(--code)}

@@ -9,6 +9,7 @@ import {SONIDOS} from '../errores-pronunciacion.js';
 import {DIALOGOS} from './dialogos.js';
 import {MODELOS,leerAjustes,guardarAjustes,borrarClave,claveOculta,pedirJSON,probarClave} from './claude.js';
 import {nivelIngles} from './nivel.js';
+import {htmlCierre,xpHoy} from '../../../nucleo/cierre.js';
 import {premiarTurno,htmlPremio,terminarConversacion} from './juego.js';
 
 export const MAX_TURNOS=10;
@@ -90,7 +91,8 @@ ${st.premio?htmlPremio(st.premio):''}
 <h4>Errores más importantes</h4><ul>${r.errores_frecuentes.map(e=>`<li><s lang="en">${esc(e.error)}</s> → <b lang="en">${esc(e.correcto)}</b> ${htmlOir(e.correcto)}<span class="nota">${esc(e.explicacion)}</span></li>`).join('')}</ul>
 <h4>Frases para practicar</h4><ul class="lista-frases">${r.frases_para_practicar.map(f=>`<li><span lang="en">${esc(f.en)}</span> ${htmlOir(f.en)}<span class="nota">${esc(f.es)}</span></li>`).join('')}</ul>
 <p class="nota">Las frases y los errores ya están en <strong>Repasar hoy</strong> (a partir de mañana) y el resumen quedó en <button class="enlace" data-go="notas">Mis notas</button>.</p>
-<div class="row"><button class="btn" id="ia-nueva">Otra conversación</button><button class="btn ghost" data-go="ingles/hablar">Volver</button></div></div>`;
+${htmlCierre({xp:xpHoy()-(st.xp0||0),aprendido:r.errores_frecuentes.map(e=>`${esc(e.correcto)}: ${esc(e.explicacion)}`),excluir:'ingles/hablar/ia'})}
+<div class="row" style="margin-top:12px"><button class="btn ghost" id="ia-nueva">Otra conversación</button><button class="btn ghost" data-go="ingles/hablar">Volver</button></div></div>`;
   }
 
   async function turnoTutor(repintar){
@@ -157,7 +159,7 @@ ${st.premio?htmlPremio(st.premio):''}
         try{await probarClave();st.msg='✓ La clave funciona.'}catch(e){st.msg=e.message}
         repintar();return true}
       if(t.dataset.escenario){
-        st={fase:'chat',esc:ESCENARIOS.find(e=>e.id===t.dataset.escenario),nivel:nivelIngles(),mensajes:[{role:'user',content:'[INICIO] Saluda brevemente y hazme tu primera pregunta del escenario.'}],log:[],turnos:0,escribir:!soporte.escuchar};
+        st={fase:'chat',xp0:xpHoy(),esc:ESCENARIOS.find(e=>e.id===t.dataset.escenario),nivel:nivelIngles(),mensajes:[{role:'user',content:'[INICIO] Saluda brevemente y hazme tu primera pregunta del escenario.'}],log:[],turnos:0,escribir:!soporte.escuchar};
         await turnoTutor(repintar);return true}
       if(t.id==='ia-reintentar'){if(st.pendiente){const p=st.pendiente;st.pendiente=null;await enviar(p,false,0,repintar)}else await turnoTutor(repintar);return true}
       if(t.id==='ia-escribir'){st.escribir=true;repintar();$('#ia-resp')?.focus();return true}

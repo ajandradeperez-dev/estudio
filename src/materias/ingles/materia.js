@@ -13,6 +13,8 @@ export default {
   },
   // Ejercicios de habla en "Repasar hoy": w/<palabra>, s/<sonido>/<i>, f/<nivel>/<i>, d/<diálogo>/<turno>, x/<id>
   ejercicioRepaso(clave){const [tipo,...partes]=clave.split('/');return hablar.ejercicioHabla(tipo,partes)},
+  // Reglas propias para "¿Qué sigue?": misión de habla (2), sonido más débil (3), jefe o conversación (6)
+  recomendar:p=>hablar.recomendarIngles(p),
   // Bloque en "Mi progreso": misión, mapa MCER y medallas (corto: nada de estadísticas largas)
   progresoHtml:()=>`<div style="margin-top:12px">${hablar.htmlMision()}</div><div class="prog-k" style="margin-top:12px">Mapa MCER</div>${hablar.htmlMapa()}<div class="prog-k" style="margin-top:12px">Medallas</div>${hablar.htmlMedallas()}`
 };

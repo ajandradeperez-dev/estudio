@@ -78,7 +78,7 @@ export function vistaFluidez(u){
   }
 
   function htmlRondas(){
-    return st.rondas.length?`<table class="tabla-fluidez"><tr><th>Ronda</th><th>Palabras</th><th>Por minuto</th></tr>${st.rondas.map((r,k)=>`<tr><td>${DURACIONES()[k]} s</td><td>${r.palabras}</td><td><b>${r.ppm}</b></td></tr>`).join('')}</table>`:'';
+    return st.rondas.length&&soporte.escuchar?`<table class="tabla-fluidez"><tr><th>Ronda</th><th>Palabras</th><th>Por minuto</th></tr>${st.rondas.map((r,k)=>`<tr><td>${DURACIONES()[k]} s</td><td>${r.palabras}</td><td><b>${r.ppm}</b></td></tr>`).join('')}</table>`:'';
   }
 
   return {
@@ -92,7 +92,7 @@ ${soporte.escuchar?'':`<p class="nota">Tu navegador no reconoce voz: usa el temp
 <div class="row"><button class="btn" id="fl-empezar">Empezar ronda 1 (${d[0]} s)</button></div></div>`;
       if(st.fase==='ronda')return `${top}<div class="card fluidez-ronda"><p class="progress">Ronda ${st.ronda+1} de 3</p>${guia}
 <div class="reloj" id="fl-tiempo" aria-live="off">${tiempo(d[st.ronda])}</div>
-<div class="mic-zona"><span class="mic escuchando" aria-hidden="true"><span class="mic-ondas"></span></span><div class="mic-estado" id="fl-estado">Habla sin parar… <b id="fl-palabras">0</b> palabras</div></div>
+<div class="mic-zona"><span class="mic escuchando" aria-hidden="true"><span class="mic-ondas"></span></span><div class="mic-estado" id="fl-estado">${soporte.escuchar?'Habla sin parar… <b id="fl-palabras">0</b> palabras':'Habla en voz alta sin parar hasta que acabe el tiempo'}</div></div>
 <div class="row centro"><button class="btn ghost btn-chico" id="fl-parar">Terminar ronda</button></div></div>`;
       if(st.fase==='entre')return `${top}<div class="card">${htmlRondas()}${st.error?`<p class="deny">${esc(st.error)}</p>`:''}
 <p>Ahora cuéntalo <b>otra vez</b>, igual de completo pero en ${d[st.ronda]} segundos.</p><div class="row"><button class="btn" id="fl-empezar">Empezar ronda ${st.ronda+1} (${d[st.ronda]} s)</button></div></div>`;
@@ -100,7 +100,7 @@ ${soporte.escuchar?'':`<p class="nota">Tu navegador no reconoce voz: usa el temp
         return `${top}<div class="card"><p class="progress">Ronda rápida · ${st.rapida.ok} frases bien</p><div class="reloj" id="fl-tiempo">${tiempo(RAPIDA())}</div>
 <p class="frase-objetivo" lang="en" id="fl-frase">${esc(ch.en)}</p><p class="nota" style="text-align:center">${ch.es}</p>
 <div class="mic-zona"><span class="mic escuchando" aria-hidden="true"><span class="mic-ondas"></span></span><div class="mic-estado">Di cada frase: si sale bien (${META_PRONUNCIACION}+), pasa a la siguiente</div></div></div>`}
-      const r=st.rondas,mejora=r.length===3&&r[2].ppm>r[0].ppm;
+      const r=st.rondas,mejora=soporte.escuchar&&r.length===3&&r[2].ppm>r[0].ppm;
       return `${top}<div class="card"><h3>${mejora?'⚡ ¡Más fluido en cada ronda!':'Rondas terminadas'}</h3>${htmlRondas()}
 ${st.rapida?`<p><b>Ronda rápida:</b> ${st.rapida.ok} frases en ${RAPIDA()} s.</p>`:soporte.escuchar?`<div class="row"><button class="btn ghost" id="fl-rapida">Ronda rápida de frases (${RAPIDA()} s)</button></div>`:''}
 ${htmlCierre({xp:xpHoy()-st.xp0,aprendido:[mejora?`Pasaste de ${r[0].ppm} a ${r[2].ppm} palabras por minuto contando lo mismo.`:'Repetir lo mismo con menos tiempo entrena la fluidez.'],excluir:location.hash.slice(1)})}

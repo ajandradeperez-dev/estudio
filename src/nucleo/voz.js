@@ -4,7 +4,7 @@ import {esc} from '../utilidades.js';
 
 const Reconocedor=typeof window!=='undefined'?(window.SpeechRecognition||window.webkitSpeechRecognition):undefined;
 export const soporte={
-  hablar:typeof window!=='undefined'&&'speechSynthesis' in window&&'SpeechSynthesisUtterance' in window,
+  hablar:typeof window!=='undefined'&&!!window.speechSynthesis&&'SpeechSynthesisUtterance' in window,
   escuchar:!!Reconocedor
 };
 export const AVISO_SIN_RECONOCIMIENTO='Tu navegador no reconoce la voz. Usa Chrome en Android (o en el ordenador). Mientras tanto, puedes escribir tus respuestas.';

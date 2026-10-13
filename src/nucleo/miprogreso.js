@@ -1,6 +1,6 @@
 /* Página "Mi progreso": racha, meta diaria, actividad, repaso y detalle por materia */
 import {materias} from './materias.js';
-import {progreso,datosMateria,racha,estadoHoy,pendientes,cambiarMeta,reiniciarProgreso,hoy,sumarDias,METAS,INTERVALOS} from './progreso.js';
+import {progreso,datosMateria,racha,estadoHoy,pendientes,cambiarMeta,reiniciarProgreso,hoy,sumarDias,METAS,INTERVALOS,minutosHablados} from './progreso.js';
 import {htmlNivel} from './portada.js';
 import {barra} from './ui.js';
 
@@ -10,7 +10,7 @@ export const miProgreso={
   titulo:'Mi progreso',
   vista(){
     const p=progreso(),h=estadoHoy(p),r=racha(p),rep=Object.keys(p.repaso).length,hoyN=pendientes(p).length;
-    const xpTotal=materias.reduce((s,m)=>s+datosMateria(p,m.id).xp,0);
+    const xpTotal=materias.reduce((s,m)=>s+datosMateria(p,m.id).xp,0),mh=minutosHablados(p);
     // Últimas 4 semanas: verde = meta cumplida, tenue = practicó sin cumplirla
     const dias=Array.from({length:28},(_,i)=>sumarDias(hoy(),i-27)).map(f=>{const d=p.dias[f];
       const est=d?.ok?'ok':d&&(d.ej||d.seg>=60)?'algo':'';
@@ -21,6 +21,7 @@ export const miProgreso={
  ${stat('Mejor racha',`${Math.max(r,p.mejorRacha)} <small>días</small>`)}
  ${stat('Meta de hoy',`${h.hecho} <small>de ${h.meta} ${h.tipo==='minutos'?'minutos':'ejercicios'}${h.ok?' · ✓ cumplida':''}</small>`,barra(h.hecho,h.meta))}
  ${stat('XP total',`${xpTotal} <small>XP</small>`)}
+ ${stat('Minutos hablados',`${mh.hoy} <small>hoy · ${mh.semana} en 7 días</small>`)}
 </div>
 <h3 style="margin:18px 0 8px">Últimas 4 semanas</h3><div class="dias" role="img" aria-label="Actividad de los últimos 28 días">${dias}</div>
 <p class="progress" style="margin:8px 0 0"><span class="dia ok"></span> meta cumplida · <span class="dia algo"></span> practicaste sin cumplirla</p></div>

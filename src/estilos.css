@@ -187,6 +187,36 @@ nav button.sub{padding:7px 10px 7px 22px;font-size:14px}
 .sonido-info p{margin:0 0 8px}
 .par{display:inline-flex;align-items:center;gap:4px;margin-right:8px}
 .grid.sonidos{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+/* Estilo juego: misión, mapa MCER, medallas, pasos de unidad y aviso flotante */
+.hablar-cab{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.mision{margin-bottom:14px}.mision.cumplida{border-color:var(--ok)}
+.mision-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.mision-opciones{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.mision-opciones b{display:block;font-family:var(--f-display);font-size:20px;margin:2px 0 4px}
+.mapa{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.mapa-nivel{display:grid;grid-template-columns:44px 1fr;gap:8px;align-items:start}
+.mapa-etiqueta{font-family:var(--f-display);font-size:18px;color:var(--accent);padding-top:10px}
+.mapa-casillas{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.casilla{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;min-height:72px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);cursor:pointer;font-size:13px}
+.casilla:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.casilla-num{font-family:var(--f-display);font-size:20px}
+.casilla.completa{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.casilla.actual{border:2px solid var(--accent)}
+.casilla.aqui{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
+.casilla.bloqueada{opacity:.55}
+.casilla.proxima{cursor:default;opacity:.5;align-items:center;justify-content:center;border-style:dashed}
+.medallas{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:14px}
+.medalla{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:12px;text-align:center;color:var(--muted)}
+.medalla.ganada{color:var(--ink);border-color:var(--accent)}
+.medalla-icono{font-size:26px}
+.pasos-unidad{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.paso{display:grid;grid-template-columns:36px 1fr;gap:10px;align-items:start;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.paso-num{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--code);font-family:var(--f-display)}
+.paso.hecho .paso-num{background:var(--accent);color:var(--panel)}
+.paso .row{margin-top:6px}
+#aviso-flotante{position:fixed;left:50%;bottom:20px;z-index:50;max-width:calc(100% - 32px);padding:12px 18px;border-radius:12px;background:var(--ink);color:var(--bg);font-size:15px;box-shadow:0 6px 20px rgb(0 0 0 / .25);transform:translate(-50%,140%);transition:transform .3s ease-out}
+#aviso-flotante.visible{transform:translate(-50%,0)}
+.medalla-nueva{display:block}
 /* Calendario de actividad en Mi progreso */
 .dias{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;max-width:420px}
 .dia{display:block;aspect-ratio:1;border:1px solid var(--line);border-radius:3px;background:var(--code)}

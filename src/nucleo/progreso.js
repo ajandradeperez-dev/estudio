@@ -106,7 +106,11 @@ export function datosMateria(p,id){
 const dia=(p,f=hoy())=>{const d=p.dias[f]=Object.assign({ej:0,seg:0,xp:0,ok:false},p.dias[f]);d.habla=Object.assign({frases:0,seg:0,turnos:0,conv:0},obj(d.habla));return d};
 
 /* ---------- meta diaria y racha ---------- */
-const cumple=(meta,d)=>meta.tipo==='minutos'?d.seg>=meta.cantidad*60:d.ej>=meta.cantidad;
+// Misión diaria de habla: 20 frases en voz alta o una conversación de 5 turnos. Cumplirla también cumple la meta del día.
+export const MISION={frases:20,turnos:5};
+const misionCumplida=h=>!!h&&(h.frases>=MISION.frases||h.conv>=MISION.turnos);
+const cumple=(meta,d)=>misionCumplida(d.habla)||(meta.tipo==='minutos'?d.seg>=meta.cantidad*60:d.ej>=meta.cantidad);
+export function misionHabla(p=progreso(),f=hoy()){const h=hablaDelDia(p,f);return {...h,cumplida:misionCumplida(h)}}
 function comprobarMeta(p){
   const d=dia(p);
   if(!d.ok&&cumple(p.meta,d)){d.ok=true;p.mejorRacha=Math.max(p.mejorRacha,racha(p))}
@@ -121,7 +125,13 @@ export function racha(p=progreso()){
 export function estadoHoy(p=progreso()){
   const d=p.dias[hoy()]||{ej:0,seg:0,xp:0,ok:false},m=p.meta;
   const hecho=m.tipo==='minutos'?Math.floor(d.seg/60):d.ej;
-  return {hecho,meta:m.cantidad,tipo:m.tipo,ok:d.ok||hecho>=m.cantidad,avance:Math.min(1,hecho/m.cantidad)};
+  return {hecho,meta:m.cantidad,tipo:m.tipo,ok:d.ok||hecho>=m.cantidad||misionCumplida(d.habla),avance:Math.min(1,hecho/m.cantidad)};
+}
+// Minutos con el micrófono: hoy y en los últimos 7 días
+export function minutosHablados(p=progreso()){
+  const h=hoy();let semana=0;
+  for(let i=0;i<7;i++)semana+=p.dias[sumarDias(h,-i)]?.habla?.seg||0;
+  return {hoy:Math.round((p.dias[h]?.habla?.seg||0)/60),semana:Math.round(semana/60)};
 }
 export function cambiarMeta(tipo,cantidad){cambiar(p=>{p.meta={tipo,cantidad};comprobarMeta(p)})}
 export function sumarSegundos(s){cambiar(p=>{dia(p).seg+=s;comprobarMeta(p)})}

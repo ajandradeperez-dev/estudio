@@ -15,8 +15,15 @@ import {vistaDialogo} from './dialogo.js';
 import {vistaIA} from './ia.js';
 import {leerAjustes} from './claude.js';
 import {nivelIngles} from './nivel.js';
+import {misionHabla,MISION} from '../../../nucleo/progreso.js';
+import {barra} from '../../../nucleo/ui.js';
+import {cargarLecciones} from '../../../nucleo/cargar.js';
+import {UNIDADES,NIVELES_MCER,unidad,estadoUnidades,unidadActual} from './unidades.js';
+import {MEDALLAS,comboActual,sonidoActivo,alternarSonido,vencerJefe} from './juego.js';
 
 const RAIZ='ingles/hablar';
+// Títulos de las lecciones de forma (para los pasos de cada unidad)
+const TITULOS=Object.fromEntries(cargarLecciones(import.meta.glob('../lecciones/*.js',{eager:true})).map(l=>[l.id,l.titulo]));
 const pct=x=>Math.round(x*100);
 // Acierto reciente por sonido (últimos 20 intentos)
 export function fuerzaSonidos(p=progreso()){
@@ -24,13 +31,37 @@ export function fuerzaSonidos(p=progreso()){
   return Object.fromEntries(Object.entries(s).filter(([,v])=>v.ult?.length).map(([id,v])=>[id,{prom:v.ult.reduce((a,b)=>a+b,0)/v.ult.length,n:v.n}]));
 }
 
+// Misión diaria de habla: frases en voz alta o una conversación de 5 turnos
+export function htmlMision(p=progreso()){
+  const m=misionHabla(p);
+  return `<div class="card mision${m.cumplida?' cumplida':''}"><div class="mision-cab"><b>🎯 Misión de hoy</b>${m.cumplida?'<span class="tag on">✓ Cumplida</span>':''}</div>
+<div class="mision-opciones"><div><span class="nota">Di ${MISION.frases} frases en voz alta</span><b>${Math.min(m.frases,MISION.frases)}/${MISION.frases}</b>${barra(m.frases,MISION.frases)}</div>
+<div><span class="nota">o 1 conversación de ${MISION.turnos} turnos</span><b>${Math.min(m.conv,MISION.turnos)}/${MISION.turnos}</b>${barra(m.conv,MISION.turnos)}</div></div>
+<p class="nota" style="margin:6px 0 0">Cuenta como meta diaria y suma a tu racha.</p></div>`;
+}
+// Mapa MCER: unidades como casillas por nivel
+export function htmlMapa(p=progreso()){
+  const e=estadoUnidades(p),actual=unidadActual(p);
+  return `<div class="mapa">${NIVELES_MCER.map(n=>{const us=UNIDADES.filter(u=>u.nivel===n);
+    return `<div class="mapa-nivel"><span class="mapa-etiqueta">${n}</span><div class="mapa-casillas">${us.length?us.map(u=>{const s=e[u.id],k=UNIDADES.indexOf(u)+1;
+      return `<button class="casilla ${s}${u===actual?' aqui':''}" data-go="${RAIZ}/u/${u.id}" title="${esc(u.titulo)}" aria-label="Unidad ${k}: ${esc(u.titulo)} (${s==='completa'?'completa':s==='actual'?'disponible':'bloqueada'})"><span class="casilla-num">${s==='completa'?'✓':s==='bloqueada'?'🔒':k}</span><span class="casilla-titulo">${esc(u.titulo)}</span></button>`}).join('')
+      :'<span class="casilla proxima">Próximamente</span>'}</div></div>`}).join('')}</div>`;
+}
+export const htmlMedallas=(p=progreso())=>{const ya=datosMateria(p,'ingles').extra.medallas||{};
+  return `<div class="medallas">${MEDALLAS.map(m=>`<span class="medalla${ya[m.id]?' ganada':''}" title="${esc(m.desc)}"><span class="medalla-icono">${ya[m.id]?m.icono:'🔒'}</span>${m.nombre}</span>`).join('')}</div>`};
+
 const portada={
   titulo:'Hablar',
   vista(){
-    const p=progreso(),f=fuerzaSonidos(p),dl=datosMateria(p,'ingles').extra.dialogos||{},clave=!!leerAjustes().clave;
-    return `<p class="miga"><button class="enlace" data-go="ingles">Inglés</button> › Hablar</p><h1>🎙️ Hablar</h1>
-<p class="lead">Hablar en voz alta es lo que más rápido te hace avanzar: aquí repites, conversas y recibes corrección. Tu nivel: <b>${nivelIngles(p)}</b>.</p>
+    const p=progreso(),f=fuerzaSonidos(p),dl=datosMateria(p,'ingles').extra.dialogos||{},clave=!!leerAjustes().clave,act=unidadActual(p),combo=comboActual();
+    return `<p class="miga"><button class="enlace" data-go="ingles">Inglés</button> › Hablar</p>
+<div class="hablar-cab"><h1>🎙️ Hablar</h1><button class="btn ghost btn-chico" id="hb-sonido" type="button" aria-pressed="${sonidoActivo()}">${sonidoActivo()?'🔊 Sonidos':'🔇 Sin sonidos'}</button></div>
+<p class="lead">Hablar en voz alta es lo que más rápido te hace avanzar. Tu nivel: <b>${nivelIngles(p)}</b>${combo>=3?` · 🔥 combo ${combo}`:''}.</p>
 ${soporte.escuchar?'':`<div class="card aviso"><p style="margin:0">⚠️ ${AVISO_SIN_RECONOCIMIENTO}</p></div>`}
+${htmlMision(p)}
+<h2>Tu mapa</h2>${htmlMapa(p)}
+${act?`<button class="card destacado" data-go="${RAIZ}/u/${act.id}"><span class="destacado-titulo">Unidad ${UNIDADES.indexOf(act)+1}: ${esc(act.titulo)}</span><span class="nota">${esc(act.tarea)}</span></button>`:''}
+<h2>Medallas</h2>${htmlMedallas(p)}
 <h2>Diálogos guiados</h2><p class="nota">Situaciones reales. Funcionan sin internet${soporte.escuchar?' (el reconocimiento de voz de Chrome sí necesita conexión)':''}.</p>
 <div class="grid">${DIALOGOS.map(d=>{const x=dl[d.id];return `<div class="card click" data-go="${RAIZ}/dialogo/${d.id}" tabindex="0"><div class="progress">${d.nivel}${x?` · mejor ${pct(x.mejor)}%`:''}</div><h3 style="margin:4px 0">${d.titulo}</h3><p class="nota" style="margin:0">${d.escena}</p></div>`}).join('')}</div>
 <h2>Conversación libre con IA</h2>
@@ -40,8 +71,32 @@ ${soporte.escuchar?'':`<div class="card aviso"><p style="margin:0">⚠️ ${AVIS
 <h2>Pronunciación: sonidos difíciles</h2><p class="nota">Pares mínimos y frases para los errores típicos de hispanohablantes.</p>
 <div class="grid sonidos">${SONIDOS.map(s=>{const x=f[s.id];return `<div class="card click" data-go="${RAIZ}/sonido/${s.id}" tabindex="0"><h3 style="margin:0 0 4px">${s.nombre}</h3>
 ${x?`<span class="tag ${x.prom>=0.8?'on':'warn-tag'}">${pct(x.prom)}% reciente</span>`:'<span class="tag">Sin practicar</span>'}</div>`}).join('')}</div>`;
-  }
+  },
+  alClic(t,ir,repintar){if(t.id==='hb-sonido'){alternarSonido();repintar();return true}}
 };
+
+// Página de una unidad: forma, pronunciación, diálogos y el jefe (tarea final)
+function vistaUnidad(u){
+  return {titulo:u.titulo,vista(){
+    const p=progreso(),e=estadoUnidades(p)[u.id],d=datosMateria(p,'ingles'),s=sonido(u.sonido),k=UNIDADES.indexOf(u)+1,dl=d.extra.dialogos||{};
+    if(e==='bloqueada')return `<p class="miga"><button class="enlace" data-go="${RAIZ}">Hablar</button> › Unidad ${k}</p><h1>🔒 ${u.titulo}</h1>
+<div class="card"><p>Esta unidad se abre al vencer al jefe de la unidad anterior (o si el examen de ubicación demuestra que ya la dominas).</p>
+<div class="row"><button class="btn" data-go="${RAIZ}/u/${UNIDADES[k-2].id}">Ir a la unidad ${k-1}</button><button class="btn ghost" data-go="ingles/ubicacion">Examen de ubicación</button></div></div>`;
+    const paso=(n,titulo,cuerpo,hecho)=>`<li class="paso${hecho?' hecho':''}"><span class="paso-num">${hecho?'✓':n}</span><div><b>${titulo}</b>${cuerpo}</div></li>`;
+    return `<p class="miga"><button class="enlace" data-go="${RAIZ}">Hablar</button> › Unidad ${k} · ${u.nivel}</p><h1>${u.titulo}</h1>
+<p class="lead"><b>Tarea final:</b> ${u.tarea}</p>
+<ol class="pasos-unidad">
+${paso(1,'Forma (gramática)',`<div class="row">${u.lecciones.map(id=>`<button class="btn ghost btn-chico" data-go="ingles/l/${id}">${d.lecciones[id]?.dominada?'✓ ':''}${esc(TITULOS[id]||id)}</button>`).join('')}</div>`,u.lecciones.every(id=>d.lecciones[id]?.dominada))}
+${paso(2,'Pronunciación',`<div class="row"><button class="btn ghost btn-chico" data-go="${RAIZ}/sonido/${s.id}">${s.nombre}</button></div>`,(fuerzaSonidos(p)[s.id]?.prom||0)>=0.8)}
+${paso(3,'Hablar: diálogos',`<div class="row">${u.dialogos.map(id=>{const x=dialogo(id);return `<button class="btn ghost btn-chico" data-go="${RAIZ}/dialogo/${id}">${dl[id]?`✓ `:''}${x.titulo}</button>`}).join('')}</div>`,u.dialogos.every(id=>dl[id]))}
+${paso(4,'🏆 Jefe: '+dialogo(u.jefe).titulo,`<p class="nota">Sin traducción; necesitas el 80 % de los turnos. Al vencerlo se abre la unidad siguiente.</p><div class="row"><button class="btn" data-go="${RAIZ}/jefe/${u.id}">${e==='completa'?'Repetir el jefe':'Enfrentar al jefe'}</button></div>`,e==='completa')}
+</ol>`;
+  }};
+}
+function vistaJefe(u){
+  if(estadoUnidades()[u.id]==='bloqueada')return vistaUnidad(u);
+  return vistaDialogo(dialogo(u.jefe),{jefe:true,volver:`${RAIZ}/u/${u.id}`,alTerminar:f=>{if(f.pasa)vencerJefe(u.id)}});
+}
 
 function vistaSonido(s){
   const cabecera=`<p class="miga"><button class="enlace" data-go="${RAIZ}">Hablar</button> › Sonidos</p><h1>${s.nombre}</h1>
@@ -67,6 +122,8 @@ export function ruta(resto){
   if(a==='frases'&&FRASES[b])return {ruta:`${RAIZ}/frases/${b}`,v:vistaFrases(b)};
   if(a==='dialogo'&&dialogo(b))return {ruta:`${RAIZ}/dialogo/${b}`,v:vistaDialogo(dialogo(b))};
   if(a==='ia')return {ruta:`${RAIZ}/ia`,v:vistaIA()};
+  if(a==='u'&&unidad(b))return {ruta:`${RAIZ}/u/${b}`,v:vistaUnidad(unidad(b))};
+  if(a==='jefe'&&unidad(b))return {ruta:`${RAIZ}/jefe/${b}`,v:vistaJefe(unidad(b))};
   return {ruta:RAIZ,v:portada};
 }
 

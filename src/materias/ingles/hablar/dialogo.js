@@ -30,8 +30,7 @@ export function vistaDialogo(d,{jefe=false,volver='ingles/hablar',alTerminar}={}
       registrarEjercicio({materia:'ingles',correcto:true,xp:0,repasar:false});
       st.res.push({ok:true,intentos:st.intento,dicho:r.dicho});st.fase='bien';return;
     }
-    if(st.intento===1){st.intento=2;st.pistas++;st.error=r.error;st.fase='pista';return}
-    cerrarCombo();
+    if(st.intento===1){cerrarCombo();st.intento=2;st.pistas++;st.error=r.error;st.fase='pista';return}
     registrarEjercicio({materia:'ingles',ref:`ingles/d/${d.id}/${st.t}`,correcto:false});
     st.res.push({ok:false,intentos:2,dicho:r.dicho});st.error=r.error;st.fase='fallo';
   }

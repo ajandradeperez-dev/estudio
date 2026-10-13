@@ -62,9 +62,14 @@ src/
     portada.js            Portada, página de materia y barra superior
     miprogreso.js         "Mi progreso"
     ui.js                 barra() de progreso
+    voz.js                Voz: hablar() (speechSynthesis en-US, normal/lento), escuchar() (SpeechRecognition, promesa con alternativas),
+                          errores en español, botón de micrófono y frase coloreada; si no hay soporte, las vistas caen a modo escrito
+    pronunciacion.js      Evaluador aproximado (sin DOM): normaliza (contracciones, números, homófonos), alinea palabra a palabra
+                          y puntúa 0–100; encaja() para respuestas libres con patrones "my name is *"
   materias/
     ciberseguridad/       materia.js, lecciones/, secciones/ (simuladores), datos/, progreso.js (ganchos propios)
-    ingles/               materia.js + lecciones/01-….js
+    ingles/               materia.js + lecciones/01-….js, metodo.md (4 vertientes),
+                          errores-pronunciacion.js (sonidos difíciles: causa, tip físico, pares mínimos, detecta())
     algebra/
     ciencia-datos/
 ```
@@ -146,7 +151,7 @@ export default {
 
 ## Progreso (`src/nucleo/progreso.js`)
 
-Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 4`; los formatos anteriores se migran solos en `migrar()`. Si cambias el significado de algo guardado, sube `VERSION` y agrega su paso de migración). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
+Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 5`; los formatos anteriores se migran solos en `migrar()`. Si cambias el significado de algo guardado, sube `VERSION` y agrega su paso de migración). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
 
 - **Meta diaria**: 10/20/30 ejercicios o 5/10/15 minutos. Los minutos solo cuentan con la pestaña visible y actividad en el último minuto (`main.js`).
 - **Racha**: días seguidos con la meta cumplida. Si hoy aún no se cumple, sigue viva desde ayer.

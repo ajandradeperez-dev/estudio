@@ -127,6 +127,23 @@ nav button.sub{padding:7px 10px 7px 22px;font-size:14px}
 .nota-cab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
 .nota-texto{margin:8px 0 10px;white-space:pre-line}
 .btn-chico{padding:4px 10px;font-size:13px}
+/* Voz: micrófono "tocar para hablar" y frase evaluada palabra por palabra */
+.mic-zona{display:flex;flex-direction:column;align-items:center;gap:8px;margin:18px 0 8px}
+.mic{position:relative;display:grid;place-items:center;width:88px;height:88px;border:0;border-radius:50%;background:var(--accent);color:var(--panel);cursor:pointer;box-shadow:0 4px 14px rgb(0 0 0 / .18);touch-action:manipulation}
+.mic svg{width:40px;height:40px}
+.mic:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+.mic-ondas{position:absolute;inset:0;border-radius:50%;pointer-events:none}
+.mic.escuchando{background:var(--bad)}
+.mic.escuchando .mic-ondas{animation:onda 1.1s ease-out infinite}
+@keyframes onda{from{box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 55%,transparent)}to{box-shadow:0 0 0 24px color-mix(in srgb,var(--bad) 0%,transparent)}}
+.mic-estado{min-height:1.4em;font-size:14px;color:var(--muted);text-align:center;max-width:32ch}
+.frase-evaluada{display:flex;flex-wrap:wrap;gap:4px;margin:10px 0;font-size:19px;line-height:1.5}
+.palabra{all:unset;cursor:pointer;padding:1px 6px;border-radius:5px;font-weight:600;text-underline-offset:4px}
+.palabra:focus-visible{outline:2px solid var(--accent)}
+.palabra.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.palabra.parecida{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent);text-decoration:underline dotted 2px}
+.palabra.mal{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent);text-decoration:underline wavy 2px}
+.oir{display:inline-flex;flex-wrap:wrap;gap:6px}
 /* Calendario de actividad en Mi progreso */
 .dias{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;max-width:420px}
 .dia{display:block;aspect-ratio:1;border:1px solid var(--line);border-radius:3px;background:var(--code)}
@@ -141,4 +158,4 @@ nav button.sub{padding:7px 10px 7px 22px;font-size:14px}
   .barra-sup{top:0;gap:8px 16px}.sup-repaso{margin-left:0}
   .osi div{grid-template-columns:28px 1fr}.osi div span:last-child{grid-column:1/-1}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}

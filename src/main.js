@@ -8,6 +8,7 @@ import {miProgreso} from './nucleo/miprogreso.js';
 import {notas} from './nucleo/notas.js';
 import {vistaUbicacion} from './nucleo/ubicacion.js';
 import {registerSW} from 'virtual:pwa-register';
+import {hablar} from './nucleo/voz.js';
 
 /* Rutas (van en el #hash de la URL):
    ''                      portada con las materias
@@ -74,6 +75,8 @@ $('#main').addEventListener('submit',e=>e.preventDefault()); // Enter en una res
 $('#main').addEventListener('click',e=>{
   const t=e.target.closest('button,[data-go],tr[data-pid]'); if(!t)return;
   if(t.dataset.go!==undefined){go(t.dataset.go);return}
+  // Cualquier botón con data-decir lee su texto en inglés (data-lento = velocidad lenta)
+  if(t.dataset.decir!==undefined){hablar(t.dataset.decir,{lento:!!t.dataset.lento});return}
   cur.v.alClic?.(t,cur.ir||go,pintar);
 });
 window.addEventListener('progreso',pintarBarra);

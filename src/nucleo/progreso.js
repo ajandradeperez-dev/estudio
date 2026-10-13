@@ -2,9 +2,10 @@
    Si el almacenamiento no está disponible (modo privado, bloqueado), la app funciona igual sin guardar nada.
    Cada cambio emite el evento 'progreso' en window para que la barra superior se actualice.
 
-   Estructura (v: 4):
+   Estructura (v: 5):
    meta      {tipo:'ejercicios'|'minutos', cantidad}
-   dias      {'AAAA-MM-DD': {ej, seg, xp, ok}}   ok = se cumplió la meta ese día (cuenta para la racha)
+   dias      {'AAAA-MM-DD': {ej, seg, xp, ok, habla:{frases, seg, turnos, conv}}}   ok = se cumplió la meta ese día (cuenta para la racha)
+             habla: frases dichas en voz alta, segundos con el micrófono, turnos de conversación y la conversación más larga del día
    mejorRacha
    materias  {[id]: {xp,
                      lecciones:{[id]:{dominada, mejor, intentos, via:'practica'|'ubicacion'}},
@@ -14,16 +15,19 @@
    repaso    {[ref]: {paso, proxima:'AAAA-MM-DD', fallos}}   ref = '<materia>/<clave del ejercicio>'
    dominados número de ejercicios que salieron del repaso por acertarlos en todos los intervalos
    notas     {'<materia>/<lección>': {texto, fecha}}   resúmenes escritos al dominar cada lección ("Mis notas")
-   ultimo    {ruta, materia} para "Continuar donde te quedaste" */
+   ultimo    {ruta, materia} para "Continuar donde te quedaste"
+   frases    {[id]: {en, es, regla, fecha}}   frases para repasar que no salen de una lección (p. ej. sugeridas por la IA)
+   historial [{materia, tipo, fecha}]          últimas sesiones (para alternar materias en "¿Qué sigue?")
+   En materias.<id>.extra cada materia guarda lo suyo; Inglés: sonidos {id:{ok, n, ult:[1,0…]}}, unidades, dialogos, medallas, combo. */
 import {DOMINIO} from './metodo.js';
 
-const CLAVE='ciberlab-progreso',VERSION=4;
+const CLAVE='ciberlab-progreso',VERSION=5;
 // Días hasta la siguiente vez que se pregunta un ejercicio acertado en el repaso, según cuántas veces seguidas se acertó
 export const INTERVALOS=[1,3,7,14,30];
 export const METAS=[['ejercicios',10],['ejercicios',20],['ejercicios',30],['minutos',5],['minutos',10],['minutos',15]];
 const XP_LECCION=20;
 
-const vacio=()=>({v:VERSION,meta:{tipo:'ejercicios',cantidad:20},dias:{},mejorRacha:0,materias:{},repaso:{},dominados:0,notas:{},ultimo:null});
+const vacio=()=>({v:VERSION,meta:{tipo:'ejercicios',cantidad:20},dias:{},mejorRacha:0,materias:{},repaso:{},dominados:0,notas:{},ultimo:null,frases:{},historial:[]});
 
 /* ---------- fechas (hora local) ---------- */
 const dos=n=>String(n).padStart(2,'0');
@@ -63,6 +67,10 @@ function migrar(p){
     if(obj(c?.extra))delete c.extra.examen;
     p.v=4;
   }
+  if(p.v===4){ // v4 → v5: práctica de habla (frases para repasar e historial de sesiones); lo demás no cambia
+    p.frases=obj(p.frases)||{};p.historial=Array.isArray(p.historial)?p.historial:[];
+    p.v=5;
+  }
   return p;
 }
 export function progreso(){
@@ -73,7 +81,8 @@ export function progreso(){
   if(!p){p=vacio();p.ultimo=ultimoV1()}
   // Completa lo que falte (datos incompletos o de otra versión) antes de usarlos o guardarlos
   const v=vacio();
-  for(const k of ['dias','materias','repaso','notas'])p[k]=obj(p[k])||{};
+  for(const k of ['dias','materias','repaso','notas','frases'])p[k]=obj(p[k])||{};
+  if(!Array.isArray(p.historial))p.historial=[];
   if(!obj(p.meta)||!METAS.some(([t,c])=>t===p.meta.tipo&&c===p.meta.cantidad))p.meta=v.meta;
   if(typeof p.mejorRacha!=='number')p.mejorRacha=0;
   if(typeof p.dominados!=='number')p.dominados=0;
@@ -94,7 +103,7 @@ export function datosMateria(p,id){
   return p.materias[id]={xp:typeof m.xp==='number'?m.xp:0,lecciones:obj(m.lecciones)||{},enCurso:obj(m.enCurso),
     ubicacion:obj(m.ubicacion),visitadas:Array.isArray(m.visitadas)?m.visitadas:[],extra:obj(m.extra)||{}};
 }
-const dia=(p,f=hoy())=>p.dias[f]=Object.assign({ej:0,seg:0,xp:0,ok:false},p.dias[f]);
+const dia=(p,f=hoy())=>{const d=p.dias[f]=Object.assign({ej:0,seg:0,xp:0,ok:false},p.dias[f]);d.habla=Object.assign({frases:0,seg:0,turnos:0,conv:0},obj(d.habla));return d};
 
 /* ---------- meta diaria y racha ---------- */
 const cumple=(meta,d)=>meta.tipo==='minutos'?d.seg>=meta.cantidad*60:d.ej>=meta.cantidad;
@@ -178,6 +187,30 @@ export function guardarUbicacion(materia,resultados){
     m.ubicacion={fecha:hoy(),aciertos:a,total:t,dominadas:nuevas};
     return nuevas;
   });
+}
+
+/* ---------- habla ---------- */
+// Lo hablado hoy: frases dichas en voz alta, segundos con el micrófono y turnos de conversación (conv = turnos de la conversación más larga)
+export function registrarHabla({frases=0,seg=0,turnos=0,conv=0}){
+  cambiar(p=>{const h=dia(p).habla;h.frases+=frases;h.seg+=seg;h.turnos+=turnos;h.conv=Math.max(h.conv,conv);comprobarMeta(p)});
+}
+export const hablaDelDia=(p=progreso(),f=hoy())=>Object.assign({frases:0,seg:0,turnos:0,conv:0},obj(p.dias[f]?.habla));
+// Estadísticas por sonido: stats {id:[aciertos, intentos]}; se guardan los totales y los últimos 20 intentos
+export function registrarSonidos(materia,stats){
+  if(!Object.keys(stats||{}).length)return;
+  cambiar(p=>{const e=datosMateria(p,materia).extra;e.sonidos=obj(e.sonidos)||{};
+    for(const [id,[ok,n]] of Object.entries(stats)){
+      const s=e.sonidos[id]=Object.assign({ok:0,n:0,ult:[]},obj(e.sonidos[id]));
+      s.ok+=ok;s.n+=n;for(let i=0;i<n;i++)s.ult.push(i<ok?1:0);s.ult=s.ult.slice(-20);
+    }});
+}
+// Frases para repasar que no salen de una lección (p. ej. sugeridas por la IA); se repasan con la ref '<materia>/x/<id>'
+export function guardarFrase(id,datos){cambiar(p=>{p.frases[id]={...datos,fecha:hoy()}})}
+// Últimas sesiones, para que "¿Qué sigue?" alterne materias
+export function registrarSesion(materia,tipo){
+  const p=progreso(),u=p.historial[p.historial.length-1];
+  if(u&&u.materia===materia&&u.tipo===tipo&&u.fecha===hoy())return;
+  cambiar(q=>{q.historial.push({materia,tipo,fecha:hoy()});q.historial=q.historial.slice(-20)});
 }
 
 /* ---------- notas ---------- */

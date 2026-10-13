@@ -63,7 +63,7 @@ ${a.clave?'<div class="row"><button class="btn ghost" id="ia-volver-elegir">Volv
   }
   function htmlElegir(){
     const a=ajustes();
-    return `${!a.clave?`<div class="card aviso"><h3>Falta tu API key</h3><p>La conversación libre usa Claude con tu propia clave de Anthropic. Mientras la consigues, practica con los <button class="enlace" data-go="ingles/hablar">diálogos guiados</button>, que funcionan sin internet y sin clave.</p><div class="row"><button class="btn" id="ia-ajustes">Configurar la clave</button></div></div>`
+    return `${!a.clave?`<div class="card aviso"><h3>Falta tu API key</h3><p>La conversación libre usa Claude con tu propia clave de Anthropic. Mientras la consigues, practica con los <button class="enlace" data-go="estudio/ingles/hablar">diálogos guiados</button>, que funcionan sin internet y sin clave.</p><div class="row"><button class="btn" id="ia-ajustes">Configurar la clave</button></div></div>`
       :`<p class="nota">Modelo: ${esc(MODELOS.find(m=>m.id===a.modelo)?.nombre||a.modelo)} · Nivel ${nivelIngles()} · máximo ${MAX_TURNOS} turnos. <button class="enlace" id="ia-ajustes">Ajustes</button></p>`}
 <div class="grid">${ESCENARIOS.map(e=>`<button class="card click escenario" data-escenario="${e.id}"${a.clave?'':' disabled'}><h3>${e.titulo}</h3><p class="nota">${e.desc}</p></button>`).join('')}</div>`;
   }
@@ -91,8 +91,8 @@ ${st.premio?htmlPremio(st.premio):''}
 <h4>Errores más importantes</h4><ul>${r.errores_frecuentes.map(e=>`<li><s lang="en">${esc(e.error)}</s> → <b lang="en">${esc(e.correcto)}</b> ${htmlOir(e.correcto)}<span class="nota">${esc(e.explicacion)}</span></li>`).join('')}</ul>
 <h4>Frases para practicar</h4><ul class="lista-frases">${r.frases_para_practicar.map(f=>`<li><span lang="en">${esc(f.en)}</span> ${htmlOir(f.en)}<span class="nota">${esc(f.es)}</span></li>`).join('')}</ul>
 <p class="nota">Las frases y los errores ya están en <strong>Repasar hoy</strong> (a partir de mañana) y el resumen quedó en <button class="enlace" data-go="notas">Mis notas</button>.</p>
-${htmlCierre({xp:xpHoy()-(st.xp0||0),aprendido:r.errores_frecuentes.map(e=>`${esc(e.correcto)}: ${esc(e.explicacion)}`),excluir:'ingles/hablar/ia'})}
-<div class="row" style="margin-top:12px"><button class="btn ghost" id="ia-nueva">Otra conversación</button><button class="btn ghost" data-go="ingles/hablar">Volver</button></div></div>`;
+${htmlCierre({xp:xpHoy()-(st.xp0||0),aprendido:r.errores_frecuentes.map(e=>`${esc(e.correcto)}: ${esc(e.explicacion)}`),excluir:'estudio/ingles/hablar/ia'})}
+<div class="row" style="margin-top:12px"><button class="btn ghost" id="ia-nueva">Otra conversación</button><button class="btn ghost" data-go="estudio/ingles/hablar">Volver</button></div></div>`;
   }
 
   async function turnoTutor(repintar){
@@ -138,7 +138,7 @@ ${htmlCierre({xp:xpHoy()-(st.xp0||0),aprendido:r.errores_frecuentes.map(e=>`${es
     titulo:'Conversación con IA',
     alEntrar(){st={fase:leerAjustes().clave?'elegir':'elegir'}},
     vista(){
-      const cab=`<p class="miga"><button class="enlace" data-go="ingles/hablar">Hablar</button> › Conversación con IA</p><h1>Conversación libre con IA</h1>`;
+      const cab=`<p class="miga"><button class="enlace" data-go="estudio/ingles/hablar">Hablar</button> › Conversación con IA</p><h1>Conversación libre con IA</h1>`;
       if(st.fase==='ajustes')return cab+htmlAjustes(st.msg||'');
       if(st.fase==='elegir')return `${cab}<p class="lead">Habla de lo que quieras con un tutor que se adapta a tu nivel, te corrige en español y te propone una versión más natural de lo que dijiste.</p>${htmlElegir()}`;
       if(st.fase==='reporte')return cab+htmlReporte();

@@ -1,6 +1,6 @@
 /* "Mis notas": los resúmenes de 1–2 frases que el usuario escribe al dominar cada lección, por materia y en orden de lección */
 import {esc} from '../utilidades.js';
-import {materias,leccion} from './materias.js';
+import {materias,leccion,rutaLeccion} from './materias.js';
 import {progreso,borrarNota} from './progreso.js';
 
 const fecha=f=>{const [a,m,d]=f.split('-').map(Number);return new Date(a,m-1,d).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'})};
@@ -12,7 +12,7 @@ export const notas={
     const bloques=materias.map(m=>{
       const ls=(m.lecciones||[]).filter(l=>n[`${m.id}/${l.id}`]);
       return ls.length?`<h2>${m.nombre}</h2>${ls.map(l=>{const k=`${m.id}/${l.id}`,x=n[k];
-        return `<div class="card nota"><div class="nota-cab"><button class="enlace" data-go="${m.id}/l/${l.id}">${l.titulo}</button><span class="progress">${fecha(x.fecha)}</span></div>
+        return `<div class="card nota"><div class="nota-cab"><button class="enlace" data-go="${rutaLeccion(m,l)}">${l.titulo}</button><span class="progress">${fecha(x.fecha)}</span></div>
 <p class="nota-texto">${esc(x.texto)}</p><button class="btn ghost btn-chico" data-borrar="${k}" aria-label="Borrar la nota de ${l.titulo}">Borrar</button></div>`}).join('')}`:'';
     }).join('');
     // Notas de lecciones que ya no existen (se borraron o renombraron)

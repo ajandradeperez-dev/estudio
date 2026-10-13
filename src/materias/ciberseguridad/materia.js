@@ -28,7 +28,7 @@ const secciones={
 };
 
 export default {
-  nombre:'Ciberseguridad',sigla:'CS',orden:1,
+  nombre:'Ciberseguridad',sigla:'CS',icono:'🛡️',area:'ciberseguridad',orden:1,
   descripcion:'Redes, firewalls (FortiGate, Palo Alto, Cisco ASA y pfSense), VPN e incidentes, con simuladores.',
   intro:'Aprende seguridad de redes practicando. Primero las lecciones con lo que más se usa; después, los simuladores y el laboratorio. Los paquetes, firewalls y registros son simulados, así que puedes experimentar sin tocar ningún equipo real.',
   lecciones:cargarLecciones(import.meta.glob('./lecciones/*.js',{eager:true})),

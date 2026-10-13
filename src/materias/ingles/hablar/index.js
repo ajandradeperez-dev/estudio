@@ -1,4 +1,4 @@
-/* Sección "🎙️ Hablar" de Inglés. Rutas (bajo #ingles/hablar):
+/* Sección "🎙️ Hablar" de Inglés. Rutas (bajo #estudio/ingles/hablar):
    (vacía)              portada: pronunciación por sonido, frases útiles, diálogos guiados, conversación con IA
    sonido/<id>          pares mínimos y frases de un sonido difícil
    frases/<A1|A2>       frases útiles del nivel
@@ -24,7 +24,7 @@ import {MEDALLAS,comboActual,sonidoActivo,alternarSonido,vencerJefe} from './jue
 import {CONTENIDO} from './contenido.js';
 import {vistaEscucha,vistaFluidez,marcarPaso} from './pasos.js';
 
-const RAIZ='ingles/hablar';
+const RAIZ='estudio/ingles/hablar';
 // Títulos de las lecciones de forma (para los pasos de cada unidad)
 const TITULOS=Object.fromEntries(cargarLecciones(import.meta.glob('../lecciones/*.js',{eager:true})).map(l=>[l.id,l.titulo]));
 const pct=x=>Math.round(x*100);
@@ -57,7 +57,7 @@ const portada={
   titulo:'Hablar',
   vista(){
     const p=progreso(),f=fuerzaSonidos(p),dl=datosMateria(p,'ingles').extra.dialogos||{},clave=!!leerAjustes().clave,act=unidadActual(p),combo=comboActual();
-    return `<p class="miga"><button class="enlace" data-go="ingles">Inglés</button> › Hablar</p>
+    return `
 <div class="hablar-cab"><h1>🎙️ Hablar</h1><button class="btn ghost btn-chico" id="hb-sonido" type="button" aria-pressed="${sonidoActivo()}">${sonidoActivo()?'🔊 Sonidos':'🔇 Sin sonidos'}</button></div>
 <p class="lead">Hablar en voz alta es lo que más rápido te hace avanzar. Tu nivel: <b>${nivelIngles(p)}</b>${combo>=3?` · 🔥 combo ${combo}`:''}.</p>
 ${soporte.escuchar?'':`<div class="card aviso"><p style="margin:0">⚠️ ${AVISO_SIN_RECONOCIMIENTO}</p></div>`}
@@ -84,7 +84,7 @@ function vistaUnidad(u){
     const p=progreso(),e=estadoUnidades(p)[u.id],d=datosMateria(p,'ingles'),s=sonido(u.sonido),k=UNIDADES.indexOf(u)+1,dl=d.extra.dialogos||{};
     if(e==='bloqueada')return `<p class="miga"><button class="enlace" data-go="${RAIZ}">Hablar</button> › Unidad ${k}</p><h1>🔒 ${u.titulo}</h1>
 <div class="card"><p>Esta unidad se abre al vencer al jefe de la unidad anterior (o si el examen de ubicación demuestra que ya la dominas).</p>
-<div class="row"><button class="btn" data-go="${RAIZ}/u/${UNIDADES[k-2].id}">Ir a la unidad ${k-1}</button><button class="btn ghost" data-go="ingles/ubicacion">Examen de ubicación</button></div></div>`;
+<div class="row"><button class="btn" data-go="${RAIZ}/u/${UNIDADES[k-2].id}">Ir a la unidad ${k-1}</button><button class="btn ghost" data-go="estudio/ingles/ubicacion">Examen de ubicación</button></div></div>`;
     const paso=(n,titulo,cuerpo,hecho)=>`<li class="paso${hecho?' hecho':''}"><span class="paso-num">${hecho?'✓':n}</span><div><b>${titulo}</b>${cuerpo}</div></li>`;
     const c=CONTENIDO[u.id],h=d.extra.unidades?.[u.id]||{},boton=(ruta,texto)=>`<div class="row"><button class="btn ghost btn-chico" data-go="${RAIZ}/u/${u.id}/${ruta}">${texto}</button></div>`;
     return `<p class="miga"><button class="enlace" data-go="${RAIZ}">Hablar</button> › Unidad ${k} · ${u.nivel}</p><h1>${u.titulo}</h1>
@@ -92,7 +92,7 @@ function vistaUnidad(u){
 <ol class="pasos-unidad">
 ${paso(1,'🎧 Escucha',`<p class="nota">${esc(c.escucha.titulo)}: entiende el audio antes de ver el texto.</p>${boton('escucha','Escuchar')}`,h.escucha)}
 ${paso(2,'💬 Frases de la unidad',`<p class="nota">${c.chunks.length} frases hechas para repetir hasta que salgan solas.</p>${boton('frases','Practicar frases')}`,h.chunks)}
-${paso(3,'Forma (gramática)',`<div class="row">${u.lecciones.map(id=>`<button class="btn ghost btn-chico" data-go="ingles/l/${id}">${d.lecciones[id]?.dominada?'✓ ':''}${esc(TITULOS[id]||id)}</button>`).join('')}</div>`,u.lecciones.every(id=>d.lecciones[id]?.dominada))}
+${paso(3,'Forma (gramática)',`<div class="row">${u.lecciones.map(id=>`<button class="btn ghost btn-chico" data-go="estudio/ingles/l/${id}">${d.lecciones[id]?.dominada?'✓ ':''}${esc(TITULOS[id]||id)}</button>`).join('')}</div>`,u.lecciones.every(id=>d.lecciones[id]?.dominada))}
 ${paso(4,'Pronunciación',`<div class="row"><button class="btn ghost btn-chico" data-go="${RAIZ}/sonido/${s.id}">${s.nombre}</button></div>`,(fuerzaSonidos(p)[s.id]?.prom||0)>=0.8)}
 ${paso(5,'Hablar: diálogos',`<div class="row">${u.dialogos.map(id=>{const x=dialogo(id);return `<button class="btn ghost btn-chico" data-go="${RAIZ}/dialogo/${id}">${dl[id]?`✓ `:''}${x.titulo}</button>`}).join('')}</div>`,u.dialogos.every(id=>dl[id]))}
 ${paso(6,'⚡ Fluidez',`<p class="nota">4-3-2: cuenta «${esc(c.fluidez.tema)}» en 60, 45 y 30 segundos.</p>${boton('fluidez','Empezar')}`,h.fluidez)}

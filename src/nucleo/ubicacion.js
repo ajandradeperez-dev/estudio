@@ -5,6 +5,7 @@ import {progreso,datosMateria,registrarEjercicio,guardarUbicacion} from './progr
 import {repartoUbicacion,preguntasUbicacion} from './metodo.js';
 import {barra} from './ui.js';
 import {htmlCierre,xpHoy} from './cierre.js';
+import {rutaMateria,rutaLeccion} from './materias.js';
 
 export function vistaUbicacion(m){
   let preguntas=[],i=0,resultados={},nuevas=null,respondida=false,xp0=0;
@@ -19,7 +20,7 @@ export function vistaUbicacion(m){
       resultados=Object.fromEntries(ls.map(l=>[l.id,[0,0]]));i=0;nuevas=null;respondida=false;xp0=xpHoy();
     },
     vista(){
-      const cab=`<p class="miga"><button class="enlace" data-go="${m.id}">${m.nombre}</button> › Examen de ubicación</p><h1>Examen de ubicación</h1>`;
+      const cab=`<h1>Examen de ubicación</h1>`;
       if(!preguntas.length)return `${cab}<p class="lead">Esta materia no tiene lecciones.</p>`;
       if(i<preguntas.length)return `${cab}<p class="lead">Responde sin pista. Si no sabes, pulsa <strong>No lo sé</strong>: es mejor que adivinar. Las lecciones que ya sabes quedarán marcadas como dominadas.</p>
 <div class="card"><p class="progress">Pregunta ${i+1} de ${preguntas.length} · ${preguntas[i].leccion.titulo}</p>${barra(i,preguntas.length)}
@@ -30,8 +31,8 @@ export function vistaUbicacion(m){
       const dom=datosMateria(progreso(),m.id).lecciones,pendiente=ls.find(l=>!dom[l.id]?.dominada);
       return `${cab}<div class="card"><h3>${nuevas.length?`${nuevas.length} ${nuevas.length===1?'lección dominada':'lecciones dominadas'}`:'Empieza desde la primera lección'}</h3>
 <ul class="lista-ubicacion">${ls.map(fila).join('')}</ul>
-${htmlCierre({xp:xpHoy()-xp0,aprendido:nuevas.length?[`Ya dominas ${nuevas.length} ${nuevas.length===1?'lección':'lecciones'}: puedes saltarlas.`]:[],excluir:`${m.id}/ubicacion`})}
-<div class="row" style="margin-top:12px">${pendiente?`<button class="btn ghost" data-go="${m.id}/l/${pendiente.id}">Empezar: ${pendiente.titulo}</button>`:''}<button class="btn ghost" data-go="${m.id}">Volver a ${m.nombre}</button></div></div>`;
+${htmlCierre({xp:xpHoy()-xp0,aprendido:nuevas.length?[`Ya dominas ${nuevas.length} ${nuevas.length===1?'lección':'lecciones'}: puedes saltarlas.`]:[],excluir:`${rutaMateria(m)}/ubicacion`})}
+<div class="row" style="margin-top:12px">${pendiente?`<button class="btn ghost" data-go="${rutaLeccion(m,pendiente)}">Empezar: ${pendiente.titulo}</button>`:''}<button class="btn ghost" data-go="${rutaMateria(m)}">Volver a ${m.nombre}</button></div></div>`;
     },
     async alClic(t,ir,repintar){
       if(i>=preguntas.length)return;

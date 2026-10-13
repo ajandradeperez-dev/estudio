@@ -8,7 +8,7 @@
    Alternancia: si las últimas 3 sesiones fueron de la misma materia, se prefiere otra (con repasos si los tiene).
    Cada materia puede aportar candidatos con recomendar(p) → [{regla:2|3|6, valor?, titulo, porque, ruta}]
    (valor 0–1 = puntaje reciente, para comparar debilidades). */
-import {materias} from './materias.js';
+import {materias,rutaLeccion} from './materias.js';
 import {progreso,datosMateria,pendientes} from './progreso.js';
 import {DOMINIO} from './metodo.js';
 
@@ -33,16 +33,16 @@ export function recomendar({excluir}={},p=progreso()){
   const debiles=[...extras.filter(c=>c.regla===3)];
   for(const m of materias)for(const l of m.lecciones||[]){
     const x=datosMateria(p,m.id).lecciones[l.id];
-    if(x&&!x.dominada)debiles.push({regla:3,valor:x.mejor||0,materia:m.id,titulo:`Repetir: ${l.titulo}`,porque:`Es tu punto más débil en ${m.nombre}: ${pct(x.mejor||0)} % sin pista (necesitas ${pct(DOMINIO)} %).`,ruta:`${m.id}/l/${l.id}`});
+    if(x&&!x.dominada)debiles.push({regla:3,valor:x.mejor||0,materia:m.id,titulo:`Repetir: ${l.titulo}`,porque:`Es tu punto más débil en ${m.nombre}: ${pct(x.mejor||0)} % sin pista (necesitas ${pct(DOMINIO)} %).`,ruta:rutaLeccion(m,l)});
   }
   debiles.sort((a,b)=>(a.valor??1)-(b.valor??1));
   candidatos.push(...debiles);
   // 4. Continuar una lección a medias
   for(const m of materias){const e=datosMateria(p,m.id).enCurso,l=e&&(m.lecciones||[]).find(x=>x.id===e.leccion);
-    if(l)candidatos.push({regla:4,materia:m.id,titulo:`Continuar: ${l.titulo}`,porque:`Te quedaste en el ejercicio ${e.i+1} de ${m.nombre}.`,ruta:`${m.id}/l/${l.id}`})}
+    if(l)candidatos.push({regla:4,materia:m.id,titulo:`Continuar: ${l.titulo}`,porque:`Te quedaste en el ejercicio ${e.i+1} de ${m.nombre}.`,ruta:rutaLeccion(m,l)})}
   // 5. Siguiente lección pendiente de cada materia
   for(const m of materias){const d=datosMateria(p,m.id),l=(m.lecciones||[]).find(x=>!d.lecciones[x.id]?.dominada);
-    if(l)candidatos.push({regla:5,materia:m.id,titulo:`Siguiente: ${l.titulo}`,porque:`Es la próxima lección de ${m.nombre}, ordenada por utilidad.`,ruta:`${m.id}/l/${l.id}`})}
+    if(l)candidatos.push({regla:5,materia:m.id,titulo:`Siguiente: ${l.titulo}`,porque:`Es la próxima lección de ${m.nombre}, ordenada por utilidad.`,ruta:rutaLeccion(m,l)})}
   // 6. Todo al día: retos de cada materia
   candidatos.push(...extras.filter(c=>c.regla===6));
   if(rep.length&&rep.length<5)candidatos.push({regla:6,titulo:`Repasar ${rep.length} ejercicios`,porque:'Tienes pocos repasos pendientes: despéjalos en un par de minutos.',ruta:'repaso'});

@@ -8,7 +8,8 @@
 
 App para estudiar cualquier tema, organizada en **materias**, que aplica métodos de estudio efectivos (ver "Método de aprendizaje"). Todo corre en el navegador: no hay backend y el progreso se guarda en `localStorage`.
 
-- **Materias**: Ciberseguridad (lecciones + simuladores de firewall/VPN, laboratorio de incidentes, examen), Inglés (A1–A2), Álgebra y Ciencia de datos.
+- **Jerarquía**: área → materia → tema → lección. Áreas: 🛡️ **Ciberseguridad** (una sola materia: lecciones + simuladores de firewall/VPN, laboratorio de incidentes, examen) y 🎯 **Estudio y metas** (Inglés A1–A2 con Hablar; Matemáticas con temas Álgebra básica, Álgebra lineal, Cálculo diferencial y Cálculo integral; Ciencia de datos con temas Estadística, Probabilidad, Python y pandas, Visualización y Machine learning básico). Los temas son opcionales: Inglés y Ciberseguridad no los usan.
+- El recomendador "¿Qué sigue?", el repaso espaciado, la racha y la meta diaria son **globales**: cuentan todas las áreas.
 - **Lecciones**: explicación corta, ejemplos y práctica en rondas, casi toda de producción.
 - **Enganche**: racha de días cumpliendo una meta diaria (ejercicios o minutos), XP y nivel por materia, "Repasar hoy" con repetición espaciada y práctica mezclada, "Continuar donde te quedaste", "Mis notas" y "Mi progreso".
 
@@ -51,20 +52,22 @@ vite.config.js            Puertos fijos (5173 dev, 4173 preview) con strictPort
 scripts/
   revisar-contenido.mjs   npm run revisar: comprueba el método en todas las lecciones y el contenido de habla de Inglés
 src/
-  main.js                 Rutas, menú, delegación de eventos y conteo de minutos activos
+  main.js                 Rutas (resolver() sobre analizar()), migas, menú, delegación de eventos y conteo de minutos activos
+  areas/<id>/area.js      Cada área: nombre, icono, tono de color, descripción, orden
   estilos.css             Todo el CSS (variables en :root, modo oscuro, responsive a 760px)
   utilidades.js           $, esc (escapar HTML) y utilidades IP
   nucleo/                 Motor común a todas las materias
     metodo.js             Reglas del método: umbrales, reparto de la ubicación, producción
-    materias.js           Registro automático de materias (import.meta.glob) y búsqueda de ejercicios por referencia
-    cargar.js             cargarLecciones(): carga la carpeta lecciones/ de una materia
+    materias.js           Registro de áreas y materias, rutas canónicas (rutaMateria/rutaTema/rutaLeccion), analizar(ruta)
+                          que entiende rutas nuevas y viejas, y búsqueda de ejercicios por referencia de repaso
+    cargar.js             cargarLecciones() (carpeta lecciones/) y cargarTemas() (carpetas temas/<tema>/)
     progreso.js           Todo lo que se guarda: racha, meta, XP, lecciones, ubicación, repaso, notas, "continuar"
     ejercicios.js         Tipos de ejercicio: HTML, pista, corrección y explicación del error
     leccion.js            Vista de lección (aprender → ronda → resultado y resumen)
     ubicacion.js          Examen de ubicación
     repaso.js             "Repasar hoy" con práctica mezclada
     notas.js              "Mis notas"
-    portada.js            Portada, página de materia y barra superior
+    portada.js            Portada (áreas), página de área, de materia (temas), camino de un tema, migas y barra superior
     miprogreso.js         "Mi progreso"
     ui.js                 barra() de progreso
     recomendador.js       "👉 ¿Qué sigue?": 1 repasos (≥5) → 2 lo urgente de cada materia → 3 punto más débil → 4 continuar
@@ -81,26 +84,41 @@ src/
                           errores-pronunciacion.js (sonidos difíciles: causa, tip físico, pares mínimos, detecta())
                           hablar/: index.js (rutas), unidades.js, contenido.js, pasos.js (escucha, fluidez),
                           dialogos.js, frases.js, practica.js, dialogo.js, ia.js + claude.js (API), juego.js
-    algebra/
-    ciencia-datos/
+    matematicas/          materia.js + temas.js (lista de temas) + temas/<tema>/NN-….js (antes "algebra": alias y migración v6)
+    ciencia-datos/        materia.js + temas.js + temas/<tema>/NN-….js
 ```
 
 ### Rutas (`#hash`)
 
 | Ruta | Vista |
 |---|---|
-| (vacía) | Portada: continuar + materias |
+| (vacía) | Portada: lo siguiente para ti, continuar y tarjetas de área |
 | `repaso` / `notas` / `progreso` | Repasar hoy / Mis notas / Mi progreso |
-| `<materia>` | Página de la materia: siguiente lección, ubicación, lecciones y secciones |
-| `<materia>/ubicacion` | Examen de ubicación |
-| `<materia>/l/<lección>` | Lección |
-| `<materia>/<sección>` | Sección propia (p. ej. `ciberseguridad/fw`) |
+| `<área>` | Página del área: tarjetas de materias (`#estudio`) |
+| `<área>/<materia>` | Página de la materia: temas (o lecciones), ubicación y secciones (`#estudio/matematicas`) |
+| `<área>/<materia>/<tema>` | Camino de lecciones del tema (`#estudio/matematicas/algebra-lineal`) |
+| `…/<tema>/l/<lección>` | Lección de un tema; sin temas: `<área>/<materia>/l/<lección>` (`#estudio/ingles/l/can`) |
+| `<área>/<materia>/ubicacion` | Examen de ubicación de la materia |
+| `<área>/<materia>/<sección>[/…]` | Sección propia (`#estudio/ingles/hablar/u/presentarte`) |
 
-Las rutas antiguas de una palabra (`#fw`, `#vpn`…) siguen funcionando y llevan a Ciberseguridad.
+Un área con una sola materia del mismo id no repite el nivel: Ciberseguridad es `#ciberseguridad/fw`. Todo lo resuelve `analizar()` en `nucleo/materias.js`; genera rutas solo con `rutaMateria`, `rutaTema` y `rutaLeccion` (las vistas de una materia, como Hablar, usan su raíz escrita a mano para no importar el registro). **Las rutas viejas siguen funcionando** y se reescriben a la canónica: `#<materia>/…` (`#ingles/l/can`), `#algebra/…` (alias de Matemáticas), `#<materia>/l/<lección>` de una materia con temas, y las de una palabra (`#fw`, `#vpn`). Arriba de cada pantalla, `htmlMigas()` pinta las migas de pan con un botón atrás grande (al nivel anterior).
+
+## Agregar un área
+
+Crea `src/areas/<id>/area.js` (el id va en la URL: no lo cambies después de publicarla) y agrégale materias con `area:'<id>'`:
+
+```js
+export default {
+  nombre:'Idiomas',icono:'🌍',orden:3,tono:'estudio',   // tono: colores de la tarjeta (clases .area-<tono> en estilos.css)
+  descripcion:'Una línea para la tarjeta de la portada.'
+};
+```
+
+Para un color nuevo, agrega `--t-<tono>` y `--t-<tono>-soft` en `:root` y en los dos bloques de modo oscuro, y la clase `.area-<tono>{--area:…;--area-soft:…}`. `npm run revisar` falla si un área no tiene materias o una materia apunta a un área que no existe.
 
 ## Agregar una materia
 
-Crea una carpeta en `src/materias/` y no toques nada más: se registra sola. **El nombre de la carpeta es el id** de la materia (va en la URL y en el progreso guardado), así que no lo cambies después de publicarla.
+Crea una carpeta en `src/materias/` y no toques nada más: se registra sola. **El nombre de la carpeta es el id** de la materia (va en la URL y en el progreso guardado), así que no lo cambies después de publicarla (si no queda otra, haz como con `algebra` → `matematicas`: `alias:['viejo']` en la materia y un paso en `migrar()` que renombre sus datos).
 
 ```
 src/materias/fisica/
@@ -116,12 +134,44 @@ src/materias/fisica/
 import {cargarLecciones} from '../../nucleo/cargar.js';
 
 export default {
-  nombre:'Física',sigla:'FÍ',orden:5,          // sigla: 2 letras para el ícono; orden: posición en la portada
+  nombre:'Física',sigla:'FÍ',icono:'🧲',area:'estudio',orden:5,   // area: obligatoria; icono (o sigla de 2 letras) para las tarjetas
   descripcion:'Una línea para la tarjeta de la portada.',
   intro:'Párrafo opcional para la página de la materia.',
   lecciones:cargarLecciones(import.meta.glob('./lecciones/*.js',{eager:true}))
 };
 ```
+
+### Materia con temas
+
+Si la materia se divide en temas, usa `temas/` en vez de `lecciones/` y una lista `temas.js` (datos puros: la leen la app y `npm run revisar`):
+
+```
+src/materias/fisica/
+  materia.js
+  temas.js
+  temas/
+    cinematica/01-velocidad.js
+    dinamica/01-leyes-de-newton.js
+```
+
+```js
+// temas.js — en orden; el id es la carpeta y va en la URL
+export default [
+  {id:'cinematica',titulo:'Cinemática',icono:'🏃',descripcion:'Posición, velocidad y aceleración.'},
+  {id:'dinamica',titulo:'Dinámica',icono:'🧲',descripcion:'Fuerzas y leyes de Newton.',
+   proximas:['Trabajo y energía']}             // títulos que aún no existen: se ven bloqueados como "Próximamente"
+];
+
+// materia.js
+import {cargarTemas} from '../../nucleo/cargar.js';
+import defs from './temas.js';
+const temas=cargarTemas(import.meta.glob('./temas/*/*.js',{eager:true}),defs);
+export default {nombre:'Física',icono:'🧲',area:'estudio',orden:5,descripcion:'…',temas,lecciones:temas.flatMap(t=>t.lecciones)};
+```
+
+- El progreso, el repaso y las notas se guardan por **materia + id de lección**, no por tema: puedes mover una lección de tema sin perder nada, pero su id tiene que ser **único en toda la materia**.
+- Un tema sin lecciones (solo `proximas`) se ve entero como "Próximamente". El examen de ubicación es de toda la materia.
+- Para agregar un tema: añádelo a `temas.js` y crea su carpeta. `npm run revisar` valida ids únicos y válidos, campos obligatorios, carpetas sin declarar, ids de lección repetidos y temas sin lecciones ni próximas.
 
 Opcionales, para materias con secciones propias como Ciberseguridad:
 
@@ -133,7 +183,7 @@ Una materia necesita al menos 5 lecciones para que el examen de ubicación tenga
 
 ## Agregar una lección
 
-Crea un archivo en `lecciones/` de la materia. El número del nombre define el orden (de lo más útil a lo menos) y el resto es el id: `09-comparativos.js` → `comparativos`. **No renombres el id de un archivo ya publicado**: el progreso, las notas y el repaso guardados lo usan. Para cambiar el orden, cambia solo el prefijo numérico.
+Crea un archivo en `lecciones/` de la materia, o en `temas/<tema>/` si la materia tiene temas. El número del nombre define el orden (de lo más útil a lo menos) y el resto es el id: `09-comparativos.js` → `comparativos`. **No renombres el id de un archivo ya publicado**: el progreso, las notas y el repaso guardados lo usan. Para cambiar el orden, cambia solo el prefijo numérico.
 
 ```js
 const R1='La regla que se muestra al fallar (una frase).';
@@ -162,11 +212,12 @@ export default {
 
 ## Progreso (`src/nucleo/progreso.js`)
 
-Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 5`; los formatos anteriores se migran solos en `migrar()`. Si cambias el significado de algo guardado, sube `VERSION` y agrega su paso de migración). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
+Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 6`; los formatos anteriores se migran solos en `migrar()`. Si cambias el significado de algo guardado, sube `VERSION` y agrega su paso de migración). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
 
 - **Meta diaria**: 10/20/30 ejercicios o 5/10/15 minutos. Los minutos solo cuentan con la pestaña visible y actividad en el último minuto (`main.js`).
 - **Racha**: días seguidos con la meta cumplida. Si hoy aún no se cumple, sigue viva desde ayer.
 - **XP**: 10 por acierto sin pista (5 con pista) en lecciones, ubicación y preguntas de Ciberseguridad; +20 la primera vez que se domina una lección; 5 por acierto en el repaso; 20 por cada caso del laboratorio y 15 por cada escenario de VPN, solo la primera vez. Para subir de nivel hacen falta 100, 300, 600, 1000… XP.
+- **v6** (áreas y temas): `algebra` pasó a `matematicas` en `materias`, el repaso, las notas, `ultimo` e `historial`. Lo demás ya se guardaba por materia + id de lección, así que agrupar en temas no cambió nada.
 - **Lecciones**: `{dominada, mejor, intentos, via}`; `via` indica si se dominó practicando o en la ubicación. La ronda que toca es `intentos % rondas.length`.
 - **Repaso**: un ejercicio fallado (o acertado con pista) entra para hoy. Si lo aciertas sin pista, vuelve en 1, 3, 7, 14 y 30 días; tras acertarlo a los 30 días queda dominado y sale. Si lo fallas, vuelve mañana y empieza de nuevo.
 - **Notas**: `{'<materia>/<lección>': {texto, fecha}}`. "Reiniciar todo el progreso" las conserva, porque son texto escrito por el usuario.

@@ -54,7 +54,7 @@ ${soporte.escuchar?(st.intentos<MAX_INTENTOS&&!pasada?htmlMic('hp-mic',st.intent
     const dificiles=Object.entries(cuenta).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([id])=>sonido(id)).filter(Boolean);
     return `<div class="card"><h3>Sesión terminada</h3>
 <p class="prog-v">${ok} <small>de ${rep.length} frases con ${META_PRONUNCIACION}+${el.length?` · ${elOk} de ${el.length} al escuchar`:''} · +${xp} XP</small></p>${barra(ok,rep.length||1)}
-${dificiles.length?`<p><b>Para practicar:</b> ${dificiles.map(s=>`<button class="enlace" data-go="ingles/hablar/sonido/${s.id}">${s.nombre}</button>`).join(', ')}</p>`:''}
+${dificiles.length?`<p><b>Para practicar:</b> ${dificiles.map(s=>`<button class="enlace" data-go="estudio/ingles/hablar/sonido/${s.id}">${s.nombre}</button>`).join(', ')}</p>`:''}
 ${rep.length-ok?`<p class="nota">Las ${rep.length-ok} frases que no pasaron ya están en <strong>Repasar hoy</strong>.</p>`:''}
 ${alTerminar?alTerminar(resultados):''}
 ${htmlCierre({xp:xpHoy()-xp0,aprendido:dificiles.length?dificiles.map(s=>`<b>${s.nombre}:</b> ${s.tip}`):[ok?`Dijiste ${ok} frases con buena pronunciación.`:''],excluir:location.hash.slice(1)})}

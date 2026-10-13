@@ -1,6 +1,6 @@
 // Revisa que las lecciones cumplan el método de aprendizaje (ver CLAUDE.md). Uso: npm run revisar
 // Sale con código 1 si alguna regla no se cumple.
-import {readdirSync,existsSync} from 'node:fs';
+import {readdirSync,existsSync,readFileSync} from 'node:fs';
 import {join,dirname} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {MIN_PRODUCCION,MAX_PALABRAS,UBICACION_MIN,UBICACION_MAX,esProduccion,repartoUbicacion,preguntasUbicacion,palabras} from '../src/nucleo/metodo.js';
@@ -9,13 +9,50 @@ const raiz=join(dirname(fileURLToPath(import.meta.url)),'..','src','materias');
 const errores=[],avisos=[];
 const mal=(donde,msg)=>errores.push(`${donde}: ${msg}`);
 
+// Jerarquía: áreas (src/areas/<id>/area.js) → materias (area:'<id>' en materia.js) → temas (temas.js + temas/<id>/) → lecciones
+const dirAreas=join(raiz,'..','areas'),areas={};
+for(const id of readdirSync(dirAreas).sort()){
+  const f=join(dirAreas,id,'area.js');
+  if(!existsSync(f)){mal(`área ${id}`,'falta area.js');continue}
+  const a=(await import(pathToFileURL(f).href)).default;areas[id]=[];
+  for(const k of ['nombre','icono','descripcion'])if(!a[k])mal(`área ${id}`,`falta ${k}`);
+}
+const IDS_RESERVADOS=['l','ubicacion','repaso','progreso','notas','inicio'];
 for(const materia of readdirSync(raiz).sort()){
-  const dir=join(raiz,materia,'lecciones');
-  if(!existsSync(dir))continue;
-  const archivos=readdirSync(dir).filter(f=>f.endsWith('.js')).sort();
-  const lecciones=[];
-  for(const f of archivos){
-    const donde=`${materia}/${f}`,l=(await import(pathToFileURL(join(dir,f)).href)).default;
+  const fm=join(raiz,materia,'materia.js');
+  if(!existsSync(fm))continue;
+  const area=readFileSync(fm,'utf8').match(/[{,\s]area\s*:\s*'([^']+)'/)?.[1];
+  if(!area)mal(materia,"materia.js necesita area:'<id del área>'");else if(!areas[area])mal(materia,`el área ${area} no existe en src/areas/`);else areas[area].push(materia);
+  if(areas[materia]&&area!==materia)mal(materia,'una materia no puede tener el id de otra área');
+  // Archivos de lecciones en orden: lecciones/*.js o, si hay temas, temas/<tema>/*.js en el orden de temas.js
+  const archivos=[],dirTemas=join(raiz,materia,'temas'),fTemas=join(raiz,materia,'temas.js');
+  if(existsSync(join(raiz,materia,'lecciones')))for(const f of readdirSync(join(raiz,materia,'lecciones')).filter(f=>f.endsWith('.js')).sort())archivos.push({f,ruta:join(raiz,materia,'lecciones',f)});
+  if(existsSync(fTemas)||existsSync(dirTemas)){
+    if(archivos.length)mal(materia,'usa lecciones/ o temas/, no las dos');
+    if(!existsSync(fTemas)){mal(materia,'tiene la carpeta temas/ pero falta temas.js con la lista de temas');}
+    else{
+      const defs=(await import(pathToFileURL(fTemas).href)).default,vistos=new Set();
+      if(!Array.isArray(defs)||!defs.length)mal(`${materia}/temas.js`,'debe exportar una lista de temas');
+      for(const t of defs||[]){
+        const dt=`${materia} tema ${t.id}`;
+        if(!/^[a-z0-9-]+$/.test(t.id||''))mal(dt,'id inválido (minúsculas, números y guiones)');
+        if(vistos.has(t.id))mal(dt,'id de tema repetido');vistos.add(t.id);
+        if(IDS_RESERVADOS.includes(t.id))mal(dt,'ese id está reservado para rutas');
+        for(const k of ['titulo','icono','descripcion'])if(!t[k])mal(dt,`falta ${k}`);
+        if(t.proximas!==undefined&&(!Array.isArray(t.proximas)||t.proximas.some(x=>typeof x!=='string'||!x.trim())))mal(dt,'proximas debe ser una lista de títulos');
+        const dir=join(dirTemas,t.id),fs=existsSync(dir)?readdirSync(dir).filter(f=>f.endsWith('.js')).sort():[];
+        if(!fs.length&&!t.proximas?.length)mal(dt,'no tiene lecciones ni lecciones próximas');
+        for(const f of fs)archivos.push({f,ruta:join(dir,f),tema:t.id});
+      }
+      if(existsSync(dirTemas))for(const d of readdirSync(dirTemas))if(!vistos.has(d))mal(`${materia}/temas/${d}`,'carpeta de tema que no está en temas.js');
+    }
+  }
+  if(!archivos.length)continue;
+  const lecciones=[],ids=new Set();
+  for(const {f,ruta,tema} of archivos){
+    const donde=`${materia}/${tema?`temas/${tema}/`:''}${f}`,l=(await import(pathToFileURL(ruta).href)).default;
+    const id=f.replace(/^\d+-/,'').replace(/\.js$/,'');
+    if(ids.has(id))mal(donde,`el id de lección "${id}" se repite en la materia (el progreso se guarda por materia e id)`);ids.add(id);
     lecciones.push(l);
     if(!/^\d+-[a-z0-9-]+\.js$/.test(f))mal(donde,'el nombre debe ser NN-id.js (minúsculas y guiones)');
     for(const k of ['titulo','resumen'])if(!l[k])mal(donde,`falta ${k}`);
@@ -49,10 +86,11 @@ for(const materia of readdirSync(raiz).sort()){
   if(lecciones.length){
     const k=repartoUbicacion(lecciones.length),total=k.reduce((a,b)=>a+b,0);
     if(total<UBICACION_MIN||total>UBICACION_MAX)mal(materia,`el examen de ubicación tendría ${total} preguntas`);
-    lecciones.forEach((l,j)=>{const n=preguntasUbicacion(l,k[j]).length;if(n<k[j])mal(`${materia}/${archivos[j]}`,`la última ronda tiene ${n} ejercicios de producción y la ubicación necesita ${k[j]}`)});
+    lecciones.forEach((l,j)=>{const n=preguntasUbicacion(l,k[j]).length;if(n<k[j])mal(`${materia}/${archivos[j].f}`,`la última ronda tiene ${n} ejercicios de producción y la ubicación necesita ${k[j]}`)});
     console.log(`${materia}: ${lecciones.length} lecciones · ubicación de ${total} preguntas`);
   }
 }
+for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no tiene materias');
 // Inglés · habla: diálogos, pares mínimos, frases útiles y unidades
 {
   globalThis.localStorage??={getItem:()=>null,setItem(){},removeItem(){}};

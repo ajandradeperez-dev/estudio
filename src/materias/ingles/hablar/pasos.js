@@ -12,7 +12,7 @@ import {SONIDOS} from '../errores-pronunciacion.js';
 import {premiarFrase,cerrarCombo} from './juego.js';
 import {CONTENIDO} from './contenido.js';
 
-const RAIZ='ingles/hablar';
+const RAIZ='estudio/ingles/hablar';
 // Marca un paso de la unidad como hecho (escucha, chunks, fluidez)
 export function marcarPaso(unidadId,paso){cambiarExtra('ingles',e=>{e.unidades=e.unidades||{};e.unidades[unidadId]={...(e.unidades[unidadId]||{}),[paso]:true}})}
 const cab=(u,titulo)=>`<p class="miga"><button class="enlace" data-go="${RAIZ}/u/${u.id}">${esc(u.titulo)}</button> › ${titulo}</p>`;

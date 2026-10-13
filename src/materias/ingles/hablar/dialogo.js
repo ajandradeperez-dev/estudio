@@ -12,7 +12,7 @@ import {premiarTurno,htmlPremio,cerrarCombo,terminarConversacion} from './juego.
 
 export const META_JEFE=0.8;
 
-export function vistaDialogo(d,{jefe=false,volver='ingles/hablar',alTerminar}={}){
+export function vistaDialogo(d,{jefe=false,volver='estudio/ingles/hablar',alTerminar}={}){
   let st;
   const nuevo=()=>({xp0:xpHoy(),t:-1,intento:1,fase:'inicio',log:[],res:[],pistas:0,traduccion:false,escribir:!soporte.escuchar,decir:false,premio:null,error:null,fin:null});
   const turno=()=>d.turnos[st.t];

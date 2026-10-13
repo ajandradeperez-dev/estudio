@@ -9,11 +9,14 @@ import {progreso,datosMateria,registrarEjercicio,guardarEnCurso,terminarIntento,
 import {DOMINIO,indiceGlobal,esProduccion,frases} from './metodo.js';
 import {barra} from './ui.js';
 import {htmlCierre} from './cierre.js';
+import {tema,rutaMateria,rutaTema,rutaLeccion} from './materias.js';
 
 const estados={}; // estado de cada lección mientras la app está abierta
 
 export function vistaLeccion(m,l){
-  const clave=`${m.id}/${l.id}`,n=m.lecciones.indexOf(l),sig=m.lecciones[n+1];
+  // Número de la lección dentro de su tema (o de la materia) y a dónde vuelve
+  const t=l.tema&&tema(m,l.tema),lista=t?t.lecciones:m.lecciones,clave=`${m.id}/${l.id}`,n=lista.indexOf(l);
+  const volver=t?rutaTema(m,t):rutaMateria(m),volverTxt=t?t.titulo:m.nombre;
   const st=()=>estados[clave];
   const datos=()=>datosMateria(progreso(),m.id).lecciones[l.id];
   const nota=()=>progreso().notas[clave];
@@ -43,7 +46,7 @@ export function vistaLeccion(m,l){
 
   function vista(){
     const s=st(),d=datos();
-    const cab=`<p class="miga"><button class="enlace" data-go="${m.id}">${m.nombre}</button> › Lección ${n+1} de ${m.lecciones.length}${l.nivel?` · ${l.nivel}`:''}</p>
+    const cab=`<p class="miga">Lección ${n+1} de ${lista.length}${l.nivel?` · ${l.nivel}`:''}</p>
 <h1>${l.titulo}${d?.dominada?' <span class="tag on">✓ Dominada</span>':''}</h1><p class="lead">${l.resumen}</p>`;
     if(s.fase==='aprender')return `${cab}<div class="card">${teoria()}</div>
 ${nota()?`<div class="card nota-propia" style="margin-top:14px"><div class="ej-k">Tu resumen</div>${esc(nota().texto)}</div>`:''}
@@ -56,13 +59,13 @@ ${nota()?`<div class="card nota-propia" style="margin-top:14px"><div class="ej-k
     if(s.dominada)return `${cab}<div class="card"><h3>✓ Lección dominada</h3>
 <p class="prog-v">${s.ok} <small>de ${s.total} sin pista (${pct}%) · +${s.xp} XP${s.extra?` (incluye +${s.extra} por dominarla)`:''}</small></p>${barra(s.ok,s.total)}
 ${formNota()}
-${htmlCierre({xp:s.xp,aprendido:reglasRonda(s.ronda),excluir:`${m.id}/l/${l.id}`})}
-<div class="row" style="margin-top:12px"><button class="btn ghost" data-go="${m.id}">Volver a ${m.nombre}</button></div></div>`;
+${htmlCierre({xp:s.xp,aprendido:reglasRonda(s.ronda),excluir:rutaLeccion(m,l)})}
+<div class="row" style="margin-top:12px"><button class="btn ghost" data-go="${volver}">Volver a ${volverTxt}</button></div></div>`;
     return `${cab}<div class="card"><h3>Aún no la dominas</h3>
 <p class="prog-v">${pct}% <small>sin pista · necesitas ${meta}% (${s.ok} de ${s.total})</small></p>${barra(s.ok,s.total)}
 <p style="color:var(--muted)">Repite con ejercicios distintos. Los que fallaste ya están en <strong>Repasar hoy</strong>.</p>
-<div class="row"><button class="btn" id="lec-repetir">Repetir con otros ejercicios</button><button class="btn ghost" data-go="${m.id}">Volver a ${m.nombre}</button></div>
-${htmlCierre({xp:s.xp,aprendido:reglasRonda(s.ronda),excluir:`${m.id}/l/${l.id}`})}</div>`;
+<div class="row"><button class="btn" id="lec-repetir">Repetir con otros ejercicios</button><button class="btn ghost" data-go="${volver}">Volver a ${volverTxt}</button></div>
+${htmlCierre({xp:s.xp,aprendido:reglasRonda(s.ronda),excluir:rutaLeccion(m,l)})}</div>`;
   }
 
   return {

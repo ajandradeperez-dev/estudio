@@ -2,7 +2,7 @@
    Si el almacenamiento no está disponible (modo privado, bloqueado), la app funciona igual sin guardar nada.
    Cada cambio emite el evento 'progreso' en window para que la barra superior se actualice.
 
-   Estructura (v: 5):
+   Estructura (v: 6):
    meta      {tipo:'ejercicios'|'minutos', cantidad}
    dias      {'AAAA-MM-DD': {ej, seg, xp, ok, habla:{frases, seg, turnos, conv}}}   ok = se cumplió la meta ese día (cuenta para la racha)
              habla: frases dichas en voz alta, segundos con el micrófono, turnos de conversación y la conversación más larga del día
@@ -21,7 +21,7 @@
    En materias.<id>.extra cada materia guarda lo suyo; Inglés: sonidos {id:{ok, n, ult:[1,0…]}}, unidades, dialogos, medallas, combo. */
 import {DOMINIO} from './metodo.js';
 
-const CLAVE='ciberlab-progreso',VERSION=5;
+const CLAVE='ciberlab-progreso',VERSION=6;
 // Días hasta la siguiente vez que se pregunta un ejercicio acertado en el repaso, según cuántas veces seguidas se acertó
 export const INTERVALOS=[1,3,7,14,30];
 export const METAS=[['ejercicios',10],['ejercicios',20],['ejercicios',30],['minutos',5],['minutos',10],['minutos',15]];
@@ -70,6 +70,16 @@ function migrar(p){
   if(p.v===4){ // v4 → v5: práctica de habla (frases para repasar e historial de sesiones); lo demás no cambia
     p.frases=obj(p.frases)||{};p.historial=Array.isArray(p.historial)?p.historial:[];
     p.v=5;
+  }
+  if(p.v===5){ // v5 → v6: áreas y temas. La materia 'algebra' pasó a llamarse 'matematicas' (sus lecciones conservan el id).
+    // Lo demás se guarda por materia + id de lección, así que no cambia; las rutas viejas guardadas se siguen resolviendo.
+    const ren=x=>typeof x==='string'&&/^algebra(\/|$)/.test(x)?x.replace(/^algebra/,'matematicas'):x;
+    const ms=obj(p.materias);
+    if(ms&&obj(ms.algebra)){if(!obj(ms.matematicas))ms.matematicas=ms.algebra;delete ms.algebra}
+    for(const k of ['repaso','notas']){const o=obj(p[k]);if(o)p[k]=Object.fromEntries(Object.entries(o).map(([ref,v])=>[ren(ref),v]))}
+    if(obj(p.ultimo))p.ultimo={...p.ultimo,ruta:ren(p.ultimo.ruta),materia:ren(p.ultimo.materia)};
+    if(Array.isArray(p.historial))p.historial=p.historial.map(h=>obj(h)?{...h,materia:ren(h.materia),tipo:ren(h.tipo)}:h);
+    p.v=6;
   }
   return p;
 }

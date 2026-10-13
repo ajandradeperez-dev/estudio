@@ -37,7 +37,7 @@ export default {
   // Ejercicios que vuelven en "Repasar hoy": 'examen/<i>' e 'incidentes/<caso>/<a|b>'
   ejercicioRepaso(clave){
     const [tipo,i,etapa]=clave.split('/');
-    if(tipo==='examen'){const q=preguntas[+i];return q&&{titulo:'Examen rápido',ej:{tipo:'opcion',pregunta:q[0],opciones:q[1],correcta:q[2],regla:q[3]}}}
+    if(tipo==='examen'){const q=preguntas[+i];return q&&{titulo:'Examen rápido',ej:q}}
     if(tipo==='incidentes'){const x=incidents[+i];if(!x)return null;
       return {titulo:`Incidente: ${x.t}`,ej:etapa==='b'?{tipo:'opcion',pregunta:`Ya sabes qué ocurre: <strong>${x.o[x.a]}</strong>. ${x.d}`,codigo:x.log,opciones:x.do,correcta:x.da,explicacion:x.ex}
         :{tipo:'opcion',pregunta:x.q,codigo:x.log,opciones:x.o,correcta:x.a,explicacion:x.ex}}}

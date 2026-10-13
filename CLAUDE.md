@@ -26,7 +26,7 @@ Estas reglas se aplican a **todas** las materias. Cualquier lección nueva debe 
 
 Para no perder tiempo: repetir una lección va directo a la práctica, todo se puede hacer con el teclado (Enter para comprobar y Enter para seguir), la página de cada materia tiene un botón a la siguiente lección pendiente y el examen de ubicación evita estudiar lo que ya sabes.
 
-En Ciberseguridad, los simuladores, el laboratorio y el examen rápido son herramientas de práctica, no lecciones. Aun así sus preguntas entran al repaso mezclado y cada error muestra la regla o la explicación del caso.
+En Ciberseguridad, los simuladores, el laboratorio y el examen rápido son herramientas de práctica, no lecciones. El examen rápido es de respuesta escrita (`datos/preguntas.js`, mismo formato que los ejercicios de lección, con `respuestas`, `errores` y `regla`). Sus preguntas y las del laboratorio entran al repaso mezclado, y cada error muestra la regla o la explicación del caso. El laboratorio de incidentes sigue siendo de elegir opción: es un caso práctico de diagnóstico, no un ejercicio de memoria.
 
 ## Estructura
 

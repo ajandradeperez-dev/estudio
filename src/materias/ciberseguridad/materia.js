@@ -12,6 +12,7 @@ import {incidents} from './datos/incidentes.js';
 import {quiz as preguntas} from './datos/preguntas.js';
 import {escenarios} from './datos/vpn.js';
 import {barra} from '../../nucleo/ui.js';
+import {cargarLecciones} from '../../nucleo/cargar.js';
 
 // Las claves (redes, subred, fw…) forman la ruta (#ciberseguridad/fw) y se guardan en el progreso: no las cambies.
 const secciones={
@@ -29,13 +30,14 @@ const secciones={
 export default {
   nombre:'Ciberseguridad',sigla:'CS',orden:1,
   descripcion:'Redes, firewalls (FortiGate, Palo Alto, Cisco ASA y pfSense), VPN e incidentes, con simuladores.',
-  intro:'Aprende seguridad de redes practicando. Los paquetes, firewalls y registros son simulados, así que puedes experimentar sin tocar ningún equipo real.',
+  intro:'Aprende seguridad de redes practicando. Primero las lecciones con lo que más se usa; después, los simuladores y el laboratorio. Los paquetes, firewalls y registros son simulados, así que puedes experimentar sin tocar ningún equipo real.',
+  lecciones:cargarLecciones(import.meta.glob('./lecciones/*.js',{eager:true})),
   secciones,
 
   // Ejercicios que vuelven en "Repasar hoy": 'examen/<i>' e 'incidentes/<caso>/<a|b>'
   ejercicioRepaso(clave){
     const [tipo,i,etapa]=clave.split('/');
-    if(tipo==='examen'){const q=preguntas[+i];return q&&{titulo:'Examen rápido',ej:{tipo:'opcion',pregunta:q[0],opciones:q[1],correcta:q[2]}}}
+    if(tipo==='examen'){const q=preguntas[+i];return q&&{titulo:'Examen rápido',ej:{tipo:'opcion',pregunta:q[0],opciones:q[1],correcta:q[2],regla:q[3]}}}
     if(tipo==='incidentes'){const x=incidents[+i];if(!x)return null;
       return {titulo:`Incidente: ${x.t}`,ej:etapa==='b'?{tipo:'opcion',pregunta:`Ya sabes qué ocurre: <strong>${x.o[x.a]}</strong>. ${x.d}`,codigo:x.log,opciones:x.do,correcta:x.da,explicacion:x.ex}
         :{tipo:'opcion',pregunta:x.q,codigo:x.log,opciones:x.o,correcta:x.a,explicacion:x.ex}}}

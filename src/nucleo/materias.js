@@ -1,5 +1,7 @@
 /* Registro de materias: cada carpeta src/materias/<id>/ con un materia.js se carga sola.
    El id de la materia es el nombre de su carpeta; el id de una lección es el nombre de su archivo sin el prefijo numérico. */
+import {ejerciciosLeccion} from './metodo.js';
+
 const mods=import.meta.glob('../materias/*/materia.js',{eager:true});
 
 export const materias=Object.entries(mods)
@@ -14,7 +16,7 @@ export const leccion=(m,id)=>(m.lecciones||[]).find(l=>l.id===id);
 export function ejercicioPorRef(ref){
   const [mid,...resto]=ref.split('/'),m=materia(mid); if(!m)return null;
   if(resto[0]==='l'){
-    const l=leccion(m,resto[1]),ej=l?.practica?.[+resto[2]];
+    const l=leccion(m,resto[1]),ej=l&&ejerciciosLeccion(l)[+resto[2]];
     return ej?{materia:m,titulo:l.titulo,ej}:null;
   }
   const r=m.ejercicioRepaso?.(resto.join('/'));

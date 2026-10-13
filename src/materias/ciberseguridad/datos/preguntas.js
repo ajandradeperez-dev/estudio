@@ -1,14 +1,25 @@
-/* Preguntas del examen rápido: [pregunta, opciones, índice de la correcta] */
+/* Preguntas del examen rápido: [pregunta, opciones, índice de la correcta, regla que se muestra al fallar] */
 export const quiz=[
- ['En un FortiGate, si ninguna política coincide con un paquete, ¿qué pasa?',['Se permite','Se deniega (implicit deny)','Se envía al administrador'],1],
- ['¿Cómo se llama en FortiGate la función para publicar un servidor interno?',['Virtual IP (VIP)','IP Pool','Zone'],0],
- ['En Palo Alto, ¿qué tecnología identifica aplicaciones sin depender del puerto?',['App-ID','GlobalProtect','Panorama'],0],
- ['En pfSense, ¿en qué interfaz se aplica una regla?',['En la de salida','En la de entrada','En todas a la vez'],1],
- ['¿Cuántos hosts útiles tiene una red /26?',['62','64','30'],0],
- ['¿Por qué RDP no debería estar abierto a Internet?',['Es muy lento','Es blanco frecuente de fuerza bruta y vulnerabilidades','Solo funciona en LAN'],1],
- ['Un firewall stateful…',['Necesita reglas de ida y de regreso','Recuerda la sesión y deja pasar la respuesta','Solo mira la capa 7'],1],
- ['¿Qué necesitan los perfiles de seguridad para ver dentro de HTTPS?',['Inspección SSL profunda','Más RAM','Un puerto distinto'],0],
- ['¿Qué estándar agrega la etiqueta de VLAN a las tramas Ethernet?',['802.1Q','802.11ax','802.3af'],0],
- ['Un enlace que lleva varias VLAN etiquetadas entre un switch y un firewall es un puerto…',['De acceso','Troncal (trunk)','Espejo (SPAN)'],1],
- ['¿Cuál es la opción más segura para el Wi-Fi de los empleados de una empresa?',['WPA2-Personal con la misma clave para todos','Red abierta con el SSID oculto','WPA3-Enterprise con 802.1X y RADIUS'],2]
+ ['En un FortiGate, si ninguna política coincide con un paquete, ¿qué pasa?',['Se permite','Se deniega (implicit deny)','Se envía al administrador'],1,
+  'Las políticas se revisan de arriba hacia abajo; si ninguna coincide, se aplica la denegación implícita.'],
+ ['¿Cómo se llama en FortiGate la función para publicar un servidor interno?',['Virtual IP (VIP)','IP Pool','Zone'],0,
+  'VIP es NAT de destino (publicar un servidor); IP Pool es NAT de origen; Zone agrupa interfaces.'],
+ ['En Palo Alto, ¿qué tecnología identifica aplicaciones sin depender del puerto?',['App-ID','GlobalProtect','Panorama'],0,
+  'App-ID reconoce aplicaciones; GlobalProtect es la VPN de usuarios; Panorama, la gestión central.'],
+ ['En pfSense, ¿en qué interfaz se aplica una regla?',['En la de salida','En la de entrada','En todas a la vez'],1,
+  'pfSense evalúa las reglas en la interfaz por donde ENTRA el tráfico.'],
+ ['¿Cuántos hosts útiles tiene una red /26?',['62','64','30'],0,
+  'Hosts útiles = 2^(32 − 26) − 2 = 64 − 2 = 62 (se restan red y broadcast).'],
+ ['¿Por qué RDP no debería estar abierto a Internet?',['Es muy lento','Es blanco frecuente de fuerza bruta y vulnerabilidades','Solo funciona en LAN'],1,
+  'RDP expuesto recibe fuerza bruta y ataques a sus vulnerabilidades: accede por VPN.'],
+ ['Un firewall stateful…',['Necesita reglas de ida y de regreso','Recuerda la sesión y deja pasar la respuesta','Solo mira la capa 7'],1,
+  'Stateful = recuerda la sesión; la respuesta de una conexión permitida vuelve sola.'],
+ ['¿Qué necesitan los perfiles de seguridad para ver dentro de HTTPS?',['Inspección SSL profunda','Más RAM','Un puerto distinto'],0,
+  'Sin inspección SSL profunda, el contenido HTTPS va cifrado y los perfiles no pueden revisarlo.'],
+ ['¿Qué estándar agrega la etiqueta de VLAN a las tramas Ethernet?',['802.1Q','802.11ax','802.3af'],0,
+  '802.1Q etiqueta VLAN; 802.11ax es Wi-Fi 6; 802.3af es alimentación por Ethernet (PoE).'],
+ ['Un enlace que lleva varias VLAN etiquetadas entre un switch y un firewall es un puerto…',['De acceso','Troncal (trunk)','Espejo (SPAN)'],1,
+  'Puerto de acceso = una VLAN sin etiqueta; troncal = varias VLAN etiquetadas.'],
+ ['¿Cuál es la opción más segura para el Wi-Fi de los empleados de una empresa?',['WPA2-Personal con la misma clave para todos','Red abierta con el SSID oculto','WPA3-Enterprise con 802.1X y RADIUS'],2,
+  'WPA3-Enterprise autentica a cada usuario con 802.1X; ocultar el SSID no protege nada.']
 ];

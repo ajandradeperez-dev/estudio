@@ -2,7 +2,7 @@ import {cargarLecciones} from '../../nucleo/cargar.js';
 
 export default {
   nombre:'Inglés',sigla:'EN',orden:2,
-  descripcion:'Gramática y vocabulario para el día a día y el trabajo, explicados en español.',
-  intro:'Gramática esencial y vocabulario útil, con ejemplos traducidos y práctica corta. Las tarjetas son para decir la respuesta en voz alta antes de voltearlas.',
+  descripcion:'De A1 a A2: la gramática y el vocabulario más frecuentes, explicados en español.',
+  intro:'Ordenado por frecuencia de uso, de A1 a A2. Casi toda la práctica es escribir y traducir: así se aprende a producir el idioma, no solo a reconocerlo.',
   lecciones:cargarLecciones(import.meta.glob('./lecciones/*.js',{eager:true}))
 };

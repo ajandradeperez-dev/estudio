@@ -5,11 +5,14 @@ import {portada,vistaMateria,htmlBarraSup} from './nucleo/portada.js';
 import {vistaLeccion} from './nucleo/leccion.js';
 import {repaso} from './nucleo/repaso.js';
 import {miProgreso} from './nucleo/miprogreso.js';
+import {notas} from './nucleo/notas.js';
+import {vistaUbicacion} from './nucleo/ubicacion.js';
 
 /* Rutas (van en el #hash de la URL):
    ''                      portada con las materias
-   'repaso' / 'progreso'   Repasar hoy / Mi progreso
+   'repaso' / 'progreso' / 'notas'   Repasar hoy / Mi progreso / Mis notas
    '<materia>'             página de la materia
+   '<materia>/ubicacion'   examen de ubicación
    '<materia>/l/<lección>' lección en formato común
    '<materia>/<sección>'   sección propia de la materia (p. ej. ciberseguridad/fw)
    Cada vista exporta vista() y, si las necesita, alEntrar(), alMostrar() y alClic(t, ir, repintar). */
@@ -17,11 +20,13 @@ function resolver(ruta){
   if(!ruta||ruta==='inicio')return {ruta:'',v:portada};
   if(ruta==='repaso')return {ruta,v:repaso};
   if(ruta==='progreso')return {ruta,v:miProgreso};
+  if(ruta==='notas')return {ruta,v:notas};
   // Rutas antiguas de una sola palabra (#fw, #vpn…) de cuando solo existía Ciberseguridad
   if(!ruta.includes('/')&&!materia(ruta)){const m=materias.find(x=>x.secciones?.[ruta]);if(m)ruta=`${m.id}/${ruta}`}
   const [mid,a,b]=ruta.split('/'),m=materia(mid);
   if(!m)return resolver('');
   if(a==='l'&&leccion(m,b))return {ruta:`${m.id}/l/${b}`,m,v:vistaLeccion(m,leccion(m,b)),ultimo:true};
+  if(a==='ubicacion'&&m.lecciones?.length)return {ruta:`${m.id}/ubicacion`,m,v:vistaUbicacion(m)};
   const s=a&&m.secciones?.[a];
   // Las secciones llaman a ir('clave') con claves de su propia materia
   if(s)return {ruta:`${m.id}/${a}`,m,seccion:a,ultimo:true,ir:k=>go(`${m.id}/${k}`),
@@ -36,12 +41,12 @@ const pintarBarra=()=>{$('#barra').innerHTML=htmlBarraSup()};
 function pintarNav(){
   const b=(ruta,txt,cls='')=>`<button data-go="${ruta}"${cls?` class="${cls}"`:''} aria-current="${ruta===cur.ruta}">${txt}</button>`;
   const sub=m=>{
-    const ls=(m.lecciones||[]).map((l,i)=>b(`${m.id}/l/${l.id}`,`${i+1}. ${l.titulo}`,'sub')).join('');
     const ss=Object.entries(m.secciones||{}),grupos=[...new Set(ss.map(([,s])=>s.grupo))];
+    const ls=(m.lecciones?.length&&ss.length?'<div class="navsub">Lecciones</div>':'')+(m.lecciones||[]).map((l,i)=>b(`${m.id}/l/${l.id}`,`${i+1}. ${l.titulo}`,'sub')).join('');
     return ls+grupos.map(g=>`${g?`<div class="navsub">${g}</div>`:''}${ss.filter(([,s])=>s.grupo===g).map(([k,s])=>b(`${m.id}/${k}`,s.titulo,'sub')).join('')}`).join('');
   };
   $('#nav').innerHTML=`<div class="brand">Ciber<span>Lab</span></div>
-${b('','Inicio')}${b('repaso','Repasar hoy')}${b('progreso','Mi progreso')}
+${b('','Inicio')}${b('repaso','Repasar hoy')}${b('notas','Mis notas')}${b('progreso','Mi progreso')}
 <div class="navlabel">Materias</div>
 ${materias.map(m=>b(m.id,m.nombre,m===cur.m?'abierta':'')+(m===cur.m?sub(m):'')).join('')}`;
 }

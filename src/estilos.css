@@ -58,7 +58,7 @@ button.ghost{background:transparent;color:var(--accent)}
 .prog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-top:14px}
 .prog-k{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted)}
 .prog-v{font-family:var(--f-display);font-size:24px;margin:2px 0 6px}
-.prog-v small{font-family:var(--f-body);font-size:13px;font-weight:400;color:var(--muted)}
+.prog-v small{font-family:var(--f-body);font-size:13px;font-weight:400;color:var(--muted);line-height:1.4}
 .barra{height:6px;border-radius:3px;background:var(--code);overflow:hidden}
 .barra span{display:block;height:100%;background:var(--accent)}
 .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
@@ -109,6 +109,24 @@ nav button.sub{padding:7px 10px 7px 22px;font-size:14px}
 .tarjeta{padding:16px;border:1px dashed var(--line);border-radius:8px;background:var(--code)}
 .tarjeta .ej-preg{margin:0}
 .tarjeta-reverso{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:15px}
+/* Feedback de ejercicios: por qué está mal, regla y botón para seguir */
+.fb-linea{margin-top:6px}
+.fb-pie{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:12px}
+/* Ubicación, notas y estado de lecciones */
+.materia-acciones{margin-top:14px}
+.lista-ubicacion{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.lista-ubicacion li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+.tag.warn-tag{color:var(--warn)}
+.nota-form{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.nota-form label{font-size:13px;color:var(--ink)}
+.nota-form textarea{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);resize:vertical;min-height:70px}
+.nota-form textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.nota-form .row{margin-top:8px;align-items:center}
+.nota-propia{border-left:3px solid var(--accent)}
+.nota{margin-bottom:10px}
+.nota-cab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.nota-texto{margin:8px 0 10px;white-space:pre-line}
+.btn-chico{padding:4px 10px;font-size:13px}
 /* Calendario de actividad en Mi progreso */
 .dias{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;max-width:420px}
 .dia{display:block;aspect-ratio:1;border:1px solid var(--line);border-radius:3px;background:var(--code)}

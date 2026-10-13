@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "revisar": "node scripts/revisar-contenido.mjs"
   },
   "devDependencies": {
     "vite": "^8.3.4"

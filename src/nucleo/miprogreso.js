@@ -40,13 +40,13 @@ export const miProgreso={
 ${materias.map(m=>{const d=datosMateria(p,m.id),ls=m.lecciones||[];
   return `<div class="card" style="margin-bottom:14px"><div class="materia-cab"><span class="sigla">${m.sigla}</span><h3 style="margin:0">${m.nombre}</h3></div>
 <div style="margin-top:10px">${htmlNivel(d.xp)}</div>
-${ls.length?`<div class="chips" style="margin-top:12px">${ls.map((l,i)=>{const x=d.lecciones[l.id];return `<span class="tag${x?' on':''}" title="${l.titulo}">${x?`✓ L${i+1} · ${x.aciertos}/${x.total}`:`L${i+1} · pendiente`}</span>`}).join('')}</div>`:''}
+${ls.length?`<div class="chips" style="margin-top:12px">${ls.map((l,i)=>{const x=d.lecciones[l.id];return `<span class="tag${x?.dominada?' on':''}" title="${l.titulo}">${x?.dominada?`✓ L${i+1} dominada`:x?`L${i+1} · ${Math.round(x.mejor*100)}%`:`L${i+1} · pendiente`}</span>`}).join('')}</div>`:''}
 ${m.progresoHtml?m.progresoHtml(d):''}</div>`}).join('')}
 
 <div class="row" style="margin-top:20px"><button class="btn ghost" id="preset">Reiniciar todo el progreso</button></div>`;
   },
   alClic(t,ir,repintar){
     if(t.dataset.meta){const [tipo,c]=t.dataset.meta.split(':');cambiarMeta(tipo,+c);repintar();return true}
-    if(t.id==='preset'){if(confirm('¿Borrar todo tu progreso guardado en este navegador? (XP, racha, lecciones y repaso)')){reiniciarProgreso();repintar()}return true}
+    if(t.id==='preset'){if(confirm('¿Borrar todo tu progreso guardado en este navegador? (XP, racha, lecciones, ubicación y repaso; tus notas se conservan)')){reiniciarProgreso();repintar()}return true}
   }
 };

@@ -1,9 +1,11 @@
 import {defineConfig} from 'vite';
 import {VitePWA} from 'vite-plugin-pwa';
 
+// En GitHub Pages la app vive en /<repositorio>/: el workflow pasa BASE_PATH. En local es '/'.
+const base=process.env.BASE_PATH||'/';
+
 export default defineConfig({
-  // En GitHub Pages la app vive en /<repositorio>/: el workflow pasa BASE_PATH. En local es '/'.
-  base:process.env.BASE_PATH||'/',
+  base,
   // Versión visible en "Mi progreso" para saber cuál tienes instalada: el workflow pasa fecha + commit; en local, la fecha
   define:{__VERSION__:JSON.stringify(process.env.APP_VERSION||new Date().toISOString().slice(0,16).replace('T',' '))},
   // Puertos fijos: el progreso vive en localStorage, que depende del origen (incluido el puerto).
@@ -16,20 +18,25 @@ export default defineConfig({
     injectRegister:false,
     includeAssets:['favicon.svg','icons/apple-touch-icon.png'],
     manifest:{
+      // Identidad fija de la app instalada. El navegador resuelve id contra el ORIGEN (no contra start_url),
+      // así que debe ser la ruta completa: /<repositorio>/ en GitHub Pages, igual a la que tenía sin id.
+      id:base,
       name:'CiberLab',
       short_name:'CiberLab',
       description:'Estudia ciberseguridad, inglés, álgebra y ciencia de datos con práctica, repaso espaciado y metas diarias.',
       lang:'es',
       start_url:'.',
       scope:'.',
-      display:'standalone',
+      display:'standalone', // se instala como app (WebAPK) a pantalla completa, sin barra del navegador
       orientation:'any',
       theme_color:'#0f7a5c',
       background_color:'#f3f5f4',
       categories:['education'],
+      // any: con esquinas redondeadas; maskable: a sangre, el launcher de Android lo recorta en su forma (círculo, etc.)
       icons:[
-        {src:'icons/icon-192.png',sizes:'192x192',type:'image/png'},
-        {src:'icons/icon-512.png',sizes:'512x512',type:'image/png'},
+        {src:'icons/icon-192.png',sizes:'192x192',type:'image/png',purpose:'any'},
+        {src:'icons/icon-512.png',sizes:'512x512',type:'image/png',purpose:'any'},
+        {src:'icons/icon-maskable-192.png',sizes:'192x192',type:'image/png',purpose:'maskable'},
         {src:'icons/icon-maskable-512.png',sizes:'512x512',type:'image/png',purpose:'maskable'}
       ]
     },

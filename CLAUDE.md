@@ -63,6 +63,7 @@ src/
     cargar.js             cargarLecciones() (carpeta lecciones/) y cargarTemas() (carpetas temas/<tema>/)
     progreso.js           Todo lo que se guarda: racha, meta, XP, lecciones, ubicación, repaso, notas, "continuar"
     ejercicios.js         Tipos de ejercicio: HTML, pista, corrección y explicación del error
+    comparar.js           coincide(): compara respuestas escritas (sin DOM; también lo usa npm run revisar)
     leccion.js            Vista de lección (aprender → ronda → resultado y resumen)
     ubicacion.js          Examen de ubicación
     repaso.js             "Repasar hoy" con práctica mezclada
@@ -206,7 +207,8 @@ export default {
 ```
 
 - Los textos son HTML escrito en el repositorio (contenido de confianza). Un fragmento de código largo va en `codigo:'…'` (se muestra escapado en un `<pre>`).
-- `completar` compara sin distinguir mayúsculas, acentos, espacios sobrantes, signos ¿? ni punto final, y las comas son opcionales. Los números se comparan por valor y aceptan `x = 6`, `6`, `+6`, `0,5` o `1/2`. Pon en `respuestas` todas las variantes correctas (la primera es la que se muestra como solución) y en `errores` las respuestas incorrectas típicas con su explicación.
+- `completar` compara sin distinguir mayúsculas, acentos, espacios sobrantes, signos ¿? ni punto final, y las comas son opcionales. Los números se comparan por valor y aceptan `x = 6`, `6`, `+6`, `0,5` o `1/2`. Los superíndices valen como `^` (`x⁵` = `x^5`). Pon en `respuestas` todas las variantes correctas (la primera es la que se muestra como solución) y en `errores` las respuestas incorrectas típicas con su explicación.
+- **Matemáticas legibles en el teléfono**: notación Unicode y HTML simple, sin librerías (funciona sin conexión): `x²`, `x<sup>n</sup>`, `lím<sub>x→2</sub>`, `‖v‖`, `√`, `∫`, `ℝ³`, vectores en negrita (`<b>v</b>`). En las respuestas, el usuario escribe exponentes con `^` (`x^3/3 + C`) y vectores como `(5, −4)`: pon en `respuestas` las variantes razonables (`(5, −4)`, `5, −4`, `(1/5)x^5 + C`…). `npm run revisar` falla si un error típico coincide con una respuesta correcta.
 - Los ejercicios se guardan en el repaso por su posición global en la lección (ronda 1 seguida de ronda 2…): agrega ejercicios nuevos **al final de la última ronda** para no desfasar el repaso existente.
 - Pasa `npm run revisar` antes de hacer commit.
 

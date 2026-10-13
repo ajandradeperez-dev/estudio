@@ -3,6 +3,7 @@
 import {readdirSync,existsSync,readFileSync} from 'node:fs';
 import {join,dirname} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
+import {coincide} from '../src/nucleo/comparar.js';
 import {MIN_PRODUCCION,MAX_PALABRAS,UBICACION_MIN,UBICACION_MAX,esProduccion,repartoUbicacion,preguntasUbicacion,palabras} from '../src/nucleo/metodo.js';
 
 const raiz=join(dirname(fileURLToPath(import.meta.url)),'..','src','materias');
@@ -77,6 +78,7 @@ for(const materia of readdirSync(raiz).sort()){
         }else if(ej.tipo==='completar'){
           if(!ej.respuestas?.length||ej.respuestas.some(x=>typeof x!=='string'||!x.trim()))mal(e,'respuestas vacías');
           if(!ej.errores||!Object.keys(ej.errores).length)avisos.push(`${e}: sin errores típicos (se mostrará una explicación genérica)`);
+          for(const x of Object.keys(ej.errores||{}))if(coincide(x,ej.respuestas||[]))mal(e,`el error típico «${x}» coincide con una respuesta correcta`);
         }else if(ej.tipo!=='tarjeta')mal(e,`tipo desconocido: ${ej.tipo}`);
         if(ej.tipo!=='tarjeta'&&!ej.regla)mal(e,'falta la regla que se muestra al fallar');
       });

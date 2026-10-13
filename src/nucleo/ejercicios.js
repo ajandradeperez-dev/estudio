@@ -10,6 +10,7 @@
 import {$,esc} from '../utilidades.js';
 import {soporte,htmlMic,htmlOir,htmlFraseEvaluada,escucharConBoton} from './voz.js';
 import {evaluar,evaluarRespuesta} from './pronunciacion.js';
+import {coincide} from './comparar.js';
 import {registrarHabla,registrarSonidos} from './progreso.js';
 export const META_PRONUNCIACION=80;
 
@@ -34,24 +35,8 @@ ${pista&&ej.pista?`<p class="ej-pista" id="ej-pista" hidden>Pista: ${ej.pista} <
   return `<div id="ej" data-tipo="${ej.tipo}">${cuerpo}<div id="ej-fb" class="result" hidden></div></div>`;
 }
 
-/* ---------- comparar respuestas escritas ---------- */
-const normal=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase()
-  .replace(/[’‘`´]/g,"'").replace(/[“”]/g,'"').replace(/[−–]/g,'-').replace(/²/g,'^2').replace(/³/g,'^3')
-  .replace(/^[¿¡\s]+/,'').replace(/[.!?\s]+$/,'').replace(/\s+/g,' ').trim();
-const sinEspacios=s=>s.replace(/\s/g,'');
-const sinPuntuacion=s=>s.replace(/[,;:]/g,'').replace(/\s+/g,' ');
-const numero=s=>{
-  const t0=normal(s).replace(/^[a-z]\s*=\s*/,'');
-  if(/,\s/.test(t0))return null; // "3, 2" es una lista o un par, no el decimal 3,2
-  const t=sinEspacios(t0).replace(',','.');
-  if(/^[+-]?\d+(\.\d+)?$/.test(t))return parseFloat(t);
-  const f=t.match(/^([+-]?\d+)\/(\d+)$/); return f&&+f[2]?f[1]/f[2]:null;
-};
-export function coincide(valor,respuestas){
-  const v=normal(valor),n=numero(valor);
-  return respuestas.some(r=>{const a=normal(r),m=numero(r);
-    return a===v||sinEspacios(a)===sinEspacios(v)||sinPuntuacion(a)===sinPuntuacion(v)||(n!=null&&m!=null&&Math.abs(n-m)<1e-9)});
-}
+// Comparar respuestas escritas: en comparar.js (sin DOM, también lo usa npm run revisar)
+export {coincide};
 
 /* ---------- interacción ---------- */
 // Evalúa lo dicho (o escrito) en un ejercicio de hablar

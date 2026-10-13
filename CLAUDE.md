@@ -243,6 +243,7 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 6`; los formatos a
 - Estilo compacto: plantillas con template strings y `.map(...).join('')`.
 - Todo texto que escriba el usuario (respuestas, notas) se pasa por `esc()` antes de meterlo en HTML.
 - Los colores siempre salen de las variables CSS (`--accent`, `--ok`, `--bad`…) para que funcione el modo oscuro.
+- **Diseño por áreas, móvil primero (360 px, controles ≥ 40 px)**: cada área tiene su color (`--t-<tono>`); dentro de `.area-<tono>` las barras de progreso y los botones del camino usan `--area`. En el teléfono el menú solo muestra los accesos y las áreas: la jerarquía la llevan las migas (se ven los dos últimos niveles) y el botón atrás. Las pantallas entran con una transición corta (`#vista.entrando`), desactivada con `prefers-reduced-motion`.
 - El laboratorio de incidentes es **defensivo**: identificar ataques y elegir respuestas, nunca enseñar a ejecutarlos.
 
 ## Comandos

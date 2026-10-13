@@ -49,7 +49,12 @@ function pintarNav(){
   const abierta=m=>m===cur.m;
   $('#nav').innerHTML=`<div class="brand">Ciber<span>Lab</span></div>
 ${b('','Inicio')}${b('repaso','Repasar hoy')}${b('notas','Mis notas')}${b('progreso','Mi progreso')}
-${areas.map(a=>`<div class="navlabel">${a.icono} ${a.nombre}</div>${a.materias.map(m=>b(rutaMateria(m),m.nombre,abierta(m)?'abierta':'')+(abierta(m)?sub(m):'')).join('')}`).join('')}`;
+${areas.map(a=>{
+  // Un área con una sola materia del mismo id (Ciberseguridad) es a la vez área y materia
+  const sola=a.materias.length===1&&a.materias[0].id===a.id;
+  return b(a.id,`${a.icono} ${a.nombre}`,`nav-area${cur.area?.id===a.id?' abierta':''}`)
+    +(sola?(abierta(a.materias[0])?sub(a.materias[0]):''):a.materias.map(m=>b(rutaMateria(m),m.nombre,`mat${abierta(m)?' abierta':''}`)+(abierta(m)?sub(m):'')).join(''));
+}).join('')}`;
 }
 function go(ruta){
   const nueva=resolver(ruta);

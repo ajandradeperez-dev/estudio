@@ -238,7 +238,11 @@ button.ghost{background:transparent;color:var(--accent)}
   .app{grid-template-columns:1fr}
   #nav{position:static;height:auto;flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid var(--line);padding:12px 16px;overflow:visible}
   .brand{width:100%;margin:0 0 6px}.navlabel{display:none}
-  #nav button.sub{padding:7px 10px;font-size:13px}.navsub{display:none}
+  /* En el teléfono el menú es corto: accesos y áreas; la jerarquía la llevan las migas y el botón atrás */
+  #nav button.sub,#nav button.mat,.navsub{display:none}
+  #nav button{min-height:40px;box-sizing:border-box;display:inline-flex;align-items:center}
+  .migas ol li:not(:nth-last-child(-n+2)){display:none}
+  .migas ol li:nth-last-child(2)::before{content:none}
   .barra-sup{top:0;gap:8px 16px}.sup-repaso{margin-left:0}
   .osi div{grid-template-columns:28px 1fr}.osi div span:last-child{grid-column:1/-1}
 }
@@ -311,3 +315,17 @@ button.ghost{background:transparent;color:var(--accent)}
   .card.area{padding:16px}
   .area-nombre{font-size:20px}
 }
+
+/* Menú lateral por áreas */
+#nav button.nav-area{margin-top:12px;font-family:var(--f-display);font-size:14px;color:var(--ink)}
+#nav button.mat{padding-left:22px}
+#nav button.sub{padding-left:34px}
+@media (max-width:760px){#nav button.nav-area{margin-top:0;font-family:inherit;font-size:15px;color:var(--muted)}}
+/* Colores del área en barras y botones de sus pantallas */
+.area-ciber .barra span,.area-estudio .barra span{background:var(--area)}
+.tema-vista .btn:not(.ghost){background:var(--area);border-color:var(--area)}
+.tema-vista .allow{color:var(--area)}
+.migas .atras{align-self:flex-start}
+.migas li .enlace{min-height:40px}
+/* "Empezar" dentro de la tarjeta "Lo siguiente para ti" (es un span: toda la tarjeta es el botón) */
+.siguiente-para-ti span.btn{display:inline-flex;align-items:center;min-height:40px;box-sizing:border-box;padding:8px 16px;border-radius:6px;background:var(--accent);color:var(--panel);font-weight:600}

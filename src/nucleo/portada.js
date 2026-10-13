@@ -126,7 +126,7 @@ export function vistaMateria(m){
 ${prox?'<span class="tag">Próximamente</span>':`<span class="progress">${c.hechas}/${c.total} lecciones${t.proximas.length?` · ${t.proximas.length} próximamente`:''}</span>${barra(c.hechas,c.total)}`}</span></button>`}).join('')}</div>`
         :ls.length?`<h2>Lecciones</h2><div class="grid">${ls.map((l,i)=>`<div class="card click" data-go="${rutaLeccion(m,l)}" tabindex="0">
 <div class="progress">Lección ${i+1}${l.nivel?` · ${l.nivel}`:''}</div><h3 style="margin:4px 0">${l.titulo}</h3><p style="margin:0 0 10px;color:var(--muted)">${l.resumen}</p>${estado(l)}</div>`).join('')}</div>`:'';
-      return `<div class="materia-cab"><span class="sigla">${m.icono||m.sigla}</span><h1 style="margin:0">${m.nombre}</h1></div>
+      return `<div class="area-${tono}"><div class="materia-cab"><span class="sigla">${m.icono||m.sigla}</span><h1 style="margin:0">${m.nombre}</h1></div>
 <p class="lead" style="margin-top:8px">${m.intro||m.descripcion}</p>
 ${m.destacado?`<button class="card destacado" data-go="${m.destacado.ruta}"><span class="destacado-titulo">${m.destacado.titulo}</span><span class="nota">${m.destacado.desc}</span></button>`:''}
 <div class="card" style="margin-bottom:14px">${htmlNivel(d.xp)}
@@ -134,7 +134,7 @@ ${ls.length?`<div class="row materia-acciones">${sig?`<button class="btn" data-g
 <button class="btn ghost" data-go="${rutaMateria(m)}/ubicacion">${u?'Repetir examen de ubicación':`Examen de ubicación · ${k} preguntas`}</button></div>
 <p class="progress" style="margin:8px 0 0">${u?`Ubicación del ${u.fecha}: ${u.aciertos} de ${u.total} aciertos · ${u.dominadas.length} lecciones marcadas como dominadas.`:'¿Ya sabes algo? El examen de ubicación marca como dominadas las lecciones que ya sabes para que no pierdas tiempo.'}</p>`:''}</div>
 ${temas}
-${grupos.map(g=>`<h2>${g||'Herramientas'}</h2><div class="grid">${ss.filter(([,s])=>s.grupo===g).map(([k,s])=>`<div class="card click" data-go="${rutaMateria(m)}/${k}" tabindex="0"><h3>${s.titulo}${d.visitadas.includes(k)?' <span class="tag on">✓ Visitada</span>':''}</h3><p style="margin:0;color:var(--muted)">${s.desc}</p></div>`).join('')}</div>`).join('')}`;
+${grupos.map(g=>`<h2>${g||'Herramientas'}</h2><div class="grid">${ss.filter(([,s])=>s.grupo===g).map(([k,s])=>`<div class="card click" data-go="${rutaMateria(m)}/${k}" tabindex="0"><h3>${s.titulo}${d.visitadas.includes(k)?' <span class="tag on">✓ Visitada</span>':''}</h3><p style="margin:0;color:var(--muted)">${s.desc}</p></div>`).join('')}</div>`).join('')}</div>`;
     }
   };
 }
@@ -151,12 +151,12 @@ export function vistaTema(m,t){
         return `<li class="paso-camino ${est}"><button class="camino-nodo" data-go="${rutaLeccion(m,l)}" aria-label="Lección ${i+1}: ${esc(l.titulo)} (${est})"><span aria-hidden="true">${est==='dominada'?'✓':i+1}</span></button>
 <button class="camino-info" data-go="${rutaLeccion(m,l)}"><span class="camino-titulo">${l.titulo}</span><span class="nota">${est==='dominada'?'Dominada':est==='actual'?(h?`Por repetir · ${Math.round(h.mejor*100)}%`:'Te toca esta'):l.resumen}</span></button></li>`};
       const n=t.lecciones.length;
-      return `<div class="area-cab area-${a.tono||a.id}"><span class="area-icono" aria-hidden="true">${t.icono}</span><div><h1 style="margin:0">${t.titulo}</h1><p class="lead" style="margin:4px 0 0">${t.descripcion}</p></div></div>
+      return `<div class="tema-vista area-${a.tono||a.id}"><div class="area-cab"><span class="area-icono" aria-hidden="true">${t.icono}</span><div><h1 style="margin:0">${t.titulo}</h1><p class="lead" style="margin:4px 0 0">${t.descripcion}</p></div></div>
 ${n?`<p class="progress">${c.hechas}/${c.total} lecciones dominadas</p>${barra(c.hechas,c.total)}`:''}
 ${actual?`<div class="row" style="margin:12px 0"><button class="btn" data-go="${rutaLeccion(m,actual)}">${d.lecciones[actual.id]?'Seguir':'Empezar'}: ${actual.titulo}</button></div>`:n?'<p class="allow">✓ Dominaste todo lo disponible de este tema.</p>':''}
 <ol class="camino area-${a.tono||a.id}">${t.lecciones.map(nodo).join('')}
 ${t.proximas.map((x,i)=>`<li class="paso-camino bloqueada"><span class="camino-nodo" aria-hidden="true">🔒</span><span class="camino-info"><span class="camino-titulo">${x}</span><span class="nota">Próximamente</span></span></li>`).join('')}</ol>
-${!n?'<p class="nota">Este tema todavía no tiene lecciones. Mientras tanto, sigue con los otros temas de la materia.</p>':''}`;
+${!n?'<p class="nota">Este tema todavía no tiene lecciones. Mientras tanto, sigue con los otros temas de la materia.</p>':''}</div>`;
     }
   };
 }

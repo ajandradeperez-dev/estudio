@@ -26,6 +26,16 @@ Estas reglas se aplican a **todas** las materias. Cualquier lección nueva debe 
 
 Para no perder tiempo: repetir una lección va directo a la práctica, todo se puede hacer con el teclado (Enter para comprobar y Enter para seguir), la página de cada materia tiene un botón a la siguiente lección pendiente y el examen de ubicación evita estudiar lo que ya sabes.
 
+### Inglés: 4 vertientes de Nation
+
+Inglés sigue además el marco de `src/materias/ingles/metodo.md`. Todo contenido nuevo de Inglés debe respetarlo:
+
+- **Cada unidad cubre las 4 vertientes** (~25 % cada una): input comprensible (escucha con ~95–98 % de palabras conocidas), output con significado (hablar o escribir para comunicar: diálogos, jefe, IA), enfoque en la forma (lecciones y pronunciación) y fluidez (shadowing, ronda rápida, 4-3-2).
+- **Orden de una unidad**: escucha → frases hechas (*chunks*) → forma (lección) → hablar (pronunciación + diálogo) → **jefe** (tarea real, TBLT). El jefe desbloquea la unidad siguiente.
+- **Chunks antes que palabras sueltas**, en inglés real y natural, con explicación en español y el error típico de hispanohablantes.
+- **Corrección "recast + pista"**: primer fallo → pista en español; segundo fallo → modelo + regla. Lo fallado al hablar también entra al repaso.
+- **Niveles MCER** en cada unidad (`nivel: 'A1'`…). La ubicación coloca al usuario en el mapa.
+
 En Ciberseguridad, los simuladores, el laboratorio y el examen rápido son herramientas de práctica, no lecciones. El examen rápido es de respuesta escrita (`datos/preguntas.js`, mismo formato que los ejercicios de lección, con `respuestas`, `errores` y `regla`). Sus preguntas y las del laboratorio entran al repaso mezclado, y cada error muestra la regla o la explicación del caso. El laboratorio de incidentes sigue siendo de elegir opción: es un caso práctico de diagnóstico, no un ejercicio de memoria.
 
 ## Estructura
@@ -159,6 +169,7 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 4`; los formatos a
 
 ## Convenciones
 
+- **Nunca subas claves ni secretos** (API keys de Anthropic u otras, archivos `.env`, tokens) al repositorio: es público. La clave de la conversación con IA la pega el usuario en la app y vive solo en el `localStorage` de su dispositivo. No la escribas en el código, en logs ni en mensajes de error. Revisa `git diff` antes de cada commit.
 - JavaScript puro con módulos ES, sin frameworks ni dependencias de runtime; Vite solo para desarrollo y build.
 - Estilo compacto: plantillas con template strings y `.map(...).join('')`.
 - Todo texto que escriba el usuario (respuestas, notas) se pasa por `esc()` antes de meterlo en HTML.

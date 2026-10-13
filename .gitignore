@@ -1,3 +1,7 @@
 node_modules/
 dist/
 dev-dist/
+# Nunca subir claves ni secretos
+.env
+.env.*
+*.local

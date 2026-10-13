@@ -151,6 +151,29 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   for(const id of Object.keys(CONTENIDO))if(!UNIDADES.some(u=>u.id===id))mal(`contenido ${id}`,'no corresponde a ninguna unidad');
   console.log(`ingles/hablar: ${DIALOGOS.length} diálogos (${turnos} turnos) · ${SONIDOS.length} sonidos · ${UNIDADES.length} unidades`);
 }
+// Migración: un progreso v5 (con la materia 'algebra') llega a la versión actual sin perder nada
+{
+  const mem={};
+  globalThis.localStorage={getItem:k=>mem[k]??null,setItem:(k,v)=>{mem[k]=String(v)},removeItem:k=>{delete mem[k]}};
+  const P=await import(pathToFileURL(join(raiz,'..','nucleo','progreso.js')).href);
+  const f=n=>P.sumarDias(P.hoy(),-n),l=(d,m=0.9)=>({dominada:d,mejor:m,intentos:1,via:'practica'});
+  const v5={v:5,meta:{tipo:'ejercicios',cantidad:10},mejorRacha:4,dominados:2,
+    dias:{[f(0)]:{ej:12,seg:0,xp:120,ok:true},[f(1)]:{ej:10,seg:0,xp:100,ok:true},[f(2)]:{ej:11,seg:0,xp:100,ok:true}},
+    materias:{algebra:{xp:230,lecciones:{expresiones:l(true),'ecuaciones-lineales':l(false,0.4)},extra:{}},ingles:{xp:50,lecciones:{'verbo-to-be':l(true)},extra:{}}},
+    repaso:{'algebra/l/expresiones/3':{paso:1,proxima:f(-1),fallos:0},'ingles/l/can/2':{paso:0,proxima:f(0),fallos:1}},
+    notas:{'algebra/expresiones':{texto:'Resumen',fecha:f(3)}},ultimo:{ruta:'algebra/l/ecuaciones-lineales',materia:'algebra'},frases:{},historial:[{materia:'algebra',tipo:'algebra/l/expresiones',fecha:f(0)}]};
+  mem['ciberlab-progreso']=JSON.stringify(v5);
+  const p=P.progreso(),m=p.materias.matematicas,e='migración v5';
+  if(p.v<6)mal(e,`queda en la versión ${p.v}`);
+  if(p.materias.algebra||m?.xp!==230||!m.lecciones.expresiones?.dominada||m.lecciones['ecuaciones-lineales']?.mejor!==0.4)mal(e,'se pierden la XP o las lecciones de Álgebra (ahora Matemáticas)');
+  if(!p.materias.ingles?.lecciones['verbo-to-be']?.dominada)mal(e,'se pierden lecciones de otras materias');
+  if(!p.repaso['matematicas/l/expresiones/3']||!p.repaso['ingles/l/can/2']||Object.keys(p.repaso).length!==2)mal(e,'se pierden o no se renombran repasos: '+Object.keys(p.repaso).join(', '));
+  if(p.notas['matematicas/expresiones']?.texto!=='Resumen')mal(e,'se pierde la nota');
+  if(P.racha(p)!==3||p.mejorRacha!==4||p.dominados!==2)mal(e,`se pierde la racha (${P.racha(p)} días)`);
+  if(p.ultimo?.materia!=='matematicas'||p.historial[0]?.materia!=='matematicas')mal(e,'"continuar" o el historial siguen apuntando a algebra');
+  if(JSON.parse(mem['ciberlab-progreso']).v!==p.v)mal(e,'la migración no se guarda');
+  console.log(`progreso: un v5 migra a v${p.v} conservando lecciones, XP, racha, repasos y notas`);
+}
 avisos.forEach(a=>console.log('aviso  '+a));
 errores.forEach(e=>console.log('ERROR  '+e));
 console.log(errores.length?`\n${errores.length} errores`:'\nTodo cumple el método de aprendizaje.');

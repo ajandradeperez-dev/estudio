@@ -219,6 +219,7 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 6`; los formatos a
 - **Meta diaria**: 10/20/30 ejercicios o 5/10/15 minutos. Los minutos solo cuentan con la pestaña visible y actividad en el último minuto (`main.js`).
 - **Racha**: días seguidos con la meta cumplida. Si hoy aún no se cumple, sigue viva desde ayer.
 - **XP**: 10 por acierto sin pista (5 con pista) en lecciones, ubicación y preguntas de Ciberseguridad; +20 la primera vez que se domina una lección; 5 por acierto en el repaso; 20 por cada caso del laboratorio y 15 por cada escenario de VPN, solo la primera vez. Para subir de nivel hacen falta 100, 300, 600, 1000… XP.
+- `npm run revisar` carga un progreso v5 de ejemplo y falla si al migrar se pierden lecciones dominadas, XP, racha, repasos o notas: si agregas una versión, amplía esa comprobación.
 - **v6** (áreas y temas): `algebra` pasó a `matematicas` en `materias`, el repaso, las notas, `ultimo` e `historial`. Lo demás ya se guardaba por materia + id de lección, así que agrupar en temas no cambió nada.
 - **Lecciones**: `{dominada, mejor, intentos, via}`; `via` indica si se dominó practicando o en la ubicación. La ronda que toca es `intentos % rondas.length`.
 - **Repaso**: un ejercicio fallado (o acertado con pista) entra para hoy. Si lo aciertas sin pista, vuelve en 1, 3, 7, 14 y 30 días; tras acertarlo a los 30 días queda dominado y sale. Si lo fallas, vuelve mañana y empieza de nuevo.
@@ -253,5 +254,5 @@ npm install       # primera vez
 npm run dev       # servidor de desarrollo: http://localhost:5173 (puerto fijo)
 npm run build     # genera dist/
 npm run preview   # sirve dist/ en http://localhost:4173 (puerto fijo)
-npm run revisar   # comprueba que las lecciones cumplen el método de aprendizaje
+npm run revisar   # método de aprendizaje, jerarquía (áreas, temas, ids), contenido de habla y migración del progreso
 ```

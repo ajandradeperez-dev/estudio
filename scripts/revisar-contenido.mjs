@@ -53,6 +53,64 @@ for(const materia of readdirSync(raiz).sort()){
     console.log(`${materia}: ${lecciones.length} lecciones · ubicación de ${total} preguntas`);
   }
 }
+// Inglés · habla: diálogos, pares mínimos, frases útiles y unidades
+{
+  globalThis.localStorage??={getItem:()=>null,setItem(){},removeItem(){}};
+  const ing=join(raiz,'ingles'),imp=r=>import(pathToFileURL(join(ing,r)).href);
+  const {DIALOGOS}=await imp('hablar/dialogos.js'),{FRASES}=await imp('hablar/frases.js'),{SONIDOS}=await imp('errores-pronunciacion.js');
+  const {UNIDADES}=await imp('hablar/unidades.js'),{CONTENIDO}=await imp('hablar/contenido.js');
+  const {evaluarRespuesta}=await import(pathToFileURL(join(raiz,'..','nucleo','pronunciacion.js')).href);
+  // Un ejemplo concreto de un patrón: sin = ni ^, y * cambiado por palabras
+  const ejemplo=p=>p.replace(/^[=^]/,'').replace(/\*/g,'maria lopez');
+  const ids=new Set();let turnos=0;
+  for(const d of DIALOGOS){
+    const dd=`diálogo ${d.id}`;
+    if(ids.has(d.id))mal(dd,'id repetido');ids.add(d.id);
+    for(const k of ['titulo','nivel','personaje','escena'])if(!d[k])mal(dd,`falta ${k}`);
+    if(!d.turnos?.length){mal(dd,'sin turnos');continue}
+    d.turnos.forEach((t,i)=>{
+      const e=`${dd} turno ${i+1}`;turnos++;
+      for(const k of ['dice','es','tarea','pista','modelo','regla'])if(!t[k])mal(e,`falta ${k}`);
+      if(!(t.acepta?.length>=2))mal(e,'necesita al menos 2 respuestas aceptadas');
+      if(t.modelo&&t.acepta&&!evaluarRespuesta([t.modelo],{acepta:t.acepta,errores:t.errores}).ok)mal(e,`el modelo «${t.modelo}» no se acepta`);
+      for(const [p,por] of Object.entries(t.errores||{})){
+        if(!por)mal(e,`el error «${p}» no explica por qué`);
+        const r=evaluarRespuesta([ejemplo(p)],{acepta:t.acepta,errores:t.errores});
+        if(r.ok||!r.error)mal(e,`el error «${p}» no se detecta (con «${ejemplo(p)}»)`);
+      }
+    });
+  }
+  for(const s of SONIDOS){
+    const e=`sonido ${s.id}`;
+    for(const k of ['nombre','causa','tip'])if(!s[k])mal(e,`falta ${k}`);
+    if(!(s.pares?.length>=3))mal(e,`necesita al menos 3 pares mínimos (tiene ${s.pares?.length||0})`);
+    (s.pares||[]).forEach(par=>{if(par.length!==2||!par[0]||!par[1]||par[0].toLowerCase()===par[1].toLowerCase())mal(e,`par mínimo inválido: ${JSON.stringify(par)}`)});
+    if(!s.frases?.length)mal(e,'sin frases para practicar');
+  }
+  for(const [n,lista] of Object.entries(FRASES))lista.forEach((x,i)=>{if(!x.en||!x.es||!x.uso)mal(`frases ${n} #${i+1}`,'faltan en, es o uso')});
+  const lecIng=new Set(readdirSync(join(ing,'lecciones')).map(f=>f.replace(/^\d+-/,'').replace(/\.js$/,'')));
+  for(const u of UNIDADES){
+    const e=`unidad ${u.id}`,c=CONTENIDO[u.id];
+    for(const k of ['titulo','nivel','tarea'])if(!u[k])mal(e,`falta ${k}`);
+    u.lecciones.forEach(id=>{if(!lecIng.has(id))mal(e,`la lección ${id} no existe`)});
+    [...u.dialogos,u.jefe].forEach(id=>{if(!ids.has(id))mal(e,`el diálogo ${id} no existe`)});
+    if(!SONIDOS.some(s=>s.id===u.sonido))mal(e,`el sonido ${u.sonido} no existe`);
+    if(!c){mal(e,'falta su contenido en contenido.js (escucha, chunks, fluidez)');continue}
+    const p=palabras(c.escucha?.texto||'');
+    if(p<40||p>120)mal(`${e} escucha`,`el texto tiene ${p} palabras (entre 40 y 120)`);
+    const qs=c.escucha?.preguntas||[];
+    if(qs.length<3)mal(`${e} escucha`,`tiene ${qs.length} preguntas (mínimo 3)`);
+    qs.forEach((q,i)=>{const d=`${e} escucha pregunta ${i+1}`;
+      if(q.tipo!=='completar')mal(d,'las preguntas de escucha son de escribir (completar)');
+      if(!q.respuestas?.length)mal(d,'respuestas vacías');
+      if(!q.regla)mal(d,'falta la regla')});
+    if(!(c.chunks?.length>=6))mal(`${e} chunks`,`tiene ${c.chunks?.length||0} frases (mínimo 6)`);
+    (c.chunks||[]).forEach((x,i)=>{if(!x.en||!x.es||!x.uso)mal(`${e} chunk ${i+1}`,'faltan en, es o uso')});
+    if(!c.fluidez?.tema||!(c.fluidez.guia?.length>=2))mal(`${e} fluidez`,'necesita tema y al menos 2 ideas de guía');
+  }
+  for(const id of Object.keys(CONTENIDO))if(!UNIDADES.some(u=>u.id===id))mal(`contenido ${id}`,'no corresponde a ninguna unidad');
+  console.log(`ingles/hablar: ${DIALOGOS.length} diálogos (${turnos} turnos) · ${SONIDOS.length} sonidos · ${UNIDADES.length} unidades`);
+}
 avisos.forEach(a=>console.log('aviso  '+a));
 errores.forEach(e=>console.log('ERROR  '+e));
 console.log(errores.length?`\n${errores.length} errores`:'\nTodo cumple el método de aprendizaje.');

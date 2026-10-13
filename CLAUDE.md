@@ -36,6 +36,8 @@ Inglés sigue además el marco de `src/materias/ingles/metodo.md`. Todo contenid
 - **Corrección "recast + pista"**: primer fallo → pista en español; segundo fallo → modelo + regla. Lo fallado al hablar también entra al repaso.
 - **Niveles MCER** en cada unidad (`nivel: 'A1'`…). La ubicación coloca al usuario en el mapa.
 - **Unidades** en `src/materias/ingles/hablar/unidades.js` (los ids se guardan en el progreso: agrega al final, no los cambies). Una unidad se abre al vencer al jefe anterior o si la ubicación demostró que dominas las lecciones de la unidad anterior.
+- **Contenido de cada unidad** en `hablar/contenido.js` (`CONTENIDO[unidad]`): `escucha` (texto de 40–120 palabras que se oye antes de leerlo, con ≥3 preguntas escritas de comprensión; al 80 % el paso queda hecho), `chunks` (≥6 frases hechas `{en, es, uso}`) y `fluidez` (tema y guía para el 4-3-2: contar lo mismo en 60, 45 y 30 s; luego una ronda rápida de 60 s con los chunks). Las vistas están en `hablar/pasos.js`; los pasos hechos se guardan en `extra.unidades[unidad]`. El repaso guarda `e/<unidad>/<pregunta>` y `c/<unidad>/<chunk>`: agrega elementos al final de cada lista. La página de la unidad muestra 7 pasos: escucha → frases → forma → pronunciación → diálogos → fluidez → jefe.
+- `npm run revisar` también valida Inglés · habla: cada turno de diálogo tiene ≥2 respuestas aceptadas, pista, modelo y regla; el modelo se acepta y cada error típico se detecta; cada sonido tiene ≥3 pares mínimos distintos; las unidades apuntan a lecciones, diálogos y sonidos existentes y tienen su contenido completo.
 - **Estilo juego** (`hablar/juego.js`): hablar da 15 XP por frase con 80+ (escribir da 10); combo de frases seguidas ×1,5 desde 3, ×2 desde 5, ×3 desde 10, y se rompe al fallar; medallas (`MEDALLAS`, cada una con `logra(p, extra)`); sonidos con Web Audio que se pueden silenciar (`localStorage['ciberlab-ajustes']`). **Misión diaria de habla** (`MISION` en `progreso.js`): 20 frases en voz alta o una conversación de 5 turnos; cumplirla cumple la meta del día y suma a la racha.
 
 En Ciberseguridad, los simuladores, el laboratorio y el examen rápido son herramientas de práctica, no lecciones. El examen rápido es de respuesta escrita (`datos/preguntas.js`, mismo formato que los ejercicios de lección, con `respuestas`, `errores` y `regla`). Sus preguntas y las del laboratorio entran al repaso mezclado, y cada error muestra la regla o la explicación del caso. El laboratorio de incidentes sigue siendo de elegir opción: es un caso práctico de diagnóstico, no un ejercicio de memoria.
@@ -46,7 +48,7 @@ En Ciberseguridad, los simuladores, el laboratorio y el examen rápido son herra
 index.html                Esqueleto: menú (#nav), barra superior (#barra) y vista (#vista)
 vite.config.js            Puertos fijos (5173 dev, 4173 preview) con strictPort
 scripts/
-  revisar-contenido.mjs   npm run revisar: comprueba el método en todas las lecciones
+  revisar-contenido.mjs   npm run revisar: comprueba el método en todas las lecciones y el contenido de habla de Inglés
 src/
   main.js                 Rutas, menú, delegación de eventos y conteo de minutos activos
   estilos.css             Todo el CSS (variables en :root, modo oscuro, responsive a 760px)
@@ -76,6 +78,8 @@ src/
     ciberseguridad/       materia.js, lecciones/, secciones/ (simuladores), datos/, progreso.js (ganchos propios)
     ingles/               materia.js + lecciones/01-….js, metodo.md (4 vertientes),
                           errores-pronunciacion.js (sonidos difíciles: causa, tip físico, pares mínimos, detecta())
+                          hablar/: index.js (rutas), unidades.js, contenido.js, pasos.js (escucha, fluidez),
+                          dialogos.js, frases.js, practica.js, dialogo.js, ia.js + claude.js (API), juego.js
     algebra/
     ciencia-datos/
 ```

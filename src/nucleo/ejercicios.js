@@ -1,6 +1,7 @@
 /* Ejercicios en formato común. Los textos son HTML escrito en el repositorio (contenido de confianza).
    {tipo:'opcion',    pregunta, opciones:[…], correcta, porque:{índice:'por qué está mal'}, regla, codigo?}
-   {tipo:'completar', pregunta, respuestas:[aceptadas…], errores?:{'respuesta típica':'por qué está mal'}, regla, pista?, codigo?}
+   {tipo:'completar', pregunta, respuestas:[aceptadas…], errores?:{'respuesta típica':'por qué está mal'}, regla, pista?, codigo?, oir?}
+                      oir: texto en inglés que se puede escuchar (comprensión auditiva)
    {tipo:'tarjeta',   frente, reverso}   (no cuenta como producción)
    {tipo:'hablar',    frase, es?, regla, sonidos?, materia?}                      decir una frase en voz alta (pronunciación ≥ 80)
    {tipo:'hablar',    pregunta, oir?, acepta, errores?, modelo, pista?, regla}    responder hablando (diálogos)
@@ -17,7 +18,7 @@ export function htmlEjercicio(ej,{pista=true}={}){
   const codigo=ej.codigo?`<pre class="ej-codigo">${esc(ej.codigo)}</pre>`:'';
   let cuerpo;
   if(ej.tipo==='opcion')cuerpo=`<p class="ej-preg">${ej.pregunta}</p>${codigo}<div class="opts" id="ej-ops">${ej.opciones.map((o,i)=>`<button data-op="${i}">${o}</button>`).join('')}</div>`;
-  else if(ej.tipo==='completar')cuerpo=`<p class="ej-preg">${ej.pregunta}</p>${codigo}
+  else if(ej.tipo==='completar')cuerpo=`${ej.oir?`<div class="row centro">${htmlOir(ej.oir)}</div>`:''}<p class="ej-preg">${ej.pregunta}</p>${codigo}
 <form class="row" id="ej-form"><label for="ej-resp">Tu respuesta<input id="ej-resp" autocomplete="off" autocapitalize="off" spellcheck="false"></label><button class="btn" id="ej-ok">Comprobar</button>${pista&&ej.pista?'<button type="button" class="btn ghost" id="ej-ver-pista">Ver pista</button>':''}</form>
 ${pista&&ej.pista?`<p class="ej-pista" id="ej-pista" hidden>Pista: ${ej.pista} <span class="progress">(con pista, este ejercicio no cuenta para dominar la lección)</span></p>`:''}`;
   else if(ej.tipo==='hablar'){

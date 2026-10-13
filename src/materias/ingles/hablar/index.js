@@ -3,7 +3,8 @@
    sonido/<id>          pares mínimos y frases de un sonido difícil
    frases/<A1|A2>       frases útiles del nivel
    dialogo/<id>         diálogo guiado
-   ia                   conversación libre con Claude */
+   ia                   conversación libre con Claude
+   u/<id>[/escucha|frases|fluidez]  unidad y sus pasos · jefe/<id>  tarea final */
 import {esc} from '../../../utilidades.js';
 import {soporte,AVISO_SIN_RECONOCIMIENTO} from '../../../nucleo/voz.js';
 import {progreso,datosMateria} from '../../../nucleo/progreso.js';
@@ -20,6 +21,8 @@ import {barra} from '../../../nucleo/ui.js';
 import {cargarLecciones} from '../../../nucleo/cargar.js';
 import {UNIDADES,NIVELES_MCER,unidad,estadoUnidades,unidadActual} from './unidades.js';
 import {MEDALLAS,comboActual,sonidoActivo,alternarSonido,vencerJefe} from './juego.js';
+import {CONTENIDO} from './contenido.js';
+import {vistaEscucha,vistaFluidez,marcarPaso} from './pasos.js';
 
 const RAIZ='ingles/hablar';
 // Títulos de las lecciones de forma (para los pasos de cada unidad)
@@ -83,15 +86,27 @@ function vistaUnidad(u){
 <div class="card"><p>Esta unidad se abre al vencer al jefe de la unidad anterior (o si el examen de ubicación demuestra que ya la dominas).</p>
 <div class="row"><button class="btn" data-go="${RAIZ}/u/${UNIDADES[k-2].id}">Ir a la unidad ${k-1}</button><button class="btn ghost" data-go="ingles/ubicacion">Examen de ubicación</button></div></div>`;
     const paso=(n,titulo,cuerpo,hecho)=>`<li class="paso${hecho?' hecho':''}"><span class="paso-num">${hecho?'✓':n}</span><div><b>${titulo}</b>${cuerpo}</div></li>`;
+    const c=CONTENIDO[u.id],h=d.extra.unidades?.[u.id]||{},boton=(ruta,texto)=>`<div class="row"><button class="btn ghost btn-chico" data-go="${RAIZ}/u/${u.id}/${ruta}">${texto}</button></div>`;
     return `<p class="miga"><button class="enlace" data-go="${RAIZ}">Hablar</button> › Unidad ${k} · ${u.nivel}</p><h1>${u.titulo}</h1>
 <p class="lead"><b>Tarea final:</b> ${u.tarea}</p>
 <ol class="pasos-unidad">
-${paso(1,'Forma (gramática)',`<div class="row">${u.lecciones.map(id=>`<button class="btn ghost btn-chico" data-go="ingles/l/${id}">${d.lecciones[id]?.dominada?'✓ ':''}${esc(TITULOS[id]||id)}</button>`).join('')}</div>`,u.lecciones.every(id=>d.lecciones[id]?.dominada))}
-${paso(2,'Pronunciación',`<div class="row"><button class="btn ghost btn-chico" data-go="${RAIZ}/sonido/${s.id}">${s.nombre}</button></div>`,(fuerzaSonidos(p)[s.id]?.prom||0)>=0.8)}
-${paso(3,'Hablar: diálogos',`<div class="row">${u.dialogos.map(id=>{const x=dialogo(id);return `<button class="btn ghost btn-chico" data-go="${RAIZ}/dialogo/${id}">${dl[id]?`✓ `:''}${x.titulo}</button>`}).join('')}</div>`,u.dialogos.every(id=>dl[id]))}
-${paso(4,'🏆 Jefe: '+dialogo(u.jefe).titulo,`<p class="nota">Sin traducción; necesitas el 80 % de los turnos. Al vencerlo se abre la unidad siguiente.</p><div class="row"><button class="btn" data-go="${RAIZ}/jefe/${u.id}">${e==='completa'?'Repetir el jefe':'Enfrentar al jefe'}</button></div>`,e==='completa')}
+${paso(1,'🎧 Escucha',`<p class="nota">${esc(c.escucha.titulo)}: entiende el audio antes de ver el texto.</p>${boton('escucha','Escuchar')}`,h.escucha)}
+${paso(2,'💬 Frases de la unidad',`<p class="nota">${c.chunks.length} frases hechas para repetir hasta que salgan solas.</p>${boton('frases','Practicar frases')}`,h.chunks)}
+${paso(3,'Forma (gramática)',`<div class="row">${u.lecciones.map(id=>`<button class="btn ghost btn-chico" data-go="ingles/l/${id}">${d.lecciones[id]?.dominada?'✓ ':''}${esc(TITULOS[id]||id)}</button>`).join('')}</div>`,u.lecciones.every(id=>d.lecciones[id]?.dominada))}
+${paso(4,'Pronunciación',`<div class="row"><button class="btn ghost btn-chico" data-go="${RAIZ}/sonido/${s.id}">${s.nombre}</button></div>`,(fuerzaSonidos(p)[s.id]?.prom||0)>=0.8)}
+${paso(5,'Hablar: diálogos',`<div class="row">${u.dialogos.map(id=>{const x=dialogo(id);return `<button class="btn ghost btn-chico" data-go="${RAIZ}/dialogo/${id}">${dl[id]?`✓ `:''}${x.titulo}</button>`}).join('')}</div>`,u.dialogos.every(id=>dl[id]))}
+${paso(6,'⚡ Fluidez',`<p class="nota">4-3-2: cuenta «${esc(c.fluidez.tema)}» en 60, 45 y 30 segundos.</p>${boton('fluidez','Empezar')}`,h.fluidez)}
+${paso(7,'🏆 Jefe: '+dialogo(u.jefe).titulo,`<p class="nota">Sin traducción; necesitas el 80 % de los turnos. Al vencerlo se abre la unidad siguiente.</p><div class="row"><button class="btn" data-go="${RAIZ}/jefe/${u.id}">${e==='completa'?'Repetir el jefe':'Enfrentar al jefe'}</button></div>`,e==='completa')}
 </ol>`;
   }};
+}
+// Frases hechas (chunks) de la unidad: repetir con evaluación; al 80 % el paso queda hecho
+function vistaChunks(u){
+  const c=CONTENIDO[u.id],cabecera=`<p class="miga"><button class="enlace" data-go="${RAIZ}/u/${u.id}">${esc(u.titulo)}</button> › Frases</p><h1>💬 Frases de la unidad</h1>
+<p class="lead">Bloques que los nativos dicen de una pieza. Apréndelos enteros, no palabra por palabra.</p>`;
+  return sesionPronunciacion({titulo:`Frases: ${u.titulo}`,cabecera,volver:`${RAIZ}/u/${u.id}`,
+    items:()=>c.chunks.map((x,k)=>({tipo:'repetir',en:x.en,es:`${x.es} · ${x.uso}`,ref:`ingles/c/${u.id}/${k}`})),
+    alTerminar:rs=>{const rep=rs.filter(r=>r.tipo==='repetir');if(rep.length&&rep.filter(r=>r.ok).length/rep.length>=0.8){marcarPaso(u.id,'chunks');return '<p class="allow">✓ Paso «Frases de la unidad» completado.</p>'}return ''}});
 }
 function vistaJefe(u){
   if(estadoUnidades()[u.id]==='bloqueada')return vistaUnidad(u);
@@ -122,7 +137,10 @@ export function ruta(resto){
   if(a==='frases'&&FRASES[b])return {ruta:`${RAIZ}/frases/${b}`,v:vistaFrases(b)};
   if(a==='dialogo'&&dialogo(b))return {ruta:`${RAIZ}/dialogo/${b}`,v:vistaDialogo(dialogo(b))};
   if(a==='ia')return {ruta:`${RAIZ}/ia`,v:vistaIA()};
-  if(a==='u'&&unidad(b))return {ruta:`${RAIZ}/u/${b}`,v:vistaUnidad(unidad(b))};
+  if(a==='u'&&unidad(b)){const u=unidad(b),c=resto[2],bloq=estadoUnidades()[b]==='bloqueada';
+    const pasos={escucha:vistaEscucha,frases:vistaChunks,fluidez:vistaFluidez};
+    if(pasos[c]&&!bloq)return {ruta:`${RAIZ}/u/${b}/${c}`,v:pasos[c](u)};
+    return {ruta:`${RAIZ}/u/${b}`,v:vistaUnidad(u)};}
   if(a==='jefe'&&unidad(b))return {ruta:`${RAIZ}/jefe/${b}`,v:vistaJefe(unidad(b))};
   return {ruta:RAIZ,v:portada};
 }
@@ -150,6 +168,8 @@ export function ejercicioHabla(tipo,partes,p=progreso()){
   if(tipo==='f'){const x=FRASES[partes[0]]?.[+partes[1]];return x&&{titulo:`Frases útiles ${partes[0]}`,ej:{...base,frase:x.en,es:x.es,regla:`Frase hecha: ${x.uso}.`}}}
   if(tipo==='d'){const d=dialogo(partes[0]),t=d?.turnos[+partes[1]];
     return t&&{titulo:`Diálogo: ${d.titulo}`,ej:{...base,pregunta:`${esc(d.personaje)}: «<span lang="en">${esc(t.dice)}</span>» — ${t.tarea}`,oir:t.dice,acepta:t.acepta,errores:t.errores||{},modelo:t.modelo,pista:t.pista,regla:t.regla}}}
+  if(tipo==='e'){const q=CONTENIDO[partes[0]]?.escucha.preguntas[+partes[1]];return q&&{titulo:`Escucha: ${CONTENIDO[partes[0]].escucha.titulo}`,ej:{...q,oir:CONTENIDO[partes[0]].escucha.texto}}}
+  if(tipo==='c'){const x=CONTENIDO[partes[0]]?.chunks[+partes[1]];return x&&{titulo:'Frases de la unidad',ej:{...base,frase:x.en,es:x.es,regla:`Frase hecha: ${x.uso}.`}}}
   if(tipo==='x'){const x=p.frases[partes[0]];return x&&{titulo:'Frase de tu tutor IA',ej:{...base,frase:x.en,es:x.es,regla:x.regla||'Frase para practicar.'}}}
   return null;
 }

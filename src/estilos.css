@@ -242,3 +242,13 @@ nav button.sub{padding:7px 10px 7px 22px;font-size:14px}
   .osi div{grid-template-columns:28px 1fr}.osi div span:last-child{grid-column:1/-1}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* Pasos de unidad: escucha y fluidez */
+.escucha-audio .row{margin-top:4px}
+.transcripcion{margin:12px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--code)}
+.transcripcion summary{cursor:pointer;font-weight:600}
+.transcripcion p{line-height:1.55}
+.guia{margin:8px 0 12px;padding-left:20px;color:var(--muted)}
+.reloj{font-family:var(--f-mono);font-size:44px;font-weight:600;text-align:center;margin:8px 0;color:var(--accent);font-variant-numeric:tabular-nums}
+.tabla-fluidez{width:100%;border-collapse:collapse;margin:8px 0 12px}
+.tabla-fluidez th,.tabla-fluidez td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+.tabla-fluidez th{font-size:13px;color:var(--muted);font-weight:600}

@@ -2,7 +2,7 @@
    Si el almacenamiento no está disponible (modo privado, bloqueado), la app funciona igual sin guardar nada.
    Cada cambio emite el evento 'progreso' en window para que la barra superior se actualice.
 
-   Estructura (v: 3):
+   Estructura (v: 4):
    meta      {tipo:'ejercicios'|'minutos', cantidad}
    dias      {'AAAA-MM-DD': {ej, seg, xp, ok}}   ok = se cumplió la meta ese día (cuenta para la racha)
    mejorRacha
@@ -17,7 +17,7 @@
    ultimo    {ruta, materia} para "Continuar donde te quedaste" */
 import {DOMINIO} from './metodo.js';
 
-const CLAVE='ciberlab-progreso',VERSION=3;
+const CLAVE='ciberlab-progreso',VERSION=4;
 // Días hasta la siguiente vez que se pregunta un ejercicio acertado en el repaso, según cuántas veces seguidas se acertó
 export const INTERVALOS=[1,3,7,14,30];
 export const METAS=[['ejercicios',10],['ejercicios',20],['ejercicios',30],['minutos',5],['minutos',10],['minutos',15]];
@@ -58,19 +58,27 @@ function migrar(p){
     for(const ref of Object.keys(obj(p.repaso)||{}))if(ref.split('/')[1]==='l')delete p.repaso[ref];
     p.v=3;
   }
+  if(p.v===3){ // v3 → v4: el examen rápido de Ciberseguridad pasó de opción múltiple a respuesta escrita; el mejor resultado anterior no es comparable
+    const c=obj(obj(p.materias)?.ciberseguridad);
+    if(obj(c?.extra))delete c.extra.examen;
+    p.v=4;
+  }
   return p;
 }
 export function progreso(){
   let p=null;
   try{p=obj(JSON.parse(localStorage.getItem(CLAVE)))}catch(e){}
-  if(p&&p.v!==VERSION){p=migrar(p);guardar(p)}
+  const migrado=p&&p.v!==VERSION;
+  if(migrado)p=migrar(p);
   if(!p){p=vacio();p.ultimo=ultimoV1()}
+  // Completa lo que falte (datos incompletos o de otra versión) antes de usarlos o guardarlos
   const v=vacio();
   for(const k of ['dias','materias','repaso','notas'])p[k]=obj(p[k])||{};
   if(!obj(p.meta)||!METAS.some(([t,c])=>t===p.meta.tipo&&c===p.meta.cantidad))p.meta=v.meta;
   if(typeof p.mejorRacha!=='number')p.mejorRacha=0;
   if(typeof p.dominados!=='number')p.dominados=0;
   if(!obj(p.ultimo))p.ultimo=null;
+  if(migrado)guardar(p);
   return p;
 }
 function guardar(p){

@@ -191,7 +191,7 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
     notas:{'algebra/expresiones':{texto:'Resumen',fecha:f(3)}},ultimo:{ruta:'algebra/l/ecuaciones-lineales',materia:'algebra'},frases:{},historial:[{materia:'algebra',tipo:'algebra/l/expresiones',fecha:f(0)}]};
   mem['ciberlab-progreso']=JSON.stringify(v5);
   const p=P.progreso(),m=p.materias.matematicas,e='migración v5';
-  if(p.v!==7)mal(e,`queda en la versión ${p.v} (se esperaba 7)`);
+  if(p.v!==8)mal(e,`queda en la versión ${p.v} (se esperaba 8)`);
   if(p.materias.algebra||m?.xp!==230||!m.lecciones.expresiones?.dominada||m.lecciones['ecuaciones-lineales']?.mejor!==0.4)mal(e,'se pierden la XP o las lecciones de Álgebra (ahora Matemáticas)');
   if(!p.materias.ingles?.lecciones['verbo-to-be']?.dominada)mal(e,'se pierden lecciones de otras materias');
   if(!p.repaso['matematicas/l/expresiones/3']||!p.repaso['ingles/l/can/2'])mal(e,'se pierden o no se renombran repasos: '+Object.keys(p.repaso).join(', '));
@@ -201,6 +201,8 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   if(!p.repaso['matematicas/h/expresiones']||!p.repaso['ingles/h/verbo-to-be']||p.repaso['matematicas/h/ecuaciones-lineales'])mal(e,'las habilidades dominadas no entran (solo ellas) al repaso de habilidades');
   if(typeof m?.lecciones.expresiones?.rating!=='number'||!Array.isArray(m?.lecciones.expresiones?.ult))mal(e,'falta el registro de dominio (rating, últimas respuestas)');
   if(p.notas['matematicas/expresiones']?.texto!=='Resumen')mal(e,'se pierde la nota');
+  // v8: tarjetas de las notas del cuaderno (vacías al migrar)
+  if(!p.tarjetas||typeof p.tarjetas!=='object'||Object.keys(p.tarjetas).length)mal(e,'v8: falta el objeto de tarjetas');
   if(P.racha(p)!==3||p.mejorRacha!==4||p.dominados!==2)mal(e,`se pierde la racha (${P.racha(p)} días)`);
   if(p.ultimo?.materia!=='matematicas'||p.historial[0]?.materia!=='matematicas')mal(e,'"continuar" o el historial siguen apuntando a algebra');
   if(JSON.parse(mem['ciberlab-progreso']).v!==p.v)mal(e,'la migración no se guarda');
@@ -236,6 +238,16 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
   }
   for(const [id,f] of Object.entries(BANCOS)){const l=f();if(!l.length||l.some(x=>!x.ref||!x.regla))mal(`banco ${id}`,'vacío o con ejercicios sin ref o sin regla')}
   console.log(`generadores: ${Object.keys(GENERADORES).length} · ${total} ejercicios generados y verificados · ${Object.keys(BANCOS).length} bancos`);
+}
+// Cuaderno: el formato de las notas escapa el HTML del usuario, solo enlaza a la app o a https y lee bien las tarjetas
+{
+  const F=await import(pathToFileURL(join(raiz,'..','nucleo','cuaderno','formato.js')).href),e='formato de notas';
+  const h=F.render('<img src=x onerror=alert(1)> **a** [x](javascript:alert(1)) [ok](#repaso)\n🃏 ¿P? | R\n- [ ] c');
+  if(/<img src=x|<[^>]*\sonerror=|href="javascript/i.test(h))mal(e,'deja pasar HTML o enlaces peligrosos');
+  if(!h.includes('<b>a</b>')||!h.includes('data-go="repaso"')||!h.includes('data-casilla="2"'))mal(e,'no da formato (negrita, enlace o casilla)');
+  if(JSON.stringify(F.tarjetasDe('🃏 ¿P? | R\n🃏 sin respuesta'))!=='[{"q":"¿P?","a":"R"}]')mal(e,'lee mal las tarjetas');
+  if(F.deHtml('<b>x</b> \\(\\cambio{\\dfrac{1}{2}}\\)')!=='**x** $\\dfrac{1}{2}$')mal(e,'convierte mal un paso a texto de nota');
+  console.log('cuaderno: el formato de las notas es seguro y lee las tarjetas');
 }
 avisos.forEach(a=>console.log('aviso  '+a));
 errores.forEach(e=>console.log('ERROR  '+e));

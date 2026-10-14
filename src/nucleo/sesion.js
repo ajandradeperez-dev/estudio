@@ -15,11 +15,12 @@
    Pregunta (ver tipos en ACT): {tipo, enunciado, respuesta, verificar?, errores?:[{si(entrada), por, valor?}], regla?, pista?, pasos?, …}
    r = {correcto, pista, rendido, entrada, ms, porque} */
 import {$,esc} from '../utilidades.js';
-import {barra,puntos,abrirHoja,cerrarHoja,confirmar} from './ui.js';
+import {barra,puntos,abrirHoja,cerrarHoja,confirmar,aviso} from './ui.js';
 import {soporte,htmlMic,htmlOir,htmlFraseEvaluada,escucharConBoton,hablar} from './voz.js';
 import {evaluarHablar,META_PRONUNCIACION} from './ejercicios.js';
 import {registrarHabla,registrarSonidos} from './progreso.js';
 import {sonar} from './sonido.js';
+import {agregarAlTema,bloqueProcedimiento,bloqueError} from './cuaderno/notas.js';
 import {htmlPaso,normalPaso,textoPlano,abrirProcedimiento,cerrarProcedimiento} from './procedimiento.js';
 import {vibrar} from './ajustes.js';
 import {conFormulas} from './formula.js';
@@ -199,6 +200,10 @@ export function crearSesion(cfg){
 ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="nota">Con pista no cuenta para dominar.</span></p>`:''}</div>${pie()}</div>`;
   }
 
+  // "📝 Guardar en mis notas": a la nota del tema de la habilidad (ver cuaderno/notas.js)
+  const dondeDe=p=>({materia:p.materia||cfg.materia,habilidad:p.habilidad||cfg.habilidad});
+  const guardarPasos=p=>dondeDe(p).materia?async paso=>{const n=await agregarAlTema(dondeDe(p),bloqueProcedimiento(p,dondeDe(p),paso));aviso(`📝 Guardado en «${n.titulo}»`)}:null;
+
   // Muestra la hoja con el resultado y lo registra
   function resolver(r,entrada,repintar){
     if(st.fase!=='pregunta')return;
@@ -228,7 +233,8 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
     }
     // Procedimiento paso a paso y "No entendí" (explicación alternativa + el siguiente ejercicio más fácil)
     const botones=[p.pasos?.length&&p.tipo!=='error'?'<button type="button" class="btn ghost btn-chico" id="hoja-proc">📖 Ver procedimiento</button>':'',
-      !r.correcto&&(p.alternativa||p.regla)?'<button type="button" class="btn ghost btn-chico" id="hoja-noentendi">🤔 No entendí</button>':''].filter(Boolean);
+      !r.correcto&&(p.alternativa||p.regla)?'<button type="button" class="btn ghost btn-chico" id="hoja-noentendi">🤔 No entendí</button>':'',
+      dondeDe(p).materia&&(!r.correcto||p.pasos?.length||p.frase)?'<button type="button" class="btn ghost btn-chico" id="hoja-nota">📝 Guardar en mis notas</button>':''].filter(Boolean);
     if(botones.length)lineas.push(`<div class="row hoja-acciones">${botones.join('')}</div>`);
     const pieXp=[extra.xp?`<span class="hoja-xp">+${extra.xp} XP</span>`:'',extra.nota||''].filter(Boolean).join(' · ');
     if(pieXp)lineas.push(`<p class="hoja-linea nota">${pieXp}</p>`);
@@ -263,10 +269,14 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
       }
       if(t.id==='hoja-seguir'||t.id==='ses-continuar'){avanzar();repintar();window.scrollTo(0,0);return true}
       const ult=st.historial.at(-1);
-      if(t.id==='hoja-proc'&&ult){abrirProcedimiento(ult.p,{revelar:true,guardar:cfg.guardarPaso?x=>cfg.guardarPaso(ult.p,x):null,idioma:ult.p.lang==='en'?'en-US':'es'});return true}
+      if(t.id==='hoja-proc'&&ult){abrirProcedimiento(ult.p,{revelar:true,guardar:guardarPasos(ult.p),idioma:ult.p.lang==='en'?'en-US':'es'});return true}
+      if(t.id==='hoja-nota'&&ult){t.disabled=true;
+        const d=dondeDe(ult.p),bloque=!ult.r.correcto||!ult.p.pasos?.length?bloqueError(ult.p,d,ult.r):bloqueProcedimiento(ult.p,d);
+        try{const n=await agregarAlTema(d,bloque);t.textContent='✅ Guardado';aviso(`📝 Guardado en «${n.titulo}»`)}catch(e){t.disabled=false;aviso('No se pudo guardar la nota.')}
+        return true}
       if(t.id==='hoja-noentendi'&&ult){st.facil=true;
         abrirProcedimiento(ult.p,{revelar:false,alternativa:`${ult.p.alternativa||''}${ult.p.regla?`<p><b>La regla:</b> ${ult.p.regla}</p>`:''}<p class="nota">El siguiente ejercicio será más fácil.</p>`,
-          ia:cfg.explicarIA?()=>cfg.explicarIA(ult.p,ult.r.entrada):null,guardar:cfg.guardarPaso?x=>cfg.guardarPaso(ult.p,x):null});return true}
+          ia:cfg.explicarIA?()=>cfg.explicarIA(ult.p,ult.r.entrada):null,guardar:guardarPasos(ult.p)});return true}
       if(st.fase!=='pregunta')return;
       const p=st.actual,a=act();
       if(t.dataset.tecla!==undefined){

@@ -33,7 +33,7 @@ main{flex:1;width:100%;max-width:760px;margin:0 auto;padding:var(--s4) var(--s4)
 .sup-chip.fuego{color:var(--warn)}
 .sup-chip.meta .barra{width:56px;height:8px}
 /* Navegación inferior fija: Aprender · Repasar · Logros · Perfil */
-.nav-inferior{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(4,1fr);height:calc(var(--nav-alto) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--surface);border-top:2px solid var(--line)}
+.nav-inferior{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(5,1fr);height:calc(var(--nav-alto) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--surface);border-top:2px solid var(--line)}
 .nav-tab{all:unset;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:48px;cursor:pointer;color:var(--muted);font-size:12px;font-weight:800}
 .nav-tab .nav-icono{font-size:24px;line-height:1;filter:grayscale(.6);opacity:.85;transition:transform .15s ease}
 .nav-tab[aria-current="page"]{color:var(--primary)}

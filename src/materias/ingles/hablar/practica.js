@@ -7,7 +7,8 @@ import {soporte,hablar,htmlMic,htmlOir,htmlFraseEvaluada,escucharConBoton} from 
 import {evaluar} from '../../../nucleo/pronunciacion.js';
 import {registrarEjercicio,registrarHabla,registrarSonidos} from '../../../nucleo/progreso.js';
 import {META_PRONUNCIACION} from '../../../nucleo/ejercicios.js';
-import {barra} from '../../../nucleo/ui.js';
+import {barra,aviso} from '../../../nucleo/ui.js';
+import {agregarAlTema} from '../../../nucleo/cuaderno/notas.js';
 import {htmlCierre,xpHoy} from '../../../nucleo/cierre.js';
 import {SONIDOS,sonido} from '../errores-pronunciacion.js';
 import {premiarFrase,htmlPremio,cerrarCombo} from './juego.js';
@@ -40,7 +41,7 @@ ${st.respondido!=null?`<div class="result">${st.respondido===x.correcta?'<span c
     }
     const pasada=st.mejor&&st.mejor.puntaje>=META_PRONUNCIACION&&!st.lento;
     return `${cab}<p class="frase-objetivo" lang="en">${esc(x.en)}</p>${x.es?`<p class="nota">${x.es}</p>`:''}
-<div class="row centro">${htmlOir(x.en)}${soporte.escuchar&&soporte.hablar?'<button class="btn ghost btn-chico" id="hp-sombra" type="button">🔁 Shadowing</button>':''}</div>
+<div class="row centro">${htmlOir(x.en)}${soporte.escuchar&&soporte.hablar?'<button class="btn ghost btn-chico" id="hp-sombra" type="button">🔁 Shadowing</button>':''}<button class="btn ghost btn-chico" id="hp-nota" type="button" aria-label="Guardar la frase en mis notas">📝</button></div>
 ${soporte.escuchar?(st.intentos<MAX_INTENTOS&&!pasada?htmlMic('hp-mic',st.intentos?'Toca y vuelve a intentarlo':'Toca y repite la frase'):'')
   :`<form class="row" id="ej-form"><label for="hp-resp">Escribe lo que escuchas<input id="hp-resp" autocomplete="off" autocapitalize="off" spellcheck="false" lang="en"></label><button class="btn" id="hp-ok">Comprobar</button></form><p class="ej-pista">Tu navegador no reconoce voz (usa Chrome en Android para hablar): por ahora practica escuchando y escribiendo.</p>`}
 <div id="hp-res" aria-live="polite">${htmlResultado()}</div>
@@ -91,6 +92,11 @@ ${htmlCierre({xp:xpHoy()-xp0,aprendido:dificiles.length?dificiles.map(s=>`<b>${s
       // Solo cuenta el botón 🐢 de la frase (no tocar una palabra suelta) y solo antes de pasar
       if(t.dataset.lento&&t.closest('.oir')&&x.tipo==='repetir'){if(!(st.mejor&&st.mejor.puntaje>=META_PRONUNCIACION&&!st.lento))st.lento=true;return true}
       if(t.id==='hp-sig'){cerrarItem();i++;st=nuevoEstado();repintar();return true}
+      if(t.id==='hp-nota'&&x.en){t.disabled=true;const fecha=new Date().toLocaleDateString('es',{day:'numeric',month:'short'});
+        try{const n=await agregarAlTema({materia:'ingles'},`## 🗣️ Frase · ${fecha}
+**${x.en}**${x.es?`
+${String(x.es).replace(/<[^>]+>/g,'')}`:''}`);t.textContent='✅';aviso(`📝 Guardada en «${n.titulo}»`)}catch(e){t.disabled=false}
+        return true}
       if(x.tipo==='elegir'&&t.dataset.elige!==undefined&&st.respondido==null){
         st.respondido=+t.dataset.elige;const ok=st.respondido===x.correcta;
         registrarEjercicio({materia:'ingles',correcto:ok,xp:ok?5:0,repasar:false});

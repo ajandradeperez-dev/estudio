@@ -10,7 +10,7 @@ let fase='inicio',ses=null;
 function empezar(){
   const reglas=[];
   ses=crearSesion({
-    titulo:'Examen rápido',tono:'ciber',salir:'ciberseguridad/quiz',sinPistas:true,
+    titulo:'Examen rápido',tono:'ciber',salir:'ciberseguridad/quiz',sinPistas:true,materia:'ciberseguridad',
     total:()=>quiz.length,
     siguiente:st=>st.i<quiz.length?{...deBanco(quiz[st.i]),n:st.i}:null,
     responder(p,r){if(!r.correcto)reglas.push(p.regla);ejercicio(`examen/${p.n}`,r.correcto);return {}},

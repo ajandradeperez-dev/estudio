@@ -10,7 +10,7 @@ import {vistaHabilidad,vistaCofre,vistaJefe} from './nucleo/habilidad.js';
 import {repaso} from './nucleo/repaso.js';
 import {perfil} from './nucleo/miprogreso.js';
 import {logros} from './nucleo/logros.js';
-import {notas} from './nucleo/notas.js';
+import {vistaNotas} from './nucleo/notas.js';
 import {vistaUbicacion} from './nucleo/ubicacion.js';
 import {aplicarTema} from './nucleo/ajustes.js';
 import {cerrarHoja,intro,boton} from './nucleo/ui.js';
@@ -24,11 +24,12 @@ import {hablar} from './nucleo/voz.js';
    Las rutas viejas (#ingles/l/can, #algebra/…, #fw, #progreso) se resuelven y se reescriben a la canónica.
    Cada vista exporta vista() y, si las necesita, alEntrar(), alMostrar(), alSalir(), alClic(t, ir, repintar)
    e inmersiva (true mientras es una sesión de práctica a pantalla completa: sin barras de la app). */
-const ESPECIALES={repaso,logros,perfil,notas};
+const ESPECIALES={repaso,logros,perfil,get notas(){return vistaNotas([])}};
 function resolver(ruta){
   const x=analizar(ruta),{m}=x;
   if(x.tipo==='portada')return {...x,v:portada};
   if(x.tipo==='especial')return {...x,v:ESPECIALES[x.ruta]};
+  if(x.tipo==='notas')return {...x,v:vistaNotas(x.resto)};
   if(x.tipo==='area')return {...x,v:vistaArea(x.area)};
   if(x.tipo==='tema')return {...x,v:vistaTema(m,x.t)};
   if(x.tipo==='leccion')return {...x,v:vistaHabilidad(m,x.l),ultimo:true};
@@ -55,9 +56,9 @@ function cabeceraSeccion(m,s){
 
 /* ---------- navegación ---------- */
 let cur,anterior='';
-const PESTANAS=[['','🏠','Aprender'],['repaso','🔁','Repasar'],['logros','🏆','Logros'],['perfil','👤','Perfil']];
-// Pestaña activa: Repasar, Logros y Perfil (incluye Mis notas); todo lo demás es Aprender
-const pestana=()=>cur.tipo==='especial'?(cur.ruta==='notas'?'perfil':cur.ruta):'';
+const PESTANAS=[['','🏠','Aprender'],['repaso','🔁','Repasar'],['notas','📝','Notas'],['logros','🏆','Logros'],['perfil','👤','Perfil']];
+// Pestaña activa: Repasar, Notas (con el editor y los resúmenes), Logros y Perfil; todo lo demás es Aprender
+const pestana=()=>cur.tipo==='notas'?'notas':cur.tipo==='especial'?cur.ruta:'';
 function pintar(){
   const inm=!!cur.v.inmersiva;
   document.body.classList.toggle('sesion-activa',inm);

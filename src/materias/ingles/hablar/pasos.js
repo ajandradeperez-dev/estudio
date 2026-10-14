@@ -26,7 +26,7 @@ export function vistaEscucha(u){
   function empezar(){
     const fallos=[];
     ses=crearSesion({
-      titulo:`Escucha: ${e.titulo}`,tono:'estudio',salir:`${RAIZ}/u/${u.id}`,sinPistas:true,
+      titulo:`Escucha: ${e.titulo}`,tono:'estudio',salir:`${RAIZ}/u/${u.id}`,sinPistas:true,materia:'ingles',
       total:()=>n,
       siguiente:st=>st.i<n?{...deBanco(e.preguntas[st.i]),oir:soporte.hablar?e.texto:'',k:st.i}:null,
       responder(p,r){

@@ -2,7 +2,7 @@
    Si el almacenamiento no está disponible (modo privado, bloqueado), la app funciona igual sin guardar nada.
    Cada cambio emite el evento 'progreso' en window para que la barra superior se actualice.
 
-   Estructura (v: 7):
+   Estructura (v: 8):
    meta      {tipo:'ejercicios'|'minutos', cantidad}
    dias      {'AAAA-MM-DD': {ej, seg, xp, ok, habla:{frases, seg, turnos, conv}}}   ok = se cumplió la meta ese día (cuenta para la racha)
              habla: frases dichas en voz alta, segundos con el micrófono, turnos de conversación y la conversación más larga del día
@@ -18,7 +18,9 @@
              ref = '<materia>/l/<lección>/<i>' ejercicio de una lección · '<materia>/g/<habilidad>/<nivel>' ejercicio generado
                    '<materia>/h/<habilidad>' repaso de una habilidad dominada · '<materia>/<clave propia>' (ejercicioRepaso)
    dominados número de ejercicios que salieron del repaso por recordarlos a más de 2 meses
-   notas     {'<materia>/<lección>': {texto, fecha}}   resúmenes escritos al dominar cada lección ("Mis notas")
+   notas     {'<materia>/<lección>': {texto, fecha}}   resúmenes escritos al dominar cada lección (se copian al cuaderno)
+   tarjetas  {[id]: {q, a, nota, titulo, materia, fecha}}  tarjetas "🃏 pregunta | respuesta" de las notas del cuaderno;
+             se repasan con la ref '<materia|notas>/t/<id>' (el cuaderno vive en IndexedDB, ver cuaderno/db.js)
    ultimo    {ruta, materia} para "Continuar donde te quedaste"
    frases    {[id]: {en, es, regla, fecha}}   frases para repasar que no salen de una lección (p. ej. sugeridas por la IA)
    historial [{materia, tipo, fecha}]          últimas sesiones (para alternar materias en "¿Qué sigue?")
@@ -26,12 +28,12 @@
    Inglés: sonidos {id:{ok, n, ult:[1,0…]}}, unidades, dialogos, medallas, combo. */
 import {DOMINIO,ULTIMAS,estadoDominio,nuevoRating,calidad,sm2,SALE_DEL_REPASO,TOPE_HABILIDAD,INTERVALOS_V6} from './metodo.js';
 
-const CLAVE='ciberlab-progreso',VERSION=7;
+const CLAVE='ciberlab-progreso',VERSION=8;
 const RAPIDO=12000; // ms: responder bien en menos de esto cuenta como "rápido" (sube más la dificultad y el intervalo)
 export const METAS=[['ejercicios',10],['ejercicios',20],['ejercicios',30],['minutos',5],['minutos',10],['minutos',15]];
 const XP_LECCION=20;
 
-const vacio=()=>({v:VERSION,meta:{tipo:'ejercicios',cantidad:20},dias:{},mejorRacha:0,materias:{},repaso:{},dominados:0,notas:{},ultimo:null,frases:{},historial:[]});
+const vacio=()=>({v:VERSION,meta:{tipo:'ejercicios',cantidad:20},dias:{},mejorRacha:0,materias:{},repaso:{},dominados:0,notas:{},tarjetas:{},ultimo:null,frases:{},historial:[]});
 
 /* ---------- fechas (hora local) ---------- */
 const dos=n=>String(n).padStart(2,'0');
@@ -106,6 +108,10 @@ function migrar(p){
     }
     p.v=7;
   }
+  if(p.v===7){ // v7 → v8: tarjetas de repaso creadas desde las notas del cuaderno; lo demás no cambia
+    p.tarjetas=obj(p.tarjetas)||{};
+    p.v=8;
+  }
   return p;
 }
 export function progreso(){
@@ -116,7 +122,7 @@ export function progreso(){
   if(!p){p=vacio();p.ultimo=ultimoV1()}
   // Completa lo que falte (datos incompletos o de otra versión) antes de usarlos o guardarlos
   const v=vacio();
-  for(const k of ['dias','materias','repaso','notas','frases'])p[k]=obj(p[k])||{};
+  for(const k of ['dias','materias','repaso','notas','frases','tarjetas'])p[k]=obj(p[k])||{};
   if(!Array.isArray(p.historial))p.historial=[];
   if(!obj(p.meta)||!METAS.some(([t,c])=>t===p.meta.tipo&&c===p.meta.cantidad))p.meta=v.meta;
   if(typeof p.mejorRacha!=='number')p.mejorRacha=0;
@@ -284,6 +290,27 @@ export function registrarSesion(materia,tipo){
 // titulo: para notas que no son de una lección (p. ej. el resumen de una conversación con IA)
 export function guardarNota(materia,leccion,texto,titulo){cambiar(p=>{p.notas[`${materia}/${leccion}`]={texto,fecha:hoy(),...(titulo?{titulo}:{})}})}
 export function borrarNota(clave){cambiar(p=>{delete p.notas[clave]})}
+// Tarjetas de una nota del cuaderno: agrega las nuevas al repaso (hoy) y quita las que ya no están en la nota
+const hash=s=>{let h=5381;for(const ch of String(s))h=(h*33^ch.codePointAt(0))>>>0;return h.toString(36)};
+export const refTarjeta=(materia,id)=>`${materia||'notas'}/t/${id}`;
+export function sincronizarTarjetas(nota,{materia,titulo},lista){
+  const p=progreso(),ids=new Set(lista.map(x=>`n${hash(nota+'|'+x.q+'|'+x.a)}`));
+  const viejas=Object.entries(p.tarjetas).filter(([id,t])=>t.nota===nota);
+  const cambia=viejas.some(([id,t])=>!ids.has(id)||t.materia!==(materia||null)||t.titulo!==titulo)||[...ids].some(id=>!p.tarjetas[id]);
+  if(!cambia)return 0;
+  return cambiar(p=>{
+    for(const [id,t] of viejas)if(!ids.has(id)||t.materia!==(materia||null)){delete p.tarjetas[id];delete p.repaso[refTarjeta(t.materia,id)]}
+    let nuevas=0;
+    lista.forEach(x=>{const id=`n${hash(nota+'|'+x.q+'|'+x.a)}`;
+      if(!p.tarjetas[id]){nuevas++;p.repaso[refTarjeta(materia,id)]={rep:0,int:1,ef:2.5,proxima:hoy(),fallos:0}}
+      p.tarjetas[id]={q:x.q,a:x.a,nota,titulo,materia:materia||null,fecha:p.tarjetas[id]?.fecha||hoy()};});
+    return nuevas;
+  });
+}
+export function borrarTarjetasDe(nota){
+  if(!Object.values(progreso().tarjetas).some(t=>t.nota===nota))return;
+  cambiar(p=>{for(const [id,t] of Object.entries(p.tarjetas))if(t.nota===nota){delete p.tarjetas[id];delete p.repaso[refTarjeta(t.materia,id)]}});
+}
 
 /* ---------- secciones y "continuar" ---------- */
 export function visitar(materia,seccion){
@@ -295,5 +322,12 @@ export function guardarUltimo(ultimo){
   const p=progreso();
   if(JSON.stringify(p.ultimo)!==JSON.stringify(ultimo)){p.ultimo=ultimo;guardar(p)}
 }
-// Borra todo menos la meta diaria elegida y las notas (son texto escrito por el usuario)
-export function reiniciarProgreso(){cambiar(p=>{const {meta,notas}=p;Object.assign(p,vacio(),{meta,notas})})}
+// Borra todo menos la meta diaria elegida, las notas y las tarjetas (son texto escrito por el usuario); las tarjetas vuelven al repaso
+export function reiniciarProgreso(){cambiar(p=>{const {meta,notas,tarjetas}=p;Object.assign(p,vacio(),{meta,notas,tarjetas});
+  for(const [id,t] of Object.entries(tarjetas))p.repaso[refTarjeta(t.materia,id)]={rep:0,int:1,ef:2.5,proxima:hoy(),fallos:0}})}
+// Reemplaza todo el progreso (importar un respaldo): se migra si viene de otra versión
+export function reemplazarProgreso(datos){
+  const p=obj(datos);if(!p)throw new Error('El archivo no tiene progreso válido.');
+  try{localStorage.setItem(CLAVE,JSON.stringify(p))}catch(e){throw new Error('No se pudo guardar el progreso en este navegador.')}
+  const q=progreso();guardar(q);window.dispatchEvent(new Event('progreso'));return q;
+}

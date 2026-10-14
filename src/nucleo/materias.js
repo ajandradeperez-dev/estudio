@@ -13,6 +13,7 @@
 import {ejerciciosLeccion,nivelDe} from './metodo.js';
 import {progreso,datosHabilidad} from './progreso.js';
 import {preguntaHabilidad} from './practica.js';
+import {coincide} from './comparar.js';
 
 const ordenar=(a,b)=>(a.orden??99)-(b.orden??99)||a.nombre.localeCompare(b.nombre);
 export const areas=Object.entries(import.meta.glob('../areas/*/area.js',{eager:true}))
@@ -36,7 +37,7 @@ export const rutaLeccion=(m,l)=>`${l.tema?rutaTema(m,l.tema):rutaMateria(m)}/l/$
 export const rutaLeccionId=(m,id)=>{const l=leccion(m,id);return l?rutaLeccion(m,l):rutaMateria(m)};
 
 /* analizar(ruta) → {tipo, ruta canónica, area?, m?, t?, l?, seccion?, resto?}
-   tipo: 'portada' | 'especial' (repaso, logros, perfil, notas) | 'area' | 'materia' | 'tema' | 'leccion' (habilidad)
+   tipo: 'portada' | 'especial' (repaso, logros, perfil, notas) | 'notas' (subrutas del cuaderno) | 'area' | 'materia' | 'tema' | 'leccion' (habilidad)
          | 'cofre' (<tema>/cofre/<k>) | 'jefe' (<tema>/jefe) | 'ubicacion' | 'seccion' */
 const ESPECIALES=['repaso','logros','perfil','notas'];
 export function analizar(ruta){
@@ -44,6 +45,8 @@ export function analizar(ruta){
   if(!ruta||ruta==='inicio')return {tipo:'portada',ruta:''};
   if(ruta==='progreso')ruta='perfil'; // "Mi progreso" ahora está en la pestaña Perfil
   if(ESPECIALES.includes(ruta))return {tipo:'especial',ruta};
+  // Cuaderno: notas/n/<id> (editor) · notas/tema/<materia>/<tema> (resumen del tema)
+  if(ruta.startsWith('notas/'))return {tipo:'notas',ruta,resto:ruta.split('/').slice(1)};
   let segs=ruta.split('/'),a=area(segs[0]),m=null;
   if(a){
     if(colapsa(a)){m=a.materias[0];segs=segs.slice(1)}
@@ -77,11 +80,23 @@ export function analizar(ruta){
   return {...base,tipo:'materia',ruta:rutaMateria(m)};
 }
 
+// Una tarjeta se da por buena si coincide o si contiene todas las palabras importantes de la respuesta (en otro orden)
+const palabras=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(w=>w.length>2);
+export function tarjetaBien(entrada,respuesta){
+  if(coincide(entrada,[respuesta]))return true;
+  const a=palabras(respuesta),e=new Set(palabras(entrada));
+  return a.length>=2&&a.every(w=>e.has(w));
+}
 // Busca un ejercicio a partir de su referencia de repaso '<materia>/<clave>':
 //   'l/<lección>/<índice>' ejercicio de una lección · 'g/<habilidad>/<nivel>' uno nuevo del generador a ese nivel (parecido)
 //   'h/<habilidad>' repaso de una habilidad dominada: uno nuevo a su nivel actual · otras claves: ejercicioRepaso(clave) de la materia
 export function ejercicioPorRef(ref){
-  const [mid,...resto]=ref.split('/'),m=materia(mid); if(!m)return null;
+  const [mid,...resto]=ref.split('/'),m=materia(mid);
+  // Tarjeta de una nota del cuaderno ('<materia>/t/<id>' o 'notas/t/<id>' si la nota no es de una materia)
+  if(resto[0]==='t'){const c=progreso().tarjetas[resto[1]];if(!c)return null;
+    return {materia:m||{id:mid,nombre:'Mis notas'},titulo:`🃏 ${c.titulo||'Tarjeta'}`,pregunta:{enunciado:c.q,respuesta:c.a,verificar:e=>tarjetaBien(e,c.a),
+      regla:`De tu nota «${c.titulo||'Notas'}». Si tu respuesta era correcta con otras palabras, corrígela en la nota para que coincida.`,ref,tarjeta:true}}}
+  if(!m)return null;
   if(resto[0]==='l'){
     const l=leccion(m,resto[1]),ej=l&&ejerciciosLeccion(l)[+resto[2]];
     return ej?{materia:m,titulo:l.titulo,ej}:null;

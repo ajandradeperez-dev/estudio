@@ -11,7 +11,8 @@ App para estudiar cualquier tema, organizada en **materias**, que aplica método
 - **Jerarquía**: área → materia → tema → habilidad (nodo del camino). Áreas: 🛡️ **Ciberseguridad** (temas Redes, Firewalls, VPN y criptografía, Defensa e incidentes y Herramientas con los simuladores) y 🎯 **Estudio y metas** (Inglés: Gramática, Vocabulario y frases, Hablar y escuchar; Matemáticas: Aritmética y álgebra básica, Álgebra lineal, Cálculo diferencial e integral; Ciencia de datos: Estadística, Probabilidad, Python y pandas, Visualización y Machine learning básico).
 - El recomendador "¿Qué sigue?", el repaso espaciado, la racha y la meta diaria son **globales**: cuentan todas las áreas.
 - **Lecciones**: explicación corta, ejemplos y práctica en rondas, casi toda de producción.
-- **Enganche**: racha de días cumpliendo una meta diaria (ejercicios o minutos), XP y nivel por materia, Repasar con repetición espaciada (SM-2) e intercalada, cofres y jefes en el camino, medallas en Logros, "Continuar donde te quedaste", "Mis notas" y Perfil.
+- **Enganche**: racha de días cumpliendo una meta diaria (ejercicios o minutos), XP y nivel por materia, Repasar con repetición espaciada (SM-2) e intercalada, cofres y jefes en el camino, medallas en Logros, "Continuar donde te quedaste", el cuaderno de 📝 Notas y Perfil.
+- **Procedimientos**: cada ejercicio generado trae su solución paso a paso con sus propios números (📖 Ver procedimiento) y una explicación alternativa (🤔 No entendí).
 
 ## Método de aprendizaje
 
@@ -23,7 +24,7 @@ Estas reglas se aplican a **todas** las materias. Cualquier lección nueva debe 
 4. **Dominio.** Una habilidad está dominada con **≥ 80 % de las últimas 10 respuestas sin pista** y práctica en **2 días distintos** (`estadoDominio` en `metodo.js`). Usar la pista no cuenta y manda el ejercicio al repaso. Una habilidad nueva empieza con un **ejemplo resuelto**, sigue con uno **con hueco** y luego ejercicios solos; la **dificultad (1–5)** se adapta para acertar ~85 %; una vez por sesión se pide **"¿por qué?"** (autoexplicación). Todo el método, con su porqué, está en `src/nucleo/METODO.md`.
 5. **Práctica intercalada y espaciada.** "Repasar" usa **SM-2** (cada ejercicio fallado y cada habilidad dominada tienen su próxima fecha según qué tan bien se recordó) e intercala materias y habilidades (`mezclar` en `repaso.js`). En el camino hay un **cofre** cada 3 habilidades (repaso mezclado de esas tres) y un **jefe** al final de cada tema (mezcla cronometrada).
 6. **Cada error explica.** Al fallar se muestra lo que escribiste, **por qué está mal** (`porque` de cada opción incorrecta o `errores` típicos de la respuesta escrita) y **la regla correcta** (`regla`, obligatoria en cada ejercicio), además de la respuesta correcta. Los aciertos solo muestran "¡Correcto!" para no perder tiempo.
-7. **Resumen propio.** Al dominar una habilidad se pide escribir un resumen de 1–2 frases que se guarda en **"Mis notas"** y se muestra al volver a ella.
+7. **Resumen propio.** Al dominar una habilidad se pide escribir un resumen de 1–2 frases que se guarda en el progreso (`notas`), se muestra al volver a ella y aparece también en el cuaderno de **📝 Notas**.
 
 Para no perder tiempo: sesiones de 8 preguntas (5–10 minutos), todo se puede hacer con el teclado (Enter para comprobar y Enter para seguir), cada materia muestra arriba "👉 Lo siguiente para ti" y el examen de ubicación evita estudiar lo que ya sabes.
 
@@ -79,7 +80,13 @@ src/
     comparar.js           coincide(): compara respuestas escritas (sin DOM; también lo usa npm run revisar)
     ubicacion.js          Examen de ubicación
     repaso.js             Pestaña Repasar: repetición espaciada con práctica intercalada
-    notas.js              "Mis notas"
+    notas.js              Pestaña 📝 Notas: lista (búsqueda, filtros, cuadernos área → materia → tema), editor con barra de formato,
+                          fotos, dibujo, dictado, enlaces y tarjetas; modo "repasar nota"; resumen automático del tema; respaldo
+    cuaderno/             Datos del cuaderno (sin vistas): db.js (IndexedDB 'ciberlab-notas': notas y archivos; persist()),
+                          formato.js (marcas → HTML, sin DOM; tarjetas; deHtml() pasa pasos de la app a texto de nota),
+                          notas.js (crear/guardar/borrar, copia de los resúmenes viejos, "📝 Guardar en mis notas" desde el estudio),
+                          medios.js (comprimir fotos, lienzo de dibujo), respaldo.js (exportar/importar TODO en .json, sin la clave de IA)
+    procedimiento.js      Pantalla "📖 Procedimiento": pasos revelables, lo que cambia resaltado, diagramas, 🔊 y 📝 por paso
     portada.js            Portada (áreas), página de área, de materia (temas), camino de un tema, migas y barra superior
     miprogreso.js         Pestaña Perfil: progreso, meta diaria y ajustes
     logros.js             Pestaña Logros: medallas calculadas a partir del progreso y bloques de cada materia
@@ -108,7 +115,8 @@ src/
 |---|---|
 | (vacía) | Pestaña Aprender: lo siguiente para ti, continuar y tarjetas de área |
 | `repaso` / `logros` / `perfil` | Pestañas Repasar, Logros y Perfil (`#progreso` lleva a Perfil) |
-| `notas` | Mis notas (desde Perfil) |
+| `notas` | Pestaña Notas: el cuaderno |
+| `notas/n/<id>` · `notas/tema/<materia>/<tema>` | Editor de una nota · resumen automático de un tema |
 | `<área>` | Página del área: tarjetas de materias (`#estudio`) |
 | `<área>/<materia>` | Página de la materia: temas (o lecciones), ubicación y secciones (`#estudio/matematicas`) |
 | `<área>/<materia>/<tema>` | Camino de lecciones del tema (`#estudio/matematicas/algebra-lineal`) |
@@ -211,13 +219,16 @@ import {lineal,frac} from './formato.js';
 const ecuacion={
   titulo:'Ecuaciones lineales',
   explicacion:'Texto corto que se ve antes de practicar (si la habilidad no tiene lección escrita).',
+  alternativa:'Otra forma de explicarlo, más básica o con una analogía (botón "🤔 No entendí").',
   generar(nivel,rng){                  // nivel 1–5; rng con semilla: rng.entero(a,b), rng.noCero, rng.elegir, rng.barajar, rng.prob
     const a=rng.entero(2,9),x=rng.noCero(-9,9),b=rng.noCero(-15,15);
     return {
       enunciado:`Resuelve: \\(${lineal([[a,'x'],[b,'']])} = ${a*x+b}\\)`,   // HTML; fórmulas KaTeX entre \( \) o \[ \]
       respuesta:`x = ${x}`,                 // lo que escribiría el usuario (también se muestra al fallar)
       verificar:e=>igualNum(e,x),           // tolerante: igualNum, equivalente, igualLista, igualTexto… (verificar.js)
-      pasos:['\\(…\\)','\\(x = …\\)'],      // solución paso a paso: ejemplo resuelto, hueco y feedback
+      pasos:[paso('Pasa el número al otro lado',`\\(${a}x = ${c(a*x)}\\)`,'Lo que suma pasa restando.',{ojo:'Cambia el signo.'}),
+             final('Divide',`\\(x = ${c(x)}\\)`,'Lo que multiplica pasa dividiendo.',`x = ${x}`)],  // pasos.js: {que, como, porque, ojo?}; el último con res
+      diagrama:rectaNumerica(x),            // opcional: SVG de diagramas.js (planoVectores, areaCurva, rectaNumerica, bitsSubred)
       errores:[{valor:'x = 25',si:e=>igualNum(e,25),por:'Pasaste el número sin cambiar el signo.'}],  // error típico detectado por patrón
       pasoMal:{i:0,texto:'\\(…\\)',por:'…'},  // opcional: habilita "Encuentra el error"
       regla:'La regla en una frase.',pista:'Una ayuda que no regale la respuesta.',
@@ -231,6 +242,7 @@ export default {'alg/ecuacion-lineal':ecuacion};
 ```
 
 - La dificultad crece con el nivel (números más grandes, negativos, fracciones, más pasos). El nivel de cada usuario se ajusta solo (rating 1–5).
+- **Pasos** (`pasos.js`): `paso(que, como, porque, {ojo})` con los números de ESE ejercicio, y `final(…, res)` al último, donde `res` es la respuesta tal como se escribiría (para `opcion`/`ordenar`/`emparejar`, igual a `respuesta`). En `como`, `c(x)` resalta lo que cambia dentro de una fórmula (`\cambio{}` de KaTeX) y `marca(x)` en texto. `npm run revisar` falla si un generador no da ≥ 2 pasos con `que/como/porque` en sus 5 niveles, si el último no da la respuesta o si falta `alternativa`.
 - Con `errores` que tengan `valor`, el motor arma también "verdadero o falso" y la opción de introducción; con `pasos`, el ejemplo resuelto y el hueco; con `pasoMal`, "encuentra el error". Un error típico cuyo valor resulta correcto en un ejercicio se descarta solo.
 - `npm run revisar` genera 200 ejercicios por nivel de cada generador y falla si alguno no pasa su propio `verificar`, si una fórmula no compila en KaTeX, si falta la regla o si hay menos de 8 ejercicios distintos por nivel. Las semillas son fijas: un fallo se puede reproducir con `crear(id, nivel, {semilla})`.
 - Lo que no se puede generar (casos narrativos) va en `bancos.js` como preguntas con `ref` estable; se mezclan con lo generado.
@@ -268,7 +280,7 @@ export default {
 
 ## Progreso (`src/nucleo/progreso.js`)
 
-Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 7`; los formatos anteriores se migran solos en `migrar()`. Si cambias el significado de algo guardado, sube `VERSION` y agrega su paso de migración). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
+Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 8`; los formatos anteriores se migran solos en `migrar()`. Si cambias el significado de algo guardado, sube `VERSION` y agrega su paso de migración). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
 
 - **Meta diaria**: 10/20/30 ejercicios o 5/10/15 minutos. Los minutos solo cuentan con la pestaña visible y actividad en el último minuto (`main.js`).
 - **Racha**: días seguidos con la meta cumplida. Si hoy aún no se cumple, sigue viva desde ayer.
@@ -278,7 +290,9 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 7`; los formatos a
 - **v6** (áreas y temas): `algebra` pasó a `matematicas` en `materias`, el repaso, las notas, `ultimo` e `historial`. Lo demás ya se guardaba por materia + id de lección, así que agrupar en temas no cambió nada.
 - **Habilidades** (`materias.<id>.lecciones`, por compatibilidad con el nombre anterior): `{dominada, mejor, intentos, via, ult, dias, rating, sesiones}`; `via` indica si se dominó practicando o en la ubicación. En una lección escrita, la ronda que toca es `intentos % rondas.length`.
 - **Repaso** (SM-2, `sm2` en `metodo.js`): `{rep, int, ef, proxima, fallos}`. Fallo → mañana; bien con pista, bien o bien y rápido → el intervalo crece (1, 3 y luego × facilidad). Un ejercicio sale al recordarlo a más de 60 días (`dominados`); las habilidades dominadas (`<materia>/h/<id>`) se siguen repasando con tope de 180 días. Los ejercicios generados se guardan como `<materia>/g/<habilidad>/<nivel>` y en el repaso se genera uno nuevo y parecido.
-- **Notas**: `{'<materia>/<lección>': {texto, fecha}}`. "Reiniciar todo el progreso" las conserva, porque son texto escrito por el usuario.
+- **v8** (cuaderno): `tarjetas` `{[id]: {q, a, nota, titulo, materia, fecha}}`, las líneas `🃏 pregunta | respuesta` de las notas; se repasan con la ref `<materia|notas>/t/<id>` (`ejercicioPorRef`).
+- **Notas** (resúmenes): `{'<materia>/<lección>': {texto, fecha}}`. Se conservan en el progreso y se copian al cuaderno como notas con `origen:'resumen:<clave>'` (si la nota no se tocó, se actualiza al cambiar el resumen; borrarla en el cuaderno borra el resumen). "Reiniciar todo el progreso" conserva notas y tarjetas, porque son texto escrito por el usuario.
+- **Cuaderno** (IndexedDB `ciberlab-notas`, no en `localStorage`): notas `{id, titulo, cuerpo, materia, tema, etiquetas, fijada, creada, editada}` y archivos `{id, nota, blob…}` (fotos JPEG ≤1600 px, dibujos PNG). El formato del cuerpo (negrita, fórmulas `$…$`, casillas, `![](img:<id>)`…) está en `cuaderno/formato.js`. Si cambias la estructura, sube `VERSION` en `db.js` y migra en `onupgradeneeded`. El respaldo `.json` (Perfil y Notas) incluye progreso, ajustes, notas e imágenes, nunca `ciberlab-ia`.
 - En Ciberseguridad, los casos del laboratorio y los escenarios de VPN se guardan por posición: agrégalos al final de sus listas en `datos/`.
 - Todo acceso a `localStorage` va en `try/catch` para que la app funcione aunque esté bloqueado.
 - El progreso depende del origen (`localhost:5173` y `localhost:4173` tienen progresos distintos). Por eso los puertos están fijos con `strictPort`: si el 5173 está ocupado, Vite falla en vez de abrir otro puerto con el progreso vacío.
@@ -300,7 +314,7 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 7`; los formatos a
 - Todo texto que escriba el usuario (respuestas, notas) se pasa por `esc()` antes de meterlo en HTML.
 - Los colores siempre salen de las variables CSS (`--accent`, `--ok`, `--bad`…) para que funcione el modo oscuro.
 - **Sistema de diseño** (estilo app de idiomas, paleta propia): todo color, radio y espacio sale de `estilos/tokens.css`; los componentes de `nucleo/ui.js` y `estilos/componentes.css` se reutilizan en vez de escribir estilos sueltos. Botón principal 3D (`.btn`), secundario (`.btn.ghost`), del área (`.btn.area`). Móvil primero a 360 px, toques de **44 px** como mínimo, sin scroll horizontal, contraste AA (cada color de fondo tiene su `--on-…`). Animaciones de 250 ms o menos, desactivadas con `prefers-reduced-motion`. Cada área tiene su color (`--t-<tono>`): dentro de `.area-<tono>` barras, nodos y `.btn.area` lo usan.
-- **Navegación**: barra inferior fija con 4 pestañas (Aprender, Repasar con el número de repasos de hoy, Logros, Perfil); en pantallas anchas pasa a la izquierda. Una vista con `inmersiva: true` (sesión de práctica) oculta las barras. Las migas de pan con botón ← ubican dentro de Aprender.
+- **Navegación**: barra inferior fija con 5 pestañas (Aprender, Repasar con el número de repasos de hoy, Notas, Logros, Perfil); al editar una nota se oculta y la barra de formato queda encima del teclado (`--teclado`, `interactive-widget=resizes-content`); en pantallas anchas pasa a la izquierda. Una vista con `inmersiva: true` (sesión de práctica) oculta las barras. Las migas de pan con botón ← ubican dentro de Aprender.
 - **Pantalla de práctica**: siempre con `crearSesion()` (una pregunta por pantalla, ✕, barra de progreso, "Comprobar" abajo, hoja verde o roja con la respuesta correcta, el porqué, el error típico y la regla). No escribas pantallas de ejercicios a mano.
 - El laboratorio de incidentes es **defensivo**: identificar ataques y elegir respuestas, nunca enseñar a ejecutarlos.
 

@@ -31,7 +31,7 @@ export function htmlBarraSup(){
 function niveles(c){
   const n=[{ruta:'',txt:'Aprender'}];
   if(c.tipo==='portada')return {n:[],actual:''};
-  if(c.tipo==='especial')return c.ruta==='notas'?{n:[{ruta:'perfil',txt:'Perfil'}],actual:'Mis notas'}:{n:[],actual:''};
+  if(c.tipo==='especial'||c.tipo==='notas')return {n:[],actual:''}; // el cuaderno pone su propio botón ←
   const a=c.area;
   if(c.tipo==='area')return {n,actual:`${a.icono||''} ${a.nombre}`};
   const m=c.m,colapsa=rutaMateria(m)===m.id&&a.id===m.id;

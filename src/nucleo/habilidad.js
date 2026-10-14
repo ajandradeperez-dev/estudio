@@ -9,7 +9,8 @@
 import {$,esc} from '../utilidades.js';
 import {progreso,datosMateria,datosHabilidad,registrarEjercicio,registrarRespuesta,cerrarSesionHabilidad,guardarNota,abrirCofre,guardarJefe,sumarXP} from './progreso.js';
 import {SESION,ULTIMAS,DIAS_DOMINIO,DOMINIO,estadoDominio,nivelDe,frases} from './metodo.js';
-import {boton,chip,puntos,cabecera,barra} from './ui.js';
+import {boton,chip,puntos,cabecera,barra,aviso} from './ui.js';
+import {agregarAlTema,bloqueExplicacion,crearNota} from './cuaderno/notas.js';
 import {crearSesion} from './sesion.js';
 import {htmlCierre} from './cierre.js';
 import {crearRng} from './rng.js';
@@ -76,7 +77,7 @@ function sesionHabilidad(m,h,{salir,volver,alTerminar}){
     return {...p,cuenta:!p.intro};
   }
   return crearSesion({
-    titulo:h.titulo,tono:tonoDe(m),salir,
+    titulo:h.titulo,tono:tonoDe(m),salir,materia:m.id,habilidad:h.id,
     total:st=>Math.max(total(),st.i+1),
     nivel:()=>nivel(),
     siguiente,
@@ -132,6 +133,7 @@ export function vistaHabilidad(m,h){
 <h1>${h.titulo}</h1>${h.resumen?`<p class="lead">${h.resumen}</p>`:''}
 <div class="row" style="margin-bottom:12px">${d?.dominada?chip('👑 Dominada','ok'):chip(faltaDominio({...e,dominada:false}),'area')}<span class="chip">Dificultad ${puntos(nivelDe(d?.rating||1))}</span></div>
 ${explicacion?`<div class="card">${explicacion}</div>`:''}
+<div class="row hoja-acciones">${explicacion?'<button type="button" class="btn ghost btn-chico" id="hab-nota-exp">📝 Guardar explicación</button>':''}<button type="button" class="btn ghost btn-chico" id="hab-nota-nueva">🗒️ Nota nueva del tema</button></div>
 ${nota?`<div class="card nota-propia"><div class="ej-k">Tu resumen</div>${esc(nota.texto)}</div>`:''}
 <div style="margin-top:20px">${boton({texto:nueva&&g?'Empezar con un ejemplo':'Practicar',id:'hab-empezar',clase:'ancho area'})}</div>
 <p class="nota" style="text-align:center;margin-top:8px">${SESION} preguntas · unos 5 minutos</p>
@@ -141,6 +143,11 @@ ${h.herramienta&&m.secciones?.[h.herramienta]?`<div style="margin-top:12px">${bo
     async alClic(t2,ir,repintar){
       if(t2.id==='hab-empezar'||t2.id==='hab-otra'){empezar();repintar();window.scrollTo(0,0);return true}
       if(t2.id==='lec-guardar-nota'){guardarResumen(m.id,h.id);return true}
+      if(t2.id==='hab-nota-exp'){t2.disabled=true;const g=generadorDe(h),html=h.explicacion?.length?h.explicacion.join('<br>'):g?.explicacion||'';
+        try{const n=await agregarAlTema({materia:m.id,habilidad:h.id},bloqueExplicacion(m,h,html));t2.textContent='✅ Guardada';aviso(`📝 Guardado en «${n.titulo}»`)}catch(e){t2.disabled=false;aviso('No se pudo guardar la nota.')}return true}
+      if(t2.id==='hab-nota-nueva'){const n=await crearNota({materia:m.id,tema:h.tema||null,cuerpo:`[${h.titulo}](#${rutaLeccion(m,h)})
+
+`});ir(`notas/n/${n.id}`);return true}
       if(ses)return ses.alClic(t2,ir,repintar);
     }
   };
@@ -150,7 +157,7 @@ ${h.herramienta&&m.secciones?.[h.herramienta]?`<div style="margin-top:12px">${bo
 function sesionMezcla(m,hs,{titulo,salir,n,crono,sinPistas,fin}){
   const rng=crearRng(),vistos=new Set();let k=0;
   return crearSesion({
-    titulo,tono:tonoDe(m),salir,crono,sinPistas,
+    titulo,tono:tonoDe(m),salir,crono,sinPistas,materia:m.id,
     total:()=>n,
     siguiente:st=>{if(st.i>=n)return null;const h=hs[k++%hs.length];
       const p=preguntaHabilidad(m,h,{nivel:nivelDe(datosHabilidad(progreso(),m.id,h.id)?.rating||1),vistos,rng});

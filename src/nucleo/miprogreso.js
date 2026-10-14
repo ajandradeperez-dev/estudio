@@ -5,6 +5,7 @@ import {progreso,datosMateria,racha,estadoHoy,pendientes,cambiarMeta,reiniciarPr
 import {htmlNivel} from './portada.js';
 import {barra,boton,confirmar} from './ui.js';
 import {ajustes,cambiarAjuste} from './ajustes.js';
+import {htmlRespaldo,clicRespaldo,activarImportar} from './notas.js';
 
 const est=(v,k)=>`<div class="estadistica"><b>${v}</b><span>${k}</span></div>`;
 const segmentos=(id,ops,actual)=>`<span class="segmentos" role="group">${ops.map(([v,t])=>`<button type="button" data-${id}="${v}" aria-pressed="${String(actual)===String(v)}">${t}</button>`).join('')}</span>`;
@@ -45,14 +46,17 @@ ${materias.map(m=>{const d=datosMateria(p,m.id);
 
 <h2>Más</h2>
 <div class="lista-nav">
-<button class="tarjeta-nav" data-go="notas"><span class="icono" aria-hidden="true">📝</span><span class="texto"><span class="titulo">Mis notas</span><span class="desc">Tus resúmenes de cada lección</span></span></button>
+<button class="tarjeta-nav" data-go="notas"><span class="icono" aria-hidden="true">📝</span><span class="texto"><span class="titulo">Mis notas</span><span class="desc">Tu cuaderno: apuntes, fotos, dibujos y tarjetas</span></span></button>
 <button class="tarjeta-nav" data-go="estudio/ingles/hablar/ia"><span class="icono" aria-hidden="true">✨</span><span class="texto"><span class="titulo">Inteligencia artificial</span><span class="desc">Tu clave de Anthropic (opcional) para conversar y generar preguntas</span></span></button>
 ${hoyN?`<button class="tarjeta-nav" data-go="repaso"><span class="icono" aria-hidden="true">🔁</span><span class="texto"><span class="titulo">Repasar</span><span class="desc">${hoyN} para hoy</span></span></button>`:''}
 </div>
+<h2>💾 Tus datos</h2>${htmlRespaldo()}
 <div style="margin-top:24px">${boton({texto:'Reiniciar todo el progreso',id:'preset',clase:'ghost ancho'})}</div>
 <p class="nota" style="margin-top:16px;text-align:center">Todo se guarda en este navegador · versión ${__VERSION__}${navigator.serviceWorker?.controller?' · disponible sin internet':''}</p>`;
   },
+  alMostrar(){activarImportar(()=>document.dispatchEvent(new Event('repintar')))},
   async alClic(t,ir,repintar){
+    if(await clicRespaldo(t))return true;
     if(t.dataset.meta){const [tipo,c]=t.dataset.meta.split(':');cambiarMeta(tipo,+c);repintar();return true}
     if(t.dataset.tema){cambiarAjuste('tema',t.dataset.tema);repintar();return true}
     if(t.dataset.sonido){cambiarAjuste('sonido',t.dataset.sonido==='true');repintar();return true}

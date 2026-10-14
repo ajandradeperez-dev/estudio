@@ -46,3 +46,11 @@ export function confirmar({titulo,texto='',si='Sí',no='Cancelar',peligro=false}
     document.body.appendChild(f);f.querySelector('[data-r="1"]').focus();
   });
 }
+
+/* ---------- aviso breve (toast) ---------- */
+export function aviso(texto,ms=2600){
+  document.getElementById('aviso')?.remove();
+  const a=document.createElement('div');a.id='aviso';a.className='aviso';a.setAttribute('role','status');a.textContent=texto;
+  document.body.appendChild(a);requestAnimationFrame(()=>a.classList.add('visible'));
+  setTimeout(()=>{a.classList.remove('visible');setTimeout(()=>a.remove(),300)},ms);
+}

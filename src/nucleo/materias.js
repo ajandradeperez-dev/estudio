@@ -34,11 +34,12 @@ export const rutaLeccion=(m,l)=>`${l.tema?rutaTema(m,l.tema):rutaMateria(m)}/l/$
 export const rutaLeccionId=(m,id)=>{const l=leccion(m,id);return l?rutaLeccion(m,l):rutaMateria(m)};
 
 /* analizar(ruta) → {tipo, ruta canónica, area?, m?, t?, l?, seccion?, resto?}
-   tipo: 'portada' | 'especial' (repaso, progreso, notas) | 'area' | 'materia' | 'tema' | 'leccion' | 'ubicacion' | 'seccion' */
-const ESPECIALES=['repaso','progreso','notas'];
+   tipo: 'portada' | 'especial' (repaso, logros, perfil, notas) | 'area' | 'materia' | 'tema' | 'leccion' | 'ubicacion' | 'seccion' */
+const ESPECIALES=['repaso','logros','perfil','notas'];
 export function analizar(ruta){
   ruta=String(ruta||'').replace(/^#/,'').replace(/\/+$/,'');
   if(!ruta||ruta==='inicio')return {tipo:'portada',ruta:''};
+  if(ruta==='progreso')ruta='perfil'; // "Mi progreso" ahora está en la pestaña Perfil
   if(ESPECIALES.includes(ruta))return {tipo:'especial',ruta};
   let segs=ruta.split('/'),a=area(segs[0]),m=null;
   if(a){

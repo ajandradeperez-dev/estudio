@@ -4,31 +4,9 @@ import {sumarXP,registrarHabla,progreso,datosMateria,cambiarExtra,hoy} from '../
 import {UNIDADES} from './unidades.js';
 
 export const XP_FRASE=15;   // por frase dicha con 80+ (escribir da 10)
-const AJUSTES='ciberlab-ajustes';
-
-/* ---------- sonidos (Web Audio, sin archivos) ---------- */
-export function sonidoActivo(){try{return JSON.parse(localStorage.getItem(AJUSTES))?.sonido!==false}catch(e){return true}}
-export function alternarSonido(){try{const a=JSON.parse(localStorage.getItem(AJUSTES))||{};a.sonido=!sonidoActivo();localStorage.setItem(AJUSTES,JSON.stringify(a))}catch(e){}}
-let audio;
-function tono(notas){
-  if(!sonidoActivo())return;
-  try{
-    audio=audio||new (window.AudioContext||window.webkitAudioContext)();
-    const t0=audio.currentTime;
-    for(const [f,ini,dur] of notas){
-      const o=audio.createOscillator(),g=audio.createGain();
-      o.type='sine';o.frequency.value=f;
-      g.gain.setValueAtTime(0.0001,t0+ini);g.gain.exponentialRampToValueAtTime(0.16,t0+ini+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+ini+dur);
-      o.connect(g).connect(audio.destination);o.start(t0+ini);o.stop(t0+ini+dur+0.05);
-    }
-  }catch(e){}
-}
-export const sonar={
-  acierto:()=>tono([[660,0,.12],[880,.1,.18]]),
-  combo:()=>tono([[660,0,.1],[880,.08,.1],[1175,.16,.22]]),
-  medalla:()=>tono([[523,0,.14],[659,.12,.14],[784,.24,.14],[1047,.36,.32]]),
-  fallo:()=>tono([[247,0,.18]])
-};
+// Sonidos y su ajuste viven en nucleo/sonido.js (se silencian en Perfil); se reexportan para el código de Hablar
+import {sonar,sonidoActivo,alternarSonido} from '../../../nucleo/sonido.js';
+export {sonar,sonidoActivo,alternarSonido};
 
 /* ---------- aviso flotante corto ---------- */
 export function mostrarAviso(html){

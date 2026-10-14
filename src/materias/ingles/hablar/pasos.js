@@ -4,7 +4,8 @@
 import {$,esc} from '../../../utilidades.js';
 import {soporte,htmlOir,escuchar,detenerEscucha,htmlMic} from '../../../nucleo/voz.js';
 import {evaluar} from '../../../nucleo/pronunciacion.js';
-import {htmlEjercicio,manejarEjercicio,mostrarResultado,META_PRONUNCIACION} from '../../../nucleo/ejercicios.js';
+import {deBanco,META_PRONUNCIACION} from '../../../nucleo/ejercicios.js';
+import {crearSesion} from '../../../nucleo/sesion.js';
 import {registrarEjercicio,registrarHabla,cambiarExtra} from '../../../nucleo/progreso.js';
 import {barra} from '../../../nucleo/ui.js';
 import {htmlCierre,xpHoy} from '../../../nucleo/cierre.js';
@@ -18,34 +19,47 @@ export function marcarPaso(unidadId,paso){cambiarExtra('ingles',e=>{e.unidades=e
 const cab=(u,titulo)=>`<p class="miga"><button class="enlace" data-go="${RAIZ}/u/${u.id}">${esc(u.titulo)}</button> › ${titulo}</p>`;
 
 /* ---------- escucha ---------- */
+// Primero se escucha el audio (las veces que quieras); luego, una pregunta por pantalla con el audio a mano. El texto se ve al final.
 export function vistaEscucha(u){
   const e=CONTENIDO[u.id].escucha,n=e.preguntas.length;
-  let i=0,ok=0,xp0=0,fallos=[];
+  let fase='inicio',ses=null;
+  function empezar(){
+    const fallos=[];
+    ses=crearSesion({
+      titulo:`Escucha: ${e.titulo}`,tono:'estudio',salir:`${RAIZ}/u/${u.id}`,sinPistas:true,
+      total:()=>n,
+      siguiente:st=>st.i<n?{...deBanco(e.preguntas[st.i]),oir:soporte.hablar?e.texto:'',k:st.i}:null,
+      responder(p,r){
+        if(!r.correcto)fallos.push(p.regla);
+        registrarEjercicio({materia:'ingles',ref:`ingles/e/${u.id}/${p.k}`,correcto:r.correcto});
+        return {xp:r.correcto?10:0,nota:r.correcto?'':'Volverá en Repasar.'};
+      },
+      fin(st){
+        const pasa=st.ok/n>=0.8;if(pasa)marcarPaso(u.id,'escucha');
+        return `<span class="fin-icono" aria-hidden="true">${pasa?'🎧':'🔁'}</span><h1>${pasa?'¡Entendiste el audio!':'Vuelve a escucharlo'}</h1>
+<p class="nota">${st.ok} de ${n} respuestas bien${pasa?'':' · necesitas el 80 %'}</p>
+<details class="transcripcion" open><summary>Texto del audio</summary><p lang="en">${esc(e.texto)}</p>${htmlOir(e.texto)}</details>
+<button class="btn ancho" id="es-otra">Repetir</button>
+${htmlCierre({xp:st.xp,aprendido:fallos.length?fallos:e.preguntas.slice(0,2).map(q=>q.regla),excluir:location.hash.slice(1)})}`;
+      }
+    });
+    ses.alEntrar();fase='sesion';
+  }
   return {
     titulo:`Escucha: ${e.titulo}`,
-    alEntrar(){i=0;ok=0;xp0=xpHoy();fallos=[]},
+    get inmersiva(){return fase==='sesion'},
+    alEntrar(){fase='inicio';ses=null},
+    alSalir(){ses?.alSalir?.()},
     vista(){
-      const audio=soporte.hablar?`<div class="card escucha-audio"><p class="nota">Escucha el audio (las veces que quieras) y responde. Intenta primero a velocidad normal.</p><div class="row centro">${htmlOir(e.texto)}</div></div>`
+      if(fase==='sesion')return ses.vista();
+      const audio=soporte.hablar?`<div class="card escucha-audio"><p class="nota">Escúchalo primero a velocidad normal; usa 🐢 si hace falta.</p><div class="row centro">${htmlOir(e.texto)}</div></div>`
         :`<div class="card"><p class="nota">Tu navegador no puede leer en voz alta: lee el texto.</p><p lang="en">${esc(e.texto)}</p></div>`;
-      if(i>=n){
-        const pasa=ok/n>=0.8;if(pasa)marcarPaso(u.id,'escucha');
-        return `${cab(u,'Escucha')}<h1>🎧 ${e.titulo}</h1><div class="card"><h3>${pasa?'✓ ¡Entendiste el audio!':'Vuelve a escucharlo'}</h3><p class="prog-v">${ok} <small>de ${n} respuestas bien${pasa?'':' · necesitas el 80 %'}</small></p>${barra(ok,n)}
-<details class="transcripcion" open><summary>Texto del audio</summary><p lang="en">${esc(e.texto)}</p>${htmlOir(e.texto)}</details>
-${htmlCierre({xp:xpHoy()-xp0,aprendido:fallos.length?fallos:e.preguntas.slice(0,2).map(q=>q.regla),excluir:location.hash.slice(1)})}
-<div class="row" style="margin-top:12px"><button class="btn ghost" id="es-otra">Repetir</button><button class="btn ghost" data-go="${RAIZ}/u/${u.id}">Volver a la unidad</button></div></div>`;
-      }
-      return `${cab(u,'Escucha')}<h1>🎧 ${e.titulo}</h1>${audio}
-<div class="card" style="margin-top:14px"><p class="progress">Pregunta ${i+1} de ${n}</p>${barra(i,n)}<div style="margin-top:12px">${htmlEjercicio(e.preguntas[i],{pista:false})}</div></div>`;
+      return `${cab(u,'Escucha')}<h1>🎧 ${e.titulo}</h1>${audio}<div style="margin-top:20px"><button class="btn ancho" id="es-empezar">Responder ${n} preguntas</button></div>`;
     },
+    alMostrar(){if(fase==='sesion')ses.alMostrar()},
     async alClic(t,ir,repintar){
-      if(t.id==='es-otra'){this.alEntrar();repintar();return true}
-      if(t.id==='es-sig'){i++;repintar();return true}
-      if(i>=n)return;
-      const q=e.preguntas[i],r=await manejarEjercicio(t,q); if(!r)return;
-      if(r.correcto)ok++;else fallos.push(q.regla);
-      registrarEjercicio({materia:'ingles',ref:`ingles/e/${u.id}/${i}`,correcto:r.correcto});
-      mostrarResultado(q,r,`<div class="fb-pie"><span class="progress">${r.correcto?'+10 XP':'Vuelve en Repasar hoy.'}</span><button class="btn" id="es-sig">${i+1<n?'Siguiente':'Ver resultado'}</button></div>`);
-      return true;
+      if(t.id==='es-empezar'||t.id==='es-otra'){empezar();repintar();return true}
+      if(fase==='sesion')return ses.alClic(t,ir,repintar);
     }
   };
 }

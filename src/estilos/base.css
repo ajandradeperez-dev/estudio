@@ -1,0 +1,62 @@
+/* Base: tipografía, formularios y armazón de la app (barra superior, contenido y navegación inferior).
+   Móvil primero (360 px). En pantallas anchas la navegación pasa a una columna a la izquierda. */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+h1{font-size:26px;line-height:1.2;font-weight:800;margin:0 0 var(--s2);text-wrap:balance}
+h2{font-size:19px;line-height:1.3;font-weight:800;margin:var(--s6) 0 var(--s3)}
+h3{font-size:16px;font-weight:800;margin:0 0 var(--s1)}
+p{margin:0 0 var(--s3)}
+p.lead{color:var(--muted);max-width:68ch;margin:0 0 var(--s4)}
+a{color:var(--primary)}
+code,pre,.mono{font-family:var(--f-mono);font-size:14px}
+pre{background:var(--code);border:2px solid var(--line);border-radius:var(--r2);padding:var(--s3);overflow-x:auto;margin:0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:var(--s2) var(--s3);border-bottom:2px solid var(--line);white-space:nowrap}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:800}
+.wrap{overflow-x:auto}
+label{display:flex;flex-direction:column;gap:var(--s1);font-size:14px;font-weight:700;color:var(--muted)}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:2px solid var(--line);border-radius:var(--r2);padding:10px 14px;min-height:48px;min-width:0}
+textarea{resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)}
+:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.oculto{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- armazón ---------- */
+.app{min-height:100dvh;display:flex;flex-direction:column}
+main{flex:1;width:100%;max-width:760px;margin:0 auto;padding:var(--s4) var(--s4) calc(var(--nav-alto) + var(--s8))}
+/* Barra superior: marca, racha y meta del día */
+.barra-sup{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:var(--s3);padding:var(--s2) var(--s4);min-height:56px;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.marca{font-weight:900;font-size:20px;letter-spacing:-.3px;color:var(--ink);margin-right:auto;text-decoration:none}
+.marca span{color:var(--primary)}
+.sup-chip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 var(--s3);border-radius:var(--r-full);font-weight:800;font-size:15px;color:var(--ink);background:var(--surface-2)}
+.sup-chip.fuego{color:var(--warn)}
+.sup-chip.meta .barra{width:56px;height:8px}
+/* Navegación inferior fija: Aprender · Repasar · Logros · Perfil */
+.nav-inferior{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(4,1fr);height:calc(var(--nav-alto) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--surface);border-top:2px solid var(--line)}
+.nav-tab{all:unset;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:48px;cursor:pointer;color:var(--muted);font-size:12px;font-weight:800}
+.nav-tab .nav-icono{font-size:24px;line-height:1;filter:grayscale(.6);opacity:.85;transition:transform .15s ease}
+.nav-tab[aria-current="page"]{color:var(--primary)}
+.nav-tab[aria-current="page"] .nav-icono{filter:none;opacity:1;transform:scale(1.08)}
+.nav-tab[aria-current="page"]::before{content:'';position:absolute;top:0;left:25%;right:25%;height:4px;border-radius:0 0 4px 4px;background:var(--primary)}
+.nav-tab:focus-visible{outline:3px solid var(--primary);outline-offset:-3px;border-radius:var(--r2)}
+.nav-insignia{position:absolute;top:6px;left:calc(50% + 6px);min-width:20px;height:20px;padding:0 6px;border-radius:var(--r-full);background:var(--error);color:var(--on-error);font-size:12px;line-height:20px;text-align:center}
+/* Sesión de práctica a pantalla completa: sin barras de la app */
+body.sesion-activa .barra-sup,body.sesion-activa .nav-inferior{display:none}
+body.sesion-activa main{padding:0;max-width:680px}
+/* Pantallas anchas: la navegación pasa a la izquierda */
+@media (min-width:900px){
+  .app{display:grid;grid-template-columns:220px 1fr;grid-template-rows:auto 1fr}
+  .barra-sup{grid-column:1/-1}
+  .nav-inferior{position:sticky;top:58px;grid-row:2;grid-column:1;align-self:start;display:flex;flex-direction:column;gap:var(--s1);height:auto;padding:var(--s4) var(--s3);border-top:0;border-right:2px solid var(--line);background:transparent}
+  .nav-tab{flex-direction:row;justify-content:flex-start;gap:var(--s3);padding:0 var(--s3);min-height:52px;border-radius:var(--r2);font-size:15px}
+  .nav-tab[aria-current="page"]{background:var(--primary-soft)}
+  .nav-tab[aria-current="page"]::before{display:none}
+  .nav-insignia{position:static;margin-left:auto}
+  main{grid-row:2;grid-column:2;padding-bottom:var(--s10)}
+  body.sesion-activa .app{display:block}
+}
+/* Transición corta al cambiar de pantalla (≤250 ms) */
+#vista.entrando{animation:entrar .2s ease-out}
+@keyframes entrar{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}

@@ -2,6 +2,7 @@
 import {esc} from '../utilidades.js';
 import {materias,leccion,rutaLeccion} from './materias.js';
 import {progreso,borrarNota} from './progreso.js';
+import {vacio,boton,confirmar} from './ui.js';
 
 const fecha=f=>{const [a,m,d]=f.split('-').map(Number);return new Date(a,m-1,d).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'})};
 
@@ -17,11 +18,11 @@ export const notas={
     }).join('');
     // Notas de lecciones que ya no existen (se borraron o renombraron)
     const huerfanas=Object.keys(n).filter(k=>{const [mid,lid]=k.split('/');const m=materias.find(x=>x.id===mid);return !m||!leccion(m,lid)});
-    return `<h1>Mis notas</h1><p class="lead">Tus resúmenes de cada lección dominada y de tus conversaciones con IA. Releerlos es un repaso rápido; escribirlos con tus palabras es lo que fija lo aprendido.</p>
-${bloques||'<div class="card"><h3>Todavía no tienes notas</h3><p style="margin:0;color:var(--muted)">Al dominar una lección te pediremos un resumen de 1 o 2 frases y aparecerá aquí.</p></div>'}
+    return `<h1>📝 Mis notas</h1>${bloques||huerfanas.length?'<p class="intro">Tus resúmenes con tus palabras. Releerlos es un repaso rápido.</p>':''}
+${bloques||(huerfanas.length?'':vacio({icono:'📝',titulo:'Aún no tienes notas',texto:'Al dominar una lección te pediremos un resumen de 1 o 2 frases y aparecerá aquí.',boton:boton({texto:'Ir a aprender',go:''})}))}
 ${huerfanas.length?`<h2>Otras</h2>${huerfanas.map(k=>`<div class="card nota"><div class="nota-cab"><span>${esc(n[k].titulo||k)}</span><span class="progress">${fecha(n[k].fecha)}</span></div><p class="nota-texto">${esc(n[k].texto)}</p><button class="btn ghost btn-chico" data-borrar="${esc(k)}">Borrar</button></div>`).join('')}`:''}`;
   },
-  alClic(t,ir,repintar){
-    if(t.dataset.borrar!==undefined){if(confirm('¿Borrar esta nota?')){borrarNota(t.dataset.borrar);repintar()}return true}
+  async alClic(t,ir,repintar){
+    if(t.dataset.borrar!==undefined){if(await confirmar({titulo:'¿Borrar esta nota?',si:'Borrar',peligro:true})){borrarNota(t.dataset.borrar);repintar()}return true}
   }
 };

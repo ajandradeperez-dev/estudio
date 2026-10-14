@@ -2,25 +2,24 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CiberLab</title>
-<meta name="description" content="Estudia ciberseguridad, inglés, álgebra y ciencia de datos con práctica, repaso espaciado y metas diarias.">
-<meta name="theme-color" content="#0f7a5c" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0f1513" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Estudia ciberseguridad, inglés, matemáticas y ciencia de datos con práctica, repaso espaciado y metas diarias.">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12141a" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Chakra+Petch:wght@600;700&display=swap">
-<link rel="stylesheet" href="/src/estilos.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
 </head>
 <body>
 
 <div class="app">
-  <!-- El menú lo arma src/main.js a partir de las materias -->
-  <nav id="nav" aria-label="Navegación"></nav>
-  <main id="main">
-    <div id="barra" class="barra-sup" aria-label="Racha, meta diaria y repaso"></div>
-    <div id="vista"></div>
-  </main>
+  <!-- Barra superior (racha y meta del día) y navegación inferior: las arma src/main.js -->
+  <header id="barra" class="barra-sup" aria-label="Racha y meta del día"></header>
+  <main id="main"><div id="vista"></div></main>
+  <nav id="nav" class="nav-inferior" aria-label="Navegación principal"></nav>
 </div>
 
 <script type="module" src="/src/main.js"></script>

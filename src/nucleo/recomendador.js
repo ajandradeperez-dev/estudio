@@ -15,7 +15,8 @@ import {DOMINIO} from './metodo.js';
 const nombre=id=>materias.find(m=>m.id===id)?.nombre||id;
 const pct=x=>Math.round(x*100);
 
-export function recomendar({excluir}={},p=progreso()){
+// materia: solo candidatos de esa materia (para "Lo siguiente para ti" dentro de una materia)
+export function recomendar({excluir,materia}={},p=progreso()){
   const rep=pendientes(p),porMateria={};
   for(const ref of rep){const mid=ref.split('/')[0];porMateria[mid]=(porMateria[mid]||0)+1}
   const ultimas=p.historial.slice(-3),cansada=ultimas.length===3&&ultimas.every(h=>h.materia===ultimas[0].materia)?ultimas[0].materia:null;
@@ -48,6 +49,11 @@ export function recomendar({excluir}={},p=progreso()){
   if(rep.length&&rep.length<5)candidatos.push({regla:6,titulo:`Repasar ${rep.length} ejercicios`,porque:'Tienes pocos repasos pendientes: despéjalos en un par de minutos.',ruta:'repaso'});
 
   let lista=candidatos.filter(c=>c.ruta!==excluir);
+  if(materia){
+    const nm=nombre(materia);
+    lista=lista.filter(c=>c.materia===materia);
+    return lista[0]||{regla:0,materia,titulo:`¡Al día en ${nm}!`,porque:'Repite lo que quieras o prueba otra materia.',ruta:''};
+  }
   // Alternancia: tras 3 sesiones seguidas de la misma materia, sugerir otra (primero sus repasos)
   if(cansada){
     const otraRep=Object.entries(porMateria).find(([mid,n])=>mid!==cansada&&n>0);

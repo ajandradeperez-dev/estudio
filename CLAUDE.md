@@ -47,14 +47,15 @@ En Ciberseguridad, los simuladores, el laboratorio y el examen rápido son herra
 ## Estructura
 
 ```
-index.html                Esqueleto: menú (#nav), barra superior (#barra) y vista (#vista)
+index.html                Esqueleto: barra superior (#barra), vista (#vista) y navegación inferior (#nav)
 vite.config.js            Puertos fijos (5173 dev, 4173 preview) con strictPort
 scripts/
   revisar-contenido.mjs   npm run revisar: comprueba el método en todas las lecciones y el contenido de habla de Inglés
 src/
   main.js                 Rutas (resolver() sobre analizar()), migas, menú, delegación de eventos y conteo de minutos activos
   areas/<id>/area.js      Cada área: nombre, icono, tono de color, descripción, orden
-  estilos.css             Todo el CSS (variables en :root, modo oscuro, responsive a 760px)
+  estilos/                CSS (lo importa main.js): tokens.css (colores, radios, espaciado, tipografía, modo oscuro),
+                          base.css (armazón y navegación), componentes.css (botones 3D, tarjetas, sesión, hoja…), secciones.css
   utilidades.js           $, esc (escapar HTML) y utilidades IP
   nucleo/                 Motor común a todas las materias
     metodo.js             Reglas del método: umbrales, reparto de la ubicación, producción
@@ -62,15 +63,20 @@ src/
                           que entiende rutas nuevas y viejas, y búsqueda de ejercicios por referencia de repaso
     cargar.js             cargarLecciones() (carpeta lecciones/) y cargarTemas() (carpetas temas/<tema>/)
     progreso.js           Todo lo que se guarda: racha, meta, XP, lecciones, ubicación, repaso, notas, "continuar"
-    ejercicios.js         Tipos de ejercicio: HTML, pista, corrección y explicación del error
+    ejercicios.js         Ejercicios escritos a mano → preguntas del motor (deBanco) y evaluación de lo hablado
+    sesion.js             Motor de práctica: una pregunta por pantalla, ✕, Comprobar, hoja de feedback y actividades
+                          (escribir, opción, ordenar, emparejar, verdadero/falso, elegir el error, ejemplo, hueco, por qué, hablar)
+    formula.js            Fórmulas con KaTeX (\( … \) y \[ … \]); empaquetado, funciona sin conexión
+    ajustes.js · sonido.js  Tema (auto/claro/oscuro), sonidos y vibración ('ciberlab-ajustes')
     comparar.js           coincide(): compara respuestas escritas (sin DOM; también lo usa npm run revisar)
-    leccion.js            Vista de lección (aprender → ronda → resultado y resumen)
+    leccion.js            Lección: explicación corta → práctica a pantalla completa → resultado y resumen
     ubicacion.js          Examen de ubicación
-    repaso.js             "Repasar hoy" con práctica mezclada
+    repaso.js             Pestaña Repasar: repetición espaciada con práctica intercalada
     notas.js              "Mis notas"
     portada.js            Portada (áreas), página de área, de materia (temas), camino de un tema, migas y barra superior
-    miprogreso.js         "Mi progreso"
-    ui.js                 barra() de progreso
+    miprogreso.js         Pestaña Perfil: progreso, meta diaria y ajustes
+    logros.js             Pestaña Logros: medallas calculadas a partir del progreso y bloques de cada materia
+    ui.js                 Componentes: barra, puntos, chip, boton, tarjetaNav, cabecera, intro (¿Cómo se usa?), vacio, hoja, confirmar
     recomendador.js       "👉 ¿Qué sigue?": 1 repasos (≥5) → 2 lo urgente de cada materia → 3 punto más débil → 4 continuar
                           → 5 siguiente lección → 6 retos; alterna materias tras 3 sesiones seguidas. Cada materia aporta
                           candidatos con recomendar(p) → [{regla, valor?, titulo, porque, ruta}]
@@ -93,8 +99,9 @@ src/
 
 | Ruta | Vista |
 |---|---|
-| (vacía) | Portada: lo siguiente para ti, continuar y tarjetas de área |
-| `repaso` / `notas` / `progreso` | Repasar hoy / Mis notas / Mi progreso |
+| (vacía) | Pestaña Aprender: lo siguiente para ti, continuar y tarjetas de área |
+| `repaso` / `logros` / `perfil` | Pestañas Repasar, Logros y Perfil (`#progreso` lleva a Perfil) |
+| `notas` | Mis notas (desde Perfil) |
 | `<área>` | Página del área: tarjetas de materias (`#estudio`) |
 | `<área>/<materia>` | Página de la materia: temas (o lecciones), ubicación y secciones (`#estudio/matematicas`) |
 | `<área>/<materia>/<tema>` | Camino de lecciones del tema (`#estudio/matematicas/algebra-lineal`) |
@@ -110,7 +117,7 @@ Crea `src/areas/<id>/area.js` (el id va en la URL: no lo cambies después de pub
 
 ```js
 export default {
-  nombre:'Idiomas',icono:'🌍',orden:3,tono:'estudio',   // tono: colores de la tarjeta (clases .area-<tono> en estilos.css)
+  nombre:'Idiomas',icono:'🌍',orden:3,tono:'estudio',   // tono: colores de la tarjeta (clases .area-<tono> en estilos/tokens.css)
   descripcion:'Una línea para la tarjeta de la portada.'
 };
 ```
@@ -240,11 +247,13 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 6`; los formatos a
 ## Convenciones
 
 - **Nunca subas claves ni secretos** (API keys de Anthropic u otras, archivos `.env`, tokens) al repositorio: es público. La clave de la conversación con IA la pega el usuario en la app y vive solo en el `localStorage` de su dispositivo. No la escribas en el código, en logs ni en mensajes de error. Revisa `git diff` antes de cada commit.
-- JavaScript puro con módulos ES, sin frameworks ni dependencias de runtime; Vite solo para desarrollo y build.
+- JavaScript puro con módulos ES, sin frameworks. Única dependencia de runtime: KaTeX (fórmulas), empaquetada para funcionar sin conexión. Vite solo para desarrollo y build.
 - Estilo compacto: plantillas con template strings y `.map(...).join('')`.
 - Todo texto que escriba el usuario (respuestas, notas) se pasa por `esc()` antes de meterlo en HTML.
 - Los colores siempre salen de las variables CSS (`--accent`, `--ok`, `--bad`…) para que funcione el modo oscuro.
-- **Diseño por áreas, móvil primero (360 px, controles ≥ 40 px)**: cada área tiene su color (`--t-<tono>`); dentro de `.area-<tono>` las barras de progreso y los botones del camino usan `--area`. En el teléfono el menú solo muestra los accesos y las áreas: la jerarquía la llevan las migas (se ven los dos últimos niveles) y el botón atrás. Las pantallas entran con una transición corta (`#vista.entrando`), desactivada con `prefers-reduced-motion`.
+- **Sistema de diseño** (estilo app de idiomas, paleta propia): todo color, radio y espacio sale de `estilos/tokens.css`; los componentes de `nucleo/ui.js` y `estilos/componentes.css` se reutilizan en vez de escribir estilos sueltos. Botón principal 3D (`.btn`), secundario (`.btn.ghost`), del área (`.btn.area`). Móvil primero a 360 px, toques de **44 px** como mínimo, sin scroll horizontal, contraste AA (cada color de fondo tiene su `--on-…`). Animaciones de 250 ms o menos, desactivadas con `prefers-reduced-motion`. Cada área tiene su color (`--t-<tono>`): dentro de `.area-<tono>` barras, nodos y `.btn.area` lo usan.
+- **Navegación**: barra inferior fija con 4 pestañas (Aprender, Repasar con el número de repasos de hoy, Logros, Perfil); en pantallas anchas pasa a la izquierda. Una vista con `inmersiva: true` (sesión de práctica) oculta las barras. Las migas de pan con botón ← ubican dentro de Aprender.
+- **Pantalla de práctica**: siempre con `crearSesion()` (una pregunta por pantalla, ✕, barra de progreso, "Comprobar" abajo, hoja verde o roja con la respuesta correcta, el porqué, el error típico y la regla). No escribas pantallas de ejercicios a mano.
 - El laboratorio de incidentes es **defensivo**: identificar ataques y elegir respuestas, nunca enseñar a ejecutarlos.
 
 ## Comandos

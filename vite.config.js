@@ -11,6 +11,8 @@ export default defineConfig({
   // Puertos fijos: el progreso vive en localStorage, que depende del origen (incluido el puerto).
   // Si Vite cambiara de puerto al estar ocupado, la app abriría "vacía". Con strictPort falla en vez de cambiar.
   server:{port:5173,strictPort:true},
+  // KaTeX va en el paquete principal (~570 KB, 186 KB comprimido) para funcionar sin conexión
+  build:{chunkSizeWarningLimit:800},
   preview:{port:4173,strictPort:true},
   plugins:[VitePWA({
     // El service worker nuevo se activa solo; main.js decide cuándo recargar (onNeedReload) para no cortar un ejercicio
@@ -23,14 +25,14 @@ export default defineConfig({
       id:base,
       name:'CiberLab',
       short_name:'CiberLab',
-      description:'Estudia ciberseguridad, inglés, álgebra y ciencia de datos con práctica, repaso espaciado y metas diarias.',
+      description:'Estudia ciberseguridad, inglés, matemáticas y ciencia de datos con práctica, repaso espaciado y metas diarias.',
       lang:'es',
       start_url:'.',
       scope:'.',
       display:'standalone', // se instala como app (WebAPK) a pantalla completa, sin barra del navegador
       orientation:'any',
-      theme_color:'#0f7a5c',
-      background_color:'#f3f5f4',
+      theme_color:'#4652d0',
+      background_color:'#ffffff',
       categories:['education'],
       // any: con esquinas redondeadas; maskable: a sangre, el launcher de Android lo recorta en su forma (círculo, etc.)
       icons:[
@@ -41,8 +43,8 @@ export default defineConfig({
       ]
     },
     workbox:{
-      // Todo lo de la app queda en caché para funcionar sin internet
-      globPatterns:['**/*.{js,css,html,svg,png,webmanifest}'],
+      // Todo lo de la app queda en caché para funcionar sin internet (incluidas las fuentes de KaTeX en woff2)
+      globPatterns:['**/*.{js,css,html,svg,png,webmanifest,woff2}'],
       cleanupOutdatedCaches:true,
       // Actualización automática: la versión nueva se activa en cuanto se instala (sin esperar a cerrar todas las pestañas)
       skipWaiting:true,

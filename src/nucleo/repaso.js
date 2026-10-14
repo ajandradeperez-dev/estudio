@@ -1,12 +1,11 @@
-/* "Repasar hoy": repetición espaciada (ver progreso.js) con práctica mezclada:
-   la cola alterna materias y, dentro de cada materia, lecciones, en vez de agrupar todo lo de un mismo tema. */
-import {htmlEjercicio,manejarEjercicio,mostrarResultado} from './ejercicios.js';
+/* "Repasar": repetición espaciada (ver progreso.js) con práctica intercalada:
+   la cola alterna materias y, dentro de cada materia, lecciones o habilidades, en vez de agrupar todo lo de un mismo tema. */
 import {progreso,pendientes,registrarEjercicio,responderRepaso,quitarRepaso,hoy} from './progreso.js';
 import {ejercicioPorRef} from './materias.js';
-import {barra} from './ui.js';
-import {htmlCierre,xpHoy} from './cierre.js';
-
-let cola=[],i=0,aciertos=0,xp0=0,reglas=[];
+import {deBanco} from './ejercicios.js';
+import {crearSesion} from './sesion.js';
+import {boton,vacio} from './ui.js';
+import {htmlCierre} from './cierre.js';
 
 const fechaLarga=f=>{const [a,m,d]=f.split('-').map(Number);return new Date(a,m-1,d).toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'})};
 const enDias=n=>n===1?'mañana':`en ${n} días`;
@@ -15,7 +14,7 @@ const enDias=n=>n===1?'mañana':`en ${n} días`;
 export function mezclar(items){
   const porMateria=new Map();
   for(const x of items){
-    const [mat,...resto]=x.ref.split('/'),grupo=resto[0]==='l'?resto[1]:resto[0];
+    const [mat,...resto]=x.ref.split('/'),grupo=resto[0]==='l'||resto[0]==='g'?resto[1]:resto[0];
     if(!porMateria.has(mat))porMateria.set(mat,new Map());
     const g=porMateria.get(mat); if(!g.has(grupo))g.set(grupo,[]); g.get(grupo).push(x);
   }
@@ -26,41 +25,56 @@ export function mezclar(items){
   }
   return salida;
 }
+// Cola de hoy: los ejercicios que ya no existen (lección borrada) se descartan
+export function colaRepaso(){
+  return mezclar(pendientes().map(ref=>({ref,...ejercicioPorRef(ref)})).filter(x=>{if(!x.ej&&!x.pregunta)quitarRepaso(x.ref);return x.ej||x.pregunta}));
+}
+
+let fase='inicio',ses=null;
+function empezar(){
+  const cola=colaRepaso(),reglas=[];
+  ses=crearSesion({
+    titulo:'Repasar',salir:'repaso',
+    total:()=>cola.length,
+    siguiente:st=>{const x=cola[st.i];return x?{...(x.pregunta||deBanco(x.ej)),ref:x.ref,materia:x.materia.id,contexto:`${x.materia.nombre} · ${x.titulo}`}:null},
+    responder(p,r){
+      const bien=r.correcto&&!r.pista; // con pista no se aleja: vuelve mañana
+      registrarEjercicio({materia:p.materia,ref:p.ref,correcto:bien,xp:bien?5:0,repasar:false});
+      const res=responderRepaso(p.ref,bien,r);
+      if(!bien&&p.regla)reglas.push(p.regla);
+      return {xp:bien?5:0,nota:res.dominado?'¡Dominado! Ya no volverá.':`Volverá ${enDias(res.dias)}.`};
+    },
+    fin(st){
+      return `<span class="fin-icono" aria-hidden="true">${st.ok===st.i?'🌟':'🔁'}</span><h1>Repaso terminado</h1>
+<p class="nota">${st.ok===st.i?'¡Todo bien! Volverán dentro de unos días.':'Los que fallaste vuelven mañana.'}</p>
+<div class="fin-datos"><div class="dato xp"><b>+${st.xp}</b><span>XP</span></div><div class="dato ok"><b>${st.ok}/${st.i}</b><span>Bien</span></div><div class="dato"><b>${st.i}</b><span>Repasos</span></div></div>
+${htmlCierre({xp:st.xp,aprendido:reglas,excluir:'repaso'})}`;
+    }
+  });
+  ses.alEntrar();fase='sesion';
+}
 
 export const repaso={
-  titulo:'Repasar hoy',
-  alEntrar(){
-    // Se arma la cola al entrar; los ejercicios que ya no existen (lección borrada) se descartan
-    cola=mezclar(pendientes().map(ref=>({ref,...ejercicioPorRef(ref)})).filter(x=>{if(!x.ej)quitarRepaso(x.ref);return x.ej}));
-    i=0;aciertos=0;xp0=xpHoy();reglas=[];
-  },
+  titulo:'Repasar',
+  get inmersiva(){return fase==='sesion'},
+  alEntrar(){fase='inicio';ses=null},
+  alSalir(){ses?.alSalir?.()},
   vista(){
-    const cab=`<h1>Repasar hoy</h1><p class="lead">Vuelven los ejercicios que fallaste y los de lecciones que dominaste, mezclados entre materias. Si aciertas sin pista, regresan más tarde (1, 3, 7, 14 y 30 días); si fallas, mañana.</p>`;
-    if(!cola.length){
+    if(fase==='sesion')return ses.vista();
+    const n=pendientes().length;
+    if(!n){
       const p=progreso(),prox=Object.values(p.repaso).map(r=>r.proxima).filter(f=>f>hoy()).sort()[0];
       const cuantos=prox?Object.values(p.repaso).filter(r=>r.proxima===prox).length:0;
-      return `${cab}<div class="card"><h3>No tienes nada para repasar hoy</h3>
-<p style="margin:0 0 12px;color:var(--muted)">${prox?`Tu próximo repaso es el ${fechaLarga(prox)} (${cuantos} ${cuantos===1?'ejercicio':'ejercicios'}).`:'Cuando falles un ejercicio o domines una lección, aparecerá aquí.'}</p>
-<button class="btn" data-go="">Ir a mis materias</button></div>`;
+      return `<h1>Repasar</h1>${vacio({icono:'🌤️',titulo:Object.keys(p.repaso).length?'Nada que repasar hoy':'Aún no tienes repasos',
+        texto:prox?`Tu próximo repaso es el ${fechaLarga(prox)} (${cuantos} ${cuantos===1?'ejercicio':'ejercicios'}).`:'¡Haz tu primera lección! Lo que falles volverá aquí en el momento justo para recordarlo.',
+        boton:boton({texto:'Ir a aprender',go:''})})}`;
     }
-    if(i>=cola.length)return `${cab}<div class="card"><h3>Repaso terminado</h3><p class="prog-v">${aciertos} <small>de ${cola.length} sin pista</small></p>
-<p style="color:var(--muted)">${aciertos===cola.length?'¡Todo bien! Esos ejercicios volverán dentro de unos días.':'Los que fallaste volverán mañana.'}</p>
-${htmlCierre({xp:xpHoy()-xp0,aprendido:reglas,excluir:'repaso'})}</div>`;
-    const x=cola[i];
-    return `${cab}<div class="card"><p class="progress">Ejercicio ${i+1} de ${cola.length} · ${x.materia.nombre} · ${x.titulo}</p>${barra(i,cola.length)}
-<div style="margin-top:14px">${htmlEjercicio(x.ej)}</div></div>`;
+    return `<h1>Repasar</h1>${vacio({icono:'🔁',titulo:`${n} ${n===1?'repaso toca':'repasos tocan'} hoy`,
+      texto:'Mezclados entre materias. Si aciertas sin pista, vuelven más tarde; si fallas, mañana.',boton:boton({texto:'Empezar repaso',id:'rep-empezar',clase:'ancho'})})}`;
   },
+  alMostrar(){if(fase==='sesion')ses.alMostrar()},
   async alClic(t,ir,repintar){
-    if(t.id==='rep-sig'){i++;repintar();return true}
-    const x=cola[i]; if(!x)return;
-    const r=await manejarEjercicio(t,x.ej); if(!r)return;
-    const bien=r.correcto&&!r.pista; // con pista no se aleja: vuelve mañana
-    registrarEjercicio({materia:x.materia.id,ref:x.ref,correcto:bien,xp:bien?5:0,repasar:false});
-    const res=responderRepaso(x.ref,bien);
-    if(bien)aciertos++;else if(x.ej.regla)reglas.push(x.ej.regla);
-    const nota=res.dominado?'¡Dominado! Ya no aparecerá en tu repaso.':`Volverá ${enDias(res.dias)}.`;
-    mostrarResultado(x.ej,r,`<div class="fb-pie"><span class="progress">${bien?'+5 XP · ':''}${nota}</span>
-<button class="btn" id="rep-sig">${i+1<cola.length?'Siguiente':'Ver resultado'}</button></div>`);
-    return true;
+    if(t.id==='rep-empezar'){empezar();repintar();return true}
+    if(fase==='sesion')return ses.alClic(t,ir,repintar);
   }
 };

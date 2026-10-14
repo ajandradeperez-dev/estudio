@@ -1,0 +1,47 @@
+/* Tokens de diseño: colores, radios, espaciado (escala de 4) y tipografía.
+   Paleta propia: un primario (índigo), éxito, error, aviso y un color por área.
+   Modo oscuro: sigue prefers-color-scheme salvo que el usuario elija tema en Perfil (data-theme en <html>).
+   Contraste AA: cada color de fondo de botón tiene su color de texto (--on-…). */
+:root{
+  --bg:#ffffff; --surface:#ffffff; --surface-2:#f4f5f8; --ink:#1d2130; --muted:#5f6577; --line:#e2e4ea; --line-2:#cfd3dc;
+  --primary:#4652d0; --primary-dark:#323ca6; --primary-soft:#eceefc; --on-primary:#ffffff;
+  --success:#157a34; --success-dark:#0e5c26; --success-soft:#e5f6ea; --on-success:#ffffff;
+  --error:#cc2f35; --error-dark:#a12127; --error-soft:#fdecec; --on-error:#ffffff;
+  --warn:#9a6200; --warn-bg:#f5a524; --warn-soft:#fff4dd;
+  --t-ciber:#1677c2; --t-ciber-dark:#0f5b96; --t-ciber-soft:#e6f2fb;
+  --t-estudio:#c2560f; --t-estudio-dark:#97420a; --t-estudio-soft:#fdf0e5;
+  --on-area:#ffffff;
+  --code:#f4f5f8;
+  --r1:8px; --r2:14px; --r3:16px; --r-full:999px;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px; --s10:40px;
+  --f-body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:ui-monospace,"SFMono-Regular",Consolas,monospace;
+  --nav-alto:64px;
+  --sombra:0 2px 10px rgb(20 24 40 / .06);
+  /* compatibilidad con estilos de secciones */
+  --panel:var(--surface); --accent:var(--primary); --accent-soft:var(--primary-soft); --ok:var(--success); --bad:var(--error);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12141a; --surface:#1b1e26; --surface-2:#232733; --ink:#e9ebf1; --muted:#a2a8b8; --line:#2e3340; --line-2:#3b4152;
+  --primary:#8b95ff; --primary-dark:#5a63c9; --primary-soft:#262a4a; --on-primary:#0c0e1c;
+  --success:#4fd17a; --success-dark:#2e9a53; --success-soft:#16301f; --on-success:#05200f;
+  --error:#ff7a7f; --error-dark:#c84b51; --error-soft:#3a1a1c; --on-error:#2a0507;
+  --warn:#f7bd4f; --warn-bg:#f5a524; --warn-soft:#352a12;
+  --t-ciber:#5db6f7; --t-ciber-dark:#2f86c4; --t-ciber-soft:#14283a;
+  --t-estudio:#ffa257; --t-estudio-dark:#c7722c; --t-estudio-soft:#36230f;
+  --on-area:#101218; --code:#232733; --sombra:none;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12141a; --surface:#1b1e26; --surface-2:#232733; --ink:#e9ebf1; --muted:#a2a8b8; --line:#2e3340; --line-2:#3b4152;
+  --primary:#8b95ff; --primary-dark:#5a63c9; --primary-soft:#262a4a; --on-primary:#0c0e1c;
+  --success:#4fd17a; --success-dark:#2e9a53; --success-soft:#16301f; --on-success:#05200f;
+  --error:#ff7a7f; --error-dark:#c84b51; --error-soft:#3a1a1c; --on-error:#2a0507;
+  --warn:#f7bd4f; --warn-bg:#f5a524; --warn-soft:#352a12;
+  --t-ciber:#5db6f7; --t-ciber-dark:#2f86c4; --t-ciber-soft:#14283a;
+  --t-estudio:#ffa257; --t-estudio-dark:#c7722c; --t-estudio-soft:#36230f;
+  --on-area:#101218; --code:#232733; --sombra:none;
+  color-scheme:dark}
+/* Color del área actual: lo heredan barras, nodos y botones de su pantalla */
+.area-ciber{--area:var(--t-ciber);--area-dark:var(--t-ciber-dark);--area-soft:var(--t-ciber-soft)}
+.area-estudio{--area:var(--t-estudio);--area-dark:var(--t-estudio-dark);--area-soft:var(--t-estudio-soft)}

@@ -1,54 +1,65 @@
-/* Página "Mi progreso": racha, meta diaria, actividad, repaso y detalle por materia */
-import {materias} from './materias.js';
-import {progreso,datosMateria,racha,estadoHoy,pendientes,cambiarMeta,reiniciarProgreso,hoy,sumarDias,METAS,INTERVALOS,minutosHablados} from './progreso.js';
+/* Pestaña Perfil: resumen de tu progreso (racha, XP, actividad, por materia), meta diaria, ajustes
+   (tema, sonidos, vibración), Mis notas, la clave de IA y reiniciar. */
+import {materias,rutaMateria} from './materias.js';
+import {progreso,datosMateria,racha,estadoHoy,pendientes,cambiarMeta,reiniciarProgreso,hoy,sumarDias,METAS,minutosHablados} from './progreso.js';
 import {htmlNivel} from './portada.js';
-import {barra} from './ui.js';
+import {barra,boton,confirmar} from './ui.js';
+import {ajustes,cambiarAjuste} from './ajustes.js';
 
-const stat=(k,v,extra='')=>`<div><div class="prog-k">${k}</div><div class="prog-v">${v}</div>${extra}</div>`;
+const est=(v,k)=>`<div class="estadistica"><b>${v}</b><span>${k}</span></div>`;
+const segmentos=(id,ops,actual)=>`<span class="segmentos" role="group">${ops.map(([v,t])=>`<button type="button" data-${id}="${v}" aria-pressed="${String(actual)===String(v)}">${t}</button>`).join('')}</span>`;
 
-export const miProgreso={
-  titulo:'Mi progreso',
+export const perfil={
+  titulo:'Perfil',
   vista(){
-    const p=progreso(),h=estadoHoy(p),r=racha(p),rep=Object.keys(p.repaso).length,hoyN=pendientes(p).length;
+    const p=progreso(),h=estadoHoy(p),r=racha(p),a=ajustes(),hoyN=pendientes(p).length;
     const xpTotal=materias.reduce((s,m)=>s+datosMateria(p,m.id).xp,0),mh=minutosHablados(p);
-    // Últimas 4 semanas: verde = meta cumplida, tenue = practicó sin cumplirla
+    const dominadas=materias.reduce((s,m)=>s+Object.values(datosMateria(p,m.id).lecciones).filter(x=>x?.dominada).length,0);
+    // Últimas 4 semanas: dorado = meta cumplida, borde = practicó sin cumplirla
     const dias=Array.from({length:28},(_,i)=>sumarDias(hoy(),i-27)).map(f=>{const d=p.dias[f];
-      const est=d?.ok?'ok':d&&(d.ej||d.seg>=60)?'algo':'';
-      return `<span class="dia ${est}" title="${f}${d?` · ${d.ej} ejercicios · ${Math.floor(d.seg/60)} min · ${d.xp} XP`:''}"></span>`}).join('');
-    return `<h1>Mi progreso</h1><p class="lead">Todo se guarda en este navegador. Si borras los datos del sitio o cambias de navegador, empiezas de cero.</p>
-<div class="card"><div class="prog-grid" style="margin-top:0">
- ${stat('Racha actual',`${r} <small>${r===1?'día':'días'}</small>`)}
- ${stat('Mejor racha',`${Math.max(r,p.mejorRacha)} <small>días</small>`)}
- ${stat('Meta de hoy',`${h.hecho} <small>de ${h.meta} ${h.tipo==='minutos'?'minutos':'ejercicios'}${h.ok?' · ✓ cumplida':''}</small>`,barra(h.hecho,h.meta))}
- ${stat('XP total',`${xpTotal} <small>XP</small>`)}
- ${stat('Minutos hablados',`${mh.hoy} <small>hoy · ${mh.semana} en 7 días</small>`)}
-</div>
-<h3 style="margin:18px 0 8px">Últimas 4 semanas</h3><div class="dias" role="img" aria-label="Actividad de los últimos 28 días">${dias}</div>
-<p class="progress" style="margin:8px 0 0"><span class="dia ok"></span> meta cumplida · <span class="dia algo"></span> practicaste sin cumplirla</p></div>
+      const e=d?.ok?'ok':d&&(d.ej||d.seg>=60)?'algo':'';
+      return `<span class="dia ${e}" title="${f}${d?` · ${d.ej} ejercicios · ${Math.floor(d.seg/60)} min · ${d.xp} XP`:''}"></span>`}).join('');
+    return `<h1>👤 Perfil</h1>
+<div class="prog-grid">${est(`🔥 ${r}`,`Racha (mejor ${Math.max(r,p.mejorRacha)})`)}${est(`⚡ ${xpTotal}`,'XP total')}${est(`👑 ${dominadas}`,'Dominadas')}${est(`🎙️ ${mh.semana}`,'Min. hablados (7 días)')}</div>
 
-<h2>Meta diaria</h2>
-<div class="card"><p style="margin:0 0 10px;color:var(--muted)">La racha cuenta los días seguidos en que cumples la meta. Los minutos se cuentan mientras usas la app.</p>
-<div class="tabs" id="metas">${METAS.map(([t,c])=>`<button data-meta="${t}:${c}" aria-pressed="${p.meta.tipo===t&&p.meta.cantidad===c}">${c} ${t}</button>`).join('')}</div></div>
+<h2>Meta de hoy</h2>
+<div class="card"><p class="nota" style="margin-bottom:8px">${h.hecho} de ${h.meta} ${h.tipo==='minutos'?'minutos':'ejercicios'}${h.ok?' · ✅ cumplida':''}</p>${barra(h.hecho,h.meta)}
+<div class="tabs" style="margin-top:14px">${METAS.map(([t,c])=>`<button data-meta="${t}:${c}" aria-pressed="${p.meta.tipo===t&&p.meta.cantidad===c}">${c} ${t==='minutos'?'min':'ejercicios'}</button>`).join('')}</div>
+<p class="nota" style="margin:0">La racha cuenta los días seguidos con la meta cumplida. Sesiones cortas de 5–10 minutos rinden más que una larga.</p></div>
 
-<h2>Repaso</h2>
-<div class="card"><div class="prog-grid" style="margin-top:0">
- ${stat('Para hoy',`${hoyN} <small>${hoyN===1?'ejercicio':'ejercicios'}</small>`)}
- ${stat('Programados',`${rep} <small>en total</small>`)}
- ${stat('Dominados',`${p.dominados} <small>acertados también a los ${INTERVALOS[INTERVALOS.length-1]} días</small>`)}
-</div>${hoyN?`<div class="row" style="margin-top:12px"><button class="btn" data-go="repaso">Repasar hoy</button></div>`:''}</div>
+<h2>Últimas 4 semanas</h2>
+<div class="card"><div class="dias" role="img" aria-label="Actividad de los últimos 28 días">${dias}</div>
+<p class="nota" style="margin:8px 0 0"><span class="dia ok"></span> meta cumplida · <span class="dia algo"></span> practicaste</p></div>
 
 <h2>Por materia</h2>
-${materias.map(m=>{const d=datosMateria(p,m.id),ls=m.lecciones||[];
-  return `<div class="card" style="margin-bottom:14px"><div class="materia-cab"><span class="sigla">${m.sigla}</span><h3 style="margin:0">${m.nombre}</h3></div>
-<div style="margin-top:10px">${htmlNivel(d.xp)}</div>
-${ls.length?`<div class="chips" style="margin-top:12px">${ls.map((l,i)=>{const x=d.lecciones[l.id];return `<span class="tag${x?.dominada?' on':''}" title="${l.titulo}">${x?.dominada?`✓ L${i+1} dominada`:x?`L${i+1} · ${Math.round(x.mejor*100)}%`:`L${i+1} · pendiente`}</span>`}).join('')}</div>`:''}
-${m.progresoHtml?m.progresoHtml(d):''}</div>`}).join('')}
+${materias.map(m=>{const d=datosMateria(p,m.id);
+  return `<div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${m.icono||''} ${m.nombre}</h3>${boton({texto:'Abrir',go:rutaMateria(m),clase:'ghost btn-chico'})}</div>
+<div style="margin-top:10px">${htmlNivel(d.xp)}</div></div>`}).join('')}
 
-<div class="row" style="margin-top:20px"><button class="btn ghost" id="preset">Reiniciar todo el progreso</button></div>
-<p class="progress" style="margin-top:16px">Versión ${__VERSION__}${navigator.serviceWorker?.controller?' · disponible sin internet':''}</p>`;
+<h2>Ajustes</h2>
+<div class="card">
+<div class="ajuste"><span>🌗 Tema</span>${segmentos('tema',[['auto','Auto'],['light','Claro'],['dark','Oscuro']],a.tema)}</div>
+<div class="ajuste"><span>🔊 Sonidos</span>${segmentos('sonido',[[true,'Sí'],[false,'No']],a.sonido)}</div>
+<div class="ajuste"><span>📳 Vibración</span>${segmentos('vibracion',[[true,'Sí'],[false,'No']],a.vibracion)}</div>
+</div>
+
+<h2>Más</h2>
+<div class="lista-nav">
+<button class="tarjeta-nav" data-go="notas"><span class="icono" aria-hidden="true">📝</span><span class="texto"><span class="titulo">Mis notas</span><span class="desc">Tus resúmenes de cada lección</span></span></button>
+<button class="tarjeta-nav" data-go="estudio/ingles/hablar/ia"><span class="icono" aria-hidden="true">✨</span><span class="texto"><span class="titulo">Inteligencia artificial</span><span class="desc">Tu clave de Anthropic (opcional) para conversar y generar preguntas</span></span></button>
+${hoyN?`<button class="tarjeta-nav" data-go="repaso"><span class="icono" aria-hidden="true">🔁</span><span class="texto"><span class="titulo">Repasar</span><span class="desc">${hoyN} para hoy</span></span></button>`:''}
+</div>
+<div style="margin-top:24px">${boton({texto:'Reiniciar todo el progreso',id:'preset',clase:'ghost ancho'})}</div>
+<p class="nota" style="margin-top:16px;text-align:center">Todo se guarda en este navegador · versión ${__VERSION__}${navigator.serviceWorker?.controller?' · disponible sin internet':''}</p>`;
   },
-  alClic(t,ir,repintar){
+  async alClic(t,ir,repintar){
     if(t.dataset.meta){const [tipo,c]=t.dataset.meta.split(':');cambiarMeta(tipo,+c);repintar();return true}
-    if(t.id==='preset'){if(confirm('¿Borrar todo tu progreso guardado en este navegador? (XP, racha, lecciones, ubicación y repaso; tus notas se conservan)')){reiniciarProgreso();repintar()}return true}
+    if(t.dataset.tema){cambiarAjuste('tema',t.dataset.tema);repintar();return true}
+    if(t.dataset.sonido){cambiarAjuste('sonido',t.dataset.sonido==='true');repintar();return true}
+    if(t.dataset.vibracion){cambiarAjuste('vibracion',t.dataset.vibracion==='true');repintar();return true}
+    if(t.id==='preset'){
+      if(await confirmar({titulo:'¿Reiniciar todo?',texto:'Se borran XP, racha, lecciones, ubicación y repasos de este navegador. Tus notas, ajustes y la clave de IA se conservan.',si:'Sí, reiniciar',no:'Cancelar',peligro:true})){reiniciarProgreso();repintar()}
+      return true;
+    }
   }
 };

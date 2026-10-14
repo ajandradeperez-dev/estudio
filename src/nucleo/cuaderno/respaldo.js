@@ -23,7 +23,7 @@ export async function crearRespaldo(){
 }
 export async function descargarRespaldo(){
   const r=await crearRespaldo(),blob=new Blob([JSON.stringify(r)],{type:'application/json'});
-  descargar(blob,`${APP_NOMBRE.toLowerCase().replace(/[^a-z0-9]+/g,'-')}-respaldo-${hoy()}.json`);
+  descargar(blob,`${APP_NOMBRE.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'app'}-respaldo-${hoy()}.json`);
   return {notas:r.notas.length,archivos:r.archivos.length,bytes:blob.size};
 }
 export function descargar(blob,nombre){

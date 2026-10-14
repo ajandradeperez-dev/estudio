@@ -1,4 +1,4 @@
-# CiberLab
+# Estudio+ (repositorio ciberlab)
 
 ## Idioma
 
@@ -319,7 +319,7 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 8`; los formatos a
 
 - **PWA** con `vite-plugin-pwa` (configuración en `vite.config.js`): manifest con nombre, colores e íconos (`public/icons/`, generados desde `public/favicon.svg`; el `maskable` no tiene esquinas redondeadas y deja el dibujo dentro del círculo seguro). El service worker guarda en caché toda la app (incluidos KaTeX y sus fuentes woff2) y, la primera vez que cargan, las fuentes de Google: funciona sin internet.
 - **Actualización automática**: `skipWaiting` + `clientsClaim` activan la versión nueva en cuanto se instala. `main.js` no recarga de golpe: muestra "✨ Hay una versión nueva · Actualizar" (`avisarVersionNueva` en `app.js`) y recarga solo si la persona toca el botón, para no cortar un ejercicio. Busca actualizaciones al volver a la app y cada hora. La versión instalada se ve en Perfil y en Acerca de.
-- **Nombre e ícono**: el nombre sale de `src/config.js` (manifest, `<title>`, splash, barra superior, Acerca de, invitación, nombre del respaldo y del APK). El ícono es `public/icons/icono.svg`; si lo cambias, `node scripts/iconos.mjs` regenera todos los PNG (el maskable a sangre con el dibujo dentro del círculo seguro del 80 %, y el monocromo para los íconos temáticos de Android).
+- **Nombre e ícono**: la app se llama **Estudio+** (antes CiberLab). Las claves de datos guardados (`ciberlab-progreso`, `ciberlab-notas`, `ciberlab-ia`…) conservan el prefijo viejo a propósito: cambiarlas haría perder los datos. El nombre sale de `src/config.js` (manifest, `<title>`, splash, barra superior, Acerca de, invitación, nombre del respaldo y del APK). El ícono es `public/icons/icono.svg`; si lo cambias, `node scripts/iconos.mjs` regenera todos los PNG (el maskable a sangre con el dibujo dentro del círculo seguro del 80 %, y el monocromo para los íconos temáticos de Android).
 - **Sin conexión**: todo funciona salvo la IA y el reconocimiento de voz (en Chrome usa los servidores de Google); una franja avisa cuando no hay red.
 - **Recordatorio diario** (Perfil): con permiso de notificaciones, a la hora elegida, si la meta del día no está cumplida, una notificación (una vez al día). Con la app abierta lo revisa `main.js` cada minuto; con la app cerrada, `sw-recordatorio.js` vía Periodic Background Sync (Chrome/Android con la app instalada; el navegador decide el momento, así que la hora es aproximada). El estado se comparte con el service worker en la caché `ciberlab-recordatorio`.
 - En `npm run dev` no se registra el service worker (para que la caché no confunda al programar). Para probar la PWA: `npm run build` y `npm run preview`.
@@ -350,7 +350,7 @@ Materias propias del usuario a partir de su temario real. Todo funciona sin IA; 
 
 El APK es una **Trusted Web Activity** hecha con Bubblewrap: abre `https://ajandradeperez-dev.github.io/estudio/` a pantalla completa, sin barra del navegador. Como carga la web, **cada push a `main` llega solo a quienes tienen el APK**; solo hay que regenerarlo si cambian el nombre, el ícono, los colores, el paquete o los atajos.
 
-- **Configuración**: `android/twa-manifest.json` (lo único de `android/` que se versiona; el proyecto Gradle se genera). Paquete `io.github.ajandradeperez.estudio`, `minSdkVersion` 24 (Android 7.0; la librería de Bubblewrap lo exige).
+- **Configuración**: `android/twa-manifest.json` (lo único de `android/` que se versiona; el proyecto Gradle se genera). Nombre visible **Estudio+** (antes CiberLab; el paquete nunca cambia para que el APK se instale encima). Paquete `io.github.ajandradeperez.estudio`, `minSdkVersion` 24 (Android 7.0; la librería de Bubblewrap lo exige).
 - **Llave de firma**: `C:\Users\angel\.ciberlab-firma\` (`ciberlab.keystore`, alias `ciberlab`; contraseña en `contraseñas.txt` y huella en `huella-sha256.txt`). **Nunca** va al repositorio (`.gitignore` bloquea `*.keystore`, `*.jks`, contraseñas, `*.apk`, `*.aab`). Si se pierde, no se pueden publicar actualizaciones con el mismo paquete: hay que tener una copia de respaldo de esa carpeta.
 - **Verificación del dominio**: el repo `ajandradeperez-dev/ajandradeperez-dev.github.io` sirve `/.well-known/assetlinks.json` (paquete + huella SHA-256 del certificado, pública por diseño) y `.nojekyll`. Sin él, Android muestra la barra de dirección. Se comprueba con
   `https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://ajandradeperez-dev.github.io&relation=delegate_permission/common.handle_all_urls`.
@@ -360,7 +360,8 @@ El APK es una **Trusted Web Activity** hecha con Bubblewrap: abre `https://ajand
   2. `npx @bubblewrap/cli@1.25.0 update` (regenera el proyecto desde `twa-manifest.json`; acepta la pregunta).
   3. Con las contraseñas en `BUBBLEWRAP_KEYSTORE_PASSWORD` y `BUBBLEWRAP_KEY_PASSWORD`, el `bin` del JDK 17 al principio del `PATH` (Bubblewrap llama a `jarsigner` por nombre) y **sin** la variable `NoDefaultCurrentDirectoryInExePath` (si existe, `cmd` no encuentra `gradlew.bat`): `npx @bubblewrap/cli@1.25.0 build --skipPwaValidation`.
   4. Salen `app-release-signed.apk` y `app-release-bundle.aab`. Comprueba la firma con `apksigner verify --print-certs` (la huella debe ser la de `huella-sha256.txt`).
-  5. Publica una Release en este repo con los archivos renombrados a `CiberLab.apk` y `CiberLab.aab` (el enlace de Perfil es `…/releases/latest/download/CiberLab.apk`, de `APK_URL` en `src/config.js`): `gh release create android-<versión> CiberLab.apk CiberLab.aab --latest`.
+  5. Publica una Release en este repo con los archivos renombrados a `EstudioPlus.apk` y `EstudioPlus.aab` (el enlace de Perfil es `…/releases/latest/download/EstudioPlus.apk`, de `APK_ARCHIVO`/`APK_URL` en `src/config.js`) y una copia `CiberLab.apk` para los enlaces viejos: `gh release create android-<versión> EstudioPlus.apk EstudioPlus.aab CiberLab.apk --latest`.
+  6. Versiones publicadas: 1.0.0 (código 1, CiberLab) y 1.1.0 (código 2, Estudio+). Cada APK nuevo necesita un `appVersionCode` mayor y la misma llave, o Android no lo instala encima.
 - Si algún día cambia la llave (o se sube a Play Store con la firma de Google), agrega la huella nueva a `assetlinks.json` del repo `ajandradeperez-dev.github.io`.
 
 ## Sincronizar entre dispositivos (no implementado)

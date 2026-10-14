@@ -1,4 +1,4 @@
-# Método de estudio de CiberLab
+# Método de estudio de Estudio+
 
 Cómo enseña la app y por qué. Las constantes viven en `src/nucleo/metodo.js`; el motor, en `habilidad.js` (práctica de una habilidad), `actividades.js` (tipos de actividad), `practica.js` (de dónde salen las preguntas), `repaso.js` (repetición espaciada) y `camino.js` (cofres, jefes y desbloqueo).
 

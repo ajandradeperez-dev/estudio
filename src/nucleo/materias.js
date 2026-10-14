@@ -71,6 +71,8 @@ export function analizar(ruta){
     if(y==='l'&&leccion(m,z)){const l=leccion(m,z);return {...base,tipo:'leccion',ruta:rutaLeccion(m,l),l,t:tema(m,l.tema)}}
     return {...base,tipo:'tema',ruta:rutaTema(m,t),t};
   }
+  // <algo>/l/<habilidad> con un tema renombrado (p. ej. un enlace viejo #ciberseguridad/redes/l/subredes-cidr): la habilidad
+  if(x&&y==='l'&&leccion(m,z)){const l=leccion(m,z);return {...base,tipo:'leccion',ruta:rutaLeccion(m,l),l,t:tema(m,l.tema)}}
   if(x&&m.secciones?.[x])return {...base,tipo:'seccion',seccion:x,resto:segs.slice(1),ruta:[rutaMateria(m),...segs].join('/')};
   return {...base,tipo:'materia',ruta:rutaMateria(m)};
 }

@@ -19,16 +19,17 @@ import defs from './temas.js';
 const temas=cargarTemas(import.meta.glob('./temas/*/*.js',{eager:true}),defs);
 
 // Las claves (redes, subred, fw…) forman la ruta (#ciberseguridad/fw) y se guardan en el progreso: no las cambies.
+// intro y como: cabecera común (main.js); habilidad: el botón "Practicar" lleva a esa habilidad del camino; propia: la sección pinta su cabecera
 const secciones={
-  redes:{titulo:'Redes',grupo:'Fundamentos',desc:'Modelo OSI, puertos y protocolos que todo firewall usa.',modulo:redes},
-  subred:{titulo:'Calculadora de subredes',grupo:'Fundamentos',desc:'Escribe una IP y máscara y ve red, broadcast y hosts.',modulo:subred},
-  vlan:{titulo:'VLANs y Wi-Fi',grupo:'Fundamentos',desc:'Separa redes con 802.1Q y protege el Wi-Fi con WPA3 y redes de invitados.',modulo:vlan},
-  fw:{titulo:'Simulador de políticas',grupo:'Firewalls',desc:'Crea reglas, envía un paquete y mira qué regla lo atrapa. Cambia entre FortiGate, Palo Alto, Cisco ASA y pfSense.',modulo:fw},
-  vpn:{titulo:'Simulador de VPN IPsec',grupo:'Firewalls',desc:'Configura las dos puntas de un túnel entre FortiGate, levántalo y descubre en qué fase falla.',modulo:vpn},
-  marcas:{titulo:'Comparar marcas',grupo:'Firewalls',desc:'Cómo se llama lo mismo en cada fabricante.',modulo:marcas},
-  forti:{titulo:'FortiGate a fondo',grupo:'Firewalls',desc:'Políticas, NAT/VIP, VPN y perfiles de seguridad explicados.',modulo:forti},
-  incidentes:{titulo:'Laboratorio de incidentes',grupo:'Seguridad',desc:'Lee registros simulados, identifica el ataque y elige la defensa correcta.',modulo:incidentes},
-  quiz:{titulo:'Examen rápido',grupo:'Seguridad',desc:'Pon a prueba lo aprendido.',modulo:quiz}
+  redes:{titulo:'Redes',grupo:'Fundamentos',desc:'Modelo OSI, puertos y protocolos que todo firewall usa.',modulo:redes,intro:'Qué capas mira un firewall y qué puerto usa cada servicio.',como:['Recorre el modelo OSI de abajo hacia arriba.','Fíjate en qué capa trabaja cada protocolo.','Practica los puertos para recordarlos.'],habilidad:'puertos-y-servicios'},
+  subred:{titulo:'Calculadora de subredes',grupo:'Fundamentos',desc:'Escribe una IP y máscara y ve red, broadcast y hosts.',modulo:subred,intro:'Escribe una IP con su prefijo y mira la red, el broadcast y los hosts.',como:['Escribe la IP (por ejemplo, 192.168.1.77).','Elige el prefijo.','Toca Calcular y compáralo con tu cuenta.'],habilidad:'subredes-cidr'},
+  vlan:{titulo:'VLANs y Wi-Fi',grupo:'Fundamentos',desc:'Separa redes con 802.1Q y protege el Wi-Fi con WPA3 y redes de invitados.',modulo:vlan,intro:'Separa redes en un mismo switch y en el Wi-Fi; el firewall decide qué se habla.',como:['Lee cómo una VLAN divide el switch.','Mira qué SSID va a cada VLAN.','Fíjate en las reglas entre VLAN.']},
+  fw:{titulo:'Simulador de políticas',grupo:'Firewalls',desc:'Crea reglas, envía un paquete y mira qué regla lo atrapa. Cambia entre FortiGate, Palo Alto, Cisco ASA y pfSense.',modulo:fw,intro:'Las reglas se revisan de arriba hacia abajo: gana la primera que coincide; si ninguna, se deniega.',como:['Lee la tabla de políticas.','Envía un paquete de prueba y mira qué regla lo atrapa.','Cambia el orden con ↑ ↓ y vuelve a probar.','Elige la marca para ver la misma regla en su sintaxis.'],habilidad:'politicas-firewall'},
+  vpn:{titulo:'Simulador de VPN IPsec',grupo:'Firewalls',desc:'Configura las dos puntas de un túnel entre FortiGate, levántalo y descubre en qué fase falla.',modulo:vpn,intro:'Configura las dos puntas de un túnel IPsec y descubre en qué fase falla.',como:['Elige un escenario o empieza desde cero.','Completa los parámetros de las dos puntas.','Toca Levantar túnel y lee el registro.'],habilidad:'vpn-fases'},
+  marcas:{titulo:'Comparar marcas',grupo:'Firewalls',desc:'Cómo se llama lo mismo en cada fabricante.',modulo:marcas,intro:'El mismo concepto se llama distinto en cada fabricante.',como:['Busca el concepto en la primera columna.','Lee su nombre en cada marca.'],habilidad:'marcas'},
+  forti:{titulo:'FortiGate a fondo',grupo:'Firewalls',desc:'Políticas, NAT/VIP, VPN y perfiles de seguridad explicados.',modulo:forti,intro:'Políticas, NAT/VIP, VPN y perfiles, con la CLI de FortiOS.',como:['Elige un tema.','Lee la explicación y el comando.'],habilidad:'nat'},
+  incidentes:{titulo:'Laboratorio de incidentes',grupo:'Seguridad',desc:'Lee registros simulados, identifica el ataque y elige la defensa correcta.',modulo:incidentes,intro:'Lee registros simulados, identifica el ataque y elige la defensa. Siempre defensivo.',como:['Lee el registro con calma.','Elige qué está pasando.','Elige la primera defensa.'],habilidad:'incidentes'},
+  quiz:{titulo:'Examen rápido',grupo:'Seguridad',desc:'Pon a prueba lo aprendido.',modulo:quiz,propia:true,habilidad:'repaso-seguridad'}
 };
 
 export default {

@@ -17,8 +17,6 @@ const cliVlan=`config system interface
 end`;
 
 export const vista=()=>`
-<h1>VLANs y Wi-Fi</h1>
-<p class="lead">Una VLAN divide un switch físico en varias redes lógicas separadas. En Wi-Fi pasa lo mismo: cada SSID suele ir a su propia VLAN. Las VLAN separan; el firewall decide qué puede hablar con qué.</p>
 <h2>Cómo se conectan las piezas</h2>
 <div class="grid">
 <div class="card"><h3>Puerto de acceso</h3><p style="margin:0">Pertenece a una sola VLAN. La PC o impresora conectada no sabe que existe la VLAN: el switch etiqueta y quita la etiqueta por ella.</p></div>

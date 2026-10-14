@@ -195,8 +195,6 @@ const mapa=()=>{const r=resultado,t=!r||r.estado==='info'||r.estado==='config'?[
 const salida=()=>resultado?resultado.html+(resultado.log?`<pre style="margin-top:10px">${esc(resultado.log)}</pre>`:''):'Configura las dos puntas o carga un escenario, y presiona <strong>Levantar túnel</strong>.';
 
 export const vista=()=>`
-<h1>Simulador de VPN IPsec</h1>
-<p class="lead">Une la Matriz y la Sucursal con un túnel IPsec sitio a sitio entre dos FortiGate. Configura las dos puntas y presiona Levantar túnel: si algo no coincide, verás en qué fase falla, por qué, y un registro parecido al de FortiOS.</p>
 <div class="vpn-mapa" id="vmapa">${mapa()}</div>
 <div class="tabs" id="vesc">${escenarios.map((e,i)=>`<button data-esc="${i}">${e.n}</button>`).join('')}<button data-esc="base">Configuración correcta</button></div>
 <div class="grid" id="vpnform" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">${lado('m')}${lado('s')}</div>

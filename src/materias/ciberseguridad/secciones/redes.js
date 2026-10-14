@@ -1,6 +1,4 @@
 export const vista=()=>`
-<h1>Redes</h1>
-<p class="lead">Un firewall decide con información de varias capas. Las clásicas (capa 3 y 4) miran IP y puerto; los de nueva generación (NGFW) llegan a capa 7 y reconocen aplicaciones.</p>
 <h2>Modelo OSI</h2>
 <div class="osi">
 ${[[7,'Aplicación','HTTP, DNS, SSH. Aquí trabajan App Control, WebFilter e IPS.'],[6,'Presentación','Cifrado TLS, codificación. Inspección SSL profunda.'],[5,'Sesión','Mantener conversaciones abiertas.'],[4,'Transporte','TCP/UDP y puertos. El firewall stateful sigue el estado de cada sesión.'],[3,'Red','Direcciones IP y enrutamiento. Políticas por origen/destino.'],[2,'Enlace','MAC, VLAN, switches.'],[1,'Física','Cables, fibra, señal.']]

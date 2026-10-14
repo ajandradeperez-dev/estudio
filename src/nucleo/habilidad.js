@@ -17,7 +17,7 @@ import {fuentes,generadorDe,preguntaHabilidad,ejerciciosDe} from './practica.js'
 import {crear} from './generadores/index.js';
 import {deBanco} from './ejercicios.js';
 import {comoEjemplo,comoHueco,comoOpcion,comoPorque,variar} from './actividades.js';
-import {tema as temaDe,areaDe,rutaTema,rutaLeccion} from './materias.js';
+import {tema as temaDe,areaDe,rutaMateria,rutaTema,rutaLeccion} from './materias.js';
 import {cofresTema} from './camino.js';
 import {conFormulas} from './formula.js';
 import {preguntaIA,iaDisponible} from './ia-preguntas.js';
@@ -133,7 +133,7 @@ ${explicacion?`<div class="card">${explicacion}</div>`:''}
 ${nota?`<div class="card nota-propia"><div class="ej-k">Tu resumen</div>${esc(nota.texto)}</div>`:''}
 <div style="margin-top:20px">${boton({texto:nueva&&g?'Empezar con un ejemplo':'Practicar',id:'hab-empezar',clase:'ancho area'})}</div>
 <p class="nota" style="text-align:center;margin-top:8px">${SESION} preguntas · unos 5 minutos</p>
-${h.herramienta?`<div style="margin-top:8px">${boton({texto:`🔧 ${h.herramienta.titulo}`,go:h.herramienta.ruta,clase:'ghost ancho'})}</div>`:''}</div>`;
+${h.herramienta&&m.secciones?.[h.herramienta]?`<div style="margin-top:12px">${boton({texto:`🔧 Abrir: ${m.secciones[h.herramienta].titulo}`,go:`${rutaMateria(m)}/${h.herramienta}`,clase:'ghost ancho'})}</div>`:''}</div>`;
     },
     alMostrar(){ses?.alMostrar()},
     async alClic(t2,ir,repintar){

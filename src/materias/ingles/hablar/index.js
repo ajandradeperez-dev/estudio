@@ -17,7 +17,7 @@ import {vistaIA} from './ia.js';
 import {leerAjustes} from './claude.js';
 import {nivelIngles} from './nivel.js';
 import {misionHabla,MISION} from '../../../nucleo/progreso.js';
-import {barra} from '../../../nucleo/ui.js';
+import {barra,intro} from '../../../nucleo/ui.js';
 import {cargarLecciones} from '../../../nucleo/cargar.js';
 import {UNIDADES,NIVELES_MCER,unidad,estadoUnidades,unidadActual} from './unidades.js';
 import {MEDALLAS,comboActual,sonidoActivo,alternarSonido,vencerJefe} from './juego.js';
@@ -59,7 +59,7 @@ const portada={
     const p=progreso(),f=fuerzaSonidos(p),dl=datosMateria(p,'ingles').extra.dialogos||{},clave=!!leerAjustes().clave,act=unidadActual(p),combo=comboActual();
     return `
 <div class="hablar-cab"><h1>🎙️ Hablar</h1><button class="btn ghost btn-chico" id="hb-sonido" type="button" aria-pressed="${sonidoActivo()}">${sonidoActivo()?'🔊 Sonidos':'🔇 Sin sonidos'}</button></div>
-<p class="lead">Hablar en voz alta es lo que más rápido te hace avanzar. Tu nivel: <b>${nivelIngles(p)}</b>${combo>=3?` · 🔥 combo ${combo}`:''}.</p>
+${intro(`Hablar en voz alta es lo que más rápido te hace avanzar. Tu nivel: <b>${nivelIngles(p)}</b>${combo>=3?` · 🔥 combo ${combo}`:''}.`,['Cumple la misión del día: 20 frases o una conversación de 5 turnos.','Sigue tu unidad: escucha, frases, diálogos, fluidez y el jefe.','Toca el micrófono, habla y mira qué palabras salieron bien.','Sin micrófono también puedes responder escribiendo.'])}
 ${soporte.escuchar?'':`<div class="card aviso"><p style="margin:0">⚠️ ${AVISO_SIN_RECONOCIMIENTO}</p></div>`}
 ${htmlMision(p)}
 <h2>Tu mapa</h2>${htmlMapa(p)}

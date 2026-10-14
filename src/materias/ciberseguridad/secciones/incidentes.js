@@ -8,9 +8,7 @@ incidents.forEach(c=>{[['o','a'],['do','da']].forEach(([k,a])=>{const right=c[k]
 let incIdx=0,intentoA=false,intentoB=false; // solo el primer intento de cada pregunta cuenta como ejercicio
 export const vista=()=>{
  const x=incidents[incIdx];intentoA=intentoB=false;
- return `<h1>Laboratorio de incidentes</h1>
-<p class="lead">Piensa como analista de seguridad: lee los registros simulados del firewall, identifica qué tipo de ataque es y elige la respuesta defensiva.</p>
-<div class="tabs" id="itabs">${incidents.map((c,i)=>`<button data-i="${i}" aria-pressed="${i===incIdx}">Caso ${i+1}</button>`).join('')}</div>
+ return `<div class="tabs" id="itabs">${incidents.map((c,i)=>`<button data-i="${i}" aria-pressed="${i===incIdx}">Caso ${i+1}</button>`).join('')}</div>
 <div class="card"><h3>${x.t}</h3><pre>${esc(x.log)}</pre>
  <p style="margin:14px 0 0"><strong>1. ${x.q}</strong></p><div class="opts" id="o1">${x.o.map((o,i)=>`<button data-a="${i}">${o}</button>`).join('')}</div><div id="ifb1" class="result" hidden></div>
  <div id="stage2" hidden><p style="margin:14px 0 0"><strong>2. ${x.d}</strong></p><div class="opts" id="o2">${x.do.map((o,i)=>`<button data-b="${i}">${o}</button>`).join('')}</div><div id="ifb2" class="result" hidden></div></div>

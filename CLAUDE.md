@@ -194,7 +194,7 @@ export default {nombre:'Física',icono:'🧲',area:'estudio',orden:5,descripcion
 
 Opcionales, para materias con secciones propias como Ciberseguridad:
 
-- `secciones: {clave:{titulo, grupo, desc, modulo}}`: cada `modulo` exporta `vista()`, y si las necesita `alMostrar()` y `alClic(t, ir)`. `ir('otraClave')` navega dentro de la misma materia.
+- `secciones: {clave:{titulo, grupo, desc, modulo, intro, como, habilidad, propia}}`: cada `modulo` exporta `vista()`, y si las necesita `alMostrar()`, `alClic(t, ir)`, `alEntrar()`, `alSalir()` e `inmersiva()`. `ir('otraClave')` navega dentro de la misma materia. La cabecera es común (`cabeceraSeccion` en `main.js`): título, `intro` (1–3 líneas), `como` (pasos de "¿Cómo se usa?") y, si tiene `habilidad`, el botón "🎯 Practicar" con ejercicios generados que cuentan para esa habilidad; con `propia:true` la sección pinta su cabecera. Desde la habilidad, `herramienta:'<clave>'` en su nodo agrega "🔧 Abrir". **El id de un tema no puede ser igual a la clave de una sección** (la ruta abriría el tema): `npm run revisar` lo comprueba.
 - `ejercicioRepaso(clave)`: devuelve `{titulo, ej}` para las preguntas propias que guardaste en el repaso (incluye `regla`).
 - `progresoHtml(datos)`: devuelve un bloque HTML para "Mi progreso".
 

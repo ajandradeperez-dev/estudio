@@ -45,6 +45,7 @@ for(const materia of readdirSync(raiz).sort()){
         if(!/^[a-z0-9-]+$/.test(t.id||''))mal(dt,'id inválido (minúsculas, números y guiones)');
         if(vistos.has(t.id))mal(dt,'id de tema repetido');vistos.add(t.id);
         if(IDS_RESERVADOS.includes(t.id))mal(dt,'ese id está reservado para rutas');
+        if(secciones.includes(t.id))mal(dt,`el id choca con la sección «${t.id}» de la materia: la ruta abriría el tema y no la herramienta`);
         for(const k of ['titulo','icono','descripcion'])if(!t[k])mal(dt,`falta ${k}`);
         const dir=join(dirTemas,t.id),fs=existsSync(dir)?readdirSync(dir).filter(f=>f.endsWith('.js')).sort():[];
         const deArchivo=new Set(fs.map(f=>f.replace(/^\d+-/,'').replace(/\.js$/,'')));
@@ -63,6 +64,7 @@ for(const materia of readdirSync(raiz).sort()){
           if(idsMateria.has(n.id))mal(dn,`el id «${n.id}» se repite en la materia (el progreso se guarda por materia e id)`);idsMateria.add(n.id);
           if(!deArchivo.has(n.id)&&!n.gen&&!n.banco)mal(dn,`«${n.id}» no tiene lección (temas/${t.id}/NN-${n.id}.js), generador ni banco`);
           if(!deArchivo.has(n.id)&&!n.titulo)mal(dn,`«${n.id}» no tiene lección: necesita titulo`);
+          if(n.herramienta&&!secciones.includes(n.herramienta))mal(dn,`la herramienta «${n.herramienta}» no existe en ${materia}`);
           if(n.gen&&!GENERADORES[n.gen])sinGenerador.push(`${materia}/${n.id} → ${n.gen}`);
           if(n.banco&&!BANCOS[n.banco])sinGenerador.push(`${materia}/${n.id} → banco ${n.banco}`);
         });

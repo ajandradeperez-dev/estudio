@@ -1,8 +1,6 @@
 import {$,ip2n,n2ip,mask} from '../../../utilidades.js';
 
 export const vista=()=>`
-<h1>Calculadora de subredes</h1>
-<p class="lead">Practica CIDR. Las direcciones que usas en el simulador de políticas siguen esta misma lógica.</p>
 <div class="card"><div class="row">
  <label for="sip">Dirección IP<input id="sip" value="192.168.10.77"></label>
  <label for="sbits">Prefijo<select id="sbits">${Array.from({length:33},(_,i)=>`<option ${i===24?'selected':''}>${i}</option>`).join('')}</select></label>

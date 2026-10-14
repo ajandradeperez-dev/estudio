@@ -13,7 +13,8 @@ import {logros} from './nucleo/logros.js';
 import {notas} from './nucleo/notas.js';
 import {vistaUbicacion} from './nucleo/ubicacion.js';
 import {aplicarTema} from './nucleo/ajustes.js';
-import {cerrarHoja} from './nucleo/ui.js';
+import {cerrarHoja,intro,boton} from './nucleo/ui.js';
+import {leccion,rutaLeccion} from './nucleo/materias.js';
 import {registerSW} from 'virtual:pwa-register';
 import {hablar} from './nucleo/voz.js';
 
@@ -40,9 +41,15 @@ function resolver(ruta){
     // Las secciones llaman a ir('clave') con claves de su propia materia
     const mod=s.modulo;
     return {...x,ruta:`${rutaMateria(m)}/${x.seccion}`,ultimo:true,ir:k=>go(`${rutaMateria(m)}/${k}`),
-      v:{titulo:s.titulo,vista:mod.vista,alMostrar:mod.alMostrar,alClic:mod.alClic,alEntrar:mod.alEntrar,alSalir:mod.alSalir,get inmersiva(){return mod.inmersiva?.()}}};
+      v:{titulo:s.titulo,vista:s.propia?mod.vista:()=>cabeceraSeccion(m,s)+mod.vista(),alMostrar:mod.alMostrar,alClic:mod.alClic,alEntrar:mod.alEntrar,alSalir:mod.alSalir,get inmersiva(){return mod.inmersiva?.()}}};
   }
   return {...x,v:vistaMateria(m)};
+}
+
+// Cabecera común de una herramienta: título, explicación corta, "¿Cómo se usa?" y "Practicar" (ejercicios que cuentan para su habilidad)
+function cabeceraSeccion(m,s){
+  const h=s.habilidad&&leccion(m,s.habilidad);
+  return `<h1>${s.titulo}</h1>${intro(s.intro||s.desc,s.como||[])}${h?`<div style="margin:0 0 16px">${boton({texto:`🎯 Practicar: ${h.titulo}`,go:rutaLeccion(m,h),clase:'ghost ancho'})}</div>`:''}`;
 }
 
 /* ---------- navegación ---------- */

@@ -33,7 +33,7 @@ export const logros={
     const tarjeta=l=>{const v=Math.min(l.valor(p),l.meta),ok=v>=l.meta;
       return `<div class="medalla${ok?' ganada':''}" title="${l.desc}"><span class="medalla-icono" aria-hidden="true">${l.icono}</span><span>${l.nombre}</span>${ok?'<span class="chip ok">✓</span>':`${barra(v,l.meta)}<span class="nota" style="font-size:12px">${v}/${l.meta}</span>`}<span class="oculto">${l.desc}</span></div>`};
     return `<h1>🏆 Logros</h1>
-<p class="lead">${ganados} de ${LOGROS.length} medallas · ${xpTotal(p)} XP en total.</p>
+<p class="lead">${ganados?`${ganados} de ${LOGROS.length} medallas · ${xpTotal(p)} XP en total.`:'Aún no tienes medallas. ¡Haz tu primera lección y gana la primera! 🌱'}</p>
 <div class="medallas">${LOGROS.map(tarjeta).join('')}</div>
 ${materias.filter(m=>m.progresoHtml).map(m=>`<h2>${m.icono||''} ${m.nombre}</h2><div class="card">${m.progresoHtml(datosMateria(p,m.id))}</div>`).join('')}`;
   }

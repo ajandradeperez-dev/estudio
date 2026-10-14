@@ -1,6 +1,4 @@
 export const vista=()=>`
-<h1>Comparar marcas</h1>
-<p class="lead">Los conceptos son los mismos; cambian los nombres y dónde se configuran.</p>
 <div class="wrap"><table>
 <tr><th>Concepto</th><th>FortiGate</th><th>Palo Alto</th><th>Cisco ASA / FTD</th><th>pfSense</th></tr>
 ${[['Regla de tráfico','Firewall Policy','Security Policy','Access List (ACL) / Access Control Policy','Firewall Rule'],

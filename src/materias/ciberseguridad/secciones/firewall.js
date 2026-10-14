@@ -49,8 +49,6 @@ function evaluate(pkt){
 }
 
 export const vista=()=>`
-<h1>Simulador de políticas</h1>
-<p class="lead">Las políticas se revisan de arriba hacia abajo y gana la primera que coincide. Si ninguna coincide, se aplica la denegación implícita. Elige la marca para ver la misma regla en su sintaxis.</p>
 <div class="tabs" id="vtabs">${Object.entries(vendors).map(([k,v])=>`<button data-v="${k}" aria-pressed="${k===vendor}">${v.n}</button>`).join('')}</div>
 <div class="card"><div class="wrap"><table id="ptable"></table></div>
 <p style="font-size:12px;color:var(--muted);margin:8px 0 0">Haz clic en una política para ver su configuración. Usa ↑ ↓ para cambiar el orden y comprobar cómo cambia el resultado.</p></div>

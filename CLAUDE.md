@@ -11,7 +11,7 @@ App para estudiar cualquier tema, organizada en **materias**, que aplica método
 - **Jerarquía**: área → materia → tema → habilidad (nodo del camino). Áreas: 🛡️ **Ciberseguridad** (temas Redes, Firewalls, VPN y criptografía, Defensa e incidentes y Herramientas con los simuladores) y 🎯 **Estudio y metas** (Inglés: Gramática, Vocabulario y frases, Hablar y escuchar; Matemáticas: Aritmética y álgebra básica, Álgebra lineal, Cálculo diferencial e integral; Ciencia de datos: Estadística, Probabilidad, Python y pandas, Visualización y Machine learning básico).
 - El recomendador "¿Qué sigue?", el repaso espaciado, la racha y la meta diaria son **globales**: cuentan todas las áreas.
 - **Lecciones**: explicación corta, ejemplos y práctica en rondas, casi toda de producción.
-- **Enganche**: racha de días cumpliendo una meta diaria (ejercicios o minutos), XP y nivel por materia, "Repasar hoy" con repetición espaciada y práctica mezclada, "Continuar donde te quedaste", "Mis notas" y "Mi progreso".
+- **Enganche**: racha de días cumpliendo una meta diaria (ejercicios o minutos), XP y nivel por materia, Repasar con repetición espaciada (SM-2) e intercalada, cofres y jefes en el camino, medallas en Logros, "Continuar donde te quedaste", "Mis notas" y Perfil.
 
 ## Método de aprendizaje
 
@@ -23,9 +23,9 @@ Estas reglas se aplican a **todas** las materias. Cualquier lección nueva debe 
 4. **Dominio.** Una habilidad está dominada con **≥ 80 % de las últimas 10 respuestas sin pista** y práctica en **2 días distintos** (`estadoDominio` en `metodo.js`). Usar la pista no cuenta y manda el ejercicio al repaso. Una habilidad nueva empieza con un **ejemplo resuelto**, sigue con uno **con hueco** y luego ejercicios solos; la **dificultad (1–5)** se adapta para acertar ~85 %; una vez por sesión se pide **"¿por qué?"** (autoexplicación). Todo el método, con su porqué, está en `src/nucleo/METODO.md`.
 5. **Práctica intercalada y espaciada.** "Repasar" usa **SM-2** (cada ejercicio fallado y cada habilidad dominada tienen su próxima fecha según qué tan bien se recordó) e intercala materias y habilidades (`mezclar` en `repaso.js`). En el camino hay un **cofre** cada 3 habilidades (repaso mezclado de esas tres) y un **jefe** al final de cada tema (mezcla cronometrada).
 6. **Cada error explica.** Al fallar se muestra lo que escribiste, **por qué está mal** (`porque` de cada opción incorrecta o `errores` típicos de la respuesta escrita) y **la regla correcta** (`regla`, obligatoria en cada ejercicio), además de la respuesta correcta. Los aciertos solo muestran "¡Correcto!" para no perder tiempo.
-7. **Resumen propio.** Al dominar una lección se pide escribir un resumen de 1–2 frases que se guarda en **"Mis notas"** y se muestra al volver a la lección.
+7. **Resumen propio.** Al dominar una habilidad se pide escribir un resumen de 1–2 frases que se guarda en **"Mis notas"** y se muestra al volver a ella.
 
-Para no perder tiempo: repetir una lección va directo a la práctica, todo se puede hacer con el teclado (Enter para comprobar y Enter para seguir), la página de cada materia tiene un botón a la siguiente lección pendiente y el examen de ubicación evita estudiar lo que ya sabes.
+Para no perder tiempo: sesiones de 8 preguntas (5–10 minutos), todo se puede hacer con el teclado (Enter para comprobar y Enter para seguir), cada materia muestra arriba "👉 Lo siguiente para ti" y el examen de ubicación evita estudiar lo que ya sabes.
 
 ### Inglés: 4 vertientes de Nation
 
@@ -39,7 +39,7 @@ Inglés sigue además el marco de `src/materias/ingles/metodo.md`. Todo contenid
 - **Unidades** en `src/materias/ingles/hablar/unidades.js` (los ids se guardan en el progreso: agrega al final, no los cambies). Una unidad se abre al vencer al jefe anterior o si la ubicación demostró que dominas las lecciones de la unidad anterior.
 - **Contenido de cada unidad** en `hablar/contenido.js` (`CONTENIDO[unidad]`): `escucha` (texto de 40–120 palabras que se oye antes de leerlo, con ≥3 preguntas escritas de comprensión; al 80 % el paso queda hecho), `chunks` (≥6 frases hechas `{en, es, uso}`) y `fluidez` (tema y guía para el 4-3-2: contar lo mismo en 60, 45 y 30 s; luego una ronda rápida de 60 s con los chunks). Las vistas están en `hablar/pasos.js`; los pasos hechos se guardan en `extra.unidades[unidad]`. El repaso guarda `e/<unidad>/<pregunta>` y `c/<unidad>/<chunk>`: agrega elementos al final de cada lista. La página de la unidad muestra 7 pasos: escucha → frases → forma → pronunciación → diálogos → fluidez → jefe.
 - `npm run revisar` también valida Inglés · habla: cada turno de diálogo tiene ≥2 respuestas aceptadas, pista, modelo y regla; el modelo se acepta y cada error típico se detecta; cada sonido tiene ≥3 pares mínimos distintos; las unidades apuntan a lecciones, diálogos y sonidos existentes y tienen su contenido completo.
-- **Calidad (Android Chrome primero)**: todo lo de Hablar debe funcionar a 360 px sin scroll horizontal y con controles de al menos 40 px de alto. Si no hay reconocimiento de voz (`soporte.escuchar`), cada actividad ofrece la alternativa escrita (diálogos, IA, frases, repaso) y la fluidez queda como temporizador; si no hay síntesis (`soporte.hablar`), se muestra el texto en vez del audio. Lo que no usa la IA funciona sin conexión (PWA).
+- **Calidad (Android Chrome primero)**: todo lo de Hablar debe funcionar a 360 px sin scroll horizontal y con toques de al menos 44 px. Si no hay reconocimiento de voz (`soporte.escuchar`), cada actividad ofrece la alternativa escrita (diálogos, IA, frases, repaso) y la fluidez queda como temporizador; si no hay síntesis (`soporte.hablar`), se muestra el texto en vez del audio. Lo que no usa la IA funciona sin conexión (PWA).
 - **Estilo juego** (`hablar/juego.js`): hablar da 15 XP por frase con 80+ (escribir da 10); combo de frases seguidas ×1,5 desde 3, ×2 desde 5, ×3 desde 10, y se rompe al fallar; medallas (`MEDALLAS`, cada una con `logra(p, extra)`); sonidos con Web Audio que se pueden silenciar (`localStorage['ciberlab-ajustes']`). **Misión diaria de habla** (`MISION` en `progreso.js`): 20 frases en voz alta o una conversación de 5 turnos; cumplirla cumple la meta del día y suma a la racha.
 
 En Ciberseguridad, los simuladores, el laboratorio y el examen rápido son herramientas de práctica, no lecciones. El examen rápido es de respuesta escrita (`datos/preguntas.js`, mismo formato que los ejercicios de lección, con `respuestas`, `errores` y `regla`). Sus preguntas y las del laboratorio entran al repaso mezclado, y cada error muestra la regla o la explicación del caso. El laboratorio de incidentes sigue siendo de elegir opción: es un caso práctico de diagnóstico, no un ejercicio de memoria.
@@ -94,7 +94,7 @@ src/
                           y puntúa 0–100; encaja() para respuestas libres con patrones "my name is *"
   materias/
     ciberseguridad/       materia.js, lecciones/, secciones/ (simuladores), datos/, progreso.js (ganchos propios)
-    ingles/               materia.js + lecciones/01-….js, metodo.md (4 vertientes),
+    ingles/               materia.js + temas.js + temas/<tema>/NN-….js, metodo.md (4 vertientes),
                           errores-pronunciacion.js (sonidos difíciles: causa, tip físico, pares mínimos, detecta())
                           hablar/: index.js (rutas), unidades.js, contenido.js, pasos.js (escucha, fluidez),
                           dialogos.js, frases.js, practica.js, dialogo.js, ia.js + claude.js (API), juego.js
@@ -196,7 +196,7 @@ Opcionales, para materias con secciones propias como Ciberseguridad:
 
 - `secciones: {clave:{titulo, grupo, desc, modulo, intro, como, habilidad, propia}}`: cada `modulo` exporta `vista()`, y si las necesita `alMostrar()`, `alClic(t, ir)`, `alEntrar()`, `alSalir()` e `inmersiva()`. `ir('otraClave')` navega dentro de la misma materia. La cabecera es común (`cabeceraSeccion` en `main.js`): título, `intro` (1–3 líneas), `como` (pasos de "¿Cómo se usa?") y, si tiene `habilidad`, el botón "🎯 Practicar" con ejercicios generados que cuentan para esa habilidad; con `propia:true` la sección pinta su cabecera. Desde la habilidad, `herramienta:'<clave>'` en su nodo agrega "🔧 Abrir". **El id de un tema no puede ser igual a la clave de una sección** (la ruta abriría el tema): `npm run revisar` lo comprueba.
 - `ejercicioRepaso(clave)`: devuelve `{titulo, ej}` para las preguntas propias que guardaste en el repaso (incluye `regla`).
-- `progresoHtml(datos)`: devuelve un bloque HTML para "Mi progreso".
+- `progresoHtml(datos)`: devuelve un bloque HTML que se muestra en Logros (p. ej. la misión, el mapa y las medallas de Hablar).
 
 Una materia necesita al menos 5 lecciones para que el examen de ubicación tenga 10 preguntas con 2 por lección; con menos, cada lección aporta más preguntas (hasta 5 con 2 lecciones). `npm run revisar` avisa si a una lección le faltan preguntas de producción para la ubicación.
 
@@ -276,7 +276,7 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 7`; los formatos a
 - `npm run revisar` carga un progreso v5 de ejemplo y falla si al migrar se pierden lecciones dominadas, XP, racha, repasos o notas: si agregas una versión, amplía esa comprobación.
 - **v7** (método): los repasos pasan a SM-2 (`paso` → intervalo equivalente, misma fecha); cada habilidad guarda `ult` (últimas 10), `dias`, `rating` y `sesiones`; lo ya dominado entra al repaso de habilidades repartido en la semana. `enCurso` deja de usarse.
 - **v6** (áreas y temas): `algebra` pasó a `matematicas` en `materias`, el repaso, las notas, `ultimo` e `historial`. Lo demás ya se guardaba por materia + id de lección, así que agrupar en temas no cambió nada.
-- **Lecciones**: `{dominada, mejor, intentos, via}`; `via` indica si se dominó practicando o en la ubicación. La ronda que toca es `intentos % rondas.length`.
+- **Habilidades** (`materias.<id>.lecciones`, por compatibilidad con el nombre anterior): `{dominada, mejor, intentos, via, ult, dias, rating, sesiones}`; `via` indica si se dominó practicando o en la ubicación. En una lección escrita, la ronda que toca es `intentos % rondas.length`.
 - **Repaso** (SM-2, `sm2` en `metodo.js`): `{rep, int, ef, proxima, fallos}`. Fallo → mañana; bien con pista, bien o bien y rápido → el intervalo crece (1, 3 y luego × facilidad). Un ejercicio sale al recordarlo a más de 60 días (`dominados`); las habilidades dominadas (`<materia>/h/<id>`) se siguen repasando con tope de 180 días. Los ejercicios generados se guardan como `<materia>/g/<habilidad>/<nivel>` y en el repaso se genera uno nuevo y parecido.
 - **Notas**: `{'<materia>/<lección>': {texto, fecha}}`. "Reiniciar todo el progreso" las conserva, porque son texto escrito por el usuario.
 - En Ciberseguridad, los casos del laboratorio y los escenarios de VPN se guardan por posición: agrégalos al final de sus listas en `datos/`.
@@ -285,7 +285,7 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 7`; los formatos a
 
 ## PWA y publicación
 
-- **PWA** con `vite-plugin-pwa` (configuración en `vite.config.js`): manifest con nombre, colores e íconos (`public/icons/`, generados desde `public/favicon.svg`; el `maskable` no tiene esquinas redondeadas y deja el dibujo dentro del círculo seguro). El service worker guarda en caché toda la app y, la primera vez que cargan, las fuentes de Google: funciona sin internet.
+- **PWA** con `vite-plugin-pwa` (configuración en `vite.config.js`): manifest con nombre, colores e íconos (`public/icons/`, generados desde `public/favicon.svg`; el `maskable` no tiene esquinas redondeadas y deja el dibujo dentro del círculo seguro). El service worker guarda en caché toda la app (incluidos KaTeX y sus fuentes woff2) y, la primera vez que cargan, las fuentes de Google: funciona sin internet.
 - **Actualización automática**: `skipWaiting` + `clientsClaim` activan la versión nueva en cuanto se instala. `main.js` no recarga de golpe: espera a que el usuario cambie de pantalla (`go()` con otra ruta) para no cortar un ejercicio. Busca actualizaciones al volver a la app y cada hora. La versión instalada se ve al final de "Mi progreso".
 - En `npm run dev` no se registra el service worker (para que la caché no confunda al programar). Para probar la PWA: `npm run build` y `npm run preview`.
 - **Publicación**: `.github/workflows/publicar.yml` publica en GitHub Pages en cada push a `main`. Pasa `npm run revisar` (si falla, no publica), compila con `BASE_PATH=/<repositorio>/` porque Pages sirve la app en `https://<usuario>.github.io/<repositorio>/`, y pone `APP_VERSION` con la fecha y el commit.
@@ -304,6 +304,13 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 7`; los formatos a
 - **Pantalla de práctica**: siempre con `crearSesion()` (una pregunta por pantalla, ✕, barra de progreso, "Comprobar" abajo, hoja verde o roja con la respuesta correcta, el porqué, el error típico y la regla). No escribas pantallas de ejercicios a mano.
 - El laboratorio de incidentes es **defensivo**: identificar ataques y elegir respuestas, nunca enseñar a ejecutarlos.
 
+## Calidad
+
+- `npm run revisar` (también lo corre la publicación): método de las lecciones, jerarquía (áreas, temas, nodos, enlaces a secciones, ids), contenido de habla de Inglés, migración del progreso y los 50 generadores (200 ejercicios por nivel que pasan su `verificar`, fórmulas KaTeX válidas, regla y variedad).
+- Antes de publicar un cambio de interfaz, revísalo a **360 × 800**, en claro y en oscuro: sin scroll horizontal, toques ≥ 44 px, fórmulas largas dentro de su caja; y sin conexión (la app, KaTeX y sus fuentes están en la caché del service worker).
+- Si cambias el formato guardado, sube `VERSION` en `progreso.js`, agrega su paso en `migrar()` y amplía la comprobación de migración de `revisar` (lecciones dominadas, XP, racha, repasos, notas, medallas; los ajustes y la clave de IA viven en otras claves y no se tocan).
+- No arranques el servidor de desarrollo para dejarlo corriendo: para probar, `npm run build` + `npm run preview` (o un `vite preview` puntual) y apágalo al terminar.
+
 ## Comandos
 
 ```
@@ -311,5 +318,5 @@ npm install       # primera vez
 npm run dev       # servidor de desarrollo: http://localhost:5173 (puerto fijo)
 npm run build     # genera dist/
 npm run preview   # sirve dist/ en http://localhost:4173 (puerto fijo)
-npm run revisar   # método de aprendizaje, jerarquía (áreas, temas, ids), contenido de habla y migración del progreso
+npm run revisar   # método, jerarquía, contenido de habla, migración del progreso y los 50 generadores (~10 s)
 ```

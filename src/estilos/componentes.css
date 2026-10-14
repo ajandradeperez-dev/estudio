@@ -222,3 +222,7 @@ button{font:inherit}
 #aviso-flotante{position:fixed;left:50%;bottom:calc(var(--nav-alto) + var(--s4));z-index:50;max-width:calc(100% - 32px);padding:var(--s3) var(--s5);border-radius:var(--r2);background:var(--ink);color:var(--bg);font-weight:700;box-shadow:0 6px 20px rgb(0 0 0 / .25);transform:translate(-50%,200%);transition:transform .25s ease-out}
 #aviso-flotante.visible{transform:translate(-50%,0)}
 .sesion pre{white-space:pre-wrap;word-break:break-word}
+/* Fórmulas largas: se desplazan dentro de su caja en vez de ensanchar la pantalla */
+.pregunta,.pasos-sol li,.hoja-linea,.afirmacion{overflow-x:auto;overflow-y:hidden}
+.opcion>span{min-width:0;overflow-x:auto;overflow-y:hidden}
+.pieza{min-width:44px;justify-content:center}

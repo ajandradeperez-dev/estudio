@@ -189,10 +189,15 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
     notas:{'algebra/expresiones':{texto:'Resumen',fecha:f(3)}},ultimo:{ruta:'algebra/l/ecuaciones-lineales',materia:'algebra'},frases:{},historial:[{materia:'algebra',tipo:'algebra/l/expresiones',fecha:f(0)}]};
   mem['ciberlab-progreso']=JSON.stringify(v5);
   const p=P.progreso(),m=p.materias.matematicas,e='migración v5';
-  if(p.v<6)mal(e,`queda en la versión ${p.v}`);
+  if(p.v!==7)mal(e,`queda en la versión ${p.v} (se esperaba 7)`);
   if(p.materias.algebra||m?.xp!==230||!m.lecciones.expresiones?.dominada||m.lecciones['ecuaciones-lineales']?.mejor!==0.4)mal(e,'se pierden la XP o las lecciones de Álgebra (ahora Matemáticas)');
   if(!p.materias.ingles?.lecciones['verbo-to-be']?.dominada)mal(e,'se pierden lecciones de otras materias');
-  if(!p.repaso['matematicas/l/expresiones/3']||!p.repaso['ingles/l/can/2']||Object.keys(p.repaso).length!==2)mal(e,'se pierden o no se renombran repasos: '+Object.keys(p.repaso).join(', '));
+  if(!p.repaso['matematicas/l/expresiones/3']||!p.repaso['ingles/l/can/2'])mal(e,'se pierden o no se renombran repasos: '+Object.keys(p.repaso).join(', '));
+  // v7: los repasos pasan a SM-2 conservando la fecha, y lo dominado entra al repaso espaciado de habilidades
+  const r3=p.repaso['matematicas/l/expresiones/3'];
+  if(r3&&(r3.rep!==1||r3.int!==1||r3.ef!==2.5||r3.proxima!==f(-1)))mal(e,'el repaso no pasa bien a SM-2: '+JSON.stringify(r3));
+  if(!p.repaso['matematicas/h/expresiones']||!p.repaso['ingles/h/verbo-to-be']||p.repaso['matematicas/h/ecuaciones-lineales'])mal(e,'las habilidades dominadas no entran (solo ellas) al repaso de habilidades');
+  if(typeof m?.lecciones.expresiones?.rating!=='number'||!Array.isArray(m?.lecciones.expresiones?.ult))mal(e,'falta el registro de dominio (rating, últimas respuestas)');
   if(p.notas['matematicas/expresiones']?.texto!=='Resumen')mal(e,'se pierde la nota');
   if(P.racha(p)!==3||p.mejorRacha!==4||p.dominados!==2)mal(e,`se pierde la racha (${P.racha(p)} días)`);
   if(p.ultimo?.materia!=='matematicas'||p.historial[0]?.materia!=='matematicas')mal(e,'"continuar" o el historial siguen apuntando a algebra');

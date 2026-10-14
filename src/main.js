@@ -3,10 +3,10 @@ import './estilos/base.css';
 import './estilos/componentes.css';
 import './estilos/secciones.css';
 import {$} from './utilidades.js';
-import {analizar,rutaMateria} from './nucleo/materias.js';
+import {analizar,rutaMateria,rutaTema} from './nucleo/materias.js';
 import {visitar,guardarUltimo,sumarSegundos,registrarSesion,pendientes} from './nucleo/progreso.js';
 import {portada,vistaArea,vistaMateria,vistaTema,htmlBarraSup,htmlMigas} from './nucleo/portada.js';
-import {vistaLeccion} from './nucleo/leccion.js';
+import {vistaHabilidad,vistaCofre,vistaJefe} from './nucleo/habilidad.js';
 import {repaso} from './nucleo/repaso.js';
 import {perfil} from './nucleo/miprogreso.js';
 import {logros} from './nucleo/logros.js';
@@ -29,7 +29,9 @@ function resolver(ruta){
   if(x.tipo==='especial')return {...x,v:ESPECIALES[x.ruta]};
   if(x.tipo==='area')return {...x,v:vistaArea(x.area)};
   if(x.tipo==='tema')return {...x,v:vistaTema(m,x.t)};
-  if(x.tipo==='leccion')return {...x,v:vistaLeccion(m,x.l),ultimo:true};
+  if(x.tipo==='leccion')return {...x,v:vistaHabilidad(m,x.l),ultimo:true};
+  if(x.tipo==='cofre'){const v=vistaCofre(m,x.t,x.k);return v?{...x,v}:{...x,tipo:'tema',ruta:rutaTema(m,x.t),v:vistaTema(m,x.t)}}
+  if(x.tipo==='jefe')return {...x,v:vistaJefe(m,x.t)};
   if(x.tipo==='ubicacion')return {...x,v:vistaUbicacion(m)};
   if(x.tipo==='seccion'){
     const s=m.secciones[x.seccion];

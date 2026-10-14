@@ -2,28 +2,32 @@
    Si el almacenamiento no está disponible (modo privado, bloqueado), la app funciona igual sin guardar nada.
    Cada cambio emite el evento 'progreso' en window para que la barra superior se actualice.
 
-   Estructura (v: 6):
+   Estructura (v: 7):
    meta      {tipo:'ejercicios'|'minutos', cantidad}
    dias      {'AAAA-MM-DD': {ej, seg, xp, ok, habla:{frases, seg, turnos, conv}}}   ok = se cumplió la meta ese día (cuenta para la racha)
              habla: frases dichas en voz alta, segundos con el micrófono, turnos de conversación y la conversación más larga del día
    mejorRacha
    materias  {[id]: {xp,
-                     lecciones:{[id]:{dominada, mejor, intentos, via:'practica'|'ubicacion'}},
-                     enCurso:{leccion, ronda, i, ok, xp}|null,   ok = aciertos sin pista
+                     lecciones:{[habilidad]:{dominada, mejor, intentos, via:'practica'|'ubicacion',
+                                ult:[1,0…] últimas respuestas (1 = bien sin pista), dias:[fechas distintas de práctica],
+                                rating 1–5 (dificultad adaptativa), sesiones}},
+                     enCurso: sin uso desde v7 (las sesiones son cortas y no se retoman a medias)
                      ubicacion:{fecha, aciertos, total, dominadas:[…]}|null,
                      visitadas:[], extra:{}}}
-   repaso    {[ref]: {paso, proxima:'AAAA-MM-DD', fallos}}   ref = '<materia>/<clave del ejercicio>'
-   dominados número de ejercicios que salieron del repaso por acertarlos en todos los intervalos
+   repaso    {[ref]: {rep, int, ef, proxima:'AAAA-MM-DD', fallos}}   repetición espaciada SM-2 (ver metodo.js)
+             ref = '<materia>/l/<lección>/<i>' ejercicio de una lección · '<materia>/g/<habilidad>/<nivel>' ejercicio generado
+                   '<materia>/h/<habilidad>' repaso de una habilidad dominada · '<materia>/<clave propia>' (ejercicioRepaso)
+   dominados número de ejercicios que salieron del repaso por recordarlos a más de 2 meses
    notas     {'<materia>/<lección>': {texto, fecha}}   resúmenes escritos al dominar cada lección ("Mis notas")
    ultimo    {ruta, materia} para "Continuar donde te quedaste"
    frases    {[id]: {en, es, regla, fecha}}   frases para repasar que no salen de una lección (p. ej. sugeridas por la IA)
    historial [{materia, tipo, fecha}]          últimas sesiones (para alternar materias en "¿Qué sigue?")
-   En materias.<id>.extra cada materia guarda lo suyo; Inglés: sonidos {id:{ok, n, ult:[1,0…]}}, unidades, dialogos, medallas, combo. */
-import {DOMINIO} from './metodo.js';
+   En materias.<id>.extra cada materia guarda lo suyo: cofres {id: fecha}, jefes {tema: {mejor, fecha}};
+   Inglés: sonidos {id:{ok, n, ult:[1,0…]}}, unidades, dialogos, medallas, combo. */
+import {DOMINIO,ULTIMAS,estadoDominio,nuevoRating,calidad,sm2,SALE_DEL_REPASO,TOPE_HABILIDAD,INTERVALOS_V6} from './metodo.js';
 
-const CLAVE='ciberlab-progreso',VERSION=6;
-// Días hasta la siguiente vez que se pregunta un ejercicio acertado en el repaso, según cuántas veces seguidas se acertó
-export const INTERVALOS=[1,3,7,14,30];
+const CLAVE='ciberlab-progreso',VERSION=7;
+const RAPIDO=12000; // ms: responder bien en menos de esto cuenta como "rápido" (sube más la dificultad y el intervalo)
 export const METAS=[['ejercicios',10],['ejercicios',20],['ejercicios',30],['minutos',5],['minutos',10],['minutos',15]];
 const XP_LECCION=20;
 
@@ -80,6 +84,27 @@ function migrar(p){
     if(obj(p.ultimo))p.ultimo={...p.ultimo,ruta:ren(p.ultimo.ruta),materia:ren(p.ultimo.materia)};
     if(Array.isArray(p.historial))p.historial=p.historial.map(h=>obj(h)?{...h,materia:ren(h.materia),tipo:ren(h.tipo)}:h);
     p.v=6;
+  }
+  if(p.v===6){ // v6 → v7: repetición espaciada SM-2 y dominio por habilidad (últimas 10 respuestas + 2 días)
+    const h=hoy();let k=0;
+    // repasos {paso, proxima, fallos} → {rep, int, ef, proxima, fallos}: 'paso' aciertos seguidos = ese intervalo del esquema anterior
+    for(const [ref,r] of Object.entries(obj(p.repaso)||{})){
+      if(!obj(r)){delete p.repaso[ref];continue}
+      if(r.int===undefined){const paso=Math.max(0,Math.min(5,r.paso|0));p.repaso[ref]={rep:paso,int:INTERVALOS_V6[paso],ef:2.5,proxima:typeof r.proxima==='string'?r.proxima:h,fallos:r.fallos|0}}
+    }
+    for(const [mid,m] of Object.entries(obj(p.materias)||{})){
+      if(!obj(m))continue;
+      for(const [id,l] of Object.entries(obj(m.lecciones)||{})){
+        if(!obj(l))continue;
+        l.ult=Array.isArray(l.ult)?l.ult:[];l.dias=Array.isArray(l.dias)?l.dias:[];l.sesiones=l.sesiones|0||l.intentos|0;
+        if(typeof l.rating!=='number')l.rating=l.dominada?3:Math.round((1+2*(l.mejor||0))*10)/10;
+        // lo ya dominado entra al repaso espaciado de habilidades, repartido en la próxima semana
+        const ref=`${mid}/h/${id}`;
+        if(l.dominada&&obj(p.repaso)&&!p.repaso[ref])p.repaso[ref]={rep:2,int:7,ef:2.5,proxima:sumarDias(h,2+(k++%7)),fallos:0};
+      }
+      m.enCurso=null;
+    }
+    p.v=7;
   }
   return p;
 }
@@ -157,7 +182,7 @@ export function sumarXP(materia,xp){cambiar(p=>{datosMateria(p,materia).xp+=xp;d
 export function registrarEjercicio({materia,ref,correcto,xp=correcto?10:0,repasar=true}){
   cambiar(p=>{
     const d=dia(p);d.ej++;d.xp+=xp;datosMateria(p,materia).xp+=xp;
-    if(!correcto&&repasar&&ref)p.repaso[ref]={paso:0,proxima:hoy(),fallos:(p.repaso[ref]?.fallos||0)+1};
+    if(!correcto&&repasar&&ref){const r=p.repaso[ref];p.repaso[ref]={...sm2(r,0),proxima:hoy(),fallos:(r?.fallos||0)+1}}
     comprobarMeta(p);
   });
 }
@@ -166,34 +191,53 @@ export function pendientes(p=progreso()){
   const h=hoy();
   return Object.entries(p.repaso).filter(([,r])=>r&&r.proxima<=h).sort((a,b)=>a[1].proxima<b[1].proxima?-1:1).map(([ref])=>ref);
 }
-// Acierto (sin pista): el siguiente repaso se aleja (1, 3, 7, 14, 30 días); tras acertar en todos sale del repaso.
-// Fallo o acierto con pista: vuelve mañana y empieza de nuevo.
-export function responderRepaso(ref,correcto){
+// Respuesta en el repaso: SM-2 según qué tan bien se recordó (fallo → mañana; bien → el intervalo crece).
+// Un ejercicio que ya se recuerda a más de SALE_DEL_REPASO días sale; una habilidad ('/h/') se sigue repasando con tope.
+export function responderRepaso(ref,correcto,r={}){
   return cambiar(p=>{
-    const r=p.repaso[ref]; if(!r)return {dias:0};
-    if(!correcto){Object.assign(r,{paso:0,proxima:sumarDias(hoy(),1),fallos:(r.fallos||0)+1});return {dias:1}}
-    if(r.paso>=INTERVALOS.length){delete p.repaso[ref];p.dominados++;return {dominado:true}}
-    const dias=INTERVALOS[r.paso];r.paso++;r.proxima=sumarDias(hoy(),dias);return {dias};
+    const x=p.repaso[ref]; if(!x)return {dias:0};
+    const q=calidad({correcto,pista:r.pista,rapido:r.ms<RAPIDO}),nuevo=sm2(x,q),habilidad=ref.split('/')[1]==='h';
+    if(!habilidad&&q>=4&&nuevo.int>SALE_DEL_REPASO){delete p.repaso[ref];p.dominados++;return {dominado:true}}
+    const int=habilidad?Math.min(TOPE_HABILIDAD,nuevo.int):nuevo.int;
+    Object.assign(x,nuevo,{int,proxima:sumarDias(hoy(),int)});if(q<3)x.fallos=(x.fallos||0)+1;
+    return {dias:int};
   });
 }
-// Programa ejercicios para repasar mañana (al dominar una lección), sin tocar los que ya estaban en el repaso
+// Programa ejercicios para repasar mañana (al dominar algo), sin tocar los que ya estaban en el repaso
 export function programarRepaso(refs){
-  cambiar(p=>{for(const ref of refs)if(!p.repaso[ref])p.repaso[ref]={paso:1,proxima:sumarDias(hoy(),1),fallos:0}});
+  cambiar(p=>{for(const ref of refs)if(!p.repaso[ref])p.repaso[ref]={rep:1,int:1,ef:2.5,proxima:sumarDias(hoy(),1),fallos:0}});
 }
 export function quitarRepaso(ref){cambiar(p=>{delete p.repaso[ref]})}
 
-/* ---------- lecciones ---------- */
-export function guardarEnCurso(materia,enCurso){cambiar(p=>{datosMateria(p,materia).enCurso=enCurso})}
-// Cierra un intento de lección. Dominada con DOMINIO de aciertos sin pista; la primera vez da XP extra.
-export function terminarIntento(materia,leccion,ok,total){
+/* ---------- habilidades: dominio y dificultad ---------- */
+const registro=(m,id)=>{const prev=obj(m.lecciones[id])||{};return m.lecciones[id]=Object.assign({dominada:false,mejor:0,intentos:0,via:'practica',ult:[],dias:[],rating:1,sesiones:0},prev)};
+export const datosHabilidad=(p,materia,id)=>obj(datosMateria(p,materia).lecciones[id]);
+// Una respuesta en la práctica de una habilidad: últimas 10 y dificultad (sube con aciertos rápidos, baja con errores)
+export function registrarRespuesta(materia,habilidad,{correcto,pista,ms}){
   return cambiar(p=>{
-    const m=datosMateria(p,materia),prev=obj(m.lecciones[leccion])||{dominada:false,mejor:0,intentos:0};
-    const r=total?ok/total:0,dominada=r>=DOMINIO,primera=dominada&&!prev.dominada,extra=primera?XP_LECCION:0;
-    m.lecciones[leccion]={dominada:prev.dominada||dominada,mejor:Math.max(prev.mejor||0,r),intentos:(prev.intentos||0)+1,
-      via:dominada&&!prev.dominada?'practica':(prev.via||'practica')};
-    m.enCurso=null;m.xp+=extra;dia(p).xp+=extra;
-    return {dominada,primera,extra,porcentaje:r};
+    const h=registro(datosMateria(p,materia),habilidad);
+    h.ult=[...(h.ult||[]),correcto&&!pista?1:0].slice(-ULTIMAS);
+    h.rating=nuevoRating(h.rating,{correcto,pista,rapido:ms<RAPIDO});
+    return {...h};
   });
+}
+// Fin de una sesión de práctica: cuenta el día y revisa el dominio (≥80 % de las últimas 10 y 2 días distintos).
+// La primera vez que se domina da XP extra y la habilidad entra al repaso espaciado.
+export function cerrarSesionHabilidad(materia,habilidad,{ok=0,total=0}={}){
+  return cambiar(p=>{
+    const m=datosMateria(p,materia),h=registro(m,habilidad);
+    if(total){h.dias=[...new Set([...(h.dias||[]),hoy()])].slice(-ULTIMAS);h.sesiones=(h.sesiones||0)+1;h.intentos=(h.intentos||0)+1;h.mejor=Math.max(h.mejor||0,ok/total)}
+    const e=estadoDominio(h),primera=e.dominada&&!h.dominada,extra=primera?XP_LECCION:0;
+    if(primera){h.dominada=true;h.via='practica';const ref=`${materia}/h/${habilidad}`;if(!p.repaso[ref])p.repaso[ref]={rep:1,int:1,ef:2.5,proxima:sumarDias(hoy(),1),fallos:0}}
+    m.xp+=extra;dia(p).xp+=extra;
+    return {...e,dominada:h.dominada,primera,extra,rating:h.rating};
+  });
+}
+// Cofres (repaso intercalado dentro del camino) y jefes (mezcla cronometrada de un tema)
+export function abrirCofre(materia,id){return cambiar(p=>{const e=datosMateria(p,materia).extra;e.cofres=obj(e.cofres)||{};const primera=!e.cofres[id];e.cofres[id]=hoy();return primera})}
+export function guardarJefe(materia,tema,porcentaje){
+  return cambiar(p=>{const e=datosMateria(p,materia).extra;e.jefes=obj(e.jefes)||{};const prev=e.jefes[tema],vencido=porcentaje>=DOMINIO,primera=vencido&&!(prev?.mejor>=DOMINIO);
+    if(vencido||prev)e.jefes[tema]={mejor:Math.max(prev?.mejor||0,porcentaje),fecha:hoy()};return {vencido,primera}});
 }
 // Examen de ubicación: resultados {lección:[aciertos,total]}; marca como dominadas las que llegan a DOMINIO
 export function guardarUbicacion(materia,resultados){
@@ -202,7 +246,10 @@ export function guardarUbicacion(materia,resultados){
     for(const [id,[ok,total]] of Object.entries(resultados)){
       a+=ok;t+=total;
       const prev=obj(m.lecciones[id]);
-      if(total&&ok/total>=DOMINIO&&!prev?.dominada){m.lecciones[id]={dominada:true,mejor:ok/total,intentos:prev?.intentos||0,via:'ubicacion'};nuevas.push(id)}
+      if(total&&ok/total>=DOMINIO&&!prev?.dominada){
+        m.lecciones[id]={...(prev||{}),dominada:true,mejor:ok/total,intentos:prev?.intentos||0,via:'ubicacion',rating:Math.max(prev?.rating||1,3)};nuevas.push(id);
+        const ref=`${materia}/h/${id}`;if(!p.repaso[ref])p.repaso[ref]={rep:1,int:3,ef:2.5,proxima:sumarDias(hoy(),3),fallos:0};
+      }
     }
     m.ubicacion={fecha:hoy(),aciertos:a,total:t,dominadas:nuevas};
     return nuevas;

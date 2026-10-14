@@ -20,8 +20,8 @@ Estas reglas se aplican a **todas** las materias. Cualquier lección nueva debe 
 1. **Examen de ubicación por materia.** Entre 10 y 15 preguntas de producción, sin pista, repartidas entre las lecciones (`repartoUbicacion`). Las lecciones en las que aciertas el 80 % de sus preguntas quedan **dominadas** y no hace falta estudiarlas. Las preguntas salen de la última ronda de cada lección, así la práctica posterior empieza con ejercicios nuevos. Lo que falles aquí no va al repaso: lo aprenderás en la lección. Hay un botón "No lo sé" para no adivinar.
 2. **Mínimo 70 % de producción.** Producción = el usuario escribe la respuesta (completar, traducir, resolver): tipo `completar`. La opción múltiple solo sirve **para introducir**: como mucho una por ronda y siempre la primera. Las tarjetas no cuentan como producción.
 3. **Contenido ordenado por utilidad.** En cada materia, lo que más se usa va primero: en Inglés, la gramática y el vocabulario de mayor frecuencia (to be → presente simple → can → there is → presente continuo → pasado → futuro → vocabulario de trabajo). La **explicación** de cada lección tiene como máximo **150 palabras**.
-4. **Dominio.** Una lección cuenta como aprendida solo con **80 % de aciertos sin pista** en una ronda. Si no se llega, se repite con **otra ronda de ejercicios distintos** (cada lección tiene al menos 2). Usar la pista no cuenta para el dominio y manda el ejercicio al repaso.
-5. **Práctica mezclada.** "Repasar hoy" intercala materias y, dentro de cada materia, lecciones (`mezclar` en `repaso.js`). Al dominar una lección, dos ejercicios de producción de otra ronda entran al repaso para el día siguiente.
+4. **Dominio.** Una habilidad está dominada con **≥ 80 % de las últimas 10 respuestas sin pista** y práctica en **2 días distintos** (`estadoDominio` en `metodo.js`). Usar la pista no cuenta y manda el ejercicio al repaso. Una habilidad nueva empieza con un **ejemplo resuelto**, sigue con uno **con hueco** y luego ejercicios solos; la **dificultad (1–5)** se adapta para acertar ~85 %; una vez por sesión se pide **"¿por qué?"** (autoexplicación). Todo el método, con su porqué, está en `src/nucleo/METODO.md`.
+5. **Práctica intercalada y espaciada.** "Repasar" usa **SM-2** (cada ejercicio fallado y cada habilidad dominada tienen su próxima fecha según qué tan bien se recordó) e intercala materias y habilidades (`mezclar` en `repaso.js`). En el camino hay un **cofre** cada 3 habilidades (repaso mezclado de esas tres) y un **jefe** al final de cada tema (mezcla cronometrada).
 6. **Cada error explica.** Al fallar se muestra lo que escribiste, **por qué está mal** (`porque` de cada opción incorrecta o `errores` típicos de la respuesta escrita) y **la regla correcta** (`regla`, obligatoria en cada ejercicio), además de la respuesta correcta. Los aciertos solo muestran "¡Correcto!" para no perder tiempo.
 7. **Resumen propio.** Al dominar una lección se pide escribir un resumen de 1–2 frases que se guarda en **"Mis notas"** y se muestra al volver a la lección.
 
@@ -58,7 +58,15 @@ src/
                           base.css (armazón y navegación), componentes.css (botones 3D, tarjetas, sesión, hoja…), secciones.css
   utilidades.js           $, esc (escapar HTML) y utilidades IP
   nucleo/                 Motor común a todas las materias
-    metodo.js             Reglas del método: umbrales, reparto de la ubicación, producción
+    metodo.js             Reglas del método: umbrales, dominio, dificultad adaptativa (rating), SM-2, reparto de la ubicación
+    METODO.md             El método de estudio explicado (qué hace la app y por qué)
+    habilidad.js          Práctica de una habilidad (ejemplo → hueco → solo, adaptación, autoexplicación), cofres y jefes
+    actividades.js        Variantes de una pregunta: ejemplo, hueco, opción (solo para introducir), verdadero/falso, error, ¿por qué?
+    practica.js           De dónde salen las preguntas de una habilidad: generador, lección o banco
+    camino.js             Estados del camino: desbloqueo, cofres cada 3 habilidades y jefe del tema
+    rng.js                Números aleatorios con semilla (para reproducir y probar ejercicios)
+    generadores/          Un generador por habilidad (ver "Escribir un generador") y verificación tolerante (verificar.js)
+    ia-preguntas.js       "✨ Pregunta nueva con IA" (opcional, con la clave del usuario; sin clave se usa el generador)
     materias.js           Registro de áreas y materias, rutas canónicas (rutaMateria/rutaTema/rutaLeccion), analizar(ruta)
                           que entiende rutas nuevas y viejas, y búsqueda de ejercicios por referencia de repaso
     cargar.js             cargarLecciones() (carpeta lecciones/) y cargarTemas() (carpetas temas/<tema>/)
@@ -69,7 +77,6 @@ src/
     formula.js            Fórmulas con KaTeX (\( … \) y \[ … \]); empaquetado, funciona sin conexión
     ajustes.js · sonido.js  Tema (auto/claro/oscuro), sonidos y vibración ('ciberlab-ajustes')
     comparar.js           coincide(): compara respuestas escritas (sin DOM; también lo usa npm run revisar)
-    leccion.js            Lección: explicación corta → práctica a pantalla completa → resultado y resumen
     ubicacion.js          Examen de ubicación
     repaso.js             Pestaña Repasar: repetición espaciada con práctica intercalada
     notas.js              "Mis notas"
@@ -225,15 +232,16 @@ export default {
 
 ## Progreso (`src/nucleo/progreso.js`)
 
-Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 6`; los formatos anteriores se migran solos en `migrar()`. Si cambias el significado de algo guardado, sube `VERSION` y agrega su paso de migración). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
+Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 7`; los formatos anteriores se migran solos en `migrar()`. Si cambias el significado de algo guardado, sube `VERSION` y agrega su paso de migración). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
 
 - **Meta diaria**: 10/20/30 ejercicios o 5/10/15 minutos. Los minutos solo cuentan con la pestaña visible y actividad en el último minuto (`main.js`).
 - **Racha**: días seguidos con la meta cumplida. Si hoy aún no se cumple, sigue viva desde ayer.
 - **XP**: 10 por acierto sin pista (5 con pista) en lecciones, ubicación y preguntas de Ciberseguridad; +20 la primera vez que se domina una lección; 5 por acierto en el repaso; 20 por cada caso del laboratorio y 15 por cada escenario de VPN, solo la primera vez. Para subir de nivel hacen falta 100, 300, 600, 1000… XP.
 - `npm run revisar` carga un progreso v5 de ejemplo y falla si al migrar se pierden lecciones dominadas, XP, racha, repasos o notas: si agregas una versión, amplía esa comprobación.
+- **v7** (método): los repasos pasan a SM-2 (`paso` → intervalo equivalente, misma fecha); cada habilidad guarda `ult` (últimas 10), `dias`, `rating` y `sesiones`; lo ya dominado entra al repaso de habilidades repartido en la semana. `enCurso` deja de usarse.
 - **v6** (áreas y temas): `algebra` pasó a `matematicas` en `materias`, el repaso, las notas, `ultimo` e `historial`. Lo demás ya se guardaba por materia + id de lección, así que agrupar en temas no cambió nada.
 - **Lecciones**: `{dominada, mejor, intentos, via}`; `via` indica si se dominó practicando o en la ubicación. La ronda que toca es `intentos % rondas.length`.
-- **Repaso**: un ejercicio fallado (o acertado con pista) entra para hoy. Si lo aciertas sin pista, vuelve en 1, 3, 7, 14 y 30 días; tras acertarlo a los 30 días queda dominado y sale. Si lo fallas, vuelve mañana y empieza de nuevo.
+- **Repaso** (SM-2, `sm2` en `metodo.js`): `{rep, int, ef, proxima, fallos}`. Fallo → mañana; bien con pista, bien o bien y rápido → el intervalo crece (1, 3 y luego × facilidad). Un ejercicio sale al recordarlo a más de 60 días (`dominados`); las habilidades dominadas (`<materia>/h/<id>`) se siguen repasando con tope de 180 días. Los ejercicios generados se guardan como `<materia>/g/<habilidad>/<nivel>` y en el repaso se genera uno nuevo y parecido.
 - **Notas**: `{'<materia>/<lección>': {texto, fecha}}`. "Reiniciar todo el progreso" las conserva, porque son texto escrito por el usuario.
 - En Ciberseguridad, los casos del laboratorio y los escenarios de VPN se guardan por posición: agrégalos al final de sus listas en `datos/`.
 - Todo acceso a `localStorage` va en `try/catch` para que la app funcione aunque esté bloqueado.

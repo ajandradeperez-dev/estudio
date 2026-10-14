@@ -1,6 +1,6 @@
 /* "Repasar": repetición espaciada (ver progreso.js) con práctica intercalada:
    la cola alterna materias y, dentro de cada materia, lecciones o habilidades, en vez de agrupar todo lo de un mismo tema. */
-import {progreso,pendientes,registrarEjercicio,responderRepaso,quitarRepaso,hoy} from './progreso.js';
+import {progreso,pendientes,registrarEjercicio,responderRepaso,quitarRepaso,registrarRespuesta,hoy} from './progreso.js';
 import {ejercicioPorRef} from './materias.js';
 import {deBanco} from './ejercicios.js';
 import {crearSesion} from './sesion.js';
@@ -14,7 +14,7 @@ const enDias=n=>n===1?'mañana':`en ${n} días`;
 export function mezclar(items){
   const porMateria=new Map();
   for(const x of items){
-    const [mat,...resto]=x.ref.split('/'),grupo=resto[0]==='l'||resto[0]==='g'?resto[1]:resto[0];
+    const [mat,...resto]=x.ref.split('/'),grupo=['l','g','h'].includes(resto[0])?resto[1]:resto[0];
     if(!porMateria.has(mat))porMateria.set(mat,new Map());
     const g=porMateria.get(mat); if(!g.has(grupo))g.set(grupo,[]); g.get(grupo).push(x);
   }
@@ -40,6 +40,7 @@ function empezar(){
     responder(p,r){
       const bien=r.correcto&&!r.pista; // con pista no se aleja: vuelve mañana
       registrarEjercicio({materia:p.materia,ref:p.ref,correcto:bien,xp:bien?5:0,repasar:false});
+      if(p.habilidad)registrarRespuesta(p.materia,p.habilidad,r); // también ajusta su dificultad y sus últimas respuestas
       const res=responderRepaso(p.ref,bien,r);
       if(!bien&&p.regla)reglas.push(p.regla);
       return {xp:bien?5:0,nota:res.dominado?'¡Dominado! Ya no volverá.':`Volverá ${enDias(res.dias)}.`};
@@ -70,7 +71,7 @@ export const repaso={
         boton:boton({texto:'Ir a aprender',go:''})})}`;
     }
     return `<h1>Repasar</h1>${vacio({icono:'🔁',titulo:`${n} ${n===1?'repaso toca':'repasos tocan'} hoy`,
-      texto:'Mezclados entre materias. Si aciertas sin pista, vuelven más tarde; si fallas, mañana.',boton:boton({texto:'Empezar repaso',id:'rep-empezar',clase:'ancho'})})}`;
+      texto:'Mezclados entre materias y habilidades. Si lo recuerdas bien vuelve más tarde; si fallas, mañana.',boton:boton({texto:'Empezar repaso',id:'rep-empezar',clase:'ancho'})})}`;
   },
   alMostrar(){if(fase==='sesion')ses.alMostrar()},
   async alClic(t,ir,repintar){

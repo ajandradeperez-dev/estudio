@@ -3,7 +3,9 @@
 import {esc} from '../utilidades.js';
 import {areas,analizar,areaDe,rutaMateria,rutaTema,rutaLeccion} from './materias.js';
 import {progreso,datosMateria,nivel,racha,estadoHoy} from './progreso.js';
-import {barra,chip,tarjetaNav,cabecera,boton,confirmar} from './ui.js';
+import {barra,chip,tarjetaNav,cabecera,boton,confirmar,puntos} from './ui.js';
+import {estadosTema,cofresTema,cofreAbierto,jefeAbierto,jefeVencido} from './camino.js';
+import {nivelDe,estadoDominio,ULTIMAS} from './metodo.js';
 import {recomendar} from './recomendador.js';
 import {repartoUbicacion} from './metodo.js';
 
@@ -38,6 +40,7 @@ function niveles(c){
   n.push({ruta:rutaMateria(m),txt:m.nombre});
   if(c.tipo==='tema')return {n,actual:`${c.t.icono} ${c.t.titulo}`};
   if(c.tipo==='leccion'){if(c.t)n.push({ruta:rutaTema(m,c.t),txt:`${c.t.icono} ${c.t.titulo}`});return {n,actual:c.l.titulo}}
+  if(c.tipo==='cofre'||c.tipo==='jefe'){n.push({ruta:rutaTema(m,c.t),txt:`${c.t.icono} ${c.t.titulo}`});return {n,actual:c.tipo==='cofre'?'🎁 Cofre':'🏆 Jefe'}}
   if(c.tipo==='ubicacion')return {n,actual:'Examen de ubicación'};
   // Sección: el título solo si es su portada; dentro, la sección pone sus propias migas
   const s=m.secciones[c.seccion];
@@ -56,8 +59,8 @@ function continuar(p){
   const u=p.ultimo; if(!u)return null;
   const x=analizar(u.ruta),m=x.m; if(!m)return null;
   if(x.tipo==='leccion'){
-    const l=x.l,d=datosMateria(p,m.id),e=d.enCurso,ejs=e&&e.leccion===l.id&&l.rondas[e.ronda],h=d.lecciones[l.id];
-    const det=ejs&&e.i<ejs.length?`Pregunta ${e.i+1} de ${ejs.length}`:h?.dominada?'Dominada':h?`Por repetir · ${Math.round(h.mejor*100)}%`:'Sin empezar';
+    const l=x.l,h=datosMateria(p,m.id).lecciones[l.id],e=estadoDominio(h||{});
+    const det=h?.dominada?'Dominada':h?`Dominio ${e.ok}/${ULTIMAS}`:'Sin empezar';
     return {ruta:x.ruta,titulo:l.titulo,detalle:`${m.nombre} · ${det}`};
   }
   if(x.tipo!=='seccion')return null;
@@ -106,7 +109,7 @@ export function vistaMateria(m){
   return {
     titulo:m.nombre,
     vista(){
-      const p=progreso(),d=datosMateria(p,m.id),ls=m.lecciones||[],r=recomendar({materia:m.id},p),u=d.ubicacion,k=repartoUbicacion(ls.length).reduce((a,b)=>a+b,0);
+      const p=progreso(),d=datosMateria(p,m.id),ls=m.lecciones||[],r=recomendar({materia:m.id},p),u=d.ubicacion,k=repartoUbicacion(ls.filter(l=>l.rondas?.length).length).reduce((a,b)=>a+b,0);
       const ss=secciones(m).filter(([k])=>`${rutaMateria(m)}/${k}`!==m.destacado?.ruta),grupos=[...new Set(ss.map(([,s])=>s.grupo))];
       const temas=m.temas?`<h2>Temas</h2><div class="lista-nav">${m.temas.map(t=>{const c=conteo(d,t.lecciones),prox=!t.lecciones.length;
         const clase=prox&&!t.nodos.some(n=>n.ir)?'proximo':'';
@@ -126,27 +129,27 @@ ${m.temas?'':grupos.map(g=>`<h2>${g||'Herramientas'}</h2><div class="lista-nav">
 
 /* ---------- camino de un tema: nodos circulares en zigzag ---------- */
 // Habilidad: dominada (dorada con corona) · actual (anillo pulsante) · abierta · bloqueada (gris: practica antes la anterior)
-// Herramienta (enlace a un simulador o a Hablar) · Próximamente (gris con candado)
+// Cofre 🎁 cada 3 habilidades · Jefe 🏆 al final · Herramienta (enlace) · Próximamente (gris con candado)
 const ZIGZAG=[0,52,76,52,0,-52,-76,-52];
-export const practicada=(d,h)=>!!d.lecciones[h.id];
-// Estado de cada habilidad del tema (la primera siempre está abierta; las demás, cuando practicaste la anterior)
-export function estadosTema(t,d){
-  const hs=t.lecciones,actual=hs.find((h,i)=>!dominada(d,h)&&(i===0||practicada(d,hs[i-1])||dominada(d,hs[i-1])||practicada(d,h)));
-  return Object.fromEntries(hs.map((h,i)=>[h.id,dominada(d,h)?'dominado':h===actual?'actual':(i===0||practicada(d,h)||practicada(d,hs[i-1])||dominada(d,hs[i-1]))?'pendiente':'bloqueado']));
-}
 export function vistaTema(m,t){
   const tono=tonoDe(areaDe(m));
   return {
     titulo:t.titulo,
     vista(){
-      const p=progreso(),d=datosMateria(p,m.id),c=conteo(d,t.lecciones),est=estadosTema(t,d);
+      const p=progreso(),d=datosMateria(p,m.id),c=conteo(d,t.lecciones),est=estadosTema(t,d),cofres=cofresTema(t);
       let k=0;const x=()=>`--x:${ZIGZAG[k++%ZIGZAG.length]}px`;
+      const especial=(clase,icono,titulo,sub,ruta,abierto)=>`<li style="${x()}"><button class="nodo ${clase}${abierto?'':' bloqueado'}" ${abierto?`data-go="${ruta}"`:`data-cerrado="${esc(sub)}"`} aria-label="${esc(titulo)}">${abierto?icono:'🔒'}</button><span class="camino-titulo">${titulo}</span><span class="camino-sub">${sub}</span></li>`;
+      const cofreTras=h=>{const cf=cofres.find(z=>z.habilidades.at(-1)===h);if(!cf)return '';const ab=cofreAbierto(cf,d),hecho=d.extra.cofres?.[cf.id];
+        return especial('cofre',hecho?'📦':'🎁','Cofre',ab?(hecho?'Repasa otra vez':'¡Ábrelo!'):'Practica las 3 anteriores',`${rutaTema(m,t)}/cofre/${cf.k}`,ab)};
+      const ultimaHab=t.lecciones.at(-1);
+      const jefe=()=>t.lecciones.length>=2?especial('jefe',jefeVencido(t,d)?'🏆':'⚔️',`Jefe: ${t.titulo}`,jefeVencido(t,d)?'Vencido':jefeAbierto(t,d)?'Mezcla cronometrada':'Practica todo el tema',`${rutaTema(m,t)}/jefe`,jefeAbierto(t,d)):'';
       const nodo=n=>{
         if(n.proximo)return `<li style="${x()}"><span class="nodo proximo" aria-hidden="true">🔒</span><span class="camino-titulo">${n.titulo}</span><span class="camino-sub">Próximamente</span></li>`;
         if(n.ir)return `<li style="${x()}"><button class="nodo herramienta" data-go="${rutaMateria(m)}/${n.ir}" aria-label="${esc(n.titulo)}">${n.icono||'🔧'}</button><span class="camino-titulo">${n.titulo}</span></li>`;
         const e=est[n.id],h=d.lecciones[n.id];
-        if(e==='bloqueado')return `<li style="${x()}"><button class="nodo bloqueado" data-bloqueado="${esc(n.id)}" aria-label="${esc(n.titulo)}: bloqueada">🔒</button><span class="camino-titulo">${n.titulo}</span></li>`;
-        return `<li style="${x()}">${e==='actual'?`<span class="globo">${h?'Seguir':'Empezar'}</span>`:''}<button class="nodo ${e}" data-go="${rutaLeccion(m,n)}" aria-label="${esc(n.titulo)}: ${e==='dominado'?'dominada':e==='actual'?'te toca':'abierta'}">${e==='dominado'?'👑':e==='actual'?'★':'●'}</button><span class="camino-titulo">${n.titulo}</span></li>`;
+        const html=e==='bloqueado'?`<li style="${x()}"><button class="nodo bloqueado" data-bloqueado="${esc(n.id)}" aria-label="${esc(n.titulo)}: bloqueada">🔒</button><span class="camino-titulo">${n.titulo}</span></li>`
+          :`<li style="${x()}">${e==='actual'?`<span class="globo">${h?'Seguir':'Empezar'}</span>`:''}<button class="nodo ${e}" data-go="${rutaLeccion(m,n)}" aria-label="${esc(n.titulo)}: ${e==='dominado'?'dominada':e==='actual'?'te toca':'abierta'}">${e==='dominado'?'👑':e==='actual'?'★':'●'}</button><span class="camino-titulo">${n.titulo}</span>${h&&e!=='dominado'?`<span class="camino-sub">${puntos(nivelDe(h.rating))}</span>`:''}</li>`;
+        return html+cofreTras(n)+(n===ultimaHab?jefe():'');
       };
       const n=t.lecciones.length;
       return `<div class="area-${tono}">${cabecera({icono:t.icono,titulo:t.titulo,desc:t.descripcion})}
@@ -154,6 +157,7 @@ ${n?`${barra(c.hechas,c.total)}<p class="nota" style="margin-top:6px">${c.hechas
 <ol class="camino">${t.nodos.map(nodo).join('')}</ol></div>`;
     },
     async alClic(t2){
+      if(t2.dataset.cerrado!==undefined){await confirmar({titulo:'🔒 Todavía no',texto:`${t2.dataset.cerrado}.`,si:'Entendido',no:'Cerrar'});return true}
       if(t2.dataset.bloqueado===undefined)return;
       const hs=t.lecciones,i=hs.findIndex(h=>h.id===t2.dataset.bloqueado),antes=hs[i-1];
       if(await confirmar({titulo:'🔒 Todavía no',texto:`Practica antes «${antes.titulo}»: cada habilidad se apoya en la anterior.`,si:`Ir a ${antes.titulo}`,no:'Cerrar'}))location.hash=rutaLeccion(m,antes);

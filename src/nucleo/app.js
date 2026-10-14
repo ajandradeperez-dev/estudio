@@ -51,7 +51,9 @@ export function mostrarQR(){
 function franja(id,html){let f=document.getElementById(id);if(!html){f?.remove();return}
   if(!f){f=document.createElement('div');f.id=id;f.className='franja';f.setAttribute('role','status');document.body.appendChild(f)}f.innerHTML=html}
 export function vigilarConexion(){
-  const pintar=()=>franja('sin-conexion',navigator.onLine?'':'📴 Sin conexión: todo funciona menos la IA y el reconocimiento de voz.');
+  // la franja empuja la barra superior hacia abajo (--franja) en vez de taparla
+  const pintar=()=>{franja('sin-conexion',navigator.onLine?'':'📴 Sin conexión: todo funciona menos la IA y el reconocimiento de voz.');
+    const f=document.getElementById('sin-conexion');f?document.documentElement.style.setProperty('--franja',f.offsetHeight+'px'):document.documentElement.style.removeProperty('--franja')};
   addEventListener('online',()=>{pintar();aviso('🌐 Conexión de nuevo')});addEventListener('offline',pintar);pintar();
 }
 export function avisarVersionNueva(){

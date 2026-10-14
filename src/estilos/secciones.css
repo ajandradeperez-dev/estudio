@@ -280,3 +280,6 @@ input.hora{min-height:44px;padding:0 var(--s3);border:2px solid var(--line);bord
 .bien-pie{position:fixed;left:0;right:0;bottom:0;display:flex;gap:var(--s2);padding:var(--s3) var(--s4) calc(var(--s3) + env(safe-area-inset-bottom));background:var(--bg);border-top:2px solid var(--line)}
 .bien-pie .btn{flex:1}
 @media (min-width:761px){.bien-pie{position:static;border:0;padding:var(--s4) 0 0;background:none}.bienvenida{padding-bottom:var(--s6)}}
+/* con la franja de "sin conexión" arriba, el contenido y la barra superior bajan su altura */
+body{padding-top:var(--franja,0px)}
+.barra-sup{top:var(--franja,0px)}

@@ -35,8 +35,9 @@ export function comoVF(p,rng){
 export function comoError(p){
   const m=p.pasoMal;
   if(!m||!p.pasos?.[m.i])return null;
-  const pasos=[...p.pasos];pasos[m.i]=m.texto;
-  return {...p,tipo:'error',pasos,mal:m.i,porqueMal:`Paso ${m.i+1}: ${m.por} Lo correcto: ${p.pasos[m.i]}`,enunciado:`${p.enunciado}<br><span class="nota">Esta solución tiene un paso equivocado. ¿Cuál?</span>`};
+  const orig=typeof p.pasos[m.i]==='string'?{como:p.pasos[m.i]}:p.pasos[m.i];
+  const pasos=p.pasos.map(x=>typeof x==='string'?{como:x}:x);pasos[m.i]={...orig,como:m.texto};
+  return {...p,tipo:'error',pasos,mal:m.i,porqueMal:`Paso ${m.i+1}: ${m.por} Lo correcto: ${orig.como}`,enunciado:`${p.enunciado}<br><span class="nota">Esta solución tiene un paso equivocado. ¿Cuál?</span>`};
 }
 
 // Autoexplicación: tras un acierto, ¿por qué es así? La regla de esta habilidad entre otras dos (no cuenta para el dominio)

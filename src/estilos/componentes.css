@@ -226,3 +226,51 @@ button{font:inherit}
 .pregunta,.pasos-sol li,.hoja-linea,.afirmacion{overflow-x:auto;overflow-y:hidden}
 .opcion>span{min-width:0;overflow-x:auto;overflow-y:hidden}
 .pieza{min-width:44px;justify-content:center}
+
+/* ---------- procedimiento paso a paso (procedimiento.js) ---------- */
+.proc-fondo{position:fixed;inset:0;z-index:60;background:rgb(0 0 0 / .45);display:flex;align-items:flex-end;justify-content:center}
+.proc{background:var(--bg);color:var(--ink);width:100%;max-width:680px;max-height:92dvh;display:flex;flex-direction:column;border-radius:var(--r3) var(--r3) 0 0;box-shadow:var(--sombra)}
+@keyframes sube{from{opacity:0}to{opacity:1}}
+.proc-fondo{animation:sube .22s ease-out}
+@media (prefers-reduced-motion:reduce){.proc-fondo{animation:none}}
+.proc-cab{display:flex;align-items:center;justify-content:space-between;gap:var(--s2);padding:var(--s3) var(--s4);border-bottom:1px solid var(--line)}
+.proc-cab h2{margin:0;font-size:20px}
+.proc-cuerpo{flex:1;overflow-y:auto;overflow-x:hidden;padding:var(--s4);overscroll-behavior:contain}
+.proc-pie{display:flex;gap:var(--s2);padding:var(--s3) var(--s4) calc(var(--s3) + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.proc-pie .btn{flex:1}
+.pasos-proc{list-style:none;margin:var(--s3) 0;padding:0;display:flex;flex-direction:column;gap:var(--s3);counter-reset:pproc}
+.paso-proc{position:relative;padding:var(--s3) var(--s3) var(--s3) 46px;border-radius:var(--r2);background:var(--surface-2);counter-increment:pproc;min-width:0}
+.paso-proc::before{content:counter(pproc);position:absolute;left:12px;top:12px;width:24px;height:24px;border-radius:50%;background:var(--area,var(--primary));color:var(--on-area,var(--on-primary));font-size:13px;font-weight:900;display:grid;place-items:center}
+.paso-que{margin:0 0 var(--s1);font-weight:900}
+.paso-como{margin:0 0 var(--s2);font-size:17px;line-height:1.6;overflow-x:auto;overflow-y:hidden}
+.paso-porque{margin:0;color:var(--muted);font-size:15px}
+.paso-ojo{margin:var(--s2) 0 0;padding:var(--s2) var(--s3);border-radius:var(--r1);background:var(--warn-soft);font-size:15px}
+.paso-acciones{display:flex;gap:var(--s1);justify-content:flex-end;margin-top:var(--s1)}
+.alternativa{background:var(--primary-soft);border:0}
+.ia-explica{margin-top:var(--s2);padding:var(--s3);border-radius:var(--r2);background:var(--surface);line-height:1.55}
+.hoja-acciones{flex-wrap:wrap;gap:var(--s2);margin:var(--s2) 0}
+.hoja .hoja-acciones .btn{width:auto;flex:1 1 140px;margin-top:0}
+/* lo que cambia en cada paso */
+.cambio,mark.cambio{color:var(--area-dark,var(--primary-dark));background:var(--area-soft,var(--primary-soft));border-radius:4px;padding:0 3px;font-weight:800}
+.ok-t{color:var(--success-dark);font-weight:700}
+/* diagramas SVG (diagramas.js) */
+.diagrama-caja{margin:var(--s3) 0;padding:var(--s2);border-radius:var(--r2);background:var(--surface);border:1px solid var(--line);text-align:center;overflow-x:auto}
+.diagrama{width:100%;max-width:300px;height:auto;font:13px var(--f-body);fill:var(--ink)}
+.diagrama .eje{stroke:var(--line-2);stroke-width:1.5}
+.diagrama .vec{stroke-width:3}
+.diagrama .v0,.diagrama .punta.v0{stroke:var(--primary);fill:var(--primary)}
+.diagrama .v1,.diagrama .punta.v1{stroke:var(--error);fill:var(--error)}
+.diagrama .v2,.diagrama .punta.v2{stroke:var(--success);fill:var(--success)}
+.diagrama line.v0,.diagrama line.v1,.diagrama line.v2{fill:none}
+.diagrama .zona{fill:var(--area-soft,var(--primary-soft));stroke:none}
+.diagrama .curva{fill:none;stroke:var(--area,var(--primary));stroke-width:2.5}
+.diagrama .punto{fill:var(--area,var(--primary))}
+.diagrama .destaca{font-weight:900;fill:var(--area-dark,var(--primary-dark))}
+/* IP y máscara en binario */
+.bits{border-collapse:collapse;font-family:var(--f-mono);font-size:12px}
+.bits th{text-align:left;padding:2px 6px 2px 0;font-family:var(--f-body);white-space:nowrap}
+.bits td{white-space:nowrap;letter-spacing:.5px}
+.bits .red{color:var(--area-dark,var(--primary-dark));font-weight:800}
+.bits .host{color:var(--muted)}
+.bits tr:last-child td{border-top:2px solid var(--line-2)}
+.bits .punto-ip{color:var(--muted);padding:0 1px}

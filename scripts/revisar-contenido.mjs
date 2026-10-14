@@ -222,8 +222,13 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
         const ok=t==='opcion'?p.opciones?.[p.correcta]!==undefined:t==='emparejar'?p.pares?.length>=3:t==='ordenar'?p.verificar(p.respuesta):p.verificar(p.forma?p.celdas:p.respuesta);
         if(!ok&&!primero)primero=`su respuesta no pasa su verificar: ${String(p.enunciado).slice(0,80)} → ${p.respuesta}`;
         if(!p.regla&&!primero)primero='falta la regla';
-        for(const x of [p.enunciado,p.respuesta,...(p.pasos||[]),p.regla,p.pista,p.explicacion,...(p.errores||[]).map(e=>e.por),p.pasoMal?.texto,...(p.opciones||[])].filter(Boolean))
-          for(const fx of formulas(x))try{katex.renderToString(fx,{throwOnError:true,strict:false})}catch(e){if(!primero)primero=`fórmula inválida: ${fx.slice(0,60)}`}
+        // Procedimiento: pasos {que, como, porque}; el último con res, que da la respuesta
+        const ps=p.pasos||[],ult=ps.at(-1),plano=x=>String(x??'').replace(/<[^>]+>/g,'').trim().toLowerCase();
+        if(!(ps.length>=2&&ps.every(x=>x&&typeof x==='object'&&x.que&&x.como&&x.porque))&&!primero)primero='los pasos deben ser ≥ 2 objetos {que, como, porque}';
+        else if(ult?.res===undefined||!(t==='escribir'&&!p.forma?p.verificar(ult.res):t==='escribir'?String(ult.res).length>0:plano(ult.res)===plano(p.respuesta)))if(!primero)primero=`el último paso no da la respuesta (res=${ult?.res}, respuesta=${p.respuesta})`;
+        if(!GENERADORES[id].alternativa&&!primero)primero='falta la explicación alternativa (No entendí)';
+        for(const x of [p.enunciado,p.respuesta,...ps.flatMap(x=>[x.que,x.como,x.porque,x.ojo]),p.regla,p.pista,p.explicacion,...(p.errores||[]).map(e=>e.por),p.pasoMal?.texto,...(p.opciones||[])].filter(Boolean))
+          for(const fx of formulas(x))try{katex.renderToString(fx,{throwOnError:true,strict:false,trust:c=>c.command==='\\htmlClass',macros:{'\\cambio':'\\htmlClass{cambio}{#1}'}})}catch(e){if(!primero)primero=`fórmula inválida: ${fx.slice(0,60)}`}
       }
       if(primero)mal(dg,primero);
       if(claves.size<8)mal(dg,`solo ${claves.size} ejercicios distintos en 200 (mínimo 8, una sesión entera)`);

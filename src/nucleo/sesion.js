@@ -16,10 +16,11 @@
    r = {correcto, pista, rendido, entrada, ms, porque} */
 import {$,esc} from '../utilidades.js';
 import {barra,puntos,abrirHoja,cerrarHoja,confirmar} from './ui.js';
-import {soporte,htmlMic,htmlOir,htmlFraseEvaluada,escucharConBoton} from './voz.js';
+import {soporte,htmlMic,htmlOir,htmlFraseEvaluada,escucharConBoton,hablar} from './voz.js';
 import {evaluarHablar,META_PRONUNCIACION} from './ejercicios.js';
 import {registrarHabla,registrarSonidos} from './progreso.js';
 import {sonar} from './sonido.js';
+import {htmlPaso,normalPaso,textoPlano,abrirProcedimiento,cerrarProcedimiento} from './procedimiento.js';
 import {vibrar} from './ajustes.js';
 import {conFormulas} from './formula.js';
 
@@ -40,7 +41,7 @@ const casillaFoco={el:null};
 export const ACT={
   escribir:{
     html(p){
-      const previos=p.pasosPrevios?.length?`<ol class="pasos-sol">${p.pasosPrevios.map(x=>`<li>${conFormulas(x)}</li>`).join('')}<li class="hueco">${conFormulas(p.hueco||'¿Último paso?')}</li></ol>`:'';
+      const previos=p.pasosPrevios?.length?`<ol class="pasos-proc">${p.pasosPrevios.map((x,i)=>htmlPaso(x,i,{acciones:false})).join('')}<li class="paso-proc hueco"><p class="paso-que">${conFormulas(p.hueco||'¿Cuál es el resultado?')}</p></li></ol>`:'';
       const campo=p.forma?`<div class="matriz" style="grid-template-columns:repeat(${p.forma.cols},auto)" role="group" aria-label="${p.forma.filas>1?'Matriz':'Vector'}">${Array.from({length:p.forma.filas*p.forma.cols},(_,k)=>`<input class="celda" data-k="${k}" inputmode="text" autocomplete="off" aria-label="Fila ${Math.floor(k/p.forma.cols)+1}, columna ${k%p.forma.cols+1}">`).join('')}</div>`
         :`<input class="respuesta-libre" id="ses-resp" autocomplete="off" autocapitalize="off" spellcheck="false"${p.lang?` lang="${p.lang}"`:''} placeholder="Tu respuesta" aria-label="Tu respuesta">`;
       return `${etiqueta(previos?'🧩':'✍️',previos?'Completa el último paso':p.etiqueta||'Escribe la respuesta')}${enunciado(p)}${previos}${campo}${teclado(p)}`;
@@ -116,14 +117,23 @@ ${p.razones?`<p class="etiqueta-actividad" style="margin-top:16px">🤔 ¿Por qu
   },
   // Elegir el paso equivocado de una solución
   error:{
-    html(p,e){return `${etiqueta('🔎','Encuentra el error')}${enunciado(p)}<ol class="pasos-sol">${p.pasos.map((x,i)=>`<li><button type="button" class="opcion" data-op="${i}" aria-pressed="${e.op===i}">${conFormulas(x)}</button></li>`).join('')}</ol>`},
+    html(p,e){return `${etiqueta('🔎','Encuentra el error')}${enunciado(p)}<ol class="pasos-sol">${p.pasos.map(normalPaso).map((x,i)=>`<li><button type="button" class="opcion" data-op="${i}" aria-pressed="${e.op===i}"><span>${x.que?`<small class="nota">${conFormulas(x.que)}</small><br>`:''}${conFormulas(x.como)}</span></button></li>`).join('')}</ol>`},
     listo:e=>e.op!==undefined,leer:e=>e.op,
     clic:(t,p,e,repintar)=>{if(t.dataset.op===undefined)return false;e.op=+t.dataset.op;repintar();return true},
     comprobar:(p,op)=>({correcto:op===p.mal,porque:op===p.mal?'':`El error está en el paso ${p.mal+1}.`})
   },
-  // Ejemplo resuelto: solo se lee (primer paso del aprendizaje de una habilidad)
+  // Ejemplo resuelto: se revela paso a paso (intenta adivinar el siguiente antes de verlo)
   ejemplo:{
-    html(p){return `${etiqueta('👀','Ejemplo resuelto')}${enunciado(p)}<ol class="pasos-sol">${p.pasos.map(x=>`<li>${conFormulas(x)}</li>`).join('')}</ol><p class="hoja-linea"><b>Respuesta:</b> ${conFormulas(p.respuesta)}</p>${p.regla?`<p class="nota">${p.regla}</p>`:''}`},
+    html(p,e){const n=p.pasos.length,v=Math.min(n,e.vistos||1);
+      return `${etiqueta('👀','Ejemplo resuelto')}${enunciado(p)}${p.diagrama?`<div class="diagrama-caja">${p.diagrama}</div>`:''}
+<ol class="pasos-proc">${p.pasos.slice(0,v).map((x,i)=>htmlPaso(x,i,{nota:false})).join('')}</ol>
+${v<n?`<p class="nota">¿Cuál es el paso ${v+1}? Piénsalo y míralo.</p><button type="button" class="btn ghost ancho" id="ses-paso">Siguiente paso (${v+1}/${n})</button>`
+  :`<p class="hoja-linea"><b>Respuesta:</b> ${conFormulas(p.respuesta)}</p>${p.regla?`<p class="nota">${conFormulas(p.regla)}</p>`:''}`}`},
+    clic(t,p,e,repintar){
+      if(t.id==='ses-paso'){e.vistos=(e.vistos||1)+1;repintar();document.querySelector('.pasos-proc li:last-child')?.scrollIntoView({block:'nearest'});return true}
+      if(t.dataset.leerPaso!==undefined){hablar(textoPlano([p.pasos[+t.dataset.leerPaso]].map(normalPaso).map(x=>[x.que,x.como,x.porque].join('. '))[0]),{idioma:p.lang==='en'?'en-US':'es'});return true}
+      return false;
+    },
     lectura:true
   },
   teoria:{html:p=>`${p.titulo?`<h1>${p.titulo}</h1>`:''}${p.html}`,lectura:true},
@@ -215,8 +225,11 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
       if(p.tipo==='error'&&p.porqueMal)lineas.push(`<p class="hoja-linea">${conFormulas(p.porqueMal)}</p>`);
       if(p.explicacion&&p.tipo!=='error')lineas.push(`<p class="hoja-linea">${conFormulas(p.explicacion)}</p>`);
       if(p.regla)lineas.push(`<p class="hoja-linea"><b>Regla:</b> ${conFormulas(p.regla)}</p>`);
-      if(p.pasos?.length&&p.tipo!=='error')lineas.push(`<details><summary>Ver la solución paso a paso</summary><ol class="pasos-sol">${p.pasos.map(x=>`<li>${conFormulas(x)}</li>`).join('')}</ol></details>`);
     }
+    // Procedimiento paso a paso y "No entendí" (explicación alternativa + el siguiente ejercicio más fácil)
+    const botones=[p.pasos?.length&&p.tipo!=='error'?'<button type="button" class="btn ghost btn-chico" id="hoja-proc">📖 Ver procedimiento</button>':'',
+      !r.correcto&&(p.alternativa||p.regla)?'<button type="button" class="btn ghost btn-chico" id="hoja-noentendi">🤔 No entendí</button>':''].filter(Boolean);
+    if(botones.length)lineas.push(`<div class="row hoja-acciones">${botones.join('')}</div>`);
     const pieXp=[extra.xp?`<span class="hoja-xp">+${extra.xp} XP</span>`:'',extra.nota||''].filter(Boolean).join(' · ');
     if(pieXp)lineas.push(`<p class="hoja-linea nota">${pieXp}</p>`);
     abrirHoja({bien:r.correcto,titulo:r.correcto?ELOGIOS[st.i%ELOGIOS.length]:r.rendido?'Esta era la respuesta':'No es correcto',cuerpo:lineas.join(''),boton:'Continuar'});
@@ -229,7 +242,7 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
       if(cfg.crono)reloj=setInterval(()=>{if(!st||st.fase==='fin'){clearInterval(reloj);return}
         const el=$('#ses-crono');if(el)el.textContent=tiempoRestante();
         if(Date.now()>=st.fin0&&st.fase==='pregunta'){terminar();document.dispatchEvent(new Event('repintar'))}},500)},
-    alSalir(){clearInterval(reloj);cerrarHoja()},
+    alSalir(){clearInterval(reloj);cerrarHoja();cerrarProcedimiento()},
     vista,
     estado:()=>st,
     alMostrar(){
@@ -249,6 +262,11 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
         cerrarHoja();clearInterval(reloj);ir(cfg.salir);return true;
       }
       if(t.id==='hoja-seguir'||t.id==='ses-continuar'){avanzar();repintar();window.scrollTo(0,0);return true}
+      const ult=st.historial.at(-1);
+      if(t.id==='hoja-proc'&&ult){abrirProcedimiento(ult.p,{revelar:true,guardar:cfg.guardarPaso?x=>cfg.guardarPaso(ult.p,x):null,idioma:ult.p.lang==='en'?'en-US':'es'});return true}
+      if(t.id==='hoja-noentendi'&&ult){st.facil=true;
+        abrirProcedimiento(ult.p,{revelar:false,alternativa:`${ult.p.alternativa||''}${ult.p.regla?`<p><b>La regla:</b> ${ult.p.regla}</p>`:''}<p class="nota">El siguiente ejercicio será más fácil.</p>`,
+          ia:cfg.explicarIA?()=>cfg.explicarIA(ult.p,ult.r.entrada):null,guardar:cfg.guardarPaso?x=>cfg.guardarPaso(ult.p,x):null});return true}
       if(st.fase!=='pregunta')return;
       const p=st.actual,a=act();
       if(t.dataset.tecla!==undefined){

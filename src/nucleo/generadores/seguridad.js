@@ -1,6 +1,7 @@
 /* Generadores de seguridad: reglas de firewall (primera coincidencia), NAT, términos de cada marca, fases de una VPN IPsec,
    criptografía básica y patrones en registros. Todo es simulado y DEFENSIVO: identificar y responder, nunca atacar. */
 import {igualNum} from './verificar.js';
+import {paso,final,marca} from './pasos.js';
 
 const ip2n=ip=>ip.split('.').reduce((a,o)=>a*256+(+o),0);
 const enRed=(ip,red)=>{if(red==='any')return true;const [b,p]=red.split('/');const m=+p===0?0:(0xFFFFFFFF<<(32-+p))>>>0;return ((ip2n(ip)&m)>>>0)===((ip2n(b)&m)>>>0)};
@@ -12,6 +13,7 @@ const REDES=['192.168.10.0/24','192.168.20.0/24','10.0.50.0/24','10.0.0.0/8','17
 const hostDe=(red,rng)=>{const [b,p]=red.split('/'),o=b.split('.').map(Number);return +p>=24?`${o[0]}.${o[1]}.${o[2]}.${rng.entero(2,250)}`:`${o[0]}.${rng.entero(0,250)}.${rng.entero(0,250)}.${rng.entero(2,250)}`};
 const reglas={
   titulo:'¿Qué regla coincide?',
+  alternativa:'Es como el guardia de una fiesta con una <b>lista de instrucciones en orden</b>: lee la primera; si describe a la persona que llega, la aplica y deja de leer. Si ninguna la describe, no entra (deny implícito). Por eso una regla general arriba puede "tapar" a una más específica abajo.',
   explicacion:'El firewall revisa las reglas de arriba hacia abajo y aplica la PRIMERA que coincide en origen, destino y servicio. Si ninguna coincide, deniega (deny implícito).',
   generar(n,rng){
     const k=[3,4,4,5,6][n-1],R=[];
@@ -27,8 +29,11 @@ const reglas={
     const resp=g?String(g.id):'0';
     return {enunciado:`${tabla}<p>Llega un paquete <b>${src} → ${dst}</b>, servicio <b>${svc}</b>. ¿Qué regla se aplica? <span class="nota">Escribe su número, o 0 si ninguna (deny implícito).</span></p>`,
       respuesta:resp,verificar:e=>igualNum(String(e).replace(/regla|#/gi,''),+resp),
-      pasos:[...R.slice(0,g?g.id:k).map(x=>`Regla ${x.id}: ${coincide(x)?'coincide ✓':'no coincide'} (${[enRed(src,x.src)?'':'origen',enRed(dst,x.dst)?'':'destino',x.svc==='ANY'||x.svc===svc?'':'servicio'].filter(Boolean).join(', ')||'todo'}${coincide(x)?'':' distinto'})`),
-        g?`Se aplica la regla ${g.id}: <b>${g.act}</b>. Las de abajo ya no se revisan.`:'Ninguna coincide: se aplica el deny implícito.'],
+      pasos:[paso('Anota los datos del paquete',`Origen <b>${src}</b> · destino <b>${dst}</b> · servicio <b>${svc}</b>`,'Cada regla se compara en estos tres campos.'),
+        ...R.slice(0,g?g.id:k).map(x=>{const m=(ok,t)=>ok?`<span class="ok-t">✓ ${t}</span>`:marca(`✗ ${t}`);
+          return paso(`Regla ${x.id}: ${coincide(x)?'coincide':'no coincide'}`,`${m(enRed(src,x.src),`origen ${x.src}`)} · ${m(enRed(dst,x.dst),`destino ${x.dst}`)} · ${m(x.svc==='ANY'||x.svc===svc,`servicio ${x.svc}`)}`,
+            coincide(x)?'Los tres campos coinciden: esta es la primera que aplica.':'Basta con que un campo no coincida para pasar a la siguiente regla.')}),
+        final(g?`Se aplica la regla ${g.id}`:'Deny implícito',g?`Acción: <b>${g.act}</b>. Las reglas de abajo ya no se revisan.`:'Ninguna regla coincide: el paquete se deniega.',g?'Primera coincidencia: gana la que está más arriba.':'Todo lo que no se permite explícitamente se deniega.',resp,todas.length>1?{ojo:`La regla ${todas[1].id} también coincide, pero está más abajo.`}:{})],
       errores:[...todas.slice(1).map(x=>({valor:String(x.id),si:e=>igualNum(String(e).replace(/regla|#/gi,''),x.id),por:`La regla ${x.id} también coincide, pero la ${g.id} está más arriba: gana la primera.`})),
         ...(g?[{valor:'0',si:e=>igualNum(e,0),por:`La regla ${g.id} sí coincide (origen, destino y servicio).`}]:[])],
       regla:'Primera coincidencia: las reglas se revisan de arriba hacia abajo y se aplica la primera que coincide; si ninguna coincide, se deniega (deny implícito).',
@@ -39,6 +44,7 @@ const reglas={
 /* ---------- NAT ---------- */
 const nat={
   titulo:'NAT: SNAT, DNAT y VIP',
+  alternativa:'Piensa en el conmutador de una oficina. <b>Hacia afuera</b>, todos llaman desde el mismo número público (SNAT: cambia quién llama). <b>Hacia adentro</b>, quien marca el número público y la extensión 443 llega al servidor interno (DNAT/VIP: cambia a quién se llama).',
   explicacion:'NAT de origen (SNAT/PAT) cambia la IP de origen para salir a Internet. NAT de destino (DNAT; en FortiGate, VIP) publica un servidor interno con una IP pública.',
   generar(n,rng){
     const pub=`200.${rng.entero(1,250)}.${rng.entero(0,250)}.${rng.entero(2,250)}`,priv=`192.168.${rng.entero(0,50)}.${rng.entero(2,250)}`,pcs=rng.entero(10,300);
@@ -52,11 +58,15 @@ const nat={
     ];
     if(n>=3&&rng.prob(.5)){const q=rng.elegir([['origen',pub,'Con SNAT el origen se cambia por la IP pública del firewall.'],['destino real',priv,'Con DNAT el destino público se traduce a la IP interna del servidor.']]);
       return q[0]==='origen'?{enunciado:`Una PC ${priv} navega a Internet y el firewall hace SNAT con ${pub}. ¿Qué IP de origen ve el servidor externo?`,respuesta:pub,verificar:e=>String(e).trim()===pub,
-        errores:[{valor:priv,si:e=>String(e).trim()===priv,por:'Esa IP privada no sale a Internet: el SNAT la reemplaza por la pública.'}],regla:R,pasos:[q[2]]}
+        errores:[{valor:priv,si:e=>String(e).trim()===priv,por:'Esa IP privada no sale a Internet: el SNAT la reemplaza por la pública.'}],regla:R,
+        pasos:[paso('¿Qué tipo de NAT es?','SNAT: el paquete sale de la red interna hacia Internet.','SNAT cambia el ORIGEN.'),final('Cambia el origen',`${priv} → ${marca(pub)}`,q[2],pub)]}
         :{enunciado:`Desde Internet alguien abre ${pub}:443, publicado con DNAT (VIP) al servidor interno ${priv}. ¿A qué IP llega finalmente el paquete?`,respuesta:priv,verificar:e=>String(e).trim()===priv,
-        errores:[{valor:pub,si:e=>String(e).trim()===pub,por:'El firewall cambia ese destino público por la IP interna del servidor.'}],regla:R,pasos:[q[2]]}}
+        errores:[{valor:pub,si:e=>String(e).trim()===pub,por:'El firewall cambia ese destino público por la IP interna del servidor.'}],regla:R,
+        pasos:[paso('¿Qué tipo de NAT es?','DNAT/VIP: el paquete entra desde Internet hacia un servidor interno.','DNAT cambia el DESTINO.'),final('Cambia el destino',`${pub}:443 → ${marca(priv)}:443`,q[2],priv)]}}
     const [txt,c,ex]=rng.elegir(casos);
-    return {...opcion(`${txt} ¿Qué necesitas?`,ops[c],ops.filter((_,i)=>i!==c),rng,{regla:R,explicacion:ex}),porque:{}};
+    return {...opcion(`${txt} ¿Qué necesitas?`,ops[c],ops.filter((_,i)=>i!==c),rng,{regla:R,explicacion:ex}),porque:{},
+      pasos:[paso('¿Hacia dónde va el tráfico?',c===0?'De adentro hacia Internet.':c===1?'De Internet hacia adentro.':'De una red interna a otra.','La dirección decide qué se traduce: el origen al salir, el destino al entrar.'),
+        final('Elige',marca(ops[c]),ex,ops[c])]};
   }
 };
 
@@ -67,11 +77,15 @@ const TERMINOS=[['Regla de tráfico','Firewall Policy','Security Policy','Access
   ['Gestión central','FortiManager','Panorama','FMC','(sin consola central nativa)'],['Detección de intrusos','IPS Sensor','Vulnerability Protection','Snort','Snort o Suricata'],['Filtrado web','Web Filter','URL Filtering','URL Filtering','pfBlockerNG / Squid']];
 const marcas={
   titulo:'Lo mismo en cada marca',
+  alternativa:'Es como "carro", "auto" y "coche": la misma cosa con distinto nombre según el país. Aprende la idea (regla, publicar un servidor, VPN de usuarios…) y después solo memoriza cómo la llama cada marca.',
   explicacion:'Los conceptos son los mismos en todos los firewalls; cambia el nombre. Saber equivalencias te deja trabajar con cualquier marca.',
   generar(n,rng){
     const t=rng.elegir(TERMINOS),i=rng.entero(0,n<=2?1:3),correcta=t[i+1];
     const malas=[...new Set(TERMINOS.filter(x=>x!==t).map(x=>x[i+1]))];
-    return {...opcion(`En <b>${MARCAS[i]}</b>, ¿cómo se llama «${t[0]}»?`,correcta,rng.barajar(malas).slice(0,n<=1?2:3),rng),regla:`«${t[0]}»: FortiGate ${t[1]} · Palo Alto ${t[2]} · Cisco ${t[3]} · pfSense ${t[4]}.`,porque:{}};
+    return {...opcion(`En <b>${MARCAS[i]}</b>, ¿cómo se llama «${t[0]}»?`,correcta,rng.barajar(malas).slice(0,n<=1?2:3),rng),regla:`«${t[0]}»: FortiGate ${t[1]} · Palo Alto ${t[2]} · Cisco ${t[3]} · pfSense ${t[4]}.`,porque:{},
+      pasos:[paso('Identifica el concepto',`«${t[0]}»`,'El concepto es el mismo en todas las marcas; solo cambia el nombre.'),
+        paso('Compara las marcas',MARCAS.map((m,j)=>`${m}: ${j===i?marca(t[j+1]):t[j+1]}`).join('<br>'),'Ver la tabla completa ayuda a no confundirlas.'),
+        final(`En ${MARCAS[i]}`,`<b>${correcta}</b>`,'Ese es el nombre que verás en su consola y en su documentación.',correcta)]};
   }
 };
 
@@ -80,6 +94,7 @@ const P1=[['Versión IKE',['IKEv2','IKEv1']],['Cifrado fase 1',['AES-256','AES-1
 const P2=[['Red local / remota',null],['Cifrado fase 2',['AES-256','AES-128']],['PFS',['activado','desactivado']]];
 const fases={
   titulo:'¿En qué fase falla la VPN?',
+  alternativa:'La VPN es como dos personas que se reúnen. <b>Fase 1</b>: se identifican y acuerdan un idioma secreto (versión, cifrado, hash, grupo DH, clave). <b>Fase 2</b>: ya en confianza, acuerdan qué temas (redes) hablan y cómo. Si falla la presentación, nunca llegan a la fase 2.',
   explicacion:'Fase 1 (IKE) autentica a los dos equipos: versión, cifrado, hash, grupo DH y clave deben coincidir. Fase 2 (IPsec) acuerda qué redes viajan y cómo se cifran.',
   generar(n,rng){
     const a={},b={};for(const [k,v] of P1){a[k]=b[k]=rng.elegir(v)}
@@ -91,7 +106,10 @@ const fases={
     const filas=Object.keys(a).map(k=>`<tr><td>${k}</td><td>${k==='Clave precompartida'?'••••'+a[k].slice(-2):a[k]}</td><td>${k==='Clave precompartida'?'••••'+b[k].slice(-2):b[k]}</td></tr>`).join('');
     const por=cambiar?`«${cambiar[0]}» no coincide (${a[cambiar[0]]} ≠ ${b[cambiar[0]]}): es un parámetro de la ${fase.endsWith('1')?'fase 1 (IKE)':'fase 2 (IPsec)'}.`:'Todo coincide (las redes son espejo una de la otra): el túnel levanta.';
     return {...opcion(`<div class="wrap"><table><tr><th>Parámetro</th><th>Sitio A</th><th>Sitio B</th></tr>${filas}</table></div><p>¿Qué pasa al levantar la VPN?</p>`,fase,['Falla la fase 1','Falla la fase 2','Levanta el túnel'].filter(x=>x!==fase),rng),
-      regla:'Fase 1 (IKE): versión, cifrado, hash, grupo DH y clave precompartida iguales. Fase 2 (IPsec): redes en espejo, cifrado y PFS iguales.',explicacion:por,porque:{},clave:filas};
+      regla:'Fase 1 (IKE): versión, cifrado, hash, grupo DH y clave precompartida iguales. Fase 2 (IPsec): redes en espejo, cifrado y PFS iguales.',explicacion:por,porque:{},clave:filas,
+      pasos:[paso('Revisa primero la fase 1','Versión IKE, cifrado, hash, grupo DH y clave: '+(cambiar&&P1.some(x=>x[0]===cambiar[0])?marca(`«${cambiar[0]}» distinto`):'todo igual ✓'),'La fase 1 autentica a los equipos: si algo no coincide, no se llega a la fase 2.'),
+        ...(cambiar&&P1.some(x=>x[0]===cambiar[0])?[]:[paso('Luego la fase 2','Redes en espejo, cifrado y PFS: '+(cambiar?marca(`«${cambiar[0]}» distinto`):'todo igual ✓'),'La fase 2 decide qué redes viajan por el túnel y cómo se cifran.',{ojo:'Las redes deben ser espejo: la local de A es la remota de B.'})]),
+        final('Conclusión',`<b>${fase}</b>`,por,fase)]};
   }
 };
 
@@ -99,6 +117,7 @@ const fases={
 const NOMBRES=['Ana','Beto','Carla','Diego','Elena','Fabián'];
 const cripto={
   titulo:'Hash, cifrado y firmas',
+  alternativa:'La clave pública es un <b>candado abierto</b> que repartes; la privada es la <b>única llave</b>. Para mandarle algo secreto a alguien, lo cierras con SU candado. Para firmar, usas TU llave privada y cualquiera lo comprueba con tu candado público. Un hash es una huella digital: no se "descifra", se compara.',
   explicacion:'Hash: huella de un archivo (no se descifra) para comprobar integridad. Simétrico: la misma clave cifra y descifra. Asimétrico: se cifra con la pública del destinatario; se firma con la privada propia.',
   generar(n,rng){
     const [x,y]=rng.barajar(NOMBRES);
@@ -113,7 +132,11 @@ const cripto={
       ['¿Por qué una VPN usa Diffie-Hellman en la fase 1?','Para acordar una clave secreta sin enviarla por la red',['Para comprimir el tráfico','Para firmar los paquetes','Para elegir el puerto']]
     ];
     const [enun,c,malas]=rng.elegir(n<=2?casos.slice(0,6):casos);
-    return {...opcion(enun,c,rng.barajar(malas).slice(0,n<=2?2:3),rng),regla:R,porque:{},clave:enun};
+    const meta=/solo .* pueda leer/.test(enun)?'confidencialidad':/firm/.test(enun)?'autenticidad (firma)':/alteraron|hash/.test(enun)?'integridad':'concepto';
+    return {...opcion(enun,c,rng.barajar(malas).slice(0,n<=2?2:3),rng),regla:R,porque:{},clave:enun,
+      pasos:[paso('¿Qué se busca?',`Objetivo: <b>${meta}</b>`,'Cada objetivo usa una herramienta distinta: confidencialidad → cifrar; autenticidad → firmar; integridad → hash.'),
+        paso('Elige la herramienta','Cifrar para alguien: SU pública · Firmar: TU privada · Verificar firma: la pública del que firmó · Integridad: comparar hash','La clave privada nunca sale de su dueño.',{ojo:'Cifrar con tu privada no oculta nada: cualquiera lo abre con tu pública.'}),
+        final('Respuesta',marca(c),'Aplica la regla al caso.',c)]};
   }
 };
 
@@ -134,6 +157,7 @@ const PATRONES={
 };
 const logs={
   titulo:'Patrones en los registros',
+  alternativa:'Lee el registro como un detective: <b>¿quién?</b> (IP de origen), <b>¿contra qué?</b> (destino o puerto), <b>¿cuántas veces?</b> y <b>¿cuándo?</b>. Muchos intentos de un solo origen = fuerza bruta; muchos puertos = escaneo; miles de orígenes = DoS; mucho dato saliendo de madrugada = fuga.',
   explicacion:'Muchos fallos de un mismo origen = fuerza bruta; muchos puertos distintos = escaneo; miles de peticiones = DoS; envíos enormes y raros = fuga de datos.',
   generar(n,rng){
     const claves=Object.keys(PATRONES),k=rng.elegir(n<=1?claves.slice(0,2):n<=2?claves.slice(0,3):claves),P=PATRONES[k],src=ipExt(rng),int=`10.0.${rng.entero(1,20)}.${rng.entero(2,250)}`;
@@ -142,9 +166,12 @@ const logs={
     const base={codigo:log,regla:R,clave:log};
     if(modo==='ip'&&k!=='flood'){const ip=k==='exfil'?int:src;
       return {...base,enunciado:`${k==='exfil'?'¿Qué equipo INTERNO hay que aislar?':'¿Qué IP de origen bloqueas?'} (escríbela)`,respuesta:ip,verificar:e=>String(e).trim()===ip,
-        errores:[{valor:'200.10.10.5',si:e=>String(e).trim().startsWith('200.10.10.'),por:'Esa es nuestra IP (el destino): se bloquea el origen del ataque.'}],pasos:[`Patrón: ${P.nombre}`,`IP: ${ip}`]}}
-    if(modo==='defensa')return {...base,...opcion('¿Qué defensa aplicas primero?',P.defensa,rng.barajar(claves.filter(x=>x!==k).map(x=>PATRONES[x].defensa).concat(['Desactivar los registros para que no llenen el disco'])).slice(0,3),rng),porque:{},explicacion:`Es ${P.nombre.toLowerCase()}.`};
-    return {...base,...opcion('¿Qué patrón ves en este registro?',P.nombre,rng.barajar(claves.filter(x=>x!==k).map(x=>PATRONES[x].nombre)).slice(0,n<=1?2:3),rng),porque:{}};
+        errores:[{valor:'200.10.10.5',si:e=>String(e).trim().startsWith('200.10.10.'),por:'Esa es nuestra IP (el destino): se bloquea el origen del ataque.'}],pasos:[paso('Identifica el patrón',P.nombre,'Mira quién se repite y contra qué.'),final(k==='exfil'?'El equipo interno que envía los datos':'El origen que se repite',marca(ip),k==='exfil'?'En una fuga, el problema está ADENTRO: hay que aislar el equipo que envía.':'Se bloquea el origen del ataque, no nuestro servidor.',ip)]}}
+    const pIdent=paso('Pregunta quién, contra qué, cuántas veces y cuándo',{fuerza:'Un solo origen, muchos usuarios distintos, muchos fallos seguidos.',escaneo:'Un solo origen, muchos puertos distintos en segundos.',flood:'Miles de orígenes distintos contra el mismo servidor.',exfil:'Un equipo interno envía gigas a un destino externo de madrugada.',login:'Muchos fallos y luego un éxito, desde un lugar raro.'}[k],'El patrón sale de esas cuatro preguntas.');
+    if(modo==='defensa')return {...base,...opcion('¿Qué defensa aplicas primero?',P.defensa,rng.barajar(claves.filter(x=>x!==k).map(x=>PATRONES[x].defensa).concat(['Desactivar los registros para que no llenen el disco'])).slice(0,3),rng),porque:{},explicacion:`Es ${P.nombre.toLowerCase()}.`,
+      pasos:[pIdent,paso('Nombra el patrón',marca(P.nombre),'Primero se identifica; después se responde.'),final('Contén primero',P.defensa,'Primero se detiene el daño; después se corrige la causa.',P.defensa)]};
+    return {...base,...opcion('¿Qué patrón ves en este registro?',P.nombre,rng.barajar(claves.filter(x=>x!==k).map(x=>PATRONES[x].nombre)).slice(0,n<=1?2:3),rng),porque:{},
+      pasos:[pIdent,final('Ponle nombre',marca(P.nombre),'Ese conjunto de señales corresponde a este patrón.',P.nombre)]};
   }
 };
 

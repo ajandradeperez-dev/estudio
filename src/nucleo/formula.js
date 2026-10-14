@@ -3,11 +3,13 @@
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 
+// \cambio{…} resalta lo que cambia en un paso (clase .cambio, color del área); solo se permite \htmlClass
+export const OPCIONES={throwOnError:false,strict:false,output:'htmlAndMathml',trust:ctx=>ctx.command==='\\htmlClass',macros:{'\\cambio':'\\htmlClass{cambio}{#1}'}};
 const cache=new Map();
 export function tex(s,bloque=false){
   const k=(bloque?'B':'L')+s;
   if(!cache.has(k)){
-    let html;try{html=katex.renderToString(s,{displayMode:bloque,throwOnError:false,strict:false,output:'htmlAndMathml'})}catch(e){html=s}
+    let html;try{html=katex.renderToString(s,{displayMode:bloque,...OPCIONES})}catch(e){html=s}
     if(cache.size>500)cache.clear();
     cache.set(k,html);
   }

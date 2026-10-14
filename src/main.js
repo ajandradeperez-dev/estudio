@@ -14,6 +14,7 @@ import {notas} from './nucleo/notas.js';
 import {vistaUbicacion} from './nucleo/ubicacion.js';
 import {aplicarTema} from './nucleo/ajustes.js';
 import {cerrarHoja,intro,boton} from './nucleo/ui.js';
+import {cerrarProcedimiento} from './nucleo/procedimiento.js';
 import {leccion,rutaLeccion} from './nucleo/materias.js';
 import {registerSW} from 'virtual:pwa-register';
 import {hablar} from './nucleo/voz.js';
@@ -77,7 +78,7 @@ function go(ruta){
     try{history.replaceState(null,'',nueva.ruta?'#'+nueva.ruta:location.pathname+location.search)}catch(e){}
     location.reload();return;
   }
-  cur?.v.alSalir?.();cerrarHoja();
+  cur?.v.alSalir?.();cerrarHoja();cerrarProcedimiento();
   cur=nueva;
   if(cur.seccion)visitar(cur.m.id,cur.seccion);
   // Historial de sesiones por materia (para que "¿Qué sigue?" alterne materias)

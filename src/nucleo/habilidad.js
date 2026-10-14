@@ -20,7 +20,7 @@ import {comoEjemplo,comoHueco,comoOpcion,comoPorque,variar} from './actividades.
 import {tema as temaDe,areaDe,rutaMateria,rutaTema,rutaLeccion} from './materias.js';
 import {cofresTema} from './camino.js';
 import {conFormulas} from './formula.js';
-import {preguntaIA,iaDisponible} from './ia-preguntas.js';
+import {preguntaIA,iaDisponible,explicarIA} from './ia-preguntas.js';
 
 const tonoDe=m=>{const a=areaDe(m);return a.tono||a.id};
 export const teoriaLeccion=l=>`${(l.explicacion||[]).map(p=>`<p class="lec-p">${conFormulas(p)}</p>`).join('')}
@@ -66,9 +66,10 @@ function sesionHabilidad(m,h,{salir,volver,alTerminar}){
     ind++;
     // fuente: ronda de la lección en orden; luego alterna; tras un error, el generador (más fácil y parecido)
     let p;
-    const falló=ult&&!ult.r.correcto&&ult.p.cuenta;
+    // tras un error (o "No entendí"), uno más fácil y del mismo tipo
+    const falló=ult&&!ult.r.correcto&&ult.p.cuenta||st.facil;
     if(ronda.length&&!(falló&&gen)){const x=ronda.shift();vistos.add(x.ref);p={...deBanco(x.ej),ref:x.ref,habilidad:h.id,materia:m.id}}
-    else if(gen){p=preguntaHabilidad(m,h,{nivel:nivel(),fuente:'gen',vistos,rng});
+    else if(gen){p=preguntaHabilidad(m,h,{nivel:st.facil?Math.max(1,nivel()-1):nivel(),fuente:'gen',vistos,rng});st.facil=false;
       p=ind===1&&nueva?(comoOpcion(p,rng)||p):variar(p,k++,rng)}
     else p=preguntaHabilidad(m,h,{nivel:nivel(),vistos,rng});
     if(!p)return null;
@@ -79,6 +80,7 @@ function sesionHabilidad(m,h,{salir,volver,alTerminar}){
     total:st=>Math.max(total(),st.i+1),
     nivel:()=>nivel(),
     siguiente,
+    explicarIA:iaDisponible()?(p,entrada)=>explicarIA(m,h,p,entrada):null,
     ia:iaDisponible()&&gen?async()=>{const q=await preguntaIA(m,h,nivel());return q?{...q,cuenta:true,habilidad:h.id,materia:m.id}:null}:null,
     responder(p,r){
       if(p.noCuenta)return {};

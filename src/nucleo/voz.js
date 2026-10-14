@@ -20,13 +20,15 @@ export function vozIngles(){
   return en.sort((a,b)=>puntos(b)-puntos(a))[0]||voces.find(v=>/^en/i.test(v.lang))||null;
 }
 // Lee un texto en inglés. Devuelve una promesa que se resuelve al terminar (o enseguida si no hay síntesis).
-export function hablar(texto,{lento=false}={}){
+// idioma: 'en-US' (por defecto, práctica de inglés) o 'es' (leer en voz alta un paso de un procedimiento)
+export function hablar(texto,{lento=false,idioma='en-US'}={}){
   if(!soporte.hablar||!texto)return Promise.resolve();
   return new Promise(res=>{
     try{
       speechSynthesis.cancel();
-      const u=new SpeechSynthesisUtterance(texto),v=vozIngles();
-      u.lang='en-US';if(v)u.voice=v;u.rate=lento?0.75:1;
+      const es=idioma.startsWith('es'),u=new SpeechSynthesisUtterance(texto);
+      const v=es?speechSynthesis.getVoices().find(x=>x.lang?.toLowerCase().startsWith('es')):vozIngles();
+      u.lang=es?(v?.lang||'es-MX'):'en-US';if(v)u.voice=v;u.rate=lento?0.75:1;
       let fin=false;const listo=()=>{if(!fin){fin=true;res()}};
       u.onend=listo;u.onerror=listo;
       setTimeout(listo,Math.max(4000,texto.length*180)); // por si el navegador nunca avisa del final

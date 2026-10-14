@@ -32,5 +32,5 @@ export function crear(id,nivel=1,{semilla,vistos}={}){
   vistos?.add(p.clave);
   // Un error típico cuyo valor resulta correcto en este ejercicio (p. ej. 180° − 90° = 90°) se descarta
   if((p.tipo||'escribir')==='escribir'&&!p.forma&&p.errores)p.errores=p.errores.filter(e=>{if(e.valor===undefined)return true;try{return !p.verificar(e.valor)}catch(x){return true}});
-  return {tipo:'escribir',...p,gen:id,nivel:n,semilla:s};
+  return {tipo:'escribir',alternativa:g.alternativa,...p,gen:id,nivel:n,semilla:s};
 }

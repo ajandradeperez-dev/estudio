@@ -1,4 +1,4 @@
-/* npm run calidad: revisa a 360 y 412 px (claro y oscuro) que ningún texto se encime con otro, que no haya scroll horizontal
+/* npm run calidad: el botón Atrás (varios niveles hacia adelante y history.back() de vuelta sin salir) y, a 360 y 412 px, (claro y oscuro) que ningún texto se encime con otro, que no haya scroll horizontal
    y que los toques midan al menos 44 px, en Aprender, Logros, Perfil, Notas y la página de cada materia y cada tema.
    Compila con `npm run build`, levanta `vite preview` en el puerto 4799 y lo apaga al terminar.
    Necesita playwright-core (devDependency) y Chrome o Edge instalados (o la ruta en NAVEGADOR). */
@@ -70,6 +70,44 @@ try{
       if(c.length)fallos.push(`${ancho}px ${esquema} #${ruta}: toques de menos de 44 px: ${[...new Set(c)].slice(0,4).join(', ')}`);
     }
     if(err.length)fallos.push(`${ancho}px ${esquema}: errores JS ${err.slice(0,2).join(' | ')}`);
+    await ctx.close();
+  }
+  // Botón Atrás: varios niveles hacia adelante y history.back() recorre el camino inverso sin salir de la app
+  {
+    const ctx=await b.newContext({viewport:{width:360,height:800},hasTouch:true});
+    await ctx.addInitScript(d=>{if(!sessionStorage.x){sessionStorage.x=1;localStorage.setItem('ciberlab-progreso',JSON.stringify(d));localStorage.setItem('ciberlab-usuario','{"bienvenida":true}')}},prog);
+    const p=await ctx.newPage(),ruta=()=>p.evaluate(()=>decodeURIComponent(location.hash.slice(1))),dentro=()=>p.evaluate(()=>location.origin)===Promise.resolve(new URL(BASE).origin);
+    const err=[];p.on('pageerror',e=>err.push(e.message));
+    const atras=async()=>{await p.evaluate(()=>history.back());await p.waitForTimeout(350)};
+    const mal=m=>fallos.push('Atrás: '+m);
+    await p.goto(BASE);await p.waitForSelector('#vista > *');
+    const camino=[''];
+    for(const sel of ['[data-go="estudio"]','[data-go="estudio/ingles"]','[data-go="estudio/ingles/gramatica"]','[data-go^="estudio/ingles/gramatica/l/"]']){
+      await p.click(`#vista ${sel} >> nth=0`);await p.waitForTimeout(250);camino.push(await ruta());}
+    if(new Set(camino).size!==camino.length)mal(`la navegación no avanzó: ${camino.join(' → ')}`);
+    for(let i=camino.length-2;i>=0;i--){await atras();const r=await ruta();if(r!==camino[i])mal(`esperaba #${camino[i]} y quedó #${r} (camino ${camino.join(' → ')})`)}
+    // en la portada: aviso y la app sigue abierta; después de 2 s vuelve a estar protegida
+    await atras();
+    if(!/otra vez para salir/.test(await p.textContent('#aviso').catch(()=>'')))mal('en la portada no apareció «Toca otra vez para salir»');
+    if(!(await p.locator('#vista > *').count()))mal('la app se cerró con un solo Atrás en la portada');
+    await p.waitForTimeout(2300);await atras();if(!(await p.locator('#vista > *').count()))mal('después de 2 s, un Atrás cerró la app');
+    // raíz de una pestaña → Aprender
+    await p.click('.nav-tab[data-go="perfil"]');await p.waitForTimeout(250);await atras();
+    if(await ruta()!=='')mal(`desde Perfil, Atrás debería volver a Aprender (quedó #${await ruta()})`);
+    // el ← de las migas hace lo mismo que Atrás
+    await p.click('#vista [data-go="estudio"] >> nth=0');await p.waitForTimeout(200);await p.click('#vista [data-go="estudio/matematicas"] >> nth=0');await p.waitForTimeout(200);
+    await p.click('.migas .atras');await p.waitForTimeout(250);if(await ruta()!=='estudio')mal(`el ← no volvió a #estudio (quedó #${await ruta()})`);
+    // en una lección: la hoja se cierra primero; luego pregunta antes de salir; Atrás sobre el diálogo lo cierra
+    await p.goto(BASE+'#estudio/matematicas/algebra-basica/l/ecuaciones-lineales');await p.waitForSelector('#hab-empezar');await p.click('#hab-empezar');await p.waitForSelector('.sesion');
+    for(let i=0;i<6&&!(await p.locator('.hoja.abierta').count());i++){
+      if(await p.locator('#ses-continuar').count()){await p.click('#ses-continuar');continue}
+      if(await p.locator('#ses-resp').count())await p.fill('#ses-resp','999');else if(await p.locator('.opcion[data-op]').count())await p.click('.opcion[data-op="0"]');else if(await p.locator('[data-vf]').count())await p.click('[data-vf="1"]');
+      await p.click('#ses-comprobar').catch(()=>{});await p.waitForTimeout(300)}
+    if(await p.locator('.hoja.abierta').count()){await atras();if(await p.locator('#hoja').count())mal('Atrás no cerró la hoja de la lección');if(!(await p.locator('.sesion').count()))mal('Atrás con la hoja abierta sacó de la lección')}
+    else mal('no se pudo abrir la hoja en la lección');
+    await atras();if(!/Salir de la lección/.test(await p.textContent('.modal').catch(()=>'')))mal('en una lección, Atrás no preguntó «¿Salir de la lección?»');
+    await atras();if(await p.locator('.modal').count())mal('Atrás no cerró el diálogo');if(!(await p.locator('.sesion').count()))mal('al cerrar el diálogo con Atrás se salió de la lección');
+    if(err.length)mal('errores JS '+err.slice(0,2).join(' | '));
     await ctx.close();
   }
 }finally{await b.close();apagar()}

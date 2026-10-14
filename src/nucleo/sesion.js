@@ -264,7 +264,7 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
     },
     async alClic(t,ir,repintar){
       if(t.dataset.salir!==undefined){
-        if(st.fase!=='fin'&&st.i>0&&!(await confirmar({titulo:'¿Salir de la práctica?',texto:'Lo que ya respondiste queda guardado.',si:'Salir',no:'Seguir practicando'})))return true;
+        if(st.fase!=='fin'&&st.i>0&&!(await confirmar({titulo:'¿Salir de la lección?',texto:'Perderás el avance de esta ronda (lo que ya respondiste sí queda guardado).',si:'Salir',no:'Seguir'})))return true;
         cerrarHoja();clearInterval(reloj);ir(cfg.salir);return true;
       }
       if(t.id==='hoja-seguir'||t.id==='ses-continuar'){avanzar();repintar();window.scrollTo(0,0);return true}

@@ -48,6 +48,8 @@ function niveles(c){
   const s=m.secciones[c.seccion];
   return {n,actual:c.resto?.length?'':s.titulo};
 }
+// Pantalla "de arriba" (la del botón ←): la usa Atrás cuando no hay pantalla anterior (p. ej. al abrir un enlace directo)
+export function rutaPadre(c){const {n}=niveles(c);return n.length?n[n.length-1].ruta:''}
 export function htmlMigas(c){
   const {n,actual}=niveles(c);
   if(!n.length)return '';

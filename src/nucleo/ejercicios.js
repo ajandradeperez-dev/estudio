@@ -25,7 +25,8 @@ export function evaluarHablar(ej,alternativas,r={}){
 // Ejercicio escrito a mano → pregunta del motor (nucleo/sesion.js)
 export function deBanco(ej,extra={}){
   const base={regla:ej.regla||ej.explicacion||'',pista:ej.pista,codigo:ej.codigo,oir:ej.oir,...extra};
-  if(ej.tipo==='opcion')return {...base,tipo:'opcion',enunciado:ej.pregunta,opciones:ej.opciones,correcta:ej.correcta,porque:ej.porque,respuesta:ej.opciones[ej.correcta]};
+  // La opción múltiple de las lecciones solo introduce: no cuenta para el dominio (intro)
+  if(ej.tipo==='opcion')return {...base,tipo:'opcion',enunciado:ej.pregunta,opciones:ej.opciones,correcta:ej.correcta,porque:ej.porque,respuesta:ej.opciones[ej.correcta],explicacion:ej.explicacion,intro:true};
   if(ej.tipo==='hablar')return {...ej,...base,tipo:'hablar',enunciado:ej.pregunta,respuesta:ej.modelo||ej.frase};
   // completar: cualquiera de las respuestas aceptadas; los errores típicos explican por qué
   return {...base,tipo:'escribir',enunciado:ej.pregunta,respuesta:esc(ej.respuestas[0]),

@@ -50,4 +50,5 @@ const ecuacionLineal={
   }
 };
 
+
 export default {'alg/ecuacion-lineal':ecuacionLineal};

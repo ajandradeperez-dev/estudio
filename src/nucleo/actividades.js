@@ -15,7 +15,7 @@ export function comoOpcion(p,rng){
   if((p.tipo||'escribir')!=='escribir'||malos.length<2)return null;
   const ops=rng.barajar([String(p.respuesta),...malos]),correcta=ops.indexOf(String(p.respuesta));
   const porque=Object.fromEntries(ops.map((o,i)=>[i,(p.errores.find(e=>String(e.valor)===o)||{}).por]).filter(([,v])=>v));
-  return {...p,tipo:'opcion',opciones:ops,correcta,porque,etiqueta:'Elige la respuesta'};
+  return {...p,tipo:'opcion',opciones:ops,correcta,porque,etiqueta:'Elige la respuesta',intro:true};
 }
 
 // Verdadero o falso + por qué: se muestra la respuesta correcta o un error típico. Necesita 1+ error con valor y explicación.
@@ -48,8 +48,13 @@ export function comoPorque(p,otrasReglas,rng){
     regla:p.regla,porque:Object.fromEntries(ops.map((o,i)=>[i,o===p.regla?'':'Esa regla es de otra habilidad.']).filter(([,v])=>v)),noCuenta:true};
 }
 
+// Responder diciendo la frase completa en voz alta (Inglés), o escribiéndola si no hay reconocimiento de voz
+export const comoHablar=p=>p.frase&&p.lang==='en'&&(p.tipo||'escribir')==='escribir'
+  ?{...p,tipo:'hablar',frase:undefined,enunciado:`${p.enunciado}<br><span class="nota">Responde diciendo la frase completa en voz alta.</span>`,
+    acepta:['='+p.frase.toLowerCase().replace(/[.,!?¿¡]/g,'').trim()],modelo:p.frase,etiqueta:'Di en voz alta'}:null;
+
 // Rotación de actividades en una sesión: la k-ésima pregunta independiente generada
 export function variar(p,k,rng){
   const turno=k%5;
-  return (turno===2&&comoVF(p,rng))||(turno===4&&comoError(p))||p;
+  return (turno===2&&comoVF(p,rng))||(turno===3&&comoHablar(p))||(turno===4&&comoError(p))||p;
 }

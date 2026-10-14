@@ -6,6 +6,7 @@
    Ver "Escribir un generador" en CLAUDE.md. */
 import {crearRng} from '../rng.js';
 import matematicas from './matematicas.js';
+import algebraBasica from './algebra-basica.js';
 import algebraLineal from './algebra-lineal.js';
 import calculo from './calculo.js';
 import redes from './redes.js';
@@ -14,7 +15,7 @@ import datos from './datos.js';
 import ingles from './ingles.js';
 import {bancos} from './bancos.js';
 
-export const GENERADORES={...matematicas,...algebraLineal,...calculo,...redes,...seguridad,...datos,...ingles};
+export const GENERADORES={...matematicas,...algebraBasica,...algebraLineal,...calculo,...redes,...seguridad,...datos,...ingles};
 export const BANCOS=bancos;
 
 // Una pregunta nueva del generador al nivel pedido; con vistos (Set de claves) no se repite en la sesión
@@ -29,5 +30,7 @@ export function crear(id,nivel=1,{semilla,vistos}={}){
     if(!vistos?.has(p.clave))break;
   }
   vistos?.add(p.clave);
+  // Un error típico cuyo valor resulta correcto en este ejercicio (p. ej. 180° − 90° = 90°) se descarta
+  if((p.tipo||'escribir')==='escribir'&&!p.forma&&p.errores)p.errores=p.errores.filter(e=>{if(e.valor===undefined)return true;try{return !p.verificar(e.valor)}catch(x){return true}});
   return {tipo:'escribir',...p,gen:id,nivel:n,semilla:s};
 }

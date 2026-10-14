@@ -72,7 +72,7 @@ function sesionHabilidad(m,h,{salir,volver,alTerminar}){
       p=ind===1&&nueva?(comoOpcion(p,rng)||p):variar(p,k++,rng)}
     else p=preguntaHabilidad(m,h,{nivel:nivel(),vistos,rng});
     if(!p)return null;
-    return {...p,cuenta:p.tipo!=='opcion'};
+    return {...p,cuenta:!p.intro};
   }
   return crearSesion({
     titulo:h.titulo,tono:tonoDe(m),salir,
@@ -152,7 +152,7 @@ function sesionMezcla(m,hs,{titulo,salir,n,crono,sinPistas,fin}){
     total:()=>n,
     siguiente:st=>{if(st.i>=n)return null;const h=hs[k++%hs.length];
       const p=preguntaHabilidad(m,h,{nivel:nivelDe(datosHabilidad(progreso(),m.id,h.id)?.rating||1),vistos,rng});
-      return p&&{...p,cuenta:true,etiqueta:`${h.titulo}`}},
+      return p&&{...p,cuenta:true,etiqueta:p.etiqueta||h.titulo}},
     responder(p,r){
       const bien=r.correcto&&!r.pista,xp=r.correcto?(r.pista?5:10):0;
       registrarRespuesta(m.id,p.habilidad,r);registrarEjercicio({materia:m.id,ref:p.ref,correcto:bien,xp});

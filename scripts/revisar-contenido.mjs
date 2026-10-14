@@ -204,7 +204,32 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   if(JSON.parse(mem['ciberlab-progreso']).v!==p.v)mal(e,'la migración no se guarda');
   console.log(`progreso: un v5 migra a v${p.v} conservando lecciones, XP, racha, repasos y notas`);
 }
-if(sinGenerador.length)console.log(`${sinGenerador.length} habilidades sin generador todavía (se ven como Próximamente)`);
+sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
+// Generadores: 200 ejercicios por nivel sin errores, cuya respuesta pasa su propio verificar, con fórmulas válidas y sin repetirse demasiado
+{
+  const {crear}=await import(pathToFileURL(join(raiz,'..','nucleo','generadores','index.js')).href);
+  const katex=(await import(pathToFileURL(join(raiz,'..','..','node_modules','katex','dist','katex.mjs')).href)).default;
+  const formulas=t=>[...String(t).matchAll(/\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]/g)].map(m=>m[1]||m[2]);
+  let total=0;
+  for(const id of Object.keys(GENERADORES)){
+    for(let n=1;n<=5;n++){
+      const claves=new Set(),dg=`generador ${id} nivel ${n}`;let primero='';
+      for(let i=0;i<200;i++){
+        let p;try{p=crear(id,n,{semilla:i*7919+n})}catch(e){mal(dg,`falla al generar: ${e.message}`);break}
+        total++;claves.add(p.clave);const t=p.tipo||'escribir';
+        const ok=t==='opcion'?p.opciones?.[p.correcta]!==undefined:t==='emparejar'?p.pares?.length>=3:t==='ordenar'?p.verificar(p.respuesta):p.verificar(p.forma?p.celdas:p.respuesta);
+        if(!ok&&!primero)primero=`su respuesta no pasa su verificar: ${String(p.enunciado).slice(0,80)} → ${p.respuesta}`;
+        if(!p.regla&&!primero)primero='falta la regla';
+        for(const x of [p.enunciado,p.respuesta,...(p.pasos||[]),p.regla,p.pista,p.explicacion,...(p.errores||[]).map(e=>e.por),p.pasoMal?.texto,...(p.opciones||[])].filter(Boolean))
+          for(const fx of formulas(x))try{katex.renderToString(fx,{throwOnError:true,strict:false})}catch(e){if(!primero)primero=`fórmula inválida: ${fx.slice(0,60)}`}
+      }
+      if(primero)mal(dg,primero);
+      if(claves.size<8)mal(dg,`solo ${claves.size} ejercicios distintos en 200 (mínimo 8, una sesión entera)`);
+    }
+  }
+  for(const [id,f] of Object.entries(BANCOS)){const l=f();if(!l.length||l.some(x=>!x.ref||!x.regla))mal(`banco ${id}`,'vacío o con ejercicios sin ref o sin regla')}
+  console.log(`generadores: ${Object.keys(GENERADORES).length} · ${total} ejercicios generados y verificados · ${Object.keys(BANCOS).length} bancos`);
+}
 avisos.forEach(a=>console.log('aviso  '+a));
 errores.forEach(e=>console.log('ERROR  '+e));
 console.log(errores.length?`\n${errores.length} errores`:'\nTodo cumple el método de aprendizaje.');

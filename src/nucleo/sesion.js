@@ -213,6 +213,7 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
       if(typeof entrada==='string'&&entrada&&!r.rendido)lineas.push(`<p class="hoja-linea"><b>Tu respuesta:</b> «${esc(entrada)}»</p>`);
       if(r.porque)lineas.push(`<p class="hoja-linea"><b>${p.tipo==='opcion'||p.errores?.length?'Error típico':'Por qué'}:</b> ${conFormulas(r.porque)}</p>`);
       if(p.tipo==='error'&&p.porqueMal)lineas.push(`<p class="hoja-linea">${conFormulas(p.porqueMal)}</p>`);
+      if(p.explicacion&&p.tipo!=='error')lineas.push(`<p class="hoja-linea">${conFormulas(p.explicacion)}</p>`);
       if(p.regla)lineas.push(`<p class="hoja-linea"><b>Regla:</b> ${conFormulas(p.regla)}</p>`);
       if(p.pasos?.length&&p.tipo!=='error')lineas.push(`<details><summary>Ver la solución paso a paso</summary><ol class="pasos-sol">${p.pasos.map(x=>`<li>${conFormulas(x)}</li>`).join('')}</ol></details>`);
     }

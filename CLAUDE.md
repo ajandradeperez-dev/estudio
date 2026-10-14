@@ -200,6 +200,42 @@ Opcionales, para materias con secciones propias como Ciberseguridad:
 
 Una materia necesita al menos 5 lecciones para que el examen de ubicación tenga 10 preguntas con 2 por lección; con menos, cada lección aporta más preguntas (hasta 5 con 2 lecciones). `npm run revisar` avisa si a una lección le faltan preguntas de producción para la ubicación.
 
+## Escribir un generador
+
+Cada habilidad debería tener un generador: ejercicios nuevos al azar, por dificultad, en vez de preguntas fijas. Viven en `src/nucleo/generadores/` (un archivo por materia o tema: `algebra-basica.js`, `algebra-lineal.js`, `calculo.js`, `redes.js`, `seguridad.js`, `datos.js`, `ingles.js`), se registran en `index.js` y se enlazan desde un nodo con `gen:'<prefijo>/<habilidad>'`. Sin DOM: también los usa `npm run revisar`.
+
+```js
+import {igualNum} from './verificar.js';
+import {lineal,frac} from './formato.js';
+
+const ecuacion={
+  titulo:'Ecuaciones lineales',
+  explicacion:'Texto corto que se ve antes de practicar (si la habilidad no tiene lección escrita).',
+  generar(nivel,rng){                  // nivel 1–5; rng con semilla: rng.entero(a,b), rng.noCero, rng.elegir, rng.barajar, rng.prob
+    const a=rng.entero(2,9),x=rng.noCero(-9,9),b=rng.noCero(-15,15);
+    return {
+      enunciado:`Resuelve: \\(${lineal([[a,'x'],[b,'']])} = ${a*x+b}\\)`,   // HTML; fórmulas KaTeX entre \( \) o \[ \]
+      respuesta:`x = ${x}`,                 // lo que escribiría el usuario (también se muestra al fallar)
+      verificar:e=>igualNum(e,x),           // tolerante: igualNum, equivalente, igualLista, igualTexto… (verificar.js)
+      pasos:['\\(…\\)','\\(x = …\\)'],      // solución paso a paso: ejemplo resuelto, hueco y feedback
+      errores:[{valor:'x = 25',si:e=>igualNum(e,25),por:'Pasaste el número sin cambiar el signo.'}],  // error típico detectado por patrón
+      pasoMal:{i:0,texto:'\\(…\\)',por:'…'},  // opcional: habilita "Encuentra el error"
+      regla:'La regla en una frase.',pista:'Una ayuda que no regale la respuesta.',
+      teclado:'mat'                         // opcional: 'mat' | 'ip' | 'vector'
+      // tipo:'opcion' {opciones, correcta} · 'ordenar' {piezas} · 'emparejar' {pares} · forma:{filas,cols} + celdas (matrices)
+      // lang:'en' + frase (Inglés): habilita responder hablando
+    };
+  }
+};
+export default {'alg/ecuacion-lineal':ecuacion};
+```
+
+- La dificultad crece con el nivel (números más grandes, negativos, fracciones, más pasos). El nivel de cada usuario se ajusta solo (rating 1–5).
+- Con `errores` que tengan `valor`, el motor arma también "verdadero o falso" y la opción de introducción; con `pasos`, el ejemplo resuelto y el hueco; con `pasoMal`, "encuentra el error". Un error típico cuyo valor resulta correcto en un ejercicio se descarta solo.
+- `npm run revisar` genera 200 ejercicios por nivel de cada generador y falla si alguno no pasa su propio `verificar`, si una fórmula no compila en KaTeX, si falta la regla o si hay menos de 8 ejercicios distintos por nivel. Las semillas son fijas: un fallo se puede reproducir con `crear(id, nivel, {semilla})`.
+- Lo que no se puede generar (casos narrativos) va en `bancos.js` como preguntas con `ref` estable; se mezclan con lo generado.
+- **Pregunta nueva con IA (opcional)**: si el usuario guardó su clave de Anthropic, en la práctica aparece ✨, que pide a Claude un ejercicio de la misma habilidad y nivel (`ia-preguntas.js`). Sin clave o si falla, sigue el generador local: la app funciona 100 % sin IA.
+
 ## Agregar una lección
 
 Crea un archivo en `lecciones/` de la materia, o en `temas/<tema>/` si la materia tiene temas. El número del nombre define el orden (de lo más útil a lo menos) y el resto es el id: `09-comparativos.js` → `comparativos`. **No renombres el id de un archivo ya publicado**: el progreso, las notas y el repaso guardados lo usan. Para cambiar el orden, cambia solo el prefijo numérico.

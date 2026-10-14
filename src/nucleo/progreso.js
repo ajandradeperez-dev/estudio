@@ -2,7 +2,7 @@
    Si el almacenamiento no está disponible (modo privado, bloqueado), la app funciona igual sin guardar nada.
    Cada cambio emite el evento 'progreso' en window para que la barra superior se actualice.
 
-   Estructura (v: 8):
+   Estructura (v: 9):
    meta      {tipo:'ejercicios'|'minutos', cantidad}
    dias      {'AAAA-MM-DD': {ej, seg, xp, ok, habla:{frases, seg, turnos, conv}}}   ok = se cumplió la meta ese día (cuenta para la racha)
              habla: frases dichas en voz alta, segundos con el micrófono, turnos de conversación y la conversación más larga del día
@@ -21,6 +21,11 @@
                    '<materia>/h/<habilidad>' repaso de una habilidad dominada · '<materia>/<clave propia>' (ejercicioRepaso)
    dominados número de ejercicios que salieron del repaso por recordarlos a más de 2 meses
    notas     {'<materia>/<lección>': {texto, fecha}}   resúmenes escritos al dominar cada lección (se copian al cuaderno)
+   basicos   {[clave]: {ok:[sesiones], racha, retirado:fecha|null, materia, habilidad}}   ejercicios BÁSICOS (ver metodo.js → PROFUNDIDADES):
+             clave 'l:<ref>' (ejercicio de lección), 'b:<ref>' (banco) o 'g:<generador>:<plantilla>' (plantilla de un generador).
+             Bien sin pista en 2 sesiones distintas (las plantillas, además, 3 seguidas) → retirado: no vuelve a salir.
+   refuerzos {'<materia>/<habilidad>': n}   al fallar un ejercicio de nivel superior, vuelve 1 básico retirado como refuerzo
+   estrellas {[reto]: fecha}   retos y escenarios marcados con ⭐: entran al repaso con la ref '<materia>/r/<reto>'
    tarjetas  {[id]: {q, a, nota, titulo, materia, fecha}}  tarjetas "🃏 pregunta | respuesta" de las notas del cuaderno;
              se repasan con la ref '<materia|notas>/t/<id>' (el cuaderno vive en IndexedDB, ver cuaderno/db.js)
    ultimo    {ruta, materia} para "Continuar donde te quedaste"
@@ -30,12 +35,12 @@
    Inglés: sonidos {id:{ok, n, ult:[1,0…]}}, unidades, dialogos, medallas, combo. */
 import {DOMINIO,ULTIMAS,estadoDominio,nuevoRating,calidad,sm2,SALE_DEL_REPASO,TOPE_HABILIDAD,INTERVALOS_V6} from './metodo.js';
 
-const CLAVE='ciberlab-progreso',VERSION=8;
+const CLAVE='ciberlab-progreso',VERSION=9;
 const RAPIDO=12000; // ms: responder bien en menos de esto cuenta como "rápido" (sube más la dificultad y el intervalo)
 export const METAS=[['ejercicios',10],['ejercicios',20],['ejercicios',30],['minutos',5],['minutos',10],['minutos',15]];
 const XP_LECCION=20;
 
-const vacio=()=>({v:VERSION,meta:{tipo:'ejercicios',cantidad:20},dias:{},mejorRacha:0,materias:{},repaso:{},dominados:0,notas:{},tarjetas:{},ultimo:null,frases:{},historial:[]});
+const vacio=()=>({v:VERSION,meta:{tipo:'ejercicios',cantidad:20},dias:{},mejorRacha:0,materias:{},repaso:{},dominados:0,notas:{},tarjetas:{},basicos:{},refuerzos:{},estrellas:{},ultimo:null,frases:{},historial:[]});
 
 /* ---------- fechas (hora local) ---------- */
 const dos=n=>String(n).padStart(2,'0');
@@ -114,6 +119,10 @@ function migrar(p){
     p.tarjetas=obj(p.tarjetas)||{};
     p.v=8;
   }
+  if(p.v===8){ // v8 → v9: niveles de profundidad (básicos retirados, refuerzos) y retos con ⭐; lo demás no cambia
+    p.basicos=obj(p.basicos)||{};p.refuerzos=obj(p.refuerzos)||{};p.estrellas=obj(p.estrellas)||{};
+    p.v=9;
+  }
   return p;
 }
 export function progreso(){
@@ -124,7 +133,7 @@ export function progreso(){
   if(!p){p=vacio();p.ultimo=ultimoV1()}
   // Completa lo que falte (datos incompletos o de otra versión) antes de usarlos o guardarlos
   const v=vacio();
-  for(const k of ['dias','materias','repaso','notas','frases','tarjetas'])p[k]=obj(p[k])||{};
+  for(const k of ['dias','materias','repaso','notas','frases','tarjetas','basicos','refuerzos','estrellas'])p[k]=obj(p[k])||{};
   if(!Array.isArray(p.historial))p.historial=[];
   if(!obj(p.meta)||!METAS.some(([t,c])=>t===p.meta.tipo&&c===p.meta.cantidad))p.meta=v.meta;
   if(typeof p.mejorRacha!=='number')p.mejorRacha=0;
@@ -244,6 +253,44 @@ export function cerrarSesionHabilidad(materia,habilidad,{ok=0,total=0}={}){
     return {...e,dominada:h.dominada,primera,extra,rating:h.rating};
   });
 }
+/* ---------- niveles de profundidad: básicos que se retiran ---------- */
+const PLANTILLA_RACHA=3;
+export const basicoRetirado=(clave,p=progreso())=>!!p.basicos[clave]?.retirado;
+// Una respuesta a un ejercicio básico; devuelve true si con ella queda retirado
+export function registrarBasico(clave,{correcto,pista},{sesion,materia,habilidad}){
+  if(!clave)return false;
+  return cambiar(p=>{
+    const b=p.basicos[clave]=Object.assign({ok:[],racha:0,retirado:null,materia,habilidad},p.basicos[clave]);
+    if(b.retirado)return false;
+    if(!correcto||pista){b.racha=0;b.ok=[];return false}
+    b.racha++;if(!b.ok.includes(sesion))b.ok=[...b.ok,sesion].slice(-5);
+    // una plantilla de generador (números al azar) pide además 3 seguidas; un ítem fijo, solo las 2 sesiones
+    if(b.ok.length>=2&&(!clave.startsWith('g:')||b.racha>=PLANTILLA_RACHA)){b.retirado=hoy();return true}
+    return false;
+  });
+}
+// Falló un ejercicio de nivel superior: un básico retirado de esa habilidad vuelve una vez como refuerzo
+export function pedirRefuerzo(materia,habilidad){
+  const k=`${materia}/${habilidad}`,p=progreso();
+  if(!Object.values(p.basicos).some(b=>b.retirado&&b.materia===materia&&b.habilidad===habilidad))return;
+  cambiar(q=>{q.refuerzos[k]=1});
+}
+export function tomarRefuerzo(materia,habilidad){
+  const k=`${materia}/${habilidad}`;if(!progreso().refuerzos[k])return false;
+  cambiar(q=>{delete q.refuerzos[k]});return true;
+}
+export const retiradosDe=(materia,habilidad,p=progreso())=>Object.entries(p.basicos).filter(([,b])=>b.retirado&&b.materia===materia&&(!habilidad||b.habilidad===habilidad)).map(([k])=>k);
+// "Volver a ver lo retirado": los básicos de esas habilidades vuelven a salir (empiezan de cero)
+export function reactivarBasicos(materia,habilidades){
+  const hs=new Set(habilidades);
+  cambiar(p=>{for(const [k,b] of Object.entries(p.basicos))if(b.materia===materia&&(!habilidades||hs.has(b.habilidad)))delete p.basicos[k]});
+}
+// ⭐ retos y escenarios: con estrella entran al repaso espaciado
+export function alternarEstrella(materia,reto){
+  return cambiar(p=>{const ref=`${materia}/r/${reto}`;
+    if(p.estrellas[reto]){delete p.estrellas[reto];delete p.repaso[ref];return false}
+    p.estrellas[reto]=hoy();if(!p.repaso[ref])p.repaso[ref]={rep:0,int:1,ef:2.5,proxima:sumarDias(hoy(),1),fallos:0};return true});
+}
 // "✅ Lo estudié" en un tema de una materia propia sin práctica: cuenta el día y deja una marca (dominio estimado 0,3)
 export function marcarEstudiado(materia,id){cambiar(p=>{const h=registro(datosMateria(p,materia),id);h.estudiado=hoy();h.dias=[...new Set([...(h.dias||[]),hoy()])].slice(-ULTIMAS)})}
 // Cofres (repaso intercalado dentro del camino) y jefes (mezcla cronometrada de un tema)
@@ -330,7 +377,7 @@ export function guardarUltimo(ultimo){
   if(JSON.stringify(p.ultimo)!==JSON.stringify(ultimo)){p.ultimo=ultimo;guardar(p)}
 }
 // Borra todo menos la meta diaria elegida, las notas y las tarjetas (son texto escrito por el usuario); las tarjetas vuelven al repaso
-export function reiniciarProgreso(){cambiar(p=>{const {meta,notas,tarjetas}=p;Object.assign(p,vacio(),{meta,notas,tarjetas});
+export function reiniciarProgreso(){cambiar(p=>{const {meta,notas,tarjetas,estrellas}=p;Object.assign(p,vacio(),{meta,notas,tarjetas,estrellas});
   for(const [id,t] of Object.entries(tarjetas))p.repaso[refTarjeta(t.materia,id)]={rep:0,int:1,ef:2.5,proxima:hoy(),fallos:0}})}
 // Reemplaza todo el progreso (importar un respaldo): se migra si viene de otra versión
 export function reemplazarProgreso(datos){

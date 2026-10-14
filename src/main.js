@@ -14,6 +14,7 @@ import {vistaNotas} from './nucleo/notas.js';
 import {vistaMias} from './nucleo/mias/vistas.js';
 import {cargarMias} from './nucleo/mias/datos.js';
 import {vistaUbicacion} from './nucleo/ubicacion.js';
+import {vistaRetos} from './nucleo/vista-retos.js';
 import {aplicarTema} from './nucleo/ajustes.js';
 import {cerrarHoja,intro,boton,aviso} from './nucleo/ui.js';
 import {cerrarProcedimiento} from './nucleo/procedimiento.js';
@@ -42,6 +43,7 @@ function resolver(ruta){
   if(x.tipo==='cofre'){const v=vistaCofre(m,x.t,x.k);return v?{...x,v}:{...x,tipo:'tema',ruta:rutaTema(m,x.t),v:vistaTema(m,x.t)}}
   if(x.tipo==='jefe')return {...x,v:vistaJefe(m,x.t)};
   if(x.tipo==='ubicacion')return {...x,v:vistaUbicacion(m)};
+  if(x.tipo==='retos')return {...x,v:vistaRetos(m,x.t)};
   if(x.tipo==='seccion'){
     const s=m.secciones[x.seccion];
     // Secciones con subrutas (p. ej. estudio/ingles/hablar/dialogo/<id>): el módulo exporta ruta(resto) → {ruta, v}

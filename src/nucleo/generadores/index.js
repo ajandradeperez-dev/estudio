@@ -1,6 +1,8 @@
 /* Registro de generadores de ejercicios y bancos (sin DOM: también los usa npm run revisar).
    GENERADORES['<prefijo>/<habilidad>'] = {titulo, explicacion?, generar(nivel 1–5, rng) → pregunta}
    BANCOS['<id>'] = () → [preguntas con ref]   (ejercicios fijos que no se pueden generar, p. ej. casos narrativos)
+   Cada pregunta lleva su profundidad ('basico' | 'procedimiento' | 'aplicacion' | 'escenario') y, si es básica, la clave con que se
+   retira (basico: 'g:<id>:<plantilla>' o 'gi:<id>:<clave>'): ver profundidad.js.
    Pregunta generada: {enunciado, respuesta, verificar(entrada) → bool, pasos[], errores[{si(entrada), por, valor?}],
      regla, pista, tipo? ('escribir' por defecto | 'opcion' | 'ordenar' | 'emparejar' | 'hablar'), teclado?, forma?, pasoMal?, clave?}
    Ver "Escribir un generador" en CLAUDE.md. */
@@ -14,12 +16,14 @@ import seguridad from './seguridad.js';
 import datos from './datos.js';
 import ingles from './ingles.js';
 import {bancos} from './bancos.js';
+import {clasificar} from './profundidad.js';
 
 export const GENERADORES={...matematicas,...algebraBasica,...algebraLineal,...calculo,...redes,...seguridad,...datos,...ingles};
 export const BANCOS=bancos;
 
-// Una pregunta nueva del generador al nivel pedido; con vistos (Set de claves) no se repite en la sesión
-export function crear(id,nivel=1,{semilla,vistos}={}){
+// Una pregunta nueva del generador al nivel pedido; con vistos (Set de claves) no se repite en la sesión;
+// evitar(p) → true para descartarla (p. ej. un básico ya retirado): se prueba otra, hasta 30 veces
+export function crear(id,nivel=1,{semilla,vistos,evitar}={}){
   const g=GENERADORES[id];if(!g)return null;
   const n=Math.min(5,Math.max(1,Math.round(nivel)));
   let p,s;
@@ -27,7 +31,8 @@ export function crear(id,nivel=1,{semilla,vistos}={}){
     s=semilla!==undefined&&k===0?semilla:(Math.random()*2**32)>>>0;
     p=g.generar(n,crearRng(s));
     p.clave=p.clave||p.enunciado;
-    if(!vistos?.has(p.clave))break;
+    Object.assign(p,clasificar(id,g,n,p));
+    if(!vistos?.has(p.clave)&&!evitar?.(p))break;
   }
   vistos?.add(p.clave);
   // Un error típico cuyo valor resulta correcto en este ejercicio (p. ej. 180° − 90° = 90°) se descarta

@@ -146,7 +146,7 @@ export function vistaBienvenida(alTerminar){
 <label class="campo">¿Cómo te llamas? <span class="nota">(opcional)</span><input id="bien-nombre" value="${esc(nombre)}" autocomplete="given-name" maxlength="40" placeholder="Tu nombre"></label>${pie('Siguiente','bien-sig')}</div>`;
       if(paso===1)return `<div class="bienvenida">${puntos()}<h1>¿Qué quieres estudiar${nombre.trim()?`, ${esc(nombre.trim())}`:''}?</h1><p class="intro">Marca lo que te interesa: te lo recomendaremos primero. Puedes cambiarlo después en Perfil.</p>
 <button type="button" class="bien-materia bien-propia" data-propia aria-pressed="${materiaPropia}"><span aria-hidden="true">🎓</span>¿Tienes una materia que pasar? <span class="nota">Sube tu temario y la fecha del examen: te armo un plan.</span></button>
-${areas.map(a=>`<h2>${a.icono} ${a.nombre}</h2><div class="bien-materias">${a.materias.map(m=>`<button type="button" class="bien-materia" data-materia="${m.id}" aria-pressed="${elegidas.has(m.id)}"><span aria-hidden="true">${m.icono||m.sigla}</span>${m.nombre}</button>`).join('')}</div>`).join('')}
+${areas.map(a=>`<h2>${a.icono} ${a.nombre}</h2><div class="bien-materias">${a.materias.filter(m=>!m.proximo).map(m=>`<button type="button" class="bien-materia" data-materia="${m.id}" aria-pressed="${elegidas.has(m.id)}"><span aria-hidden="true">${m.icono||m.sigla}</span>${m.nombre}</button>`).join('')}</div>`).join('')}
 ${pie('Siguiente','bien-sig')}</div>`;
       const p=progreso();
       const conUbicacion=materias.filter(m=>m.lecciones?.length&&(!elegidas.size||elegidas.has(m.id)));

@@ -1,6 +1,7 @@
 /* "Repasar": repetición espaciada (ver progreso.js) con práctica intercalada:
    la cola alterna materias y, dentro de cada materia, lecciones o habilidades, en vez de agrupar todo lo de un mismo tema. */
-import {progreso,pendientes,registrarEjercicio,responderRepaso,quitarRepaso,registrarRespuesta,hoy} from './progreso.js';
+import {progreso,pendientes,registrarEjercicio,responderRepaso,quitarRepaso,registrarRespuesta,hoy,basicoRetirado,registrarBasico,pedirRefuerzo} from './progreso.js';
+import {profundidadLeccion,claveBasicoLeccion} from './practica.js';
 import {ejercicioPorRef} from './materias.js';
 import {ejercicioPropio,refPendiente} from './mias/datos.js';
 import {deBanco} from './ejercicios.js';
@@ -26,10 +27,18 @@ export function mezclar(items){
   }
   return salida;
 }
-// Cola de hoy: los ejercicios que ya no existen (lección borrada) se descartan; los de materias propias aún sin cargar se esperan
+// Cola de hoy: los ejercicios que ya no existen (lección borrada) o que son básicos ya retirados se descartan; los de materias
+// propias aún sin cargar se esperan. Prioridad: procedimiento > aplicación > básico (los escenarios solo si tienen ⭐: refs '/r/').
+const PRIORIDAD={procedimiento:0,aplicacion:1,escenario:1,basico:2};
+const profundidadDe=x=>x.pregunta?.profundidad||(x.ej&&x.habilidad?profundidadLeccion(x.habilidad,x.ej):'basico');
 export function colaRepaso(){
-  return mezclar(pendientes().filter(ref=>!refPendiente(ref)).map(ref=>({ref,...(/^mp-[^/]+\/e\//.test(ref)?ejercicioPropio(ref):ejercicioPorRef(ref))}))
-    .filter(x=>{if(!x.ej&&!x.pregunta)quitarRepaso(x.ref);return x.ej||x.pregunta}));
+  const l=pendientes().filter(ref=>!refPendiente(ref)).map(ref=>({ref,...(/^mp-[^/]+\/e\//.test(ref)?ejercicioPropio(ref):ejercicioPorRef(ref))}))
+    .filter(x=>{
+      if(!x.ej&&!x.pregunta){quitarRepaso(x.ref);return false}
+      if(x.ej&&x.habilidad&&profundidadDe(x)==='basico'&&basicoRetirado(claveBasicoLeccion(x.ref))){quitarRepaso(x.ref);return false}
+      return true});
+  l.sort((a,b)=>(PRIORIDAD[profundidadDe(a)]??1)-(PRIORIDAD[profundidadDe(b)]??1));
+  return mezclar(l);
 }
 
 let fase='inicio',ses=null;
@@ -38,9 +47,13 @@ function empezar(){
   ses=crearSesion({
     titulo:'Repasar',salir:'repaso',
     total:()=>cola.length,
-    siguiente:st=>{const x=cola[st.i];return x?{...(x.pregunta||deBanco(x.ej)),ref:x.ref,materia:x.materia.id,contexto:`${x.materia.nombre} · ${x.titulo}`}:null},
-    responder(p,r){
+    siguiente:st=>{const x=cola[st.i];if(!x)return null;
+      const prof=profundidadDe(x),basico=x.pregunta?x.pregunta.basico:(prof==='basico'&&x.habilidad?claveBasicoLeccion(x.ref):null);
+      return {...(x.pregunta||deBanco(x.ej)),ref:x.ref,materia:x.materia.id,habilidad:x.pregunta?.habilidad||x.habilidad?.id,profundidad:prof,basico,contexto:`${x.materia.nombre} · ${x.titulo}`}},
+    responder(p,r,st){
       const bien=r.correcto&&!r.pista; // con pista no se aleja: vuelve mañana
+      if(p.basico&&p.habilidad)registrarBasico(p.basico,r,{sesion:st?.id||'r',materia:p.materia,habilidad:p.habilidad});
+      else if(!r.correcto&&p.habilidad&&p.profundidad&&p.profundidad!=='basico')pedirRefuerzo(p.materia,p.habilidad);
       registrarEjercicio({materia:p.materia,ref:p.ref,correcto:bien,xp:bien?5:0,repasar:false});
       if(p.habilidad)registrarRespuesta(p.materia,p.habilidad,r); // también ajusta su dificultad y sus últimas respuestas
       const res=responderRepaso(p.ref,bien,r);

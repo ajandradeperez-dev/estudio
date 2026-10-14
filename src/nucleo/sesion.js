@@ -166,7 +166,8 @@ ${v<n?`<p class="nota">¿Cuál es el paso ${v+1}? Piénsalo y míralo.</p><butto
 /* ---------- la sesión ---------- */
 export function crearSesion(cfg){
   let st;
-  const nuevo=()=>({i:0,ok:0,xp:0,historial:[],fase:'pregunta',actual:null,e:{},pista:false,t0:Date.now(),fin0:cfg.crono?Date.now()+cfg.crono*1000:0,cargandoIA:false});
+  // id: identifica la sesión (un básico se retira al acertarlo en 2 sesiones distintas)
+  const nuevo=()=>({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),i:0,ok:0,xp:0,historial:[],fase:'pregunta',actual:null,e:{},pista:false,t0:Date.now(),fin0:cfg.crono?Date.now()+cfg.crono*1000:0,cargandoIA:false});
   const act=()=>ACT[st.actual?.tipo]||ACT.escribir;
   let reloj;
   const terminar=()=>{st.fase='fin';cerrarHoja();clearInterval(reloj);sonar.fin()};

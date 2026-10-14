@@ -1,7 +1,7 @@
 /* Pestaña Perfil: resumen de tu progreso (racha, XP, actividad, por materia), meta diaria, ajustes
    (tema, sonidos, vibración), Mis notas, la clave de IA y reiniciar. */
 import {materias,rutaMateria} from './materias.js';
-import {progreso,datosMateria,racha,estadoHoy,pendientes,cambiarMeta,reiniciarProgreso,hoy,sumarDias,METAS,minutosHablados} from './progreso.js';
+import {progreso,datosMateria,racha,estadoHoy,pendientes,cambiarMeta,reiniciarProgreso,hoy,sumarDias,METAS,minutosHablados,basicoRetirado,reactivarBasicos} from './progreso.js';
 import {htmlNivel} from './portada.js';
 import {barra,boton,confirmar} from './ui.js';
 import {ajustes,cambiarAjuste} from './ajustes.js';
@@ -14,6 +14,17 @@ const fila=({go,id,href,icono,titulo,desc})=>`${href?`<a class="tarjeta-nav" hre
 
 const est=(v,k)=>`<div class="estadistica"><b>${v}</b><span>${k}</span></div>`;
 const segmentos=(id,ops,actual)=>`<span class="segmentos" role="group">${ops.map(([v,t])=>`<button type="button" data-${id}="${v}" aria-pressed="${String(actual)===String(v)}">${t}</button>`).join('')}</span>`;
+
+// Básicos retirados (bien sin pista en 2 sesiones distintas): cuántos hay y "volver a ver" por tema
+function htmlRetirados(p,m){
+  const ks=Object.entries(p.basicos||{}).filter(([k,b])=>b.materia===m.id&&basicoRetirado(k,p)).map(([,b])=>b.habilidad);
+  if(!ks.length)return '';
+  const temas=(m.temas||[]).map(t=>({t,n:ks.filter(h=>t.lecciones.some(x=>x.id===h)).length})).filter(x=>x.n);
+  return `<details class="como-se-usa" style="margin-top:10px"><summary>✅ Básicos dominados: ${ks.length} (retirados)</summary>
+<p class="nota">Ya no salen en la práctica; vuelven solo como refuerzo si fallas algo más difícil. Puedes volver a verlos.</p>
+${temas.length?temas.map(({t,n})=>`<div class="row" style="justify-content:space-between;margin-top:6px"><span>${t.icono||''} ${esc(t.titulo)} · ${n}</span>${boton({texto:'Volver a ver',clase:'ghost btn-chico',extra:`data-reactivar="${esc(m.id)}|${esc(t.id)}"`})}</div>`).join('')
+  :boton({texto:'Volver a ver todo',clase:'ghost btn-chico',extra:`data-reactivar="${esc(m.id)}|"`})}</details>`;
+}
 
 export const perfil={
   titulo:'Perfil',
@@ -39,9 +50,9 @@ export const perfil={
 <p class="nota" style="margin:8px 0 0"><span class="dia ok"></span> meta cumplida · <span class="dia algo"></span> practicaste</p></div>
 
 <h2>Por materia</h2>
-${materias.map(m=>{const d=datosMateria(p,m.id);
+${materias.filter(m=>!m.proximo).map(m=>{const d=datosMateria(p,m.id);
   return `<div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${m.icono||''} ${m.nombre}</h3>${boton({texto:'Abrir',go:rutaMateria(m),clase:'ghost btn-chico'})}</div>
-<div style="margin-top:10px">${htmlNivel(d.xp)}</div></div>`}).join('')}
+<div style="margin-top:10px">${htmlNivel(d.xp)}</div>${htmlRetirados(p,m)}</div>`}).join('')}
 
 <h2>Ajustes</h2>
 <div class="card">
@@ -80,6 +91,8 @@ ${hoyN?`<button class="tarjeta-nav" data-go="repaso"><span class="icono" aria-hi
     const h=document.getElementById('rec-hora');h?.addEventListener('change',()=>{if(h.value)activarRecordatorio(true,h.value)})},
   async alClic(t,ir,repintar){
     if(await clicRespaldo(t))return true;
+    if(t.dataset.reactivar){const [mid,tid]=t.dataset.reactivar.split('|'),m=materias.find(x=>x.id===mid),tm=m?.temas?.find(x=>x.id===tid);
+      reactivarBasicos(mid,tm?tm.lecciones.map(h=>h.id):undefined);repintar();return true}
     if(t.dataset.recordatorio){await activarRecordatorio(t.dataset.recordatorio==='true');repintar();return true}
     if(t.id==='perfil-instalar'){await instalar();repintar();return true}
     if(t.id==='perfil-invitar'){await invitar();return true}

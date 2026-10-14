@@ -8,7 +8,7 @@
 
 App para estudiar cualquier tema, organizada en **materias**, que aplica métodos de estudio efectivos (ver "Método de aprendizaje"). Todo corre en el navegador: no hay backend y el progreso se guarda en `localStorage`.
 
-- **Jerarquía**: área → materia → tema → habilidad (nodo del camino). Áreas: 🛡️ **Ciberseguridad** (temas Redes, Firewalls, VPN y criptografía, Defensa e incidentes y Herramientas con los simuladores) y 🎯 **Estudio y metas** (Inglés: Gramática, Vocabulario y frases, Hablar y escuchar; Matemáticas: Aritmética y álgebra básica, Álgebra lineal, Cálculo diferencial e integral; Ciencia de datos: Estadística, Probabilidad, Python y pandas, Visualización y Machine learning básico).
+- **Jerarquía**: área → materia → tema → habilidad (nodo del camino). El árbol completo (lo que existe y lo pendiente) está en **`src/contenido/PLAN.md`**, la fuente de verdad del contenido. Áreas: 🛡️ **Ciberseguridad** (Fundamentos de redes, Conmutación y enrutamiento, Firewalls, VPN y criptografía, Seguridad defensiva, Escenarios y herramientas) y 🎯 **Estudio y metas** (Inglés: A1, A2, B1, B2 y Hablar y escuchar; Matemáticas: Aritmética y prealgebra, Álgebra, Trigonometría, Álgebra lineal, Cálculo diferencial, Cálculo integral; Ciencia de datos: Estadística descriptiva, Probabilidad, Inferencia, Python para datos, Machine learning básico; 📚 Lectura, ⚪ próximamente).
 - El recomendador "¿Qué sigue?", el repaso espaciado, la racha y la meta diaria son **globales**: cuentan todas las áreas.
 - **Lecciones**: explicación corta, ejemplos y práctica en rondas, casi toda de producción.
 - **Enganche**: racha de días cumpliendo una meta diaria (ejercicios o minutos), XP y nivel por materia, Repasar con repetición espaciada (SM-2) e intercalada, cofres y jefes en el camino, medallas en Logros, "Continuar donde te quedaste", el cuaderno de 📝 Notas y Perfil.
@@ -26,6 +26,17 @@ Estas reglas se aplican a **todas** las materias. Cualquier lección nueva debe 
 5. **Práctica intercalada y espaciada.** "Repasar" usa **SM-2** (cada ejercicio fallado y cada habilidad dominada tienen su próxima fecha según qué tan bien se recordó) e intercala materias y habilidades (`mezclar` en `repaso.js`). En el camino hay un **cofre** cada 3 habilidades (repaso mezclado de esas tres) y un **jefe** al final de cada tema (mezcla cronometrada).
 6. **Cada error explica.** Al fallar se muestra lo que escribiste, **por qué está mal** (`porque` de cada opción incorrecta o `errores` típicos de la respuesta escrita) y **la regla correcta** (`regla`, obligatoria en cada ejercicio), además de la respuesta correcta. Los aciertos solo muestran "¡Correcto!" para no perder tiempo.
 7. **Resumen propio.** Al dominar una habilidad se pide escribir un resumen de 1–2 frases que se guarda en el progreso (`notas`), se muestra al volver a ella y aparece también en el cuaderno de **📝 Notas**.
+
+### Niveles de profundidad y retos
+
+Cada ejercicio tiene una **profundidad** (independiente de la dificultad 1–5): **básico** (recordar un dato o aplicar una regla directa), **procedimiento** (método de varios pasos), **aplicación** (problema con contexto) o **escenario** (caso real integrador).
+
+- **Generadores**: la profundidad sale de `generadores/profundidad.js` (`PROFUNDIDAD[id].nivel(n, p)`, o `profundidad`/`plantilla` en el propio generador); `crear()` la agrega a cada pregunta. Lecciones: `profundidad` en el ejercicio o en la lección (por defecto básico). Bancos: `PROF_BANCO` en `practica.js`.
+- **Los básicos se retiran**: tras 2 aciertos sin pista en sesiones distintas (`registrarBasico` en `progreso.js`; en generadores aleatorios cuenta por **plantilla**, `g:<gen>:<plantilla>`, y pide además 3 seguidos; en listas fijas por ítem, `gi:`; en lecciones por ejercicio, `l:<ref>`). Vuelven solo como **refuerzo** (una vez, "🔁 Refuerzo de lo básico") al fallar algo de nivel superior de la misma habilidad, o a mano ("Volver a ver lo retirado" en la habilidad y en Perfil, por tema). Si todo lo de una habilidad está retirado, su pantalla lo dice y lleva a los retos.
+- **El repaso** prioriza procedimiento > aplicación/escenario > básico (`PRIORIDAD` en `repaso.js`) y quita los básicos ya retirados.
+- **🎯 Retos y escenarios** (`nucleo/retos.js`, vista `vista-retos.js`, rutas `<materia>/retos` y `<materia>/<tema>/retos`): aplicación y escenarios **no se gastan** (cada intento genera datos nuevos), no mandan fallos al repaso y no entran al repaso diario salvo que el usuario los marque con **⭐** (ref `<materia>/r/<reto>`). Filtros por tema, profundidad y dificultad. Un reto es `{id, materia, tema, titulo, desc, profundidad, dificultad, crear(rng) → [preguntas]}` o `{…, ir:'<ruta>'}` (abre una herramienta o el jefe de una unidad). El id va en el progreso: no lo cambies.
+- **Estado de cada tema** (`nucleo/contenido.js`, chips en la materia y el tema): ✅ completo (cada habilidad con mini explicación, ejemplo resuelto, ejemplo con huecos y ejercicios básicos y de procedimiento; sin "Próximamente"; ≥1 reto), 🟡 en construcción, ⚪ próximamente.
+- `npm run revisar` exige profundidad válida en los 5 niveles de cada generador, que PLAN.md y cada `temas.js` coincidan (mismos temas y nodos en el mismo orden), que cada reto genere preguntas válidas, y avisa de los temas sin retos.
 
 Para no perder tiempo: sesiones de 8 preguntas (5–10 minutos), todo se puede hacer con el teclado (Enter para comprobar y Enter para seguir), cada materia muestra arriba "👉 Lo siguiente para ti" y el examen de ubicación evita estudiar lo que ya sabes.
 
@@ -70,10 +81,14 @@ src/
     METODO.md             El método de estudio explicado (qué hace la app y por qué)
     habilidad.js          Práctica de una habilidad (ejemplo → hueco → solo, adaptación, autoexplicación), cofres y jefes
     actividades.js        Variantes de una pregunta: ejemplo, hueco, opción (solo para introducir), verdadero/falso, error, ¿por qué?
-    practica.js           De dónde salen las preguntas de una habilidad: generador, lección o banco
+    practica.js           De dónde salen las preguntas de una habilidad: generador, lección o banco (evita los básicos retirados)
+    retos.js              🎯 Retos de aplicación y escenarios por materia y tema (no se gastan; ⭐ → repaso)
+    vista-retos.js        Pantalla de retos: filtros, ⭐ y sesión
+    contenido.js          Estado de cada tema (✅ completo · 🟡 parcial · ⚪ próximo) según el PLAN
     camino.js             Estados del camino: desbloqueo, cofres cada 3 habilidades y jefe del tema
     rng.js                Números aleatorios con semilla (para reproducir y probar ejercicios)
-    generadores/          Un generador por habilidad (ver "Escribir un generador") y verificación tolerante (verificar.js)
+    generadores/          Un generador por habilidad (ver "Escribir un generador"), verificación tolerante (verificar.js)
+                          y profundidad.js (nivel de profundidad y plantilla de cada generador)
     ia-preguntas.js       "✨ Pregunta nueva con IA" (opcional, con la clave del usuario; sin clave se usa el generador)
     materias.js           Registro de áreas y materias, rutas canónicas (rutaMateria/rutaTema/rutaLeccion), analizar(ruta)
                           que entiende rutas nuevas y viejas, y búsqueda de ejercicios por referencia de repaso
@@ -121,6 +136,8 @@ src/
                           dialogos.js, frases.js, practica.js, dialogo.js, ia.js + claude.js (API), juego.js
     matematicas/          materia.js + temas.js (lista de temas) + temas/<tema>/NN-….js (antes "algebra": alias y migración v6)
     ciencia-datos/        materia.js + temas.js + temas/<tema>/NN-….js
+    lectura/              materia.js (⚪ próximamente: proximo:true, sin lecciones; modelo de datos documentado)
+  contenido/PLAN.md       Árbol completo del contenido (fuente de verdad; revisar lo compara con cada temas.js)
 ```
 
 ### Rutas (`#hash`)
@@ -140,6 +157,7 @@ src/
 | `<área>/<materia>/<tema>` | Camino de lecciones del tema (`#estudio/matematicas/algebra-lineal`) |
 | `…/<tema>/l/<lección>` | Lección de un tema; sin temas: `<área>/<materia>/l/<lección>` (`#estudio/ingles/l/can`) |
 | `<área>/<materia>/ubicacion` | Examen de ubicación de la materia |
+| `<área>/<materia>/retos` · `…/<tema>/retos` | 🎯 Retos y escenarios de la materia o del tema |
 | `<área>/<materia>/<sección>[/…]` | Sección propia (`#estudio/ingles/hablar/u/presentarte`) |
 
 Un área con una sola materia del mismo id no repite el nivel: Ciberseguridad es `#ciberseguridad/fw`. Todo lo resuelve `analizar()` en `nucleo/materias.js`; genera rutas solo con `rutaMateria`, `rutaTema` y `rutaLeccion` (las vistas de una materia, como Hablar, usan su raíz escrita a mano para no importar el registro). **Las rutas viejas siguen funcionando** y se reescriben a la canónica: `#<materia>/…` (`#ingles/l/can`), `#algebra/…` (alias de Matemáticas), `#<materia>/l/<lección>` de una materia con temas, y las de una palabra (`#fw`, `#vpn`). Arriba de cada pantalla, `htmlMigas()` pinta las migas de pan con un botón atrás grande (al nivel anterior).
@@ -298,7 +316,7 @@ export default {
 
 ## Progreso (`src/nucleo/progreso.js`)
 
-Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 8`; los formatos anteriores se migran solos en `migrar()`. Si cambias el significado de algo guardado, sube `VERSION` y agrega su paso de migración). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
+Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 9`; los formatos anteriores se migran solos en `migrar()`. Si cambias el significado de algo guardado, sube `VERSION` y agrega su paso de migración). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
 
 - **Meta diaria**: 10/20/30 ejercicios o 5/10/15 minutos. Los minutos solo cuentan con la pestaña visible y actividad en el último minuto (`main.js`).
 - **Racha**: días seguidos con la meta cumplida. Si hoy aún no se cumple, sigue viva desde ayer; hoy cuenta en cuanto la meta está cumplida. Los datos dependen del navegador: el APK usa el almacenamiento del navegador que lo abre (Chrome comparte con Chrome; con otro navegador son datos aparte). "Acerca de" muestra dónde se guardan y los últimos 7 días. Si otra pestaña cambia el progreso, el evento `storage` repinta la app.
@@ -308,6 +326,7 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 8`; los formatos a
 - **v6** (áreas y temas): `algebra` pasó a `matematicas` en `materias`, el repaso, las notas, `ultimo` e `historial`. Lo demás ya se guardaba por materia + id de lección, así que agrupar en temas no cambió nada.
 - **Habilidades** (`materias.<id>.lecciones`, por compatibilidad con el nombre anterior): `{dominada, mejor, intentos, via, ult, dias, rating, sesiones}`; `via` indica si se dominó practicando o en la ubicación. En una lección escrita, la ronda que toca es `intentos % rondas.length`.
 - **Repaso** (SM-2, `sm2` en `metodo.js`): `{rep, int, ef, proxima, fallos}`. Fallo → mañana; bien con pista, bien o bien y rápido → el intervalo crece (1, 3 y luego × facilidad). Un ejercicio sale al recordarlo a más de 60 días (`dominados`); las habilidades dominadas (`<materia>/h/<id>`) se siguen repasando con tope de 180 días. Los ejercicios generados se guardan como `<materia>/g/<habilidad>/<nivel>` y en el repaso se genera uno nuevo y parecido.
+- **v9** (profundidad): `basicos` `{'<clave>': {ok:[fechas], racha, retirado, materia, habilidad}}` (claves `g:`, `gi:`, `l:`, `b:`), `refuerzos` `{'<materia>/<habilidad>': true}` (un básico retirado pendiente de volver) y `estrellas` `{'<reto>': fecha}` (retos ⭐, repasados con la ref `<materia>/r/<reto>`). Vacíos al migrar. "Reiniciar todo" conserva `estrellas`.
 - **v8** (cuaderno): `tarjetas` `{[id]: {q, a, nota, titulo, materia, fecha}}`, las líneas `🃏 pregunta | respuesta` de las notas; se repasan con la ref `<materia|notas>/t/<id>` (`ejercicioPorRef`).
 - **Notas** (resúmenes): `{'<materia>/<lección>': {texto, fecha}}`. Se conservan en el progreso y se copian al cuaderno como notas con `origen:'resumen:<clave>'` (si la nota no se tocó, se actualiza al cambiar el resumen; borrarla en el cuaderno borra el resumen). "Reiniciar todo el progreso" conserva notas y tarjetas, porque son texto escrito por el usuario.
 - **Cuaderno** (IndexedDB `ciberlab-notas`, no en `localStorage`): notas `{id, titulo, cuerpo, materia, tema, etiquetas, fijada, creada, editada}` y archivos `{id, nota, blob…}` (fotos JPEG ≤1600 px, dibujos PNG). El formato del cuerpo (negrita, fórmulas `$…$`, casillas, `![](img:<id>)`…) está en `cuaderno/formato.js`. Si cambias la estructura, sube `VERSION` en `db.js` y migra en `onupgradeneeded`. El respaldo `.json` (Perfil y Notas) incluye progreso, ajustes, notas e imágenes, nunca `ciberlab-ia`.
@@ -385,9 +404,32 @@ Hoy cada teléfono guarda lo suyo (no hay cuentas) y se pasa de uno a otro con *
 - **Pantalla de práctica**: siempre con `crearSesion()` (una pregunta por pantalla, ✕, barra de progreso, "Comprobar" abajo, hoja verde o roja con la respuesta correcta, el porqué, el error típico y la regla). No escribas pantallas de ejercicios a mano.
 - El laboratorio de incidentes es **defensivo**: identificar ataques y elegir respuestas, nunca enseñar a ejecutarlos.
 
+## 📚 Lectura (⚪ próximamente)
+
+`src/materias/lectura/materia.js` con `proximo:true`: la tarjeta del área dice "⚪ Próximamente" y su página muestra solo "Agrega tus libros, marca tu avance por capítulos, guarda citas y notas, y repasa ideas clave" con "➕ Agregar libro" deshabilitado. No cuenta para metas ni racha, no sale en la bienvenida, en Perfil ni en "Lo siguiente". Modelo previsto (irá en `materias.lectura.extra`; al implementarlo, sube `VERSION`):
+
+```js
+libros:[{id, titulo, autor, portada?, capitulos:[{titulo, leido}], notas:[{texto, capitulo?, fecha}], citas:[{texto, pagina?, fecha}], meta_paginas_dia}]
+```
+
+## Avance del contenido
+
+Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si se corta el trabajo, continúa desde el último bloque terminado.**
+
+| Bloque | Estado |
+|---|---|
+| 1 · Profundidad (básicos que se retiran, refuerzo, retos ⭐), PLAN.md, estados ✅🟡⚪, 📚 Lectura | ✅ terminado |
+| 2 · Matemáticas: Álgebra → Álgebra lineal → Cálculo diferencial → Cálculo integral; luego Trigonometría y Prealgebra | ⏳ siguiente |
+| 3 · Ciberseguridad: Fundamentos de redes → Firewalls → Seguridad defensiva → resto | pendiente |
+| 4 · Inglés: completar A1 y A2, luego B1 | pendiente |
+| 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | pendiente |
+| 6 · Inglés B2 y temas avanzados | pendiente |
+
+Conteos al terminar el bloque 1: 22 temas (✅ 0 · 🟡 15 · ⚪ 7), 50 generadores, 2 bancos, 15 retos (8 de Ciberseguridad, 7 de Inglés). Meta por habilidad de Matemáticas: 2 ejemplos resueltos, 1 con huecos, generador de 5 niveles con ≥3 plantillas por nivel, ≥3 errores típicos; por tema ≥3 aplicaciones, ≥1 escenario y un simulacro de 10–15 preguntas. Por unidad de Inglés: escucha de 80–150 palabras con 5 preguntas, ≥12 chunks, 2 gramáticas con generador, 2 diálogos, pronunciación, 4-3-2, jefe, ≥40 palabras de vocabulario y ≥3 lecturas graduadas por nivel.
+
 ## Calidad
 
-- `npm run revisar` (también lo corre la publicación): método de las lecciones, jerarquía (áreas, temas, nodos, enlaces a secciones, ids), contenido de habla de Inglés, migración del progreso y los 50 generadores (200 ejercicios por nivel que pasan su `verificar`, fórmulas KaTeX válidas, regla y variedad).
+- `npm run revisar` (también lo corre la publicación): método de las lecciones, jerarquía (áreas, temas, nodos, enlaces a secciones, ids), contenido de habla de Inglés, migración del progreso, los 50 generadores (200 ejercicios por nivel que pasan su `verificar`, fórmulas KaTeX válidas, regla, profundidad y variedad), PLAN.md ↔ temas.js y los retos.
 - `npm run calidad` (`scripts/calidad.mjs`) detecta textos encimados comparando los rectángulos de cada texto visible (`getClientRects`), además de scroll horizontal y toques chicos. Evita anchos fijos y posiciones absolutas en elementos con texto; usa filas con `flex-wrap` (como el Mapa MCER). No reutilices nombres de clase genéricos entre secciones (`.casilla` del mapa chocó con las casillas del cuaderno): usa un prefijo (`mapa-`, `nota-`).
 - Antes de publicar un cambio de interfaz, revísalo a **360 × 800**, en claro y en oscuro: sin scroll horizontal, toques ≥ 44 px, fórmulas largas dentro de su caja; y sin conexión (la app, KaTeX y sus fuentes están en la caché del service worker).
 - Si cambias el formato guardado, sube `VERSION` en `progreso.js`, agrega su paso en `migrar()` y amplía la comprobación de migración de `revisar` (lecciones dominadas, XP, racha, repasos, notas, medallas; los ajustes y la clave de IA viven en otras claves y no se tocan).

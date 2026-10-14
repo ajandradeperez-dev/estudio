@@ -167,7 +167,7 @@ body.sesion-activa .aviso{bottom:calc(96px + env(safe-area-inset-bottom))}
 /* ---------- cuaderno: lista ---------- */
 .buscar{display:block;margin:var(--s3) 0 var(--s2)}
 .filtros{display:flex;gap:var(--s2);overflow-x:auto;padding-bottom:4px;margin:0 0 var(--s2);scrollbar-width:none}
-.chip-filtro{all:unset;flex:none;min-height:44px;padding:0 14px;display:inline-grid;place-items:center;border-radius:var(--r-full);background:var(--surface-2);font-weight:800;font-size:14px;color:var(--muted);cursor:pointer}
+.chip-filtro{all:unset;flex:none;min-height:44px;min-width:44px;box-sizing:border-box;padding:0 14px;display:inline-grid;place-items:center;border-radius:var(--r-full);background:var(--surface-2);font-weight:800;font-size:14px;color:var(--muted);cursor:pointer}
 .chip-filtro[aria-pressed="true"]{background:var(--primary);color:var(--on-primary)}
 .chip-filtro:focus-visible{outline:3px solid var(--primary)}
 .pila-notas{display:flex;flex-direction:column;gap:var(--s2)}
@@ -364,3 +364,12 @@ body{padding-top:var(--franja,0px)}
 .fn-errores ul{padding-left:20px;margin:6px 0}
 .fn-tarjeta{white-space:normal;text-align:left;height:auto;padding:8px 14px}
 @media (min-width:761px){.fn-lado{flex-direction:row;align-items:flex-start}.fn-lado>.mp-fotos{flex:0 0 40%;position:sticky;top:70px}.fn-lado>.mp-fotos .mp-foto{width:100%;height:auto}.fn-edicion{flex:1}}
+
+/* ---------- 🎯 retos y escenarios ---------- */
+.retos-filtros{margin:var(--s3) 0}
+.card.reto h2{margin:0;font-size:18px;flex:1;min-width:0}
+.reto-cab{display:flex;align-items:flex-start;gap:var(--s2)}
+.reto-pie{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;margin:0 0 var(--s3)}
+.btn-icono.estrella{color:var(--muted)}
+.btn-icono.estrella.activa{color:var(--warn)}
+.contexto{background:var(--area-soft,var(--surface-2));border-radius:var(--r2);padding:var(--s2) var(--s3);margin:0 0 var(--s2)}

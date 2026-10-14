@@ -7,14 +7,14 @@
    - Dominio: ≥80 % de las últimas 10 respuestas sin pista y práctica en 2 días distintos. Al dominarla: resumen para Mis notas.
    También: cofres (repaso intercalado de 3 habilidades) y jefe del tema (mezcla cronometrada). */
 import {$,esc} from '../utilidades.js';
-import {progreso,datosMateria,datosHabilidad,registrarEjercicio,registrarRespuesta,cerrarSesionHabilidad,guardarNota,abrirCofre,guardarJefe,sumarXP} from './progreso.js';
+import {progreso,datosMateria,datosHabilidad,registrarEjercicio,registrarRespuesta,cerrarSesionHabilidad,guardarNota,abrirCofre,guardarJefe,sumarXP,basicoRetirado,registrarBasico,pedirRefuerzo,tomarRefuerzo,retiradosDe,reactivarBasicos} from './progreso.js';
 import {SESION,ULTIMAS,DIAS_DOMINIO,DOMINIO,estadoDominio,nivelDe,frases} from './metodo.js';
 import {boton,chip,puntos,cabecera,barra,aviso} from './ui.js';
 import {agregarAlTema,bloqueExplicacion,crearNota} from './cuaderno/notas.js';
 import {crearSesion} from './sesion.js';
 import {htmlCierre} from './cierre.js';
 import {crearRng} from './rng.js';
-import {fuentes,generadorDe,preguntaHabilidad,ejerciciosDe} from './practica.js';
+import {fuentes,generadorDe,preguntaHabilidad,ejerciciosDe,preguntaDeBasico,profundidadLeccion,claveBasicoLeccion} from './practica.js';
 import {crear} from './generadores/index.js';
 import {deBanco} from './ejercicios.js';
 import {comoEjemplo,comoHueco,comoOpcion,comoPorque,variar} from './actividades.js';
@@ -22,6 +22,7 @@ import {tema as temaDe,areaDe,rutaMateria,rutaTema,rutaLeccion} from './materias
 import {cofresTema} from './camino.js';
 import {conFormulas} from './formula.js';
 import {preguntaIA,iaDisponible,explicarIA} from './ia-preguntas.js';
+import {retosDe} from './retos.js';
 
 const tonoDe=m=>{const a=areaDe(m);return a.tono||a.id};
 export const teoriaLeccion=l=>`${(l.explicacion||[]).map(p=>`<p class="lec-p">${conFormulas(p)}</p>`).join('')}
@@ -44,15 +45,27 @@ export function faltaDominio(e){
 // Reglas de otras habilidades de la materia (opciones de "¿por qué?")
 const otrasReglas=(m,h)=>m.lecciones.filter(x=>x.id!==h.id).flatMap(x=>{const g=generadorDe(x);if(g)try{return [crear(x.gen,1).regla]}catch(e){}return (x.rondas||[]).flat().map(e=>e.regla)}).filter(Boolean).slice(0,40);
 
+/* ---------- niveles de profundidad ---------- */
+// Un básico bien respondido cuenta para retirarlo; un error en algo de nivel superior pide un refuerzo de lo básico
+export function registrarProfundidad(p,r,st,materia,habilidad){
+  if(p.basico)registrarBasico(p.basico,r,{sesion:st?.id||'s',materia,habilidad});
+  else if(!r.correcto&&p.profundidad&&p.profundidad!=='basico')pedirRefuerzo(materia,habilidad);
+}
+
 /* ---------- la sesión de una habilidad ---------- */
 function sesionHabilidad(m,h,{salir,volver,alTerminar}){
   const d0=datosHabilidad(progreso(),m.id,h.id),nueva=!d0||!(d0.sesiones||d0.ult?.length),fs=fuentes(h),gen=fs.includes('gen');
   const rng=crearRng(),vistos=new Set(),nivel=()=>nivelDe(datosHabilidad(progreso(),m.id,h.id)?.rating||1);
   // Lección: la ronda que toca, en orden (la opción múltiple va primero, para introducir)
-  const ronda=h.rondas?.length?ejerciciosDe(m,h).filter(x=>h.rondas[(d0?.intentos||0)%h.rondas.length].includes(x.ej)):[];
+  // Los básicos ya retirados (bien en 2 sesiones distintas) no vuelven a salir: ver progreso.js → registrarBasico
+  const retirados={has:k=>basicoRetirado(k)};
+  const ronda=h.rondas?.length?ejerciciosDe(m,h).filter(x=>h.rondas[(d0?.intentos||0)%h.rondas.length].includes(x.ej))
+    .filter(x=>!(profundidadLeccion(h,x.ej)==='basico'&&basicoRetirado(claveBasicoLeccion(x.ref)))):[];
   let previos=nueva&&gen?['ejemplo','hueco']:[],k=0,porqueHecho=false,ind=0,okInd=0,res=null;
   const total=()=>previos.length+SESION+(porqueHecho?1:0);
   const cola=[];
+  // refuerzo: tras fallar un ejercicio de nivel superior de esta habilidad, vuelve una vez un básico retirado
+  if(tomarRefuerzo(m.id,h.id)){const k=retiradosDe(m.id,h.id)[0],q=k&&preguntaDeBasico(m,h,k);if(q)cola.push({...q,cuenta:true,etiqueta:'🔁 Refuerzo de lo básico'})}
   function siguiente(st){
     if(cola.length)return cola.shift();
     const ult=st.historial.at(-1);
@@ -69,10 +82,11 @@ function sesionHabilidad(m,h,{salir,volver,alTerminar}){
     let p;
     // tras un error (o "No entendí"), uno más fácil y del mismo tipo
     const falló=ult&&!ult.r.correcto&&ult.p.cuenta||st.facil;
-    if(ronda.length&&!(falló&&gen)){const x=ronda.shift();vistos.add(x.ref);p={...deBanco(x.ej),ref:x.ref,habilidad:h.id,materia:m.id}}
-    else if(gen){p=preguntaHabilidad(m,h,{nivel:st.facil?Math.max(1,nivel()-1):nivel(),fuente:'gen',vistos,rng});st.facil=false;
-      p=ind===1&&nueva?(comoOpcion(p,rng)||p):variar(p,k++,rng)}
-    else p=preguntaHabilidad(m,h,{nivel:nivel(),vistos,rng});
+    if(ronda.length&&!(falló&&gen)){const x=ronda.shift(),prof=profundidadLeccion(h,x.ej);vistos.add(x.ref);
+      p={...deBanco(x.ej),ref:x.ref,habilidad:h.id,materia:m.id,profundidad:prof,basico:prof==='basico'?claveBasicoLeccion(x.ref):null}}
+    else if(gen){p=preguntaHabilidad(m,h,{nivel:st.facil?Math.max(1,nivel()-1):nivel(),fuente:'gen',vistos,rng,retirados});st.facil=false;
+      if(p)p=ind===1&&nueva?(comoOpcion(p,rng)||p):variar(p,k++,rng)}
+    else p=preguntaHabilidad(m,h,{nivel:nivel(),vistos,rng,retirados});
     if(!p)return null;
     return {...p,cuenta:!p.intro};
   }
@@ -83,9 +97,10 @@ function sesionHabilidad(m,h,{salir,volver,alTerminar}){
     siguiente,
     explicarIA:iaDisponible()?(p,entrada)=>explicarIA(m,h,p,entrada):null,
     ia:iaDisponible()&&gen?async()=>{const q=await preguntaIA(m,h,nivel());return q?{...q,cuenta:true,habilidad:h.id,materia:m.id}:null}:null,
-    responder(p,r){
+    responder(p,r,st){
       if(p.noCuenta)return {};
       const bien=r.correcto&&!r.pista,xp=r.correcto?(r.pista?5:10):0;
+      if(p.cuenta)registrarProfundidad(p,r,st,m.id,h.id);
       if(p.cuenta){if(bien)okInd++;
         const e=registrarRespuesta(m.id,h.id,r);
         registrarEjercicio({materia:m.id,ref:p.ref,correcto:bien,xp});
@@ -128,6 +143,9 @@ export function vistaHabilidad(m,h){
     vista(){
       if(ses)return ses.vista();
       const d=datosHabilidad(progreso(),m.id,h.id),e=estadoDominio(d||{}),nueva=!d||!(d.sesiones||d.ult?.length),nota=progreso().notas[`${m.id}/${h.id}`];
+      // Todo lo de esta habilidad era básico y ya está retirado: no hay nada nuevo que practicar aquí
+      const todoRetirado=!fuentes(h).includes('gen')&&!fuentes(h).includes('banco')&&retiradosDe(m.id,h.id).length>0
+        &&!preguntaHabilidad(m,h,{nivel:5,retirados:{has:k=>basicoRetirado(k)}});
       const explicacion=h.explicacion?.length?teoriaLeccion(h):g?.explicacion?`<p class="lec-p">${conFormulas(g.explicacion)}</p>`:'';
       return `<div class="area-${tono}"><p class="etiqueta-actividad">${t?`${t.icono} ${t.titulo}`:m.nombre}</p>
 <h1>${h.titulo}</h1>${h.resumen?`<p class="lead">${h.resumen}</p>`:''}
@@ -135,14 +153,18 @@ export function vistaHabilidad(m,h){
 ${explicacion?`<div class="card">${explicacion}</div>`:''}
 <div class="row hoja-acciones">${explicacion?'<button type="button" class="btn ghost btn-chico" id="hab-nota-exp">📝 Guardar explicación</button>':''}<button type="button" class="btn ghost btn-chico" id="hab-nota-nueva">🗒️ Nota nueva del tema</button></div>
 ${nota?`<div class="card nota-propia"><div class="ej-k">Tu resumen</div>${esc(nota.texto)}</div>`:''}
-<div style="margin-top:20px">${boton({texto:nueva&&g?'Empezar con un ejemplo':'Practicar',id:'hab-empezar',clase:'ancho area'})}</div>
-<p class="nota" style="text-align:center;margin-top:8px">${SESION} preguntas · unos 5 minutos</p>
+${todoRetirado?`<div class="card" style="margin-top:20px"><p><b>✅ Ya dominas lo básico de esta habilidad.</b> Lo acertaste sin pista en sesiones distintas, así que ya no sale en la práctica: volverá solo como refuerzo si fallas algo más difícil.</p>
+${t&&retosDe(m.id,t.id).length?boton({texto:'🎯 Retos y escenarios del tema',go:`${rutaTema(m,t)}/retos`,clase:'ancho area'}):''}
+<div style="margin-top:8px">${boton({texto:'🔁 Volver a ver lo retirado',id:'hab-reactivar',clase:'ghost ancho'})}</div></div>`
+:`<div style="margin-top:20px">${boton({texto:nueva&&g?'Empezar con un ejemplo':'Practicar',id:'hab-empezar',clase:'ancho area'})}</div>
+<p class="nota" style="text-align:center;margin-top:8px">${SESION} preguntas · unos 5 minutos</p>`}
 ${h.herramienta&&m.secciones?.[h.herramienta]?`<div style="margin-top:12px">${boton({texto:`🔧 Abrir: ${m.secciones[h.herramienta].titulo}`,go:`${rutaMateria(m)}/${h.herramienta}`,clase:'ghost ancho'})}</div>`:''}</div>`;
     },
     alMostrar(){ses?.alMostrar()},
     async alClic(t2,ir,repintar){
       if(t2.id==='hab-empezar'||t2.id==='hab-otra'){empezar();repintar();window.scrollTo(0,0);return true}
       if(t2.id==='lec-guardar-nota'){guardarResumen(m.id,h.id);return true}
+      if(t2.id==='hab-reactivar'){reactivarBasicos(m.id,[h.id]);aviso('🔁 Lo básico vuelve a salir en la práctica.');repintar();return true}
       if(t2.id==='hab-nota-exp'){t2.disabled=true;const g=generadorDe(h),html=h.explicacion?.length?h.explicacion.join('<br>'):g?.explicacion||'';
         try{const n=await agregarAlTema({materia:m.id,habilidad:h.id},bloqueExplicacion(m,h,html));t2.textContent='✅ Guardada';aviso(`📝 Guardado en «${n.titulo}»`)}catch(e){t2.disabled=false;aviso('No se pudo guardar la nota.')}return true}
       if(t2.id==='hab-nota-nueva'){const n=await crearNota({materia:m.id,tema:h.tema||null,cuerpo:`[${h.titulo}](#${rutaLeccion(m,h)})
@@ -160,10 +182,11 @@ function sesionMezcla(m,hs,{titulo,salir,n,crono,sinPistas,fin}){
     titulo,tono:tonoDe(m),salir,crono,sinPistas,materia:m.id,
     total:()=>n,
     siguiente:st=>{if(st.i>=n)return null;const h=hs[k++%hs.length];
-      const p=preguntaHabilidad(m,h,{nivel:nivelDe(datosHabilidad(progreso(),m.id,h.id)?.rating||1),vistos,rng});
+      const p=preguntaHabilidad(m,h,{nivel:nivelDe(datosHabilidad(progreso(),m.id,h.id)?.rating||1),vistos,rng,retirados:{has:x=>basicoRetirado(x)}});
       return p&&{...p,cuenta:true,etiqueta:p.etiqueta||h.titulo}},
-    responder(p,r){
+    responder(p,r,st){
       const bien=r.correcto&&!r.pista,xp=r.correcto?(r.pista?5:10):0;
+      registrarProfundidad(p,r,st,m.id,p.habilidad);
       registrarRespuesta(m.id,p.habilidad,r);registrarEjercicio({materia:m.id,ref:p.ref,correcto:bien,xp});
       return {xp};
     },

@@ -17,7 +17,7 @@ const apagar=()=>{try{process.platform==='win32'?execSync(`taskkill /PID ${servi
 await new Promise(r=>setTimeout(r,3500));
 
 // Rutas: las fijas y la de cada materia y tema (del mismo registro que usa la app, leído del texto de temas.js)
-const RUTAS=['','logros','perfil','notas','notas/foto','mias','mias/nueva','acerca','repaso','estudio','ciberseguridad','estudio/ingles','estudio/matematicas','estudio/ciencia-datos','estudio/ingles/hablar'];
+const RUTAS=['','logros','perfil','notas','notas/foto','mias','mias/nueva','acerca','repaso','estudio','ciberseguridad','estudio/ingles','estudio/matematicas','estudio/ciencia-datos','estudio/ingles/hablar','ciberseguridad/retos','ciberseguridad/firewalls/retos','estudio/ingles/hablar-escuchar/retos','estudio/lectura','estudio/matematicas/algebra-basica'];
 for(const [area,mat] of [['ciberseguridad',null],['estudio','ingles'],['estudio','matematicas'],['estudio','ciencia-datos']]){
   const temas=(await import(pathToFileURL(join(raiz,'src','materias',mat||area,'temas.js')).href)).default;
   for(const t of temas)RUTAS.push(mat?`${area}/${mat}/${t.id}`:`${area}/${t.id}`);
@@ -82,7 +82,7 @@ try{
     const mal=m=>fallos.push('Atrás: '+m);
     await p.goto(BASE);await p.waitForSelector('#vista > *');
     const camino=[''];
-    for(const sel of ['[data-go="estudio"]','[data-go="estudio/ingles"]','[data-go="estudio/ingles/gramatica"]','[data-go^="estudio/ingles/gramatica/l/"]']){
+    for(const sel of ['[data-go="estudio"]','[data-go="estudio/ingles"]','[data-go="estudio/ingles/a1"]','[data-go^="estudio/ingles/a1/l/"]']){
       await p.click(`#vista ${sel} >> nth=0`);await p.waitForTimeout(250);camino.push(await ruta());}
     if(new Set(camino).size!==camino.length)mal(`la navegación no avanzó: ${camino.join(' → ')}`);
     for(let i=camino.length-2;i>=0;i--){await atras();const r=await ruta();if(r!==camino[i])mal(`esperaba #${camino[i]} y quedó #${r} (camino ${camino.join(' → ')})`)}

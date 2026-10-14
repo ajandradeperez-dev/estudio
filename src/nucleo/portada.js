@@ -11,6 +11,8 @@ import {estadosTema,cofresTema,cofreAbierto,jefeAbierto,jefeVencido} from './cam
 import {nivelDe,estadoDominio,ULTIMAS} from './metodo.js';
 import {recomendar} from './recomendador.js';
 import {repartoUbicacion} from './metodo.js';
+import {estadoTema,ESTADO} from './contenido.js';
+import {retosDe} from './retos.js';
 
 const secciones=m=>Object.entries(m.secciones||{});
 const dominada=(d,l)=>!!d.lecciones[l.id]?.dominada;
@@ -45,6 +47,7 @@ function niveles(c){
   if(c.tipo==='leccion'){if(c.t)n.push({ruta:rutaTema(m,c.t),txt:`${c.t.icono} ${c.t.titulo}`});return {n,actual:c.l.titulo}}
   if(c.tipo==='cofre'||c.tipo==='jefe'){n.push({ruta:rutaTema(m,c.t),txt:`${c.t.icono} ${c.t.titulo}`});return {n,actual:c.tipo==='cofre'?'🎁 Cofre':'🏆 Jefe'}}
   if(c.tipo==='ubicacion')return {n,actual:'Examen de ubicación'};
+  if(c.tipo==='retos'){if(c.t)n.push({ruta:rutaTema(m,c.t),txt:`${c.t.icono} ${c.t.titulo}`});return {n,actual:'🎯 Retos'}}
   // Sección: el título solo si es su portada; dentro, la sección pone sus propias migas
   const s=m.secciones[c.seccion];
   return {n,actual:c.resto?.length?'':s.titulo};
@@ -104,7 +107,7 @@ export function vistaArea(a){
       const p=progreso();
       return `<div class="area-${tonoDe(a)}">${cabecera({icono:a.icono,titulo:a.nombre,desc:a.descripcion})}
 <div class="lista-nav">${a.materias.map(m=>{const d=datosMateria(p,m.id),{hechas,total}=conteo(d,m.lecciones||[]);
-  return tarjetaNav({go:rutaMateria(m),icono:m.icono||m.sigla,titulo:m.nombre,desc:m.descripcion,pie:total?`${barra(hechas,total)}<span class="nota">${hechas}/${total} dominadas · ${d.xp} XP</span>`:''})}).join('')}</div></div>`;
+  return tarjetaNav({go:rutaMateria(m),icono:m.icono||m.sigla,titulo:m.nombre,desc:m.descripcion,clase:m.proximo?'proximo':'',pie:m.proximo?chip('⚪ Próximamente'):total?`${barra(hechas,total)}<span class="nota">${hechas}/${total} dominadas · ${d.xp} XP</span>`:''})}).join('')}</div></div>`;
     }
   };
 }
@@ -115,12 +118,17 @@ export function vistaMateria(m){
   return {
     titulo:m.nombre,
     vista(){
+      // Materia anunciada (p. ej. 📚 Lectura): solo la pantalla corta con lo que hará
+      if(m.proximo)return `<div class="area-${tono}">${cabecera({icono:m.icono||m.sigla,titulo:m.nombre,desc:'⚪ Próximamente'})}
+<div class="card"><p>${m.intro||m.descripcion}</p>${boton({texto:'➕ Agregar libro',clase:'ancho',extra:'disabled aria-disabled="true"'})}
+<p class="nota" style="text-align:center;margin-top:8px">Próximamente</p></div></div>`;
       const p=progreso(),d=datosMateria(p,m.id),ls=m.lecciones||[],r=recomendar({materia:m.id},p),u=d.ubicacion,k=repartoUbicacion(ls.filter(l=>l.rondas?.length).length).reduce((a,b)=>a+b,0);
       const ss=secciones(m).filter(([k])=>`${rutaMateria(m)}/${k}`!==m.destacado?.ruta),grupos=[...new Set(ss.map(([,s])=>s.grupo))];
       const temas=m.temas?`<h2>Temas</h2><div class="lista-nav">${m.temas.map(t=>{const c=conteo(d,t.lecciones),prox=!t.lecciones.length;
-        const clase=prox&&!t.nodos.some(n=>n.ir)?'proximo':'';
+        const clase=prox&&!t.nodos.some(n=>n.ir)?'proximo':'',e=ESTADO[estadoTema(m,t).estado];
         return tarjetaNav({go:rutaTema(m,t),icono:t.icono,titulo:t.titulo,desc:t.descripcion,clase,
-          pie:prox?(t.nodos.some(n=>n.ir)?`<span class="nota">${t.nodos.filter(n=>n.ir).length} herramientas</span>`:chip('Próximamente')):`${barra(c.hechas,c.total)}<span class="nota">${c.hechas}/${c.total} habilidades${t.proximas.length?` · ${t.proximas.length} pronto`:''}</span>`})}).join('')}</div>`
+          pie:prox?(t.nodos.some(n=>n.ir)?`<span class="nota">${t.nodos.filter(n=>n.ir).length} herramientas</span>`:chip(`${e.icono} ${e.texto}`)):`${barra(c.hechas,c.total)}<span class="nota">${e.icono} ${e.texto} · ${c.hechas}/${c.total} habilidades${t.proximas.length?` · ${t.proximas.length} pronto`:''}</span>`})}).join('')}</div>
+${retosDe(m.id).length?boton({texto:`🎯 Retos y escenarios (${retosDe(m.id).length})`,go:`${rutaMateria(m)}/retos`,clase:'ghost ancho'}):''}`
         :ls.length?`<h2>Lecciones</h2><div class="lista-nav">${ls.map((l,i)=>tarjetaNav({go:rutaLeccion(m,l),icono:dominada(d,l)?'✅':i+1,titulo:l.titulo,desc:l.resumen})).join('')}</div>`:'';
       return `<div class="area-${tono}">${cabecera({icono:m.icono||m.sigla,titulo:m.nombre,desc:m.descripcion})}
 ${r.ruta?htmlSiguiente(r):''}
@@ -159,7 +167,8 @@ export function vistaTema(m,t){
       };
       const n=t.lecciones.length;
       return `<div class="area-${tono}">${cabecera({icono:t.icono,titulo:t.titulo,desc:t.descripcion})}
-${n?`${barra(c.hechas,c.total)}<p class="nota" style="margin-top:6px">${c.hechas}/${c.total} dominadas</p>`:''}
+${n?`${barra(c.hechas,c.total)}<p class="nota" style="margin-top:6px">${c.hechas}/${c.total} dominadas · ${ESTADO[estadoTema(m,t).estado].icono} ${ESTADO[estadoTema(m,t).estado].texto}</p>`:''}
+${retosDe(m.id,t.id).length?boton({texto:`🎯 Retos y escenarios (${retosDe(m.id,t.id).length})`,go:`${rutaTema(m,t)}/retos`,clase:'ghost ancho'}):''}
 <ol class="camino">${t.nodos.map(nodo).join('')}</ol></div>`;
     },
     async alClic(t2){

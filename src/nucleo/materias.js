@@ -11,9 +11,11 @@
    Un área con una sola materia del mismo id (Ciberseguridad) no repite el nivel: #ciberseguridad/fw.
    Rutas viejas que siguen funcionando: #<materia>/… (#ingles/l/can, #algebra/l/expresiones vía alias) y #fw, #vpn… */
 import {ejerciciosLeccion,nivelDe} from './metodo.js';
-import {progreso,datosHabilidad} from './progreso.js';
+import {progreso,datosHabilidad,basicoRetirado} from './progreso.js';
 import {preguntaHabilidad} from './practica.js';
 import {coincide} from './comparar.js';
+import {reto} from './retos.js';
+import {crearRng} from './rng.js';
 
 const ordenar=(a,b)=>(a.orden??99)-(b.orden??99)||a.nombre.localeCompare(b.nombre);
 export const areas=Object.entries(import.meta.glob('../areas/*/area.js',{eager:true}))
@@ -68,11 +70,13 @@ export function analizar(ruta){
   const base={area:a,m};
   const [x,y,z]=segs;
   if(x==='l'&&leccion(m,y)){const l=leccion(m,y);return {...base,tipo:'leccion',ruta:rutaLeccion(m,l),l,t:tema(m,l.tema)}}
+  if(x==='retos'&&!m.secciones?.retos)return {...base,tipo:'retos',ruta:`${rutaMateria(m)}/retos`,t:null};
   if(x==='ubicacion'&&m.lecciones?.length)return {...base,tipo:'ubicacion',ruta:`${rutaMateria(m)}/ubicacion`};
   const t=x&&tema(m,x);
   if(t){
     if(y==='cofre'&&+z>0)return {...base,tipo:'cofre',ruta:`${rutaTema(m,t)}/cofre/${+z}`,t,k:+z};
     if(y==='jefe')return {...base,tipo:'jefe',ruta:`${rutaTema(m,t)}/jefe`,t};
+    if(y==='retos')return {...base,tipo:'retos',ruta:`${rutaTema(m,t)}/retos`,t};
     if(y==='l'&&leccion(m,z)){const l=leccion(m,z);return {...base,tipo:'leccion',ruta:rutaLeccion(m,l),l,t:tema(m,l.tema)}}
     return {...base,tipo:'tema',ruta:rutaTema(m,t),t};
   }
@@ -101,13 +105,18 @@ export function ejercicioPorRef(ref){
   if(!m)return null;
   if(resto[0]==='l'){
     const l=leccion(m,resto[1]),ej=l&&ejerciciosLeccion(l)[+resto[2]];
-    return ej?{materia:m,titulo:l.titulo,ej}:null;
+    return ej?{materia:m,titulo:l.titulo,ej,habilidad:l}:null;
   }
   if(resto[0]==='g'||resto[0]==='h'){
     const h=leccion(m,resto[1]);if(!h)return null;
     const nivel=resto[0]==='g'?+resto[2]||1:nivelDe(datosHabilidad(progreso(),m.id,h.id)?.rating||1);
-    const p=preguntaHabilidad(m,h,{nivel});
+    const p=preguntaHabilidad(m,h,{nivel,retirados:{has:k=>basicoRetirado(k)}});
     return p?{materia:m,titulo:h.titulo,pregunta:{...p,ref,habilidad:h.id}}:null;
+  }
+  // Reto marcado con ⭐ ('<materia>/r/<reto>'): cada vez sale una pregunta nueva del reto
+  if(resto[0]==='r'){
+    const x=reto(resto[1]),l=x?.crear?.(crearRng())||[],p=l[0];
+    return p?{materia:m,titulo:`⭐ ${x.titulo}`,pregunta:{...p,ref,profundidad:x.profundidad}}:null;
   }
   const r=m.ejercicioRepaso?.(resto.join('/'));
   return r?{materia:m,...r}:null;

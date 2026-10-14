@@ -239,6 +239,41 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
   for(const [id,f] of Object.entries(BANCOS)){const l=f();if(!l.length||l.some(x=>!x.ref||!x.regla))mal(`banco ${id}`,'vacío o con ejercicios sin ref o sin regla')}
   console.log(`generadores: ${Object.keys(GENERADORES).length} · ${total} ejercicios generados y verificados · ${Object.keys(BANCOS).length} bancos`);
 }
+// Mis materias: esquema, lector de temarios, emparejamiento, plan (nunca un tema después de su examen) y bancos generados (fixtures, sin API)
+{
+  const imp=r=>import(pathToFileURL(join(raiz,'..',...r.split('/'))).href);
+  const E=await imp('nucleo/mias/esquema.js'),T=await imp('nucleo/mias/temario.js'),EM=await imp('nucleo/mias/emparejar.js'),PL=await imp('nucleo/mias/plan.js');
+  const F=await import(pathToFileURL(join(raiz,'..','..','scripts','fixtures','bancos.mjs')).href),e='mis materias';
+  for(const [k,b] of Object.entries(F.VALIDOS)){const v=E.validarBanco(b);if(!v.ok||v.banco.ejercicios.length!==b.ejercicios.length)mal(e,`el banco de ejemplo «${k}» no pasa: ${v.errores.slice(0,2).join('; ')}`)}
+  const inv=E.validarBanco(F.invalido);if(inv.ok||!inv.errores.some(x=>/sería correcto/.test(x))||!inv.errores.some(x=>/opción correcta/.test(x)))mal(e,'el validador no rechaza el banco inválido');
+  // lector de temarios
+  const l=T.leerTemario('Unidad 1: Límites\n1.1 Definición\n1.2 Laterales\nUnidad 2. Derivadas\n2.1 Regla de la cadena\n  a) Derivación implícita');
+  if(l.length!==2||l[0].temas.length!==2||l[1].temas[0].subtemas[0]!=='Derivación implícita')mal(e,'el lector de temarios no reconoce «Unidad N» con «N.M» y letras');
+  if(T.leerTemario('- A\n- B\n- C')[0]?.temas.length!==3||T.leerTemario('1. X\n1.1 Y\n2. Z')[1]?.titulo!=='Z')mal(e,'el lector de temarios no reconoce viñetas o numeración de dos niveles');
+  // emparejamiento con el catálogo (de los temas.js de cada materia)
+  const cat=[];for(const m of ['ciberseguridad','ingles','matematicas','ciencia-datos']){const t=(await import(pathToFileURL(join(raiz,m,'temas.js')).href)).default;
+    for(const x of t)for(const n of x.nodos.filter(n=>n.id))cat.push({materia:m,id:n.id,titulo:n.titulo||n.id.replace(/-/g,' ')})}
+  for(const [q,esperado] of [['Producto escalar','producto-punto'],['Subnetting','subredes-cidr'],['Derivación implícita','regla-cadena'],['Media, mediana y moda','tendencia-central'],['Past simple','pasado-simple']])
+    if(EM.emparejar(q,cat)?.id!==esperado)mal(e,`«${q}» debería emparejar con ${esperado} (dio ${EM.emparejar(q,cat)?.id})`);
+  if(EM.emparejar('Historia de la computación',cat))mal(e,'empareja un tema que la app no tiene');
+  for(const [k,v] of Object.entries(EM.SINONIMOS))if(!cat.some(h=>`${h.materia}/${h.id}`===k))mal(e,`sinónimos de una habilidad que no existe: ${k}`);
+  // una materia de ejemplo pasa el esquema; el plan con fechas al azar nunca pone un tema el día de su examen o después
+  let s=1;const azar=()=>(s=(s*16807)%2147483647)/2147483647,ent=(a,b)=>a+Math.floor(azar()*(b-a+1));
+  const hoy='2026-03-02';let planes=0;
+  for(let k=0;k<300;k++){
+    const nu=ent(1,4),unidades=Array.from({length:nu},(_,i)=>({id:`u-${i}aa`,titulo:`U${i}`,temas:Array.from({length:ent(1,6)},(_,j)=>({id:`t-${i}${j}aa`,titulo:`T${i}.${j}`,subtemas:[],sabe:azar()<.1,dificil:azar()<.2,habilidad:null,emparejado:'ninguno'}))}));
+    const nx=ent(1,3),fechas=Array.from({length:nx},()=>PL.sumar(hoy,ent(0,45))).sort();
+    const m={formato:1,id:'mp-prueba'+k,nombre:'Prueba',color:'#4652d0',icono:'📘',unidades,disponibilidad:{dias:[...new Set(Array.from({length:ent(1,7)},()=>ent(0,6)))],minutos:[10,20,30,60][ent(0,3)]},
+      examenes:fechas.map((f,i)=>({id:`x-${i}aa`,nombre:`E${i}`,fecha:f,unidades:unidades.filter(()=>azar()<.7).map(u=>u.id).concat(unidades[i%nu].id).filter((x,j,a)=>a.indexOf(x)===j)})),
+      avisos:false,fotos:[],referencias:[],simulacros:[],reportados:{},creada:0,editada:0};
+    if(k===0){const ev=E.validarMateria(m);if(ev.length)mal(e,'una materia de ejemplo no pasa el esquema: '+ev[0])}
+    const plan=PL.planificar(m,{hoy,dominio:t=>azar()<.2?.9:0}),errs=PL.comprobarPlan(m,plan);planes++;
+    if(errs.length){mal(e,`plan ${k}: ${errs[0]}`);break}
+  }
+  const mInv={formato:1,id:'x',nombre:'',color:'rojo',icono:'',unidades:[],examenes:[{id:'x-1aa',nombre:'E',fecha:'mañana',unidades:['u-no']}],disponibilidad:{dias:[9],minutos:1},fotos:[],referencias:[],simulacros:[],reportados:{}};
+  if(E.validarMateria(mInv).length<5)mal(e,'el esquema no rechaza una materia inválida');
+  console.log(`mis materias: 3 bancos de ejemplo válidos, el inválido rechazado, lector y emparejamiento, ${planes} planes al azar sin temas fuera de plazo`);
+}
 // Racha: hoy sin cumplir sigue viva desde ayer; hoy con la meta cumplida suma aunque falte la marca 'ok'
 {
   const P=await import(pathToFileURL(join(raiz,'..','nucleo','progreso.js')).href),e='racha';

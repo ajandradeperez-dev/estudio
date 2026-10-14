@@ -17,7 +17,7 @@ const apagar=()=>{try{process.platform==='win32'?execSync(`taskkill /PID ${servi
 await new Promise(r=>setTimeout(r,3500));
 
 // Rutas: las fijas y la de cada materia y tema (del mismo registro que usa la app, leído del texto de temas.js)
-const RUTAS=['','logros','perfil','notas','acerca','repaso','estudio','ciberseguridad','estudio/ingles','estudio/matematicas','estudio/ciencia-datos','estudio/ingles/hablar'];
+const RUTAS=['','logros','perfil','notas','notas/foto','mias','mias/nueva','acerca','repaso','estudio','ciberseguridad','estudio/ingles','estudio/matematicas','estudio/ciencia-datos','estudio/ingles/hablar'];
 for(const [area,mat] of [['ciberseguridad',null],['estudio','ingles'],['estudio','matematicas'],['estudio','ciencia-datos']]){
   const temas=(await import(pathToFileURL(join(raiz,'src','materias',mat||area,'temas.js')).href)).default;
   for(const t of temas)RUTAS.push(mat?`${area}/${mat}/${t.id}`:`${area}/${t.id}`);

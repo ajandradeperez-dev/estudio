@@ -12,6 +12,7 @@ App para estudiar cualquier tema, organizada en **materias**, que aplica método
 - El recomendador "¿Qué sigue?", el repaso espaciado, la racha y la meta diaria son **globales**: cuentan todas las áreas.
 - **Lecciones**: explicación corta, ejemplos y práctica en rondas, casi toda de producción.
 - **Enganche**: racha de días cumpliendo una meta diaria (ejercicios o minutos), XP y nivel por materia, Repasar con repetición espaciada (SM-2) e intercalada, cofres y jefes en el camino, medallas en Logros, "Continuar donde te quedaste", el cuaderno de 📝 Notas y Perfil.
+- **🎓 Mis materias**: cada quien crea sus materias de la escuela con su temario (escrito, pegado o en foto) y las fechas de examen; la app arma un plan día por día, empareja los temas con la práctica que ya tiene y, con IA opcional, genera lo que falta. Ver "Mis materias" más abajo.
 - **Procedimientos**: cada ejercicio generado trae su solución paso a paso con sus propios números (📖 Ver procedimiento) y una explicación alternativa (🤔 No entendí).
 
 ## Método de aprendizaje
@@ -89,12 +90,16 @@ src/
     app.js                Experiencia de app: bienvenida (3 pantallas la primera vez), Acerca de, instalar (beforeinstallprompt / iPhone),
                           invitar (Web Share + QR con qrcode-generator), avisos "sin conexión" y "versión nueva", recordatorio diario
     usuario.js            'ciberlab-usuario': nombre, materias elegidas (el recomendador las pone primero), bienvenida vista, recordatorio
+    mias/                 🎓 Mis materias: esquema.js (formato y validación estricta), temario.js (leer un temario escrito), emparejar.js
+                          (temas ↔ habilidades de la app, con sinónimos), plan.js (plan hasta cada examen), datos.js (IndexedDB + caché en
+                          memoria, dominio, compartir), vistas.js (lista, asistente, materia, tema, simulacro), ia.js (IA opcional)
     notas.js              Pestaña 📝 Notas: lista (búsqueda, filtros, cuadernos área → materia → tema), editor con barra de formato,
                           fotos, dibujo, dictado, enlaces y tarjetas; modo "repasar nota"; resumen automático del tema; respaldo
     cuaderno/             Datos del cuaderno (sin vistas): db.js (IndexedDB 'ciberlab-notas': notas y archivos; persist()),
                           formato.js (marcas → HTML, sin DOM; tarjetas; deHtml() pasa pasos de la app a texto de nota),
                           notas.js (crear/guardar/borrar, copia de los resúmenes viejos, "📝 Guardar en mis notas" desde el estudio),
-                          medios.js (comprimir fotos, lienzo de dibujo), respaldo.js (exportar/importar TODO en .json, sin la clave de IA)
+                          medios.js (comprimir fotos, lienzo de dibujo), respaldo.js (exportar/importar TODO en .json, sin la clave de IA),
+                          foto.js ("📸 Foto a nota" y "🧠 Resuélvelo conmigo" con IA; sin clave, OCR local con Tesseract.js)
     procedimiento.js      Pantalla "📖 Procedimiento": pasos revelables, lo que cambia resaltado, diagramas, 🔊 y 📝 por paso
     portada.js            Portada (áreas), página de área, de materia (temas), camino de un tema, migas y barra superior
     miprogreso.js         Pestaña Perfil: progreso, meta diaria y ajustes
@@ -127,6 +132,9 @@ src/
 | `acerca` / `bienvenida` | Acerca de (versión, privacidad, invitar con QR) · la bienvenida (sale sola la primera vez, sin progreso) |
 | `notas` | Pestaña Notas: el cuaderno |
 | `notas/n/<id>` · `notas/tema/<materia>/<tema>` | Editor de una nota · resumen automático de un tema |
+| `notas/foto[/<materia>/<tema>]` | 📸 Foto a nota y 🧠 Resuélvelo conmigo (archiva en ese tema) |
+| `mias` · `mias/nueva` · `mias/<id>[/editar]` | Mis materias: lista · asistente · materia (cuenta regresiva, hoy, preparación, plan) · editar |
+| `mias/<id>/t/<tema>` · `mias/<id>/simulacro` · `mias/<id>/preguntar[/<tema>]` | Tema · simulacro de examen · "Pregúntale a tu temario" |
 | `<área>` | Página del área: tarjetas de materias (`#estudio`) |
 | `<área>/<materia>` | Página de la materia: temas (o lecciones), ubicación y secciones (`#estudio/matematicas`) |
 | `<área>/<materia>/<tema>` | Camino de lecciones del tema (`#estudio/matematicas/algebra-lineal`) |
@@ -319,6 +327,25 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 8`; los formatos a
 - Las rutas son con `#hash`, así que Pages no necesita `404.html`.
 - El progreso de la versión publicada vive en el navegador de cada persona (origen `https://<usuario>.github.io`) y es independiente del de `localhost`.
 
+## Mis materias (`src/nucleo/mias/`)
+
+Materias propias del usuario a partir de su temario real. Todo funciona sin IA; la IA (clave propia) lee fotos y genera lo que falta.
+
+- **Asistente de 4 pasos** (`mias/nueva`): nombre, escuela, color e ícono → temario (texto pegado, `leerTemario` reconoce «Unidad 2», «1.», «1.1», romanos, letras y viñetas; fotos adjuntas para transcribir con la foto a la vista o ✨ leer con IA) → exámenes con fecha y unidades, días y minutos por día, avisos → revisar (renombrar, arrastrar ⠿ o ↑↓, borrar, agregar, «✅ Ya lo sé», «🔥 Difícil» y la práctica emparejada, que se cambia eligiendo de la lista).
+- **Formato de una materia** (IndexedDB `materias`, ver el comentario de `esquema.js`): `{formato:1, id:'mp-…', nombre, escuela, color, icono, unidades:[{id:'u-…', titulo, temas:[{id:'t-…', titulo, subtemas, sabe, dificil, habilidad:{materia,id}|null, emparejado}]}], examenes:[{id:'x-…', nombre, fecha, unidades}], disponibilidad:{dias, minutos}, avisos, fotos, referencias, simulacros, reportados}`. Los ids de tema guardan el avance: al editar el texto del temario, los temas con el mismo nombre conservan su id. `validarMateria` es estricta y `npm run revisar` la prueba.
+- **Avance**: un tema emparejado usa la habilidad de la app (el dominio cuenta en los dos lados); uno practicado con su banco generado se guarda como habilidad de la materia propia (`progreso.materias['mp-…'].lecciones['t-…']`, repaso `'<mp-…>/e/<tema>/<ejercicio>'`); «Lo estudié» deja `estudiado` (dominio 0,3); los simulacros suman. `dominioTema` mezcla todo.
+- **Plan** (`plan.js`, puro): se recalcula desde hoy cada vez (se reajusta solo, sin regañar). Cada tema se estudia antes del primer examen en que entra; los últimos días (la última semana si hay ≥ 10 días) son de repaso mezclado y simulacros; los temas difíciles y poco dominados reciben dos sesiones. `comprobarPlan` falla si algo queda el día del examen o después; `npm run revisar` lo prueba con 300 materias al azar. El plan de hoy entra en «👉 Lo siguiente para ti» (antes que lo demás) y cuenta para la meta y la racha. Avisos una semana y un día antes (app abierta y `sw-recordatorio.js`).
+- **Simulacro**: mezcla práctica de la app y ejercicios generados de los temas del examen, con tiempo, sin pistas y sin feedback hasta el final (`crearSesion({sinFeedback:true})`); al final, calificación, revisión de cada error con su procedimiento y resultado guardado.
+- **Compartir**: `paqueteMateria` → `.json` con el temario, las fechas y lo generado (sin fotos ni resultados) por Web Share o descarga; «📥 Importar» en Mis materias. El respaldo completo incluye materias y lo generado.
+
+### IA de Mis materias (`ia.js`, `cuaderno/foto.js`)
+
+- **Modelos** (verificados en la documentación de Anthropic): `claude-haiku-5-5` para generar texto ($0.10 / $0.50 por millón de tokens de entrada / salida) y `claude-sonnet-5-5` solo para fotos ($2 / $10). Cada botón muestra el costo estimado (`costo()`); si pasa de 2 centavos pide confirmar. Las fotos se comprimen (1280 px) y solo se envían al tocar el botón.
+- **Banco generado de un tema** (IndexedDB `generados`, id `'<materia>/<tema>'`): `{leccion:{idea, ejemplo:{enunciado, pasos}, hueco:{enunciado, pasos, pregunta, respuesta, alternativas}}, ejercicios:[{id, nivel:1–3, tipo:'numero'|'expresion'|'texto'|'opcion', enunciado, respuesta, tolerancia?, alternativas?, opciones?, correcta?, pasos:[{que,como,porque,ojo?}], errores:[{valor,por}], regla, pista}]}`. `validarBanco` descarta los ejercicios que no cumplen (la respuesta debe pasar su propia verificación y ningún error típico puede ser correcto) y exige lección completa y ≥ 10 ejercicios en ≥ 2 niveles; si no, se pide de nuevo **una vez** (también si el JSON llega inválido). `aPregunta` lo convierte en pregunta de `sesion.js` (número con tolerancia, expresión equivalente con sus variables, texto con alternativas u opción). Se paga una vez y funciona sin conexión. Etiqueta «✨ Generado con IA: revisa con tu libro o profesor» y «⚠️ Reportar error» (lo marca en `reportados` y lo saca del repaso).
+- **Fixtures**: `scripts/fixtures/bancos.mjs` (trigonométricas, Independencia de México, molaridad, y uno inválido a propósito); `npm run revisar` los valida sin llamar a la API y las pruebas los usan como respuestas simuladas.
+- **📸 Foto a nota**: Sonnet devuelve `{titulo, tema_sugerido, tipo, contenido_markdown, pasos, conceptos_clave, tarjetas, dudas_o_partes_ilegibles, posibles_errores_en_la_foto}`; vista previa editable con la foto, archivada en el tema sugerido (materias propias primero, luego el catálogo); los errores de la foto quedan como `> ⚠️` sin cambiar el texto; «🃏 Crear tarjetas» las agrega al repaso. **🧠 Resuélvelo conmigo**: el primer turno lleva la foto (Sonnet) y los siguientes solo texto (Haiku); preguntas, pistas graduales, el paso completo al segundo error en el mismo paso, solución en formato de procedimiento y 3 ejercicios parecidos (del generador de la app si empareja; si no, con IA y validados).
+- **Sin clave**: todo lo demás funciona; los botones ✨ explican cómo obtenerla. OCR local con Tesseract.js 7 (dependencia exacta, se importa al usarlo; el motor y el idioma se bajan de jsDelivr la primera vez y el service worker los guarda en la caché `ocr`): funciona mal con fórmulas.
+
 ## APK para Android (Trusted Web Activity)
 
 El APK es una **Trusted Web Activity** hecha con Bubblewrap: abre `https://ajandradeperez-dev.github.io/estudio/` a pantalla completa, sin barra del navegador. Como carga la web, **cada push a `main` llega solo a quienes tienen el APK**; solo hay que regenerarlo si cambian el nombre, el ícono, los colores, el paquete o los atajos.
@@ -347,7 +374,7 @@ Hoy cada teléfono guarda lo suyo (no hay cuentas) y se pasa de uno a otro con *
 ## Convenciones
 
 - **Nunca subas claves ni secretos** (API keys de Anthropic u otras, archivos `.env`, tokens) al repositorio: es público. La clave de la conversación con IA la pega el usuario en la app y vive solo en el `localStorage` de su dispositivo. No la escribas en el código, en logs ni en mensajes de error. Revisa `git diff` antes de cada commit.
-- JavaScript puro con módulos ES, sin frameworks. Dependencias de runtime (versión exacta, empaquetadas para funcionar sin conexión): KaTeX (fórmulas) y qrcode-generator (el QR de "Invitar amigos"). Vite solo para desarrollo y build; playwright-core solo para `scripts/iconos.mjs`.
+- JavaScript puro con módulos ES, sin frameworks. Dependencias de runtime (versión exacta, empaquetadas para funcionar sin conexión): KaTeX (fórmulas), qrcode-generator (el QR de "Invitar amigos") y Tesseract.js (OCR sin IA; su motor y el idioma se descargan al usarlo). Vite solo para desarrollo y build; playwright-core solo para `scripts/iconos.mjs`.
 - Estilo compacto: plantillas con template strings y `.map(...).join('')`.
 - Todo texto que escriba el usuario (respuestas, notas) se pasa por `esc()` antes de meterlo en HTML.
 - Los colores siempre salen de las variables CSS (`--accent`, `--ok`, `--bad`…) para que funcione el modo oscuro.
@@ -372,6 +399,6 @@ npm install       # primera vez
 npm run dev       # servidor de desarrollo: http://localhost:5173 (puerto fijo)
 npm run build     # genera dist/
 npm run preview   # sirve dist/ en http://localhost:4173 (puerto fijo)
-npm run revisar   # método, jerarquía, contenido de habla, migración del progreso y los 50 generadores (~10 s)
+npm run revisar   # método, jerarquía, contenido de habla, migración del progreso, los 50 generadores y Mis materias (esquema, plan, fixtures) (~10 s)
 npm run calidad   # 360 y 412 px, claro y oscuro: textos encimados, scroll horizontal y toques < 44 px en Aprender, Logros, Perfil, Notas y cada materia y tema (compila y levanta su propio preview; necesita Chrome o Edge)
 ```

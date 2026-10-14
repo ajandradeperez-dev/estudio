@@ -1,0 +1,61 @@
+{
+  "packageId": "io.github.ajandradeperez.estudio",
+  "host": "ajandradeperez-dev.github.io",
+  "name": "CiberLab",
+  "launcherName": "CiberLab",
+  "display": "standalone",
+  "themeColor": "#4652D0",
+  "themeColorDark": "#12141A",
+  "navigationColor": "#FFFFFF",
+  "navigationColorDark": "#12141A",
+  "navigationDividerColor": "#E6E8EF",
+  "navigationDividerColorDark": "#232733",
+  "backgroundColor": "#FFFFFF",
+  "enableNotifications": true,
+  "startUrl": "/estudio/",
+  "iconUrl": "https://ajandradeperez-dev.github.io/estudio/icons/icon-512.png",
+  "maskableIconUrl": "https://ajandradeperez-dev.github.io/estudio/icons/icon-maskable-512.png",
+  "monochromeIconUrl": "https://ajandradeperez-dev.github.io/estudio/icons/icon-monocromo-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "C:\\Users\\angel\\.ciberlab-firma\\ciberlab.keystore",
+    "alias": "ciberlab"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Repasar",
+      "shortName": "Repasar",
+      "url": "https://ajandradeperez-dev.github.io/estudio/#repaso",
+      "chosenIconUrl": "https://ajandradeperez-dev.github.io/estudio/icons/icon-96.png"
+    },
+    {
+      "name": "Notas",
+      "shortName": "Notas",
+      "url": "https://ajandradeperez-dev.github.io/estudio/#notas",
+      "chosenIconUrl": "https://ajandradeperez-dev.github.io/estudio/icons/icon-96.png"
+    }
+  ],
+  "generatorApp": "unknown",
+  "webManifestUrl": "https://ajandradeperez-dev.github.io/estudio/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://ajandradeperez-dev.github.io/estudio/",
+  "minSdkVersion": 24,
+  "orientation": "any",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "1.0.0"
+}

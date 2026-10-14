@@ -319,6 +319,31 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 8`; los formatos a
 - Las rutas son con `#hash`, así que Pages no necesita `404.html`.
 - El progreso de la versión publicada vive en el navegador de cada persona (origen `https://<usuario>.github.io`) y es independiente del de `localhost`.
 
+## APK para Android (Trusted Web Activity)
+
+El APK es una **Trusted Web Activity** hecha con Bubblewrap: abre `https://ajandradeperez-dev.github.io/estudio/` a pantalla completa, sin barra del navegador. Como carga la web, **cada push a `main` llega solo a quienes tienen el APK**; solo hay que regenerarlo si cambian el nombre, el ícono, los colores, el paquete o los atajos.
+
+- **Configuración**: `android/twa-manifest.json` (lo único de `android/` que se versiona; el proyecto Gradle se genera). Paquete `io.github.ajandradeperez.estudio`, `minSdkVersion` 24 (Android 7.0; la librería de Bubblewrap lo exige).
+- **Llave de firma**: `C:\Users\angel\.ciberlab-firma\` (`ciberlab.keystore`, alias `ciberlab`; contraseña en `contraseñas.txt` y huella en `huella-sha256.txt`). **Nunca** va al repositorio (`.gitignore` bloquea `*.keystore`, `*.jks`, contraseñas, `*.apk`, `*.aab`). Si se pierde, no se pueden publicar actualizaciones con el mismo paquete: hay que tener una copia de respaldo de esa carpeta.
+- **Verificación del dominio**: el repo `ajandradeperez-dev/ajandradeperez-dev.github.io` sirve `/.well-known/assetlinks.json` (paquete + huella SHA-256 del certificado, pública por diseño) y `.nojekyll`. Sin él, Android muestra la barra de dirección. Se comprueba con
+  `https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://ajandradeperez-dev.github.io&relation=delegate_permission/common.handle_all_urls`.
+- **Herramientas** (fuera del repo, en `~/.bubblewrap/`): Temurin JDK 17 **x64** (Bubblewrap exige 17 exacto; en Windows su instalador baja uno de 32 bits que se queda sin memoria con Gradle) y el Android SDK con `build-tools;36.1.0` y `platforms;android-36`. `~/.bubblewrap/config.json` apunta a los dos.
+- **Regenerar** (en Windows, desde `android/`; Bubblewrap 1.25.0 o posterior):
+  1. Sube `appVersionCode` (y `appVersionName`) en `android/twa-manifest.json`; cambia lo que haga falta. Si cambiaste el nombre en `src/config.js`, cámbialo también aquí (`name`, `launcherName`).
+  2. `npx @bubblewrap/cli@1.25.0 update` (regenera el proyecto desde `twa-manifest.json`; acepta la pregunta).
+  3. Con las contraseñas en `BUBBLEWRAP_KEYSTORE_PASSWORD` y `BUBBLEWRAP_KEY_PASSWORD`, el `bin` del JDK 17 al principio del `PATH` (Bubblewrap llama a `jarsigner` por nombre) y **sin** la variable `NoDefaultCurrentDirectoryInExePath` (si existe, `cmd` no encuentra `gradlew.bat`): `npx @bubblewrap/cli@1.25.0 build --skipPwaValidation`.
+  4. Salen `app-release-signed.apk` y `app-release-bundle.aab`. Comprueba la firma con `apksigner verify --print-certs` (la huella debe ser la de `huella-sha256.txt`).
+  5. Publica una Release en este repo con los archivos renombrados a `CiberLab.apk` y `CiberLab.aab` (el enlace de Perfil es `…/releases/latest/download/CiberLab.apk`, de `APK_URL` en `src/config.js`): `gh release create android-<versión> CiberLab.apk CiberLab.aab --latest`.
+- Si algún día cambia la llave (o se sube a Play Store con la firma de Google), agrega la huella nueva a `assetlinks.json` del repo `ajandradeperez-dev.github.io`.
+
+## Sincronizar entre dispositivos (no implementado)
+
+Hoy cada teléfono guarda lo suyo (no hay cuentas) y se pasa de uno a otro con **Exportar todo / Importar**. Si algún día se quiere sincronizar:
+
+- **Supabase** (recomendado: Postgres, autenticación por correo o Google, plan gratis): una tabla `respaldos(usuario uuid, actualizado timestamptz, datos jsonb)` con Row Level Security (`usuario = auth.uid()`), y las fotos en Supabase Storage en una carpeta por usuario. La app subiría el mismo JSON de `cuaderno/respaldo.js` (sin la clave de IA) al cambiar algo (con espera de unos segundos) y lo bajaría al iniciar sesión; para fusionar, gana lo más reciente por nota (`editada`) y, en el progreso, el máximo de XP/racha y la unión de repasos.
+- **Firebase** (Firestore + Auth + Storage) sirve igual: un documento por usuario con el progreso y una subcolección `notas`, con reglas `request.auth.uid == userId`.
+- En ambos casos: la clave pública del proyecto puede ir en el código (no es secreta), pero nunca la de servicio; la sincronización debe ser opcional y la app tiene que seguir funcionando sin conexión.
+
 ## Convenciones
 
 - **Nunca subas claves ni secretos** (API keys de Anthropic u otras, archivos `.env`, tokens) al repositorio: es público. La clave de la conversación con IA la pega el usuario en la app y vive solo en el `localStorage` de su dispositivo. No la escribas en el código, en logs ni en mensajes de error. Revisa `git diff` antes de cada commit.

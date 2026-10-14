@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "katex": "0.18.9",
-    "qrcode-generator": "2.0.4"
+    "qrcode-generator": "2.0.4",
+    "tesseract.js": "7.0.0"
   }
 }

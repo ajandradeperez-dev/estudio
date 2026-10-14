@@ -16,6 +16,8 @@ import {render,alternarCasilla,tarjetasDe,imagenesDe,plano,normal,TARJETA} from 
 import {cuadernoDe,fechaCorta,guardar,crearNota,borrarNotaCompleta,sincronizarResumenes} from './cuaderno/notas.js';
 import {comprimirFoto,guardarImagen,abrirDibujo} from './cuaderno/medios.js';
 import {descargarRespaldo,leerRespaldo,aplicarRespaldo,descargar} from './cuaderno/respaldo.js';
+import {misMaterias,recargarMias} from './mias/datos.js';
+import {vistaFoto} from './cuaderno/foto.js';
 
 const repintar=()=>document.dispatchEvent(new Event('repintar'));
 const opcTex={tex:s=>tex(s)};
@@ -46,7 +48,7 @@ export function activarImportar(alTerminar){
     try{
       const r=await leerRespaldo(f),fecha=new Date(r.fecha).toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'});
       if(!(await confirmar({titulo:'¿Importar este respaldo?',texto:`Es del ${fecha}, con ${r.notas.length} notas y ${r.archivos.length} imágenes. <b>Reemplaza</b> el progreso y las notas de este teléfono.`,si:'Sí, importar',peligro:true})))return;
-      const x=await aplicarRespaldo(r);aviso(`📥 Importado: ${x.notas} notas y ${x.archivos} imágenes`);cache=null;alTerminar?.();
+      const x=await aplicarRespaldo(r);await recargarMias();aviso(`📥 Importado: ${x.notas} notas y ${x.archivos} imágenes`);cache=null;alTerminar?.();
     }catch(e){aviso(e.message||'No se pudo importar el archivo.',4000)}
   });
 }
@@ -84,7 +86,7 @@ function htmlLista(){
     if(!grupos.has(k))grupos.set(k,{icono:c.area?.icono||'🗂️',sub:new Map()});const g=grupos.get(k);
     if(!g.sub.has(k2))g.sub.set(k2,{c,notas:[]});g.sub.get(k2).notas.push(n)}
   return [...grupos].map(([a,g])=>`<h2>${g.icono} ${esc(a)}</h2>${[...g.sub].map(([nombre,{c,notas}])=>`<div class="cuaderno"><div class="cuaderno-cab"><h3>${esc(nombre)}</h3>
-${c.t?`<button class="btn ghost btn-chico" data-go="notas/tema/${c.m.id}/${c.t.id}">📚 Resumen</button>`:''}</div><div class="pila-notas">${notas.map(item).join('')}</div></div>`).join('')}`).join('');
+${c.t?`<button class="btn ghost btn-chico" data-go="notas/tema/${c.m.id}/${c.t.id}">📚 Resumen</button>`:c.propia?`<button class="btn ghost btn-chico" data-go="mias/${c.propia.id}">🎓 Materia</button>`:''}</div><div class="pila-notas">${notas.map(item).join('')}</div></div>`).join('')}`).join('');
 }
 function vistaLista(){
   const filtros=()=>{const etiquetas=[...new Set((cache||[]).flatMap(n=>n.etiquetas||[]))].sort().slice(0,12);
@@ -92,7 +94,7 @@ function vistaLista(){
   return {
     titulo:'Notas',
     alEntrar(){cache=null;cargar()},
-    vista:()=>`<div class="row" style="justify-content:space-between;align-items:center"><h1 style="margin:0">📝 Notas</h1><button type="button" class="btn btn-chico" id="nota-nueva">＋ Nueva</button></div>
+    vista:()=>`<div class="row" style="justify-content:space-between;align-items:center"><h1 style="margin:0">📝 Notas</h1><span class="row"><button type="button" class="btn ghost btn-chico" data-go="notas/foto">📸 Foto a nota</button><button type="button" class="btn btn-chico" id="nota-nueva">＋ Nueva</button></span></div>
 ${enMemoria?'<p class="aviso-linea">⚠️ Este navegador no deja guardar notas: se perderán al cerrar la app (¿modo privado?).</p>':''}
 <label class="buscar"><span class="oculto-visual">Buscar en tus notas</span><input type="search" id="notas-buscar" placeholder="🔎 Buscar en tus notas" value="${esc(buscar)}" autocomplete="off"></label>
 <div class="filtros" role="group" aria-label="Filtrar">${filtros().map(([v,t])=>`<button type="button" class="chip-filtro" data-filtro="${esc(v)}" aria-pressed="${filtro===v}">${t}</button>`).join('')}</div>
@@ -126,6 +128,7 @@ const BARRA=[['negrita','<b>B</b>','Negrita'],['cursiva','<i>I</i>','Cursiva'],[
 function opcionesCuaderno(n){
   const ops=[['','General']];
   for(const m of materias){ops.push([m.id,m.nombre]);for(const t of m.temas||[])ops.push([`${m.id}|${t.id}`,`${m.nombre} · ${t.titulo}`])}
+  for(const m of misMaterias()){ops.push([m.id,`🎓 ${m.nombre}`]);for(const u of m.unidades)for(const t of u.temas)ops.push([`${m.id}|${t.id}`,`🎓 ${m.nombre} · ${t.titulo}`])}
   const actual=n.materia?(n.tema?`${n.materia}|${n.tema}`:n.materia):'';
   return ops.map(([v,t])=>`<option value="${esc(v)}"${v===actual?' selected':''}>${esc(t)}</option>`).join('');
 }
@@ -336,6 +339,7 @@ ${notas===null?'<p class="cargando">Leyendo tus notas</p>':`<article class="nota
 
 // Vista según la subruta de 'notas/…'
 export function vistaNotas(resto=[]){
+  if(resto[0]==='foto')return vistaFoto(resto[1],resto[2]);
   if(resto[0]==='n'&&resto[1])return vistaEditor(resto[1]);
   if(resto[0]==='tema'&&resto[1]&&resto[2])return vistaTema(resto[1],resto[2]);
   return vistaLista();

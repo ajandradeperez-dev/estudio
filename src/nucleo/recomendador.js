@@ -13,6 +13,8 @@ import {habilidadActual,cofresTema,cofreAbierto,jefeAbierto,jefeVencido} from '.
 import {progreso,datosMateria,pendientes,hoy} from './progreso.js';
 import {DOMINIO,estadoDominio} from './metodo.js';
 import {intereses} from './usuario.js';
+import {misMaterias,planDe,proximoExamen,buscarTema} from './mias/datos.js';
+import {diasEntre} from './mias/plan.js';
 
 const nombre=id=>materias.find(m=>m.id===id)?.nombre||id;
 const pct=x=>Math.round(x*100);
@@ -30,7 +32,15 @@ export function recomendar({excluir,materia}={},p=progreso()){
     const top=Object.entries(porMateria).sort((a,b)=>b[1]-a[1])[0];
     candidatos.push({regla:1,titulo:`Repasar ${rep.length} ejercicios`,porque:`Tienes ${rep.length} repasos pendientes${top?` (${top[1]} de ${nombre(top[0])})`:''}: es lo que más fija lo aprendido.`,ruta:'repaso'});
   }
-  // 2. Lo urgente de cada materia
+  // 2. Lo urgente: primero el plan de hoy de cada materia propia ("🎓 Mis materias", hay un examen en puerta) y luego lo de cada materia
+  for(const m of misMaterias()){
+    let plan;try{plan=planDe(m,p)}catch(e){continue}
+    const h=plan.hoy,ex=proximoExamen(m);if(!h||!ex)continue;
+    const n=diasEntre(hoy(),ex.fecha),partes=h.bloques.map(b=>b.tipo==='tema'?`${b.min} min de ${buscarTema(m,b.tema)?.t.titulo||'un tema'}`:b.tipo==='simulacro'?`${b.min} min de simulacro`:`${b.min} min de repaso`);
+    const tema=h.bloques.find(b=>b.tipo==='tema');
+    candidatos.push({regla:2,materia:m.id,titulo:`${m.icono} Hoy en ${m.nombre}: ${partes[0]}`,porque:`Hoy: ${partes.join(' + ')}. ${n===0?`¡Hoy es ${ex.nombre}!`:`Faltan ${n} ${n===1?'día':'días'} para ${ex.nombre}`}.`,
+      ruta:tema?`mias/${m.id}/t/${tema.tema}`:h.bloques.some(b=>b.tipo==='simulacro')?`mias/${m.id}/simulacro`:`mias/${m.id}`});
+  }
   candidatos.push(...extras.filter(c=>c.regla===2));
   // 3. Punto más débil: habilidades practicadas sin dominar con menor acierto reciente, y debilidades que aporta cada materia
   const debiles=[...extras.filter(c=>c.regla===3)];
@@ -66,7 +76,8 @@ export function recomendar({excluir,materia}={},p=progreso()){
   }
   // Lo que eligió estudiar en la bienvenida va primero (sin perder el orden de las reglas)
   const gusta=intereses();
-  if(gusta.length)lista=[...lista.filter(c=>!c.materia||gusta.includes(c.materia)),...lista.filter(c=>c.materia&&!gusta.includes(c.materia))];
+  const elegida=c=>!c.materia||gusta.includes(c.materia)||/^mp-/.test(c.materia);
+  if(gusta.length)lista=[...lista.filter(elegida),...lista.filter(c=>!elegida(c))];
   // Alternancia: tras 3 sesiones seguidas de la misma materia, sugerir otra (primero sus repasos)
   if(cansada){
     const otraRep=Object.entries(porMateria).find(([mid,n])=>mid!==cansada&&n>0);

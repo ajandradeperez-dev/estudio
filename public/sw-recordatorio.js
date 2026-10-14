@@ -9,6 +9,12 @@ const hoy=()=>{const d=new Date();return `${d.getFullYear()}-${dos(d.getMonth()+
 async function revisar(){
   const c=await caches.open(CACHE_REC),r=await c.match(URL_REC);if(!r)return;
   const e=await r.json(),ahora=new Date(),[h,m]=String(e.hora||'20:00').split(':').map(Number);
+  // exámenes de "Mis materias": 7 días y 1 día antes, una vez cada uno
+  if(e.avisosExamen&&Array.isArray(e.examenes)){e.avisados=e.avisados||[];
+    for(const x of e.examenes){const d=Math.round((new Date(x.fecha+'T00:00')-new Date(hoy()+'T00:00'))/864e5),k=`${x.id}@${d}`;
+      if((d===1||d===7)&&!e.avisados.includes(k)){await self.registration.showNotification(d===1?`📅 Mañana: ${x.nombre}`:`📅 En una semana: ${x.nombre}`,
+        {body:d===1?'Haz un simulacro corto y repasa tus temas débiles. ¡Tú puedes!':'Revisa tu plan: esta semana toca repaso y simulacros.',icon:'icons/icon-192.png',badge:'icons/icon-monocromo-512.png',tag:k,data:{url:`./#${x.ruta}`}});e.avisados.push(k)}}
+    await c.put(URL_REC,new Response(JSON.stringify(e),{headers:{'content-type':'application/json'}}));}
   if(!e.activo||e.cumplida===hoy()||e.notificado===hoy()||ahora.getHours()*60+ahora.getMinutes()<h*60+(m||0))return;
   await self.registration.showNotification(e.racha?`🔥 No pierdas tu racha de ${e.racha} ${e.racha===1?'día':'días'}`:'⏰ Hora de estudiar',
     {body:`${e.nombre?e.nombre+', a':'A'}ún no cumples tu meta de hoy en ${e.app||'la app'}. Unos minutos bastan.`,icon:'icons/icon-192.png',badge:'icons/icon-monocromo-512.png',tag:'recordatorio-racha',data:{url:'./#'}});

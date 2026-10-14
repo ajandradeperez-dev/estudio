@@ -2,6 +2,7 @@
    la cola alterna materias y, dentro de cada materia, lecciones o habilidades, en vez de agrupar todo lo de un mismo tema. */
 import {progreso,pendientes,registrarEjercicio,responderRepaso,quitarRepaso,registrarRespuesta,hoy} from './progreso.js';
 import {ejercicioPorRef} from './materias.js';
+import {ejercicioPropio,refPendiente} from './mias/datos.js';
 import {deBanco} from './ejercicios.js';
 import {crearSesion} from './sesion.js';
 import {boton,vacio} from './ui.js';
@@ -14,7 +15,7 @@ const enDias=n=>n===1?'mañana':`en ${n} días`;
 export function mezclar(items){
   const porMateria=new Map();
   for(const x of items){
-    const [mat,...resto]=x.ref.split('/'),grupo=['l','g','h'].includes(resto[0])?resto[1]:resto[0];
+    const [mat,...resto]=x.ref.split('/'),grupo=['l','g','h','e'].includes(resto[0])?resto[1]:resto[0];
     if(!porMateria.has(mat))porMateria.set(mat,new Map());
     const g=porMateria.get(mat); if(!g.has(grupo))g.set(grupo,[]); g.get(grupo).push(x);
   }
@@ -25,9 +26,10 @@ export function mezclar(items){
   }
   return salida;
 }
-// Cola de hoy: los ejercicios que ya no existen (lección borrada) se descartan
+// Cola de hoy: los ejercicios que ya no existen (lección borrada) se descartan; los de materias propias aún sin cargar se esperan
 export function colaRepaso(){
-  return mezclar(pendientes().map(ref=>({ref,...ejercicioPorRef(ref)})).filter(x=>{if(!x.ej&&!x.pregunta)quitarRepaso(x.ref);return x.ej||x.pregunta}));
+  return mezclar(pendientes().filter(ref=>!refPendiente(ref)).map(ref=>({ref,...(/^mp-[^/]+\/e\//.test(ref)?ejercicioPropio(ref):ejercicioPorRef(ref))}))
+    .filter(x=>{if(!x.ej&&!x.pregunta)quitarRepaso(x.ref);return x.ej||x.pregunta}));
 }
 
 let fase='inicio',ses=null;

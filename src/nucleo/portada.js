@@ -2,6 +2,7 @@
    camino de un tema (nodos en zigzag), migas de pan con botón atrás y barra superior (racha y meta del día) */
 import {APP_NOMBRE,APP_MARCA} from '../config.js';
 import {usuario} from './usuario.js';
+import {htmlMiasPortada} from './mias/vistas.js';
 import {esc} from '../utilidades.js';
 import {areas,analizar,areaDe,rutaMateria,rutaTema,rutaLeccion} from './materias.js';
 import {progreso,datosMateria,nivel,racha,estadoHoy} from './progreso.js';
@@ -33,7 +34,7 @@ export function htmlBarraSup(){
 function niveles(c){
   const n=[{ruta:'',txt:'Aprender'}];
   if(c.tipo==='portada')return {n:[],actual:''};
-  if(c.tipo==='especial'||c.tipo==='notas')return {n:[],actual:''}; // el cuaderno pone su propio botón ←
+  if(c.tipo==='especial'||c.tipo==='notas'||c.tipo==='mias')return {n:[],actual:''}; // el cuaderno pone su propio botón ←
   const a=c.area;
   if(c.tipo==='area')return {n,actual:`${a.icono||''} ${a.nombre}`};
   const m=c.m,colapsa=rutaMateria(m)===m.id&&a.id===m.id;
@@ -85,7 +86,7 @@ export const portada={
   vista(){
     const p=progreso(),r=recomendar({},p),c0=continuar(p),c=c0&&c0.ruta!==r.ruta?c0:null;
     const nombre=usuario().nombre;
-    return `${nombre?`<p class="saludo">Hola, ${esc(nombre)} 👋</p>`:''}${htmlSiguiente(r)}
+    return `${nombre?`<p class="saludo">Hola, ${esc(nombre)} 👋</p>`:''}${htmlMiasPortada()}${htmlSiguiente(r)}
 ${c?`<div class="card continuar"><div><div class="sup-k">Continuar</div><h3>${esc(c.titulo)}</h3><span class="nota">${esc(c.detalle)}</span></div>${boton({texto:'Seguir',go:c.ruta,clase:'ghost'})}</div>`:''}
 <h2>¿Qué quieres aprender?</h2>
 <div class="lista-nav">${areas.map(a=>{const x=resumenArea(a,p);

@@ -10,12 +10,14 @@
    materias  {[id]: {xp,
                      lecciones:{[habilidad]:{dominada, mejor, intentos, via:'practica'|'ubicacion',
                                 ult:[1,0…] últimas respuestas (1 = bien sin pista), dias:[fechas distintas de práctica],
-                                rating 1–5 (dificultad adaptativa), sesiones}},
+                                rating 1–5 (dificultad adaptativa), sesiones, estudiado?:fecha ("Lo estudié" en una materia propia)}},
+                     Las materias propias ('mp-…', "🎓 Mis materias") guardan aquí el avance de sus temas ('t-…') con la misma forma.
                      enCurso: sin uso desde v7 (las sesiones son cortas y no se retoman a medias)
                      ubicacion:{fecha, aciertos, total, dominadas:[…]}|null,
                      visitadas:[], extra:{}}}
    repaso    {[ref]: {rep, int, ef, proxima:'AAAA-MM-DD', fallos}}   repetición espaciada SM-2 (ver metodo.js)
-             ref = '<materia>/l/<lección>/<i>' ejercicio de una lección · '<materia>/g/<habilidad>/<nivel>' ejercicio generado
+             ref = '<mp-…>/e/<tema>/<ejercicio>' ejercicio generado de una materia propia ·
+                   '<materia>/l/<lección>/<i>' ejercicio de una lección · '<materia>/g/<habilidad>/<nivel>' ejercicio generado
                    '<materia>/h/<habilidad>' repaso de una habilidad dominada · '<materia>/<clave propia>' (ejercicioRepaso)
    dominados número de ejercicios que salieron del repaso por recordarlos a más de 2 meses
    notas     {'<materia>/<lección>': {texto, fecha}}   resúmenes escritos al dominar cada lección (se copian al cuaderno)
@@ -242,6 +244,8 @@ export function cerrarSesionHabilidad(materia,habilidad,{ok=0,total=0}={}){
     return {...e,dominada:h.dominada,primera,extra,rating:h.rating};
   });
 }
+// "✅ Lo estudié" en un tema de una materia propia sin práctica: cuenta el día y deja una marca (dominio estimado 0,3)
+export function marcarEstudiado(materia,id){cambiar(p=>{const h=registro(datosMateria(p,materia),id);h.estudiado=hoy();h.dias=[...new Set([...(h.dias||[]),hoy()])].slice(-ULTIMAS)})}
 // Cofres (repaso intercalado dentro del camino) y jefes (mezcla cronometrada de un tema)
 export function abrirCofre(materia,id){return cambiar(p=>{const e=datosMateria(p,materia).extra;e.cofres=obj(e.cofres)||{};const primera=!e.cofres[id];e.cofres[id]=hoy();return primera})}
 export function guardarJefe(materia,tema,porcentaje){

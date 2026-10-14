@@ -215,6 +215,8 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
     st.historial.push({p,r});st.i++;
     if(r.correcto&&!r.pista)st.ok++;
     const extra=cfg.responder?.(p,r,st)||{};st.xp+=extra.xp||0;
+    // Simulacro de examen (cfg.sinFeedback): sin hoja ni sonido de acierto/fallo; se corrige todo al final (cfg.fin con st.historial)
+    if(cfg.sinFeedback){avanzar();setTimeout(()=>document.dispatchEvent(new Event('repintar')),0);return}
     (r.correcto?sonar.acierto:sonar.fallo)();vibrar(r.correcto?15:[30,40,30]);
     const lineas=[];
     if(r.evalHabla)lineas.push(htmlFraseEvaluada(r.evalHabla));
@@ -234,7 +236,9 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
     // Procedimiento paso a paso y "No entendí" (explicación alternativa + el siguiente ejercicio más fácil)
     const botones=[p.pasos?.length&&p.tipo!=='error'?'<button type="button" class="btn ghost btn-chico" id="hoja-proc">📖 Ver procedimiento</button>':'',
       !r.correcto&&(p.alternativa||p.regla)?'<button type="button" class="btn ghost btn-chico" id="hoja-noentendi">🤔 No entendí</button>':'',
-      dondeDe(p).materia&&(!r.correcto||p.pasos?.length||p.frase)?'<button type="button" class="btn ghost btn-chico" id="hoja-nota">📝 Guardar en mis notas</button>':''].filter(Boolean);
+      dondeDe(p).materia&&(!r.correcto||p.pasos?.length||p.frase)?'<button type="button" class="btn ghost btn-chico" id="hoja-nota">📝 Guardar en mis notas</button>':'',
+      p.generado?'<button type="button" class="btn ghost btn-chico" id="hoja-reportar">⚠️ Reportar error</button>':''].filter(Boolean);
+    if(p.generado)lineas.unshift('<p class="ia-etiqueta">✨ Generado con IA: revisa con tu libro o profesor si algo no cuadra.</p>');
     if(botones.length)lineas.push(`<div class="row hoja-acciones">${botones.join('')}</div>`);
     const pieXp=[extra.xp?`<span class="hoja-xp">+${extra.xp} XP</span>`:'',extra.nota||''].filter(Boolean).join(' · ');
     if(pieXp)lineas.push(`<p class="hoja-linea nota">${pieXp}</p>`);
@@ -270,6 +274,8 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
       if(t.id==='hoja-seguir'||t.id==='ses-continuar'){avanzar();repintar();window.scrollTo(0,0);return true}
       const ult=st.historial.at(-1);
       if(t.id==='hoja-proc'&&ult){abrirProcedimiento(ult.p,{revelar:true,guardar:guardarPasos(ult.p),idioma:ult.p.lang==='en'?'en-US':'es'});return true}
+      // ejercicio generado con IA con un error: lo marca la materia propia (mias/vistas.js) y sale del repaso
+      if(t.id==='hoja-reportar'&&ult){window.dispatchEvent(new CustomEvent('reportar-ejercicio',{detail:{materia:ult.p.materia,ref:ult.p.ref}}));t.textContent='✅ Reportado';t.disabled=true;return true}
       if(t.id==='hoja-nota'&&ult){t.disabled=true;
         const d=dondeDe(ult.p),bloque=!ult.r.correcto||!ult.p.pasos?.length?bloqueError(ult.p,d,ult.r):bloqueProcedimiento(ult.p,d);
         try{const n=await agregarAlTema(d,bloque);t.textContent='✅ Guardado';aviso(`📝 Guardado en «${n.titulo}»`)}catch(e){t.disabled=false;aviso('No se pudo guardar la nota.')}

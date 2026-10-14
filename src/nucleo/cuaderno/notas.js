@@ -4,9 +4,13 @@ import {todasLasNotas,leerNota,guardarNota,borrarNotaDb,borrarArchivo,pedirPersi
 import {tarjetasDe,imagenesDe,deHtml} from './formato.js';
 import {progreso,sincronizarTarjetas,borrarTarjetasDe,borrarNota,hoy} from '../progreso.js';
 import {materia as buscarMateria,leccion,tema as buscarTema,areaDe,rutaLeccion,rutaLeccionId} from '../materias.js';
+import {miMateria,buscarTema as temaPropio} from '../mias/datos.js';
 
 // Cuaderno de una nota: {area, materia, tema} (objetos del registro o null) y su nombre corto
 export function cuadernoDe(n){
+  // materia propia ("🎓 Mis materias")
+  if(/^mp-/.test(n.materia||'')){const mp=miMateria(n.materia),t=mp&&n.tema&&temaPropio(mp,n.tema)?.t;
+    return {area:{nombre:'Mis materias',icono:'🎓'},m:null,t:null,propia:mp,nombre:mp?(t?`${mp.nombre} · ${t.titulo}`:mp.nombre):'Materia borrada'}}
   const m=n.materia&&buscarMateria(n.materia),t=m&&n.tema&&buscarTema(m,n.tema),a=m&&areaDe(m);
   return {area:a||null,m:m||null,t:t||null,nombre:t?`${m.nombre} · ${t.titulo}`:m?m.nombre:'General'};
 }

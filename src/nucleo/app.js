@@ -10,6 +10,7 @@ import {progreso,cambiarMeta,METAS,estadoHoy,racha,hoy} from './progreso.js';
 import {usuario,guardarUsuario} from './usuario.js';
 import {aviso,boton} from './ui.js';
 import qrcode from 'qrcode-generator';
+import {misMaterias} from './mias/datos.js';
 
 /* ---------- instalar ---------- */
 let eventoInstalar=null;
@@ -77,7 +78,10 @@ export async function sincronizarRecordatorio(){
   if(!('caches' in window))return;
   const u=usuario(),p=progreso(),e=estadoHoy(p);let previo={};
   try{const c=await caches.open(CACHE_REC),r=await c.match(URL_REC);if(r)previo=await r.json()}catch(e){}
-  const estado={...previo,activo:u.recordatorio.activo&&typeof Notification!=='undefined'&&Notification.permission==='granted',hora:u.recordatorio.hora,cumplida:e.ok?hoy():previo.cumplida||'',
+  const permiso=typeof Notification!=='undefined'&&Notification.permission==='granted';
+  // exámenes de "Mis materias" con aviso (una semana y un día antes)
+  const examenes=misMaterias().filter(m=>m.avisos).flatMap(m=>m.examenes.filter(x=>x.fecha>=hoy()).map(x=>({id:`${m.id}/${x.id}`,nombre:`${x.nombre} de ${m.nombre}`,fecha:x.fecha,ruta:`mias/${m.id}`})));
+  const estado={...previo,activo:u.recordatorio.activo&&permiso,avisosExamen:permiso,examenes,avisados:previo.avisados||[],hora:u.recordatorio.hora,cumplida:e.ok?hoy():previo.cumplida||'',
     nombre:u.nombre,racha:racha(p),app:APP_NOMBRE};
   try{const c=await caches.open(CACHE_REC);await c.put(URL_REC,new Response(JSON.stringify(estado),{headers:{'content-type':'application/json'}}))}catch(e){}
   return estado;
@@ -97,8 +101,20 @@ export async function activarRecordatorio(activo,hora=usuario().recordatorio.hor
   else{try{const reg=await navigator.serviceWorker.ready;await reg.periodicSync?.unregister('recordatorio-racha')}catch(e){}}
   return activo;
 }
+// Avisos de examen: 7 días y 1 día antes, una sola vez cada uno (también los da el service worker con la app cerrada)
+async function revisarExamenes(){
+  if(!soporteNotificaciones()||Notification.permission!=='granted')return;
+  const est=await sincronizarRecordatorio();if(!est?.examenes?.length)return;
+  const dias=f=>Math.round((new Date(f+'T00:00')-new Date(hoy()+'T00:00'))/864e5);
+  for(const x of est.examenes){const d=dias(x.fecha),k=`${x.id}@${d}`;
+    if((d===1||d===7)&&!est.avisados.includes(k)){
+      try{const reg=await navigator.serviceWorker.ready;await reg.showNotification(d===1?`📅 Mañana: ${x.nombre}`:`📅 En una semana: ${x.nombre}`,{body:d===1?'Haz un simulacro corto y repasa tus temas débiles. ¡Tú puedes!':'Revisa tu plan: esta semana toca repaso y simulacros.',
+        icon:'icons/icon-192.png',badge:'icons/icon-monocromo-512.png',tag:k,data:{url:`./#${x.ruta}`}});est.avisados.push(k)}catch(e){}}}
+  try{const c=await caches.open(CACHE_REC);await c.put(URL_REC,new Response(JSON.stringify({...est,avisados:est.avisados.slice(-40)})))}catch(e){}
+}
 // Con la app abierta: a la hora elegida, si la meta de hoy no está cumplida, una notificación (una vez al día)
 export async function revisarRecordatorio(){
+  await revisarExamenes();
   const u=usuario();if(!u.recordatorio.activo||!soporteNotificaciones()||Notification.permission!=='granted')return;
   const ahora=new Date(),e=estadoHoy();if(e.ok||ahora.getHours()*60+ahora.getMinutes()<minutos(u.recordatorio.hora))return;
   const est=await sincronizarRecordatorio();if(est?.notificado===hoy())return;
@@ -118,7 +134,7 @@ export function tocaBienvenida(){
   return true;
 }
 export function vistaBienvenida(alTerminar){
-  let paso=0;const u=usuario();let nombre=u.nombre,elegidas=new Set(u.materias);
+  let paso=0;const u=usuario();let nombre=u.nombre,elegidas=new Set(u.materias),materiaPropia=false;
   const puntos=()=>`<div class="bien-puntos" aria-label="Paso ${paso+1} de 3">${[0,1,2].map(i=>`<span class="${i<=paso?'on':''}"></span>`).join('')}</div>`;
   const terminar=(ir,ruta='')=>{guardarUsuario({nombre:nombre.trim().slice(0,40),materias:[...elegidas],bienvenida:true});alTerminar?.();ir(ruta)};
   return {
@@ -129,6 +145,7 @@ export function vistaBienvenida(alTerminar){
 <h1>¡Hola! Soy ${APP_NOMBRE}</h1><p class="intro">Estudia con lecciones cortas, repaso espaciado y una racha diaria. Todo se queda en tu teléfono.</p>
 <label class="campo">¿Cómo te llamas? <span class="nota">(opcional)</span><input id="bien-nombre" value="${esc(nombre)}" autocomplete="given-name" maxlength="40" placeholder="Tu nombre"></label>${pie('Siguiente','bien-sig')}</div>`;
       if(paso===1)return `<div class="bienvenida">${puntos()}<h1>¿Qué quieres estudiar${nombre.trim()?`, ${esc(nombre.trim())}`:''}?</h1><p class="intro">Marca lo que te interesa: te lo recomendaremos primero. Puedes cambiarlo después en Perfil.</p>
+<button type="button" class="bien-materia bien-propia" data-propia aria-pressed="${materiaPropia}"><span aria-hidden="true">🎓</span>¿Tienes una materia que pasar? <span class="nota">Sube tu temario y la fecha del examen: te armo un plan.</span></button>
 ${areas.map(a=>`<h2>${a.icono} ${a.nombre}</h2><div class="bien-materias">${a.materias.map(m=>`<button type="button" class="bien-materia" data-materia="${m.id}" aria-pressed="${elegidas.has(m.id)}"><span aria-hidden="true">${m.icono||m.sigla}</span>${m.nombre}</button>`).join('')}</div>`).join('')}
 ${pie('Siguiente','bien-sig')}</div>`;
       const p=progreso();
@@ -145,7 +162,8 @@ ${pie('Siguiente','bien-sig')}</div>`;
       if(t.id==='bien-atras'){paso--;repintar();window.scrollTo(0,0);return true}
       if(t.dataset.materia){const id=t.dataset.materia;elegidas.has(id)?elegidas.delete(id):elegidas.add(id);t.setAttribute('aria-pressed',String(elegidas.has(id)));return true}
       if(t.dataset.meta){const [tipo,c]=t.dataset.meta.split(':');cambiarMeta(tipo,+c);repintar();return true}
-      if(t.id==='bien-saltar'||t.id==='bien-fin'){terminar(ir);return true}
+      if(t.dataset.propia!==undefined){materiaPropia=!materiaPropia;t.setAttribute('aria-pressed',String(materiaPropia));return true}
+      if(t.id==='bien-saltar'||t.id==='bien-fin'){terminar(ir,materiaPropia&&t.id==='bien-fin'?'mias/nueva':'');return true}
       if(t.dataset.ubicacion){const m=materias.find(x=>x.id===t.dataset.ubicacion);terminar(ir,`${rutaMateria(m)}/ubicacion`);return true}
     }
   };

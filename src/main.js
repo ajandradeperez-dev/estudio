@@ -11,6 +11,8 @@ import {repaso} from './nucleo/repaso.js';
 import {perfil} from './nucleo/miprogreso.js';
 import {logros} from './nucleo/logros.js';
 import {vistaNotas} from './nucleo/notas.js';
+import {vistaMias} from './nucleo/mias/vistas.js';
+import {cargarMias} from './nucleo/mias/datos.js';
 import {vistaUbicacion} from './nucleo/ubicacion.js';
 import {aplicarTema} from './nucleo/ajustes.js';
 import {cerrarHoja,intro,boton,aviso} from './nucleo/ui.js';
@@ -33,6 +35,7 @@ function resolver(ruta){
   if(x.tipo==='portada')return tocaBienvenida()?{...x,tipo:'especial',ruta:'bienvenida',v:vistaBienvenida()}:{...x,v:portada};
   if(x.tipo==='especial')return {...x,v:ESPECIALES[x.ruta]};
   if(x.tipo==='notas')return {...x,v:vistaNotas(x.resto)};
+  if(x.tipo==='mias')return {...x,v:vistaMias(x.resto)};
   if(x.tipo==='area')return {...x,v:vistaArea(x.area)};
   if(x.tipo==='tema')return {...x,v:vistaTema(m,x.t)};
   if(x.tipo==='leccion')return {...x,v:vistaHabilidad(m,x.l),ultimo:true};
@@ -61,7 +64,7 @@ function cabeceraSeccion(m,s){
 let cur,anterior='';
 const PESTANAS=[['','🏠','Aprender'],['repaso','🔁','Repasar'],['notas','📝','Notas'],['logros','🏆','Logros'],['perfil','👤','Perfil']];
 // Pestaña activa: Repasar, Notas (con el editor y los resúmenes), Logros y Perfil; todo lo demás es Aprender
-const pestana=()=>cur.tipo==='notas'?'notas':cur.tipo==='especial'?cur.ruta:'';
+const pestana=()=>cur.tipo==='notas'?'notas':cur.tipo==='especial'?cur.ruta:''; // Mis materias (mias) es parte de Aprender
 function pintar(){
   const inm=!!cur.v.inmersiva;
   document.body.classList.toggle('sesion-activa',inm);
@@ -177,6 +180,9 @@ registerSW({
 const rutaDelHash=()=>{try{return decodeURIComponent(location.hash.slice(1))}catch(e){return ''}};
 // Si alguien cambia el #hash a mano o abre un enlace con la app ya abierta (replaceState no dispara este evento)
 window.addEventListener('hashchange',()=>{const r=rutaDelHash();if(r!==cur.ruta)go(r)});
+// Las materias propias se leen de IndexedDB antes de pintar (el repaso y la portada las necesitan); como mucho 1,5 s de espera
+await Promise.race([cargarMias(),new Promise(r=>setTimeout(r,1500))]);
+window.addEventListener('mias',()=>{pintarNav();if(!cur?.v.inmersiva&&['portada','mias'].includes(cur?.tipo))pintar()});
 // Historial: una entrada base y la actual (ver atras())
 try{history.replaceState({base:1},'',location.href);history.pushState({app:1},'',location.href)}catch(e){}
 go(rutaDelHash());

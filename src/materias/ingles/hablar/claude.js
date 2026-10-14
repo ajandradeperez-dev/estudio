@@ -22,15 +22,16 @@ export class ErrorIA extends Error{constructor(codigo,mensaje){super(mensaje);th
 
 let sinRespaldo=false; // si el servidor rechazó el respaldo ante negativas, no volver a pedirlo en esta sesión
 
-/* Una llamada a Messages con salida JSON garantizada por esquema. Devuelve el objeto ya parseado. */
-export async function pedirJSON({system,messages,schema,maxTokens=4000}){
-  const {clave,modelo}=leerAjustes();
+/* Una llamada a Messages con salida JSON garantizada por esquema. Devuelve el objeto ya parseado.
+   modelo/effort: opcionales (por defecto el elegido en Ajustes y esfuerzo bajo); alUso(usage) recibe los tokens usados. */
+export async function pedirJSON({system,messages,schema,maxTokens=4000,modelo:modeloPedido,effort='low',alUso}){
+  const {clave,modelo:elegido}=leerAjustes(),modelo=modeloPedido||elegido;
   if(!clave)throw new ErrorIA('sin-clave','Falta tu API key de Anthropic. Agrégala en Ajustes.');
   if(typeof navigator!=='undefined'&&navigator.onLine===false)throw new ErrorIA('offline','Sin internet: la conversación con IA necesita conexión. Mientras tanto usa los diálogos guiados, que funcionan sin internet.');
   const respaldo=modelo.startsWith('claude-sonnet')&&!sinRespaldo;
   const cuerpo={model:modelo,max_tokens:maxTokens,system,messages,
     // Charla: esfuerzo bajo = respuestas rápidas y baratas. El esquema garantiza JSON válido.
-    output_config:{effort:'low',format:{type:'json_schema',schema}},...(respaldo?{fallbacks:'default'}:{})};
+    output_config:{effort,format:{type:'json_schema',schema}},...(respaldo?{fallbacks:'default'}:{})};
   const cabeceras={'content-type':'application/json','x-api-key':clave,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true',
     ...(respaldo?{'anthropic-beta':'server-side-fallback-2026-07-01'}:{})};
   let r;
@@ -39,7 +40,7 @@ export async function pedirJSON({system,messages,schema,maxTokens=4000}){
   let datos=null;try{datos=await r.json()}catch(e){}
   if(!r.ok){
     const msg=String(datos?.error?.message||'');
-    if(r.status===400&&respaldo&&/fallback/i.test(msg)){sinRespaldo=true;return pedirJSON({system,messages,schema,maxTokens})}
+    if(r.status===400&&respaldo&&/fallback/i.test(msg)){sinRespaldo=true;return pedirJSON({system,messages,schema,maxTokens,modelo:modeloPedido,effort,alUso})}
     if(r.status===401)throw new ErrorIA('401','La clave no es válida o fue revocada. Revisa que la copiaste completa (empieza con sk-ant-) o crea una nueva.');
     if(r.status===403)throw new ErrorIA('403','Tu clave no tiene permiso para usar este modelo. Prueba con otro modelo en Ajustes.');
     if(r.status===404)throw new ErrorIA('404','Ese modelo no está disponible para tu cuenta. Elige otro en Ajustes.');
@@ -48,6 +49,7 @@ export async function pedirJSON({system,messages,schema,maxTokens=4000}){
     if(r.status===400&&/credit|balance|billing/i.test(msg))throw new ErrorIA('saldo','Tu cuenta de Anthropic no tiene saldo. Agrega créditos en console.anthropic.com → Billing.');
     throw new ErrorIA(String(r.status),`La API respondió con un error (${r.status})${msg?`: ${msg}`:''}.`);
   }
+  try{alUso?.(datos?.usage||null)}catch(e){}
   if(datos?.stop_reason==='refusal')throw new ErrorIA('negativa','Claude prefirió no responder a eso. Prueba con otro tema.');
   if(datos?.stop_reason==='max_tokens')throw new ErrorIA('cortada','La respuesta se cortó. Intenta de nuevo.');
   const texto=(datos?.content||[]).find(b=>b.type==='text')?.text;

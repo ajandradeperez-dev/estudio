@@ -62,6 +62,9 @@ export default defineConfig({
       clientsClaim:true,
       // Las fuentes de Google se guardan la primera vez que se cargan con conexión
       runtimeCaching:[
+        // OCR sin IA (Tesseract.js): el motor y el idioma se bajan de jsDelivr la primera vez que se usan y quedan guardados
+        {urlPattern:({url})=>url.origin==='https://cdn.jsdelivr.net'&&/tesseract/.test(url.pathname),handler:'CacheFirst',
+         options:{cacheName:'ocr',expiration:{maxEntries:20,maxAgeSeconds:60*60*24*365},cacheableResponse:{statuses:[0,200]}}},
         {urlPattern:({url})=>url.origin==='https://fonts.googleapis.com',handler:'StaleWhileRevalidate',
          options:{cacheName:'fuentes-css',cacheableResponse:{statuses:[0,200]}}},
         {urlPattern:({url})=>url.origin==='https://fonts.gstatic.com',handler:'CacheFirst',

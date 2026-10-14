@@ -1,7 +1,7 @@
 /* Respaldo de TODO lo de este teléfono en un archivo .json: progreso (racha, XP, repasos, tarjetas…), ajustes,
-   notas del cuaderno y sus fotos y dibujos (en base64). Sirve para pasar los datos a otro teléfono.
+   notas del cuaderno y sus fotos y dibujos (en base64), y las materias propias con lo generado con IA. Sirve para pasar los datos a otro teléfono.
    Nunca incluye la clave de IA ('ciberlab-ia'): es personal y se vuelve a pegar en el otro dispositivo. */
-import {todasLasNotas,todosLosArchivos,guardarNota,guardarArchivo,vaciar} from './db.js';
+import {todasLasNotas,todosLosArchivos,guardarNota,guardarArchivo,vaciar,todasLasMaterias,todosLosGenerados,guardarMateriaDb,guardarGeneradoDb} from './db.js';
 import {reemplazarProgreso,hoy} from '../progreso.js';
 import {APP_NOMBRE} from '../../config.js';
 
@@ -18,7 +18,8 @@ export async function crearRespaldo(){
   try{usuario=JSON.parse(localStorage.getItem(USUARIO))}catch(e){}
   const notas=await todasLasNotas(),archivos=[];
   for(const a of await todosLosArchivos()){const {blob,...resto}=a;archivos.push({...resto,data:await aDataUrl(blob)})}
-  return {tipo:TIPO,formato:FORMATO,app:APP_NOMBRE,fecha:new Date().toISOString(),progreso,ajustes,usuario,notas,archivos};
+  const materias=await todasLasMaterias().catch(()=>[]),generados=await todosLosGenerados().catch(()=>[]);
+  return {tipo:TIPO,formato:FORMATO,app:APP_NOMBRE,fecha:new Date().toISOString(),progreso,ajustes,usuario,notas,archivos,materias,generados};
 }
 export async function descargarRespaldo(){
   const r=await crearRespaldo(),blob=new Blob([JSON.stringify(r)],{type:'application/json'});
@@ -44,5 +45,7 @@ export async function aplicarRespaldo(r){
   await vaciar();
   for(const n of r.notas)if(n&&typeof n.id==='string')await guardarNota(n);
   for(const a of r.archivos)if(a&&typeof a.id==='string'&&typeof a.data==='string'&&a.data.startsWith('data:image/')){const {data,...resto}=a;await guardarArchivo({...resto,blob:await deDataUrl(data)})}
-  return {notas:r.notas.length,archivos:r.archivos.length};
+  for(const m of Array.isArray(r.materias)?r.materias:[])if(m&&typeof m.id==='string'&&/^mp-/.test(m.id))await guardarMateriaDb(m);
+  for(const g of Array.isArray(r.generados)?r.generados:[])if(g&&typeof g.id==='string')await guardarGeneradoDb(g);
+  return {notas:r.notas.length,archivos:r.archivos.length,materias:(r.materias||[]).length};
 }

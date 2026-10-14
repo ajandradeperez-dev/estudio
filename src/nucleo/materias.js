@@ -47,6 +47,8 @@ export function analizar(ruta){
   if(ESPECIALES.includes(ruta))return {tipo:'especial',ruta};
   // Cuaderno: notas/n/<id> (editor) · notas/tema/<materia>/<tema> (resumen del tema)
   if(ruta.startsWith('notas/'))return {tipo:'notas',ruta,resto:ruta.split('/').slice(1)};
+  // Mis materias: mias · mias/nueva · mias/<id>[/editar|/t/<tema>|/simulacro|/preguntar[/<tema>]]
+  if(ruta==='mias'||ruta.startsWith('mias/'))return {tipo:'mias',ruta,resto:ruta.split('/').slice(1)};
   let segs=ruta.split('/'),a=area(segs[0]),m=null;
   if(a){
     if(colapsa(a)){m=a.materias[0];segs=segs.slice(1)}

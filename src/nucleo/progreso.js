@@ -157,9 +157,12 @@ function comprobarMeta(p){
   if(!d.ok&&cumple(p.meta,d)){d.ok=true;p.mejorRacha=Math.max(p.mejorRacha,racha(p))}
 }
 // Días seguidos cumpliendo la meta. Si hoy todavía no se cumple, la racha sigue viva desde ayer.
+// Hoy cuenta si la meta está cumplida aunque falte la marca 'ok' (igual que el ✅ de la barra superior).
 export function racha(p=progreso()){
   let f=hoy(),n=0;
-  if(!p.dias[f]?.ok)f=sumarDias(f,-1);
+  const d=p.dias[f];
+  if(d&&!d.ok&&cumple(p.meta,dia({...p,dias:{...p.dias}},f)))n++,f=sumarDias(f,-1);
+  else if(!d?.ok)f=sumarDias(f,-1);
   while(p.dias[f]?.ok){n++;f=sumarDias(f,-1)}
   return n;
 }

@@ -107,6 +107,8 @@ document.addEventListener('click',e=>{
   cur.v.alClic?.(t,cur.ir||go,pintar);
 });
 let sincRec=null;
+// Otra pestaña o la app instalada cambió los datos: se vuelve a leer (si no, una pestaña vieja mostraría la racha de antes)
+window.addEventListener('storage',e=>{if(e.key==='ciberlab-progreso'||e.key===null){pintarBarra();pintarNav();if(!cur?.v.inmersiva&&!document.body.classList.contains('editando-nota'))pintar()}});
 window.addEventListener('progreso',()=>{pintarBarra();pintarNav();clearTimeout(sincRec);sincRec=setTimeout(sincronizarRecordatorio,2000)});
 document.addEventListener('repintar',pintar); // p. ej. cuando se acaba el tiempo de un jefe
 

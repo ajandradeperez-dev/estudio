@@ -42,13 +42,13 @@ export function htmlMision(p=progreso()){
 <div><span class="nota">o 1 conversación de ${MISION.turnos} turnos</span><b>${Math.min(m.conv,MISION.turnos)}/${MISION.turnos}</b>${barra(m.conv,MISION.turnos)}</div></div>
 <p class="nota" style="margin:6px 0 0">Cuenta como meta diaria y suma a tu racha.</p></div>`;
 }
-// Mapa MCER: unidades como casillas por nivel
+// Mapa MCER: una fila por nivel con sus unidades como chips (ícono de estado al lado del texto, nunca encima)
 export function htmlMapa(p=progreso()){
   const e=estadoUnidades(p),actual=unidadActual(p);
   return `<div class="mapa">${NIVELES_MCER.map(n=>{const us=UNIDADES.filter(u=>u.nivel===n);
-    return `<div class="mapa-nivel"><span class="mapa-etiqueta">${n}</span><div class="mapa-casillas">${us.length?us.map(u=>{const s=e[u.id],k=UNIDADES.indexOf(u)+1;
-      return `<button class="casilla ${s}${u===actual?' aqui':''}" data-go="${RAIZ}/u/${u.id}" title="${esc(u.titulo)}" aria-label="Unidad ${k}: ${esc(u.titulo)} (${s==='completa'?'completa':s==='actual'?'disponible':'bloqueada'})"><span class="casilla-num">${s==='completa'?'✓':s==='bloqueada'?'🔒':k}</span><span class="casilla-titulo">${esc(u.titulo)}</span></button>`}).join('')
-      :'<span class="casilla proxima">Próximamente</span>'}</div></div>`}).join('')}</div>`;
+    return `<div class="mapa-nivel"><span class="mapa-etiqueta">${n}</span><div class="mapa-unidades">${us.length?us.map(u=>{const s=e[u.id],k=UNIDADES.indexOf(u)+1;
+      return `<button class="mapa-unidad ${s}${u===actual?' aqui':''}" data-go="${RAIZ}/u/${u.id}" aria-label="Unidad ${k}: ${esc(u.titulo)} (${s==='completa'?'dominada':s==='actual'?'actual':'bloqueada'})"><span class="mapa-estado" aria-hidden="true">${s==='completa'?'✓':s==='bloqueada'?'🔒':k}</span><span class="mapa-texto">${esc(u.titulo)}</span></button>`}).join('')
+      :'<span class="mapa-proximo">Próximamente</span>'}</div></div>`}).join('')}</div>`;
 }
 export const htmlMedallas=(p=progreso())=>{const ya=datosMateria(p,'ingles').extra.medallas||{};
   return `<div class="medallas">${MEDALLAS.map(m=>`<span class="medalla${ya[m.id]?' ganada':''}" title="${esc(m.desc)}"><span class="medalla-icono">${ya[m.id]?m.icono:'🔒'}</span>${m.nombre}</span>`).join('')}</div>`};

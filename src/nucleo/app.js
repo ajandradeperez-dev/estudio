@@ -15,6 +15,13 @@ import qrcode from 'qrcode-generator';
 let eventoInstalar=null;
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();eventoInstalar=e;dispatchEvent(new Event('instalable'))});
 addEventListener('appinstalled',()=>{eventoInstalar=null;aviso(`📲 ${APP_NOMBRE} quedó instalada`)});
+// Dónde corre la app: el APK (Trusted Web Activity) se reconoce por el referrer android-app:// al abrir; se recuerda en la sesión
+try{if(document.referrer.startsWith('android-app://'))sessionStorage.setItem('ciberlab-contexto','apk')}catch(e){}
+export function contexto(){
+  let apk=false;try{apk=sessionStorage.getItem('ciberlab-contexto')==='apk'}catch(e){}
+  const ua=navigator.userAgent,nav=/SamsungBrowser/.test(ua)?'Samsung Internet':/EdgA?\//.test(ua)?'Edge':/OPR\//.test(ua)?'Opera':/Firefox\//.test(ua)?'Firefox':navigator.brave?'Brave':/Chrome\//.test(ua)?'Chrome':/Safari\//.test(ua)?'Safari':'tu navegador';
+  return {donde:apk?'el APK':instalada()?'la app instalada':'el navegador',navegador:nav,origen:location.origin};
+}
 export const instalada=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true||document.referrer.startsWith('android-app://');
 export const esIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 export const esAndroid=()=>/android/i.test(navigator.userAgent);
@@ -145,6 +152,16 @@ ${pie('Siguiente','bien-sig')}</div>`;
 }
 
 /* ---------- acerca de ---------- */
+// Dónde se guardan los datos: el APK usa el almacenamiento del navegador que lo abre (Chrome, si es el predeterminado),
+// así que comparte progreso con ese navegador; con otro navegador (Samsung Internet, Edge…) los datos son aparte.
+function htmlDatos(){
+  const c=contexto(),p=progreso(),r=racha(p),dias=Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);
+    const f=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;return {f,ok:!!p.dias[f]?.ok,l:d.toLocaleDateString('es',{weekday:'narrow'})}});
+  return `<p style="margin-top:0">Estás usando ${APP_NOMBRE} desde <b>${c.donde}</b> (${esc(c.navegador)}). Tu progreso y tus notas se guardan en el almacenamiento de <b>${esc(c.navegador)}</b> para <code>${esc(c.origen)}</code>.</p>
+<p class="nota">El APK guarda sus datos en el navegador que lo abre (normalmente Chrome): si Chrome es tu navegador, el APK y Chrome comparten la misma racha y las mismas notas. Si usas otro navegador, cada uno tiene sus propios datos: pásalos con <b>Exportar todo</b> e <b>Importar</b>.</p>
+<p style="margin-bottom:4px">🔥 Racha: <b>${r} ${r===1?'día':'días'}</b> · últimos 7 días:</p><div class="dias-meta" aria-label="Meta cumplida en los últimos 7 días">${dias.map(d=>`<span class="${d.ok?'ok':''}" title="${d.f}${d.ok?' · meta cumplida':''}">${d.l}</span>`).join('')}</div>
+<p class="nota" id="acerca-persistente" style="margin-bottom:0"></p>`;
+}
 export const acerca={
   titulo:'Acerca de',
   vista(){
@@ -152,6 +169,8 @@ export const acerca={
     return `<div class="nota-cab"><button type="button" class="btn-icono" data-go="perfil" aria-label="Volver a Perfil">←</button><span></span><span></span></div>
 <div class="acerca-cab"><img src="icons/icon-192.png" alt="" width="88" height="88"><div><h1 style="margin:0">${APP_NOMBRE}</h1><p class="nota" style="margin:4px 0 0">Versión ${__VERSION__}</p></div></div>
 <p class="intro">Una app para estudiar ciberseguridad, inglés, matemáticas y ciencia de datos con lecciones cortas, repaso espaciado y metas diarias.</p>
+<h2>💾 Tus datos en este dispositivo</h2>
+<div class="card" id="acerca-datos">${htmlDatos()}</div>
 <h2>🔒 Privacidad</h2>
 <div class="card"><p style="margin-top:0"><b>Tus datos se quedan en tu teléfono.</b> No hay cuentas ni servidores: tu progreso, tus notas y tus fotos se guardan solo en este navegador o app.</p>
 <ul class="nota" style="padding-left:20px;margin-bottom:0"><li>Cada persona tiene lo suyo: si compartes la app con amigos, nadie ve tu progreso ni tus notas.</li>
@@ -165,6 +184,7 @@ export const acerca={
 ${!esIOS()?`<a class="btn ghost ancho" href="${APK_URL}" rel="noopener">🤖 Descargar app para Android (APK)</a>`:''}</div>
 <p class="nota" style="margin-top:24px;text-align:center">Código abierto: <a href="${REPO_URL}" target="_blank" rel="noopener">${REPO_URL.replace('https://','')}</a>${u.nombre?` · Hecho para ti, ${esc(u.nombre)}`:''}</p>`;
   },
+  alMostrar(){navigator.storage?.persisted?.().then(x=>{const el=document.getElementById('acerca-persistente');if(el)el.textContent=x?'✅ Almacenamiento persistente: el navegador no borrará estos datos por falta de espacio.':'ℹ️ El navegador podría borrar estos datos si se queda sin espacio: instala la app y haz respaldos de vez en cuando.'}).catch(()=>{})},
   async alClic(t){
     if(t.id==='acerca-invitar'){await invitar();return true}
     if(t.id==='acerca-instalar'){await instalar();return true}

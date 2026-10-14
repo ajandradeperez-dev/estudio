@@ -239,6 +239,16 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
   for(const [id,f] of Object.entries(BANCOS)){const l=f();if(!l.length||l.some(x=>!x.ref||!x.regla))mal(`banco ${id}`,'vacío o con ejercicios sin ref o sin regla')}
   console.log(`generadores: ${Object.keys(GENERADORES).length} · ${total} ejercicios generados y verificados · ${Object.keys(BANCOS).length} bancos`);
 }
+// Racha: hoy sin cumplir sigue viva desde ayer; hoy con la meta cumplida suma aunque falte la marca 'ok'
+{
+  const P=await import(pathToFileURL(join(raiz,'..','nucleo','progreso.js')).href),e='racha';
+  const h=P.hoy(),ay=P.sumarDias(h,-1),an=P.sumarDias(h,-2),base={v:8,meta:{tipo:'ejercicios',cantidad:10},mejorRacha:0,materias:{},repaso:{},notas:{},tarjetas:{},frases:{},historial:[]};
+  const r=dias=>P.racha({...base,dias});
+  if(r({[an]:{ok:true},[ay]:{ok:true},[h]:{ej:3,ok:false}})!==2)mal(e,'hoy sin cumplir debería mantener la racha de ayer');
+  if(r({[ay]:{ok:true},[h]:{ej:12,seg:0,ok:false}})!==2)mal(e,'hoy con la meta cumplida (sin la marca) debería sumar');
+  if(r({[ay]:{ok:true},[h]:{ej:12,ok:true}})!==2||r({[an]:{ok:true},[h]:{ej:1}})!==0)mal(e,'cuenta mal los días seguidos');
+  console.log('racha: se calcula bien con y sin la meta de hoy');
+}
 // Cuaderno: el formato de las notas escapa el HTML del usuario, solo enlaza a la app o a https y lee bien las tarjetas
 {
   const F=await import(pathToFileURL(join(raiz,'..','nucleo','cuaderno','formato.js')).href),e='formato de notas';

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "revisar": "node scripts/revisar-contenido.mjs"
+    "revisar": "node scripts/revisar-contenido.mjs",
+    "calidad": "node scripts/calidad.mjs"
   },
   "devDependencies": {
     "playwright-core": "1.64.0",

@@ -31,7 +31,7 @@ export function enLinea(s,{tex=x=>`<code>${esc(x)}</code>`,repasar=false}={}){
 /* Nota completa → HTML. Las casillas llevan data-casilla con su número de línea para marcarlas con un toque. */
 export function render(texto,opc={}){
   const lineas=String(texto??'').replace(/\r/g,'').split('\n'),out=[];let lista=null,codigo=null;
-  const ETQ={ul:['<ul>','</ul>'],ol:['<ol>','</ol>'],cas:['<ul class="casillas">','</ul>']};
+  const ETQ={ul:['<ul>','</ul>'],ol:['<ol>','</ol>'],cas:['<ul class="nota-casillas">','</ul>']};
   const cerrarLista=()=>{if(lista){out.push(ETQ[lista][1]);lista=null}};
   const abrirLista=t=>{if(lista!==t){cerrarLista();out.push(ETQ[t][0]);lista=t}};
   lineas.forEach((l,i)=>{
@@ -40,7 +40,7 @@ export function render(texto,opc={}){
     let m;
     if((m=l.match(/^\s*[-*] \[( |x|X)\] ?(.*)$/))){
       abrirLista('cas');const hecha=m[1]!==' ';
-      out.push(`<li class="${hecha?'hecha':''}"><button type="button" class="casilla" data-casilla="${i}" role="checkbox" aria-checked="${hecha}" aria-label="${hecha?'Desmarcar':'Marcar'}">${hecha?'☑':'☐'}</button><span>${enLinea(m[2],opc)}</span></li>`);return;
+      out.push(`<li class="${hecha?'hecha':''}"><button type="button" class="nota-check" data-casilla="${i}" role="checkbox" aria-checked="${hecha}" aria-label="${hecha?'Desmarcar':'Marcar'}">${hecha?'☑':'☐'}</button><span>${enLinea(m[2],opc)}</span></li>`);return;
     }
     if((m=l.match(/^\s*[-*] (.*)$/))){abrirLista('ul');out.push(`<li>${enLinea(m[1],opc)}</li>`);return}
     if((m=l.match(/^\s*\d+[.)] (.*)$/))){abrirLista('ol');out.push(`<li>${enLinea(m[1],opc)}</li>`);return}

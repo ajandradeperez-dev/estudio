@@ -123,18 +123,22 @@ tr.hit td{background:var(--success-soft)}
 .mision-cab{display:flex;align-items:center;justify-content:space-between;gap:var(--s2);margin-bottom:var(--s2)}
 .mision-opciones{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--s3)}
 .mision-opciones b{display:block;font-size:20px;font-weight:900;margin:2px 0 4px}
-.mapa{display:flex;flex-direction:column;gap:var(--s2);margin-bottom:var(--s4)}
-.mapa-nivel{display:grid;grid-template-columns:40px 1fr;gap:var(--s2);align-items:start}
-.mapa-etiqueta{font-size:18px;font-weight:900;color:var(--area,var(--primary));padding-top:var(--s3)}
-.mapa-casillas{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:var(--s2)}
-.casilla{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;min-height:76px;padding:var(--s3);border:2px solid var(--line);border-radius:var(--r3);background:var(--surface);cursor:pointer;font-size:14px;font-weight:700;box-shadow:0 3px 0 var(--line)}
-.casilla:focus-visible{outline:3px solid var(--primary)}
-.casilla-num{font-size:20px;font-weight:900}
-.casilla.completa{background:var(--warn-soft);border-color:var(--warn-bg)}
-.casilla.actual{border-color:var(--area,var(--primary))}
-.casilla.aqui{box-shadow:0 3px 0 var(--area,var(--primary))}
-.casilla.bloqueada{opacity:.55}
-.casilla.proxima{cursor:default;opacity:.5;align-items:center;justify-content:center;border-style:dashed}
+.mapa{display:flex;flex-direction:column;gap:var(--s3);margin-bottom:var(--s4)}
+/* una fila por nivel: etiqueta a la izquierda y sus unidades como chips que saltan de línea (sin anchos fijos ni posiciones absolutas) */
+.mapa-nivel{display:flex;gap:var(--s3);align-items:flex-start}
+.mapa-etiqueta{flex:none;width:36px;padding-top:10px;font-size:18px;font-weight:900;color:var(--area,var(--primary))}
+.mapa-unidades{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:var(--s2)}
+.mapa-unidad{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:8px;max-width:100%;min-height:44px;padding:8px 12px;border:2px solid var(--line);border-radius:var(--r2);background:var(--surface);cursor:pointer;font-size:14px;font-weight:800;line-height:1.25;box-shadow:0 3px 0 var(--line)}
+.mapa-unidad:focus-visible{outline:3px solid var(--primary)}
+.mapa-estado{flex:none;display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--surface-2);font-size:13px;font-weight:900}
+.mapa-texto{min-width:0;overflow-wrap:anywhere}
+.mapa-unidad.completa{background:var(--warn-soft);border-color:var(--warn-bg)}
+.mapa-unidad.completa .mapa-estado{background:var(--warn-bg)}
+.mapa-unidad.actual{border-color:var(--area,var(--primary))}
+.mapa-unidad.actual .mapa-estado{background:var(--area,var(--primary));color:var(--on-area,var(--on-primary))}
+.mapa-unidad.aqui{box-shadow:0 3px 0 var(--area,var(--primary))}
+.mapa-unidad.bloqueada{color:var(--muted)}
+.mapa-proximo{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border:2px dashed var(--line);border-radius:var(--r2);color:var(--muted);font-size:14px;font-weight:700}
 .pasos-unidad{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s3)}
 .paso{display:grid;grid-template-columns:40px 1fr;gap:var(--s3);align-items:start;padding:var(--s3);border:2px solid var(--line);border-radius:var(--r3);background:var(--surface)}
 .paso-num{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--surface-2);font-weight:900}
@@ -209,11 +213,11 @@ body.editando-nota main{padding-bottom:calc(72px + var(--teclado,0px))}
 .nota-render .katex{max-width:100%;overflow-x:auto;overflow-y:hidden;vertical-align:middle;display:inline-block}
 .nota-codigo{overflow-x:auto;padding:var(--s3);border-radius:var(--r1);background:var(--code)}
 .nota-img{display:block;max-width:100%;height:auto;border-radius:var(--r2);border:1px solid var(--line);margin:var(--s2) 0;background:#fff}
-.casillas{list-style:none;padding:0}
-.casillas li{display:flex;gap:var(--s2);align-items:flex-start}
-.casillas li.hecha span{text-decoration:line-through;color:var(--muted)}
-.casilla{all:unset;flex:none;width:44px;height:44px;display:grid;place-items:center;font-size:22px;cursor:pointer;margin:-10px 0 -10px -10px}
-.casilla:focus-visible{outline:3px solid var(--primary);border-radius:var(--r1)}
+.nota-casillas{list-style:none;padding:0}
+.nota-casillas li{display:flex;gap:var(--s2);align-items:flex-start}
+.nota-casillas li.hecha span{text-decoration:line-through;color:var(--muted)}
+.nota-check{all:unset;flex:none;width:44px;height:44px;display:grid;place-items:center;font-size:22px;cursor:pointer;margin:-10px 0 -10px -10px}
+.nota-check:focus-visible{outline:3px solid var(--primary);border-radius:var(--r1)}
 .nota-tarjeta{display:flex;flex-direction:column;gap:2px;margin:0 0 var(--s2);padding:var(--s2) var(--s3);border-radius:var(--r2);border:2px dashed var(--primary);background:var(--primary-soft)}
 .nota-tarjeta-q{font-weight:800}
 .nota-tarjeta-a{color:var(--muted)}
@@ -283,3 +287,6 @@ input.hora{min-height:44px;padding:0 var(--s3);border:2px solid var(--line);bord
 /* con la franja de "sin conexión" arriba, el contenido y la barra superior bajan su altura */
 body{padding-top:var(--franja,0px)}
 .barra-sup{top:var(--franja,0px)}
+.dias-meta{display:flex;gap:6px;margin:0 0 var(--s2)}
+.dias-meta span{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--surface-2);color:var(--muted);font-weight:800;font-size:13px}
+.dias-meta span.ok{background:var(--warn-bg);color:var(--ink)}

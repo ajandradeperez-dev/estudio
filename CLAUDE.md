@@ -293,7 +293,7 @@ export default {
 Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 8`; los formatos anteriores se migran solos en `migrar()`. Si cambias el significado de algo guardado, sube `VERSION` y agrega su paso de migración). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
 
 - **Meta diaria**: 10/20/30 ejercicios o 5/10/15 minutos. Los minutos solo cuentan con la pestaña visible y actividad en el último minuto (`main.js`).
-- **Racha**: días seguidos con la meta cumplida. Si hoy aún no se cumple, sigue viva desde ayer.
+- **Racha**: días seguidos con la meta cumplida. Si hoy aún no se cumple, sigue viva desde ayer; hoy cuenta en cuanto la meta está cumplida. Los datos dependen del navegador: el APK usa el almacenamiento del navegador que lo abre (Chrome comparte con Chrome; con otro navegador son datos aparte). "Acerca de" muestra dónde se guardan y los últimos 7 días. Si otra pestaña cambia el progreso, el evento `storage` repinta la app.
 - **XP**: 10 por acierto sin pista (5 con pista) en lecciones, ubicación y preguntas de Ciberseguridad; +20 la primera vez que se domina una lección; 5 por acierto en el repaso; 20 por cada caso del laboratorio y 15 por cada escenario de VPN, solo la primera vez. Para subir de nivel hacen falta 100, 300, 600, 1000… XP.
 - `npm run revisar` carga un progreso v5 de ejemplo y falla si al migrar se pierden lecciones dominadas, XP, racha, repasos o notas: si agregas una versión, amplía esa comprobación.
 - **v7** (método): los repasos pasan a SM-2 (`paso` → intervalo equivalente, misma fecha); cada habilidad guarda `ult` (últimas 10), `dias`, `rating` y `sesiones`; lo ya dominado entra al repaso de habilidades repartido en la semana. `enCurso` deja de usarse.
@@ -359,6 +359,7 @@ Hoy cada teléfono guarda lo suyo (no hay cuentas) y se pasa de uno a otro con *
 ## Calidad
 
 - `npm run revisar` (también lo corre la publicación): método de las lecciones, jerarquía (áreas, temas, nodos, enlaces a secciones, ids), contenido de habla de Inglés, migración del progreso y los 50 generadores (200 ejercicios por nivel que pasan su `verificar`, fórmulas KaTeX válidas, regla y variedad).
+- `npm run calidad` (`scripts/calidad.mjs`) detecta textos encimados comparando los rectángulos de cada texto visible (`getClientRects`), además de scroll horizontal y toques chicos. Evita anchos fijos y posiciones absolutas en elementos con texto; usa filas con `flex-wrap` (como el Mapa MCER). No reutilices nombres de clase genéricos entre secciones (`.casilla` del mapa chocó con las casillas del cuaderno): usa un prefijo (`mapa-`, `nota-`).
 - Antes de publicar un cambio de interfaz, revísalo a **360 × 800**, en claro y en oscuro: sin scroll horizontal, toques ≥ 44 px, fórmulas largas dentro de su caja; y sin conexión (la app, KaTeX y sus fuentes están en la caché del service worker).
 - Si cambias el formato guardado, sube `VERSION` en `progreso.js`, agrega su paso en `migrar()` y amplía la comprobación de migración de `revisar` (lecciones dominadas, XP, racha, repasos, notas, medallas; los ajustes y la clave de IA viven en otras claves y no se tocan).
 - No arranques el servidor de desarrollo para dejarlo corriendo: para probar, `npm run build` + `npm run preview` (o un `vite preview` puntual) y apágalo al terminar.
@@ -371,4 +372,5 @@ npm run dev       # servidor de desarrollo: http://localhost:5173 (puerto fijo)
 npm run build     # genera dist/
 npm run preview   # sirve dist/ en http://localhost:4173 (puerto fijo)
 npm run revisar   # método, jerarquía, contenido de habla, migración del progreso y los 50 generadores (~10 s)
+npm run calidad   # 360 y 412 px, claro y oscuro: textos encimados, scroll horizontal y toques < 44 px en Aprender, Logros, Perfil, Notas y cada materia y tema (compila y levanta su propio preview; necesita Chrome o Edge)
 ```

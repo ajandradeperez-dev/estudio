@@ -26,7 +26,7 @@ import {vistaEscucha,vistaFluidez,marcarPaso} from './pasos.js';
 
 const RAIZ='estudio/ingles/hablar';
 // Títulos de las lecciones de forma (para los pasos de cada unidad)
-const TITULOS=Object.fromEntries(cargarLecciones(import.meta.glob('../lecciones/*.js',{eager:true})).map(l=>[l.id,l.titulo]));
+const TITULOS=Object.fromEntries(cargarLecciones(import.meta.glob('../temas/*/*.js',{eager:true})).map(l=>[l.id,l.titulo]));
 const pct=x=>Math.round(x*100);
 // Acierto reciente por sonido (últimos 20 intentos)
 export function fuerzaSonidos(p=progreso()){

@@ -3,7 +3,7 @@
 import {esc} from '../utilidades.js';
 import {areas,analizar,areaDe,rutaMateria,rutaTema,rutaLeccion} from './materias.js';
 import {progreso,datosMateria,nivel,racha,estadoHoy} from './progreso.js';
-import {barra,chip,tarjetaNav,cabecera,boton} from './ui.js';
+import {barra,chip,tarjetaNav,cabecera,boton,confirmar} from './ui.js';
 import {recomendar} from './recomendador.js';
 import {repartoUbicacion} from './metodo.js';
 
@@ -109,8 +109,9 @@ export function vistaMateria(m){
       const p=progreso(),d=datosMateria(p,m.id),ls=m.lecciones||[],r=recomendar({materia:m.id},p),u=d.ubicacion,k=repartoUbicacion(ls.length).reduce((a,b)=>a+b,0);
       const ss=secciones(m).filter(([k])=>`${rutaMateria(m)}/${k}`!==m.destacado?.ruta),grupos=[...new Set(ss.map(([,s])=>s.grupo))];
       const temas=m.temas?`<h2>Temas</h2><div class="lista-nav">${m.temas.map(t=>{const c=conteo(d,t.lecciones),prox=!t.lecciones.length;
-        return tarjetaNav({go:rutaTema(m,t),icono:t.icono,titulo:t.titulo,desc:t.descripcion,clase:prox?'proximo':'',
-          pie:prox?chip('Próximamente'):`${barra(c.hechas,c.total)}<span class="nota">${c.hechas}/${c.total} lecciones${t.proximas.length?` · ${t.proximas.length} pronto`:''}</span>`})}).join('')}</div>`
+        const clase=prox&&!t.nodos.some(n=>n.ir)?'proximo':'';
+        return tarjetaNav({go:rutaTema(m,t),icono:t.icono,titulo:t.titulo,desc:t.descripcion,clase,
+          pie:prox?(t.nodos.some(n=>n.ir)?`<span class="nota">${t.nodos.filter(n=>n.ir).length} herramientas</span>`:chip('Próximamente')):`${barra(c.hechas,c.total)}<span class="nota">${c.hechas}/${c.total} habilidades${t.proximas.length?` · ${t.proximas.length} pronto`:''}</span>`})}).join('')}</div>`
         :ls.length?`<h2>Lecciones</h2><div class="lista-nav">${ls.map((l,i)=>tarjetaNav({go:rutaLeccion(m,l),icono:dominada(d,l)?'✅':i+1,titulo:l.titulo,desc:l.resumen})).join('')}</div>`:'';
       return `<div class="area-${tono}">${cabecera({icono:m.icono||m.sigla,titulo:m.nombre,desc:m.descripcion})}
 ${r.ruta?htmlSiguiente(r):''}
@@ -118,29 +119,45 @@ ${m.destacado?`<button class="destacado" data-go="${m.destacado.ruta}"><span cla
 <div class="card">${htmlNivel(d.xp)}</div>
 ${temas}
 ${ls.length?`<details class="como-se-usa" style="margin-top:16px"><summary>🧭 ¿Ya sabes algo? Examen de ubicación</summary><p class="nota">${u?`Último: ${u.aciertos} de ${u.total} aciertos · ${u.dominadas.length} lecciones marcadas como dominadas.`:`${k} preguntas para saltar lo que ya sabes.`}</p>${boton({texto:u?'Repetir examen':'Hacer el examen',go:`${rutaMateria(m)}/ubicacion`,clase:'ghost'})}</details>`:''}
-${grupos.map(g=>`<h2>${g||'Herramientas'}</h2><div class="lista-nav">${ss.filter(([,s])=>s.grupo===g).map(([k,s])=>tarjetaNav({go:`${rutaMateria(m)}/${k}`,icono:d.visitadas.includes(k)?'✅':'🔧',titulo:s.titulo,desc:s.desc})).join('')}</div>`).join('')}</div>`;
+${m.temas?'':grupos.map(g=>`<h2>${g||'Herramientas'}</h2><div class="lista-nav">${ss.filter(([,s])=>s.grupo===g).map(([k,s])=>tarjetaNav({go:`${rutaMateria(m)}/${k}`,icono:d.visitadas.includes(k)?'✅':'🔧',titulo:s.titulo,desc:s.desc})).join('')}</div>`).join('')}</div>`;
     }
   };
 }
 
 /* ---------- camino de un tema: nodos circulares en zigzag ---------- */
-// dominado (dorado con corona) · actual (anillo pulsante) · pendiente (se puede abrir) · próximamente (bloqueado gris)
+// Habilidad: dominada (dorada con corona) · actual (anillo pulsante) · abierta · bloqueada (gris: practica antes la anterior)
+// Herramienta (enlace a un simulador o a Hablar) · Próximamente (gris con candado)
 const ZIGZAG=[0,52,76,52,0,-52,-76,-52];
+export const practicada=(d,h)=>!!d.lecciones[h.id];
+// Estado de cada habilidad del tema (la primera siempre está abierta; las demás, cuando practicaste la anterior)
+export function estadosTema(t,d){
+  const hs=t.lecciones,actual=hs.find((h,i)=>!dominada(d,h)&&(i===0||practicada(d,hs[i-1])||dominada(d,hs[i-1])||practicada(d,h)));
+  return Object.fromEntries(hs.map((h,i)=>[h.id,dominada(d,h)?'dominado':h===actual?'actual':(i===0||practicada(d,h)||practicada(d,hs[i-1])||dominada(d,hs[i-1]))?'pendiente':'bloqueado']));
+}
 export function vistaTema(m,t){
   const tono=tonoDe(areaDe(m));
   return {
     titulo:t.titulo,
     vista(){
-      const p=progreso(),d=datosMateria(p,m.id),c=conteo(d,t.lecciones),actual=t.lecciones.find(l=>!dominada(d,l));
+      const p=progreso(),d=datosMateria(p,m.id),c=conteo(d,t.lecciones),est=estadosTema(t,d);
       let k=0;const x=()=>`--x:${ZIGZAG[k++%ZIGZAG.length]}px`;
-      const nodo=l=>{const est=dominada(d,l)?'dominado':l===actual?'actual':'pendiente',h=d.lecciones[l.id];
-        return `<li style="${x()}">${l===actual?`<span class="globo">${h?'Seguir':'Empezar'}</span>`:''}<button class="nodo ${est}" data-go="${rutaLeccion(m,l)}" aria-label="${esc(l.titulo)}: ${est}">${est==='dominado'?'👑':est==='actual'?'★':'●'}</button><span class="camino-titulo">${l.titulo}</span></li>`};
+      const nodo=n=>{
+        if(n.proximo)return `<li style="${x()}"><span class="nodo proximo" aria-hidden="true">🔒</span><span class="camino-titulo">${n.titulo}</span><span class="camino-sub">Próximamente</span></li>`;
+        if(n.ir)return `<li style="${x()}"><button class="nodo herramienta" data-go="${rutaMateria(m)}/${n.ir}" aria-label="${esc(n.titulo)}">${n.icono||'🔧'}</button><span class="camino-titulo">${n.titulo}</span></li>`;
+        const e=est[n.id],h=d.lecciones[n.id];
+        if(e==='bloqueado')return `<li style="${x()}"><button class="nodo bloqueado" data-bloqueado="${esc(n.id)}" aria-label="${esc(n.titulo)}: bloqueada">🔒</button><span class="camino-titulo">${n.titulo}</span></li>`;
+        return `<li style="${x()}">${e==='actual'?`<span class="globo">${h?'Seguir':'Empezar'}</span>`:''}<button class="nodo ${e}" data-go="${rutaLeccion(m,n)}" aria-label="${esc(n.titulo)}: ${e==='dominado'?'dominada':e==='actual'?'te toca':'abierta'}">${e==='dominado'?'👑':e==='actual'?'★':'●'}</button><span class="camino-titulo">${n.titulo}</span></li>`;
+      };
       const n=t.lecciones.length;
       return `<div class="area-${tono}">${cabecera({icono:t.icono,titulo:t.titulo,desc:t.descripcion})}
 ${n?`${barra(c.hechas,c.total)}<p class="nota" style="margin-top:6px">${c.hechas}/${c.total} dominadas</p>`:''}
-<ol class="camino">${t.lecciones.map(nodo).join('')}
-${t.proximas.map(tit=>`<li style="${x()}"><span class="nodo proximo" aria-hidden="true">🔒</span><span class="camino-titulo">${tit}</span><span class="camino-sub">Próximamente</span></li>`).join('')}</ol>
-${!n?'<p class="nota" style="text-align:center">Este tema todavía no tiene lecciones. Sigue con los otros temas de la materia.</p>':''}</div>`;
+<ol class="camino">${t.nodos.map(nodo).join('')}</ol></div>`;
+    },
+    async alClic(t2){
+      if(t2.dataset.bloqueado===undefined)return;
+      const hs=t.lecciones,i=hs.findIndex(h=>h.id===t2.dataset.bloqueado),antes=hs[i-1];
+      if(await confirmar({titulo:'🔒 Todavía no',texto:`Practica antes «${antes.titulo}»: cada habilidad se apoya en la anterior.`,si:`Ir a ${antes.titulo}`,no:'Cerrar'}))location.hash=rutaLeccion(m,antes);
+      return true;
     }
   };
 }

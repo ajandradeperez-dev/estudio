@@ -18,7 +18,11 @@ for(const id of readdirSync(dirAreas).sort()){
   const a=(await import(pathToFileURL(f).href)).default;areas[id]=[];
   for(const k of ['nombre','icono','descripcion'])if(!a[k])mal(`área ${id}`,`falta ${k}`);
 }
-const IDS_RESERVADOS=['l','ubicacion','repaso','progreso','notas','inicio'];
+const IDS_RESERVADOS=['l','ubicacion','repaso','progreso','notas','inicio','logros','perfil','cofre','jefe'];
+globalThis.localStorage??={getItem:()=>null,setItem(){},removeItem(){}};
+const {GENERADORES,BANCOS}=await import(pathToFileURL(join(raiz,'..','nucleo','generadores','index.js')).href);
+const unidadesIngles=new Set((await import(pathToFileURL(join(raiz,'ingles','hablar','unidades.js')).href)).UNIDADES.map(u=>u.id));
+const sinGenerador=[];
 for(const materia of readdirSync(raiz).sort()){
   const fm=join(raiz,materia,'materia.js');
   if(!existsSync(fm))continue;
@@ -27,6 +31,8 @@ for(const materia of readdirSync(raiz).sort()){
   if(areas[materia]&&area!==materia)mal(materia,'una materia no puede tener el id de otra área');
   // Archivos de lecciones en orden: lecciones/*.js o, si hay temas, temas/<tema>/*.js en el orden de temas.js
   const archivos=[],dirTemas=join(raiz,materia,'temas'),fTemas=join(raiz,materia,'temas.js');
+  // claves de secciones de materia.js (para validar los enlaces {ir}) e ids de habilidades de toda la materia
+  const secciones=[...readFileSync(fm,'utf8').matchAll(/^\s{2,}([a-z][\w-]*):\{titulo:/gm)].map(x=>x[1]),idsMateria=new Set();
   if(existsSync(join(raiz,materia,'lecciones')))for(const f of readdirSync(join(raiz,materia,'lecciones')).filter(f=>f.endsWith('.js')).sort())archivos.push({f,ruta:join(raiz,materia,'lecciones',f)});
   if(existsSync(fTemas)||existsSync(dirTemas)){
     if(archivos.length)mal(materia,'usa lecciones/ o temas/, no las dos');
@@ -40,9 +46,28 @@ for(const materia of readdirSync(raiz).sort()){
         if(vistos.has(t.id))mal(dt,'id de tema repetido');vistos.add(t.id);
         if(IDS_RESERVADOS.includes(t.id))mal(dt,'ese id está reservado para rutas');
         for(const k of ['titulo','icono','descripcion'])if(!t[k])mal(dt,`falta ${k}`);
-        if(t.proximas!==undefined&&(!Array.isArray(t.proximas)||t.proximas.some(x=>typeof x!=='string'||!x.trim())))mal(dt,'proximas debe ser una lista de títulos');
         const dir=join(dirTemas,t.id),fs=existsSync(dir)?readdirSync(dir).filter(f=>f.endsWith('.js')).sort():[];
-        if(!fs.length&&!t.proximas?.length)mal(dt,'no tiene lecciones ni lecciones próximas');
+        const deArchivo=new Set(fs.map(f=>f.replace(/^\d+-/,'').replace(/\.js$/,'')));
+        if(!Array.isArray(t.nodos)||!t.nodos.length){mal(dt,'necesita nodos: habilidades, herramientas o próximamente');continue}
+        t.nodos.forEach((n,i)=>{
+          const dn=`${dt} nodo ${i+1}`;
+          if(n.proximo){if(!n.titulo?.trim())mal(dn,'un nodo próximamente necesita titulo');return}
+          if(n.ir!==undefined){
+            if(!n.titulo)mal(dn,'un enlace necesita titulo');
+            const [sec,sub,id]=String(n.ir).split('/');
+            if(!secciones.includes(sec))mal(dn,`la sección «${sec}» no existe en ${materia}`);
+            if(sec==='hablar'&&sub==='u'&&!unidadesIngles.has(id))mal(dn,`la unidad «${id}» no existe`);
+            return;
+          }
+          if(!/^[a-z0-9-]+$/.test(n.id||'')){mal(dn,'una habilidad necesita id (minúsculas, números y guiones)');return}
+          if(idsMateria.has(n.id))mal(dn,`el id «${n.id}» se repite en la materia (el progreso se guarda por materia e id)`);idsMateria.add(n.id);
+          if(!deArchivo.has(n.id)&&!n.gen&&!n.banco)mal(dn,`«${n.id}» no tiene lección (temas/${t.id}/NN-${n.id}.js), generador ni banco`);
+          if(!deArchivo.has(n.id)&&!n.titulo)mal(dn,`«${n.id}» no tiene lección: necesita titulo`);
+          if(n.gen&&!GENERADORES[n.gen])sinGenerador.push(`${materia}/${n.id} → ${n.gen}`);
+          if(n.banco&&!BANCOS[n.banco])sinGenerador.push(`${materia}/${n.id} → banco ${n.banco}`);
+        });
+        // lecciones de la carpeta que no están en nodos: se agregan solas, pero su id también debe ser único
+        for(const id of deArchivo)if(!t.nodos.some(n=>n.id===id)){if(idsMateria.has(id))mal(`${dt}/${id}`,'id de lección repetido en la materia');idsMateria.add(id)}
         for(const f of fs)archivos.push({f,ruta:join(dir,f),tema:t.id});
       }
       if(existsSync(dirTemas))for(const d of readdirSync(dirTemas))if(!vistos.has(d))mal(`${materia}/temas/${d}`,'carpeta de tema que no está en temas.js');
@@ -128,7 +153,7 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
     if(!s.frases?.length)mal(e,'sin frases para practicar');
   }
   for(const [n,lista] of Object.entries(FRASES))lista.forEach((x,i)=>{if(!x.en||!x.es||!x.uso)mal(`frases ${n} #${i+1}`,'faltan en, es o uso')});
-  const lecIng=new Set(readdirSync(join(ing,'lecciones')).map(f=>f.replace(/^\d+-/,'').replace(/\.js$/,'')));
+  const lecIng=new Set(readdirSync(join(ing,'temas')).flatMap(t=>readdirSync(join(ing,'temas',t)).map(f=>f.replace(/^\d+-/,'').replace(/\.js$/,''))));
   for(const u of UNIDADES){
     const e=`unidad ${u.id}`,c=CONTENIDO[u.id];
     for(const k of ['titulo','nivel','tarea'])if(!u[k])mal(e,`falta ${k}`);
@@ -174,6 +199,7 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   if(JSON.parse(mem['ciberlab-progreso']).v!==p.v)mal(e,'la migración no se guarda');
   console.log(`progreso: un v5 migra a v${p.v} conservando lecciones, XP, racha, repasos y notas`);
 }
+if(sinGenerador.length)console.log(`${sinGenerador.length} habilidades sin generador todavía (se ven como Próximamente)`);
 avisos.forEach(a=>console.log('aviso  '+a));
 errores.forEach(e=>console.log('ERROR  '+e));
 console.log(errores.length?`\n${errores.length} errores`:'\nTodo cumple el método de aprendizaje.');

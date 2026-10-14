@@ -8,7 +8,7 @@
 
 App para estudiar cualquier tema, organizada en **materias**, que aplica métodos de estudio efectivos (ver "Método de aprendizaje"). Todo corre en el navegador: no hay backend y el progreso se guarda en `localStorage`.
 
-- **Jerarquía**: área → materia → tema → lección. Áreas: 🛡️ **Ciberseguridad** (una sola materia: lecciones + simuladores de firewall/VPN, laboratorio de incidentes, examen) y 🎯 **Estudio y metas** (Inglés A1–A2 con Hablar; Matemáticas con temas Álgebra básica, Álgebra lineal, Cálculo diferencial y Cálculo integral; Ciencia de datos con temas Estadística, Probabilidad, Python y pandas, Visualización y Machine learning básico). Los temas son opcionales: Inglés y Ciberseguridad no los usan.
+- **Jerarquía**: área → materia → tema → habilidad (nodo del camino). Áreas: 🛡️ **Ciberseguridad** (temas Redes, Firewalls, VPN y criptografía, Defensa e incidentes y Herramientas con los simuladores) y 🎯 **Estudio y metas** (Inglés: Gramática, Vocabulario y frases, Hablar y escuchar; Matemáticas: Aritmética y álgebra básica, Álgebra lineal, Cálculo diferencial e integral; Ciencia de datos: Estadística, Probabilidad, Python y pandas, Visualización y Machine learning básico).
 - El recomendador "¿Qué sigue?", el repaso espaciado, la racha y la meta diaria son **globales**: cuentan todas las áreas.
 - **Lecciones**: explicación corta, ejemplos y práctica en rondas, casi toda de producción.
 - **Enganche**: racha de días cumpliendo una meta diaria (ejercicios o minutos), XP y nivel por materia, "Repasar hoy" con repetición espaciada y práctica mezclada, "Continuar donde te quedaste", "Mis notas" y "Mi progreso".
@@ -149,37 +149,41 @@ export default {
 };
 ```
 
-### Materia con temas
+### Materia con temas y habilidades (nodos)
 
-Si la materia se divide en temas, usa `temas/` en vez de `lecciones/` y una lista `temas.js` (datos puros: la leen la app y `npm run revisar`):
+Jerarquía: área → materia → tema → **habilidad** (un nodo del camino: algo concreto, como «Producto punto» o «Máscara /24 a /30»). Si la materia se divide en temas, usa `temas/` en vez de `lecciones/` y una lista `temas.js` (datos puros: la leen la app y `npm run revisar`):
 
 ```
 src/materias/fisica/
   materia.js
   temas.js
   temas/
-    cinematica/01-velocidad.js
-    dinamica/01-leyes-de-newton.js
+    cinematica/01-velocidad.js      ← lección escrita (explicación + rondas) de la habilidad 'velocidad'
 ```
 
 ```js
-// temas.js — en orden; el id es la carpeta y va en la URL
+// temas.js — en orden; el id del tema es su carpeta y va en la URL
 export default [
-  {id:'cinematica',titulo:'Cinemática',icono:'🏃',descripcion:'Posición, velocidad y aceleración.'},
-  {id:'dinamica',titulo:'Dinámica',icono:'🧲',descripcion:'Fuerzas y leyes de Newton.',
-   proximas:['Trabajo y energía']}             // títulos que aún no existen: se ven bloqueados como "Próximamente"
+  {id:'cinematica',titulo:'Cinemática',icono:'🏃',descripcion:'Posición, velocidad y aceleración.',nodos:[
+    {id:'velocidad',gen:'fis/velocidad'},                         // habilidad con lección y generador
+    {id:'aceleracion',titulo:'Aceleración',gen:'fis/aceleracion'},  // habilidad solo con generador (necesita titulo)
+    {id:'casos',titulo:'Casos reales',banco:'fis/casos'},           // banco de ejercicios fijos
+    {ir:'simulador',titulo:'Simulador de caída',icono:'🪂'},        // enlace a una sección de la materia
+    {titulo:'Movimiento circular',proximo:true}                     // se ve bloqueado como "Próximamente"
+  ]}
 ];
 
 // materia.js
-import {cargarTemas} from '../../nucleo/cargar.js';
+import {cargarTemas,habilidades} from '../../nucleo/cargar.js';
 import defs from './temas.js';
 const temas=cargarTemas(import.meta.glob('./temas/*/*.js',{eager:true}),defs);
-export default {nombre:'Física',icono:'🧲',area:'estudio',orden:5,descripcion:'…',temas,lecciones:temas.flatMap(t=>t.lecciones)};
+export default {nombre:'Física',icono:'🧲',area:'estudio',orden:5,descripcion:'…',temas,lecciones:habilidades(temas)};
 ```
 
-- El progreso, el repaso y las notas se guardan por **materia + id de lección**, no por tema: puedes mover una lección de tema sin perder nada, pero su id tiene que ser **único en toda la materia**.
-- Un tema sin lecciones (solo `proximas`) se ve entero como "Próximamente". El examen de ubicación es de toda la materia.
-- Para agregar un tema: añádelo a `temas.js` y crea su carpeta. `npm run revisar` valida ids únicos y válidos, campos obligatorios, carpetas sin declarar, ids de lección repetidos y temas sin lecciones ni próximas.
+- Una habilidad necesita al menos una fuente: su lección (`temas/<tema>/NN-<id>.js`), un generador (`gen`) o un banco (`banco`). Si su generador todavía no existe, se ve sola como "Próximamente" y aparece cuando lo registres.
+- En el camino, la primera habilidad está abierta y cada una se desbloquea al practicar la anterior; las herramientas (`ir`) siempre están abiertas y no cuentan para el dominio.
+- El progreso, el repaso y las notas se guardan por **materia + id de habilidad**, no por tema: puedes mover una habilidad de tema sin perder nada, pero su id tiene que ser **único en toda la materia** (y no puede ser un id reservado: `l`, `ubicacion`, `cofre`, `jefe`…).
+- Para agregar un tema: añádelo a `temas.js` (con sus nodos) y crea su carpeta si tiene lecciones. `npm run revisar` valida ids, campos, carpetas sin declarar, enlaces a secciones que existan y avisa de las habilidades sin generador.
 
 Opcionales, para materias con secciones propias como Ciberseguridad:
 

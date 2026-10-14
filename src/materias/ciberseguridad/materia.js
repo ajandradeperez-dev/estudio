@@ -1,4 +1,5 @@
-/* Materia Ciberseguridad: no usa lecciones en formato común sino secciones interactivas propias (simuladores, laboratorio, examen) */
+/* Materia Ciberseguridad: temas con habilidades (lecciones y ejercicios generados) y secciones interactivas propias
+   (simuladores, laboratorio, examen), que se enlazan desde el tema Herramientas */
 import * as redes from './secciones/redes.js';
 import * as subred from './secciones/subredes.js';
 import * as vlan from './secciones/vlans.js';
@@ -12,7 +13,10 @@ import {incidents} from './datos/incidentes.js';
 import {quiz as preguntas} from './datos/preguntas.js';
 import {escenarios} from './datos/vpn.js';
 import {barra} from '../../nucleo/ui.js';
-import {cargarLecciones} from '../../nucleo/cargar.js';
+import {cargarTemas,habilidades} from '../../nucleo/cargar.js';
+import defs from './temas.js';
+
+const temas=cargarTemas(import.meta.glob('./temas/*/*.js',{eager:true}),defs);
 
 // Las claves (redes, subred, fw…) forman la ruta (#ciberseguridad/fw) y se guardan en el progreso: no las cambies.
 const secciones={
@@ -31,7 +35,8 @@ export default {
   nombre:'Ciberseguridad',sigla:'CS',icono:'🛡️',area:'ciberseguridad',orden:1,
   descripcion:'Redes, firewalls (FortiGate, Palo Alto, Cisco ASA y pfSense), VPN e incidentes, con simuladores.',
   intro:'Aprende seguridad de redes practicando. Primero las lecciones con lo que más se usa; después, los simuladores y el laboratorio. Los paquetes, firewalls y registros son simulados, así que puedes experimentar sin tocar ningún equipo real.',
-  lecciones:cargarLecciones(import.meta.glob('./lecciones/*.js',{eager:true})),
+  temas,
+  lecciones:habilidades(temas),
   secciones,
 
   // Ejercicios que vuelven en "Repasar hoy": 'examen/<i>' e 'incidentes/<caso>/<a|b>'

@@ -48,11 +48,17 @@ En Ciberseguridad, los simuladores, el laboratorio y el examen rápido son herra
 ## Estructura
 
 ```
-index.html                Esqueleto: barra superior (#barra), vista (#vista) y navegación inferior (#nav)
+index.html                Esqueleto: splash, barra superior (#barra), vista (#vista) y navegación inferior (#nav); usa %APP_NOMBRE%
 vite.config.js            Puertos fijos (5173 dev, 4173 preview) con strictPort
 scripts/
   revisar-contenido.mjs   npm run revisar: comprueba el método en todas las lecciones y el contenido de habla de Inglés
+  iconos.mjs              node scripts/iconos.mjs: todos los PNG (any, maskable, monocromo, Apple) desde public/icons/icono.svg
+public/
+  icons/icono.svg         El ícono de la app (cuaderno abierto + chispa): fuente de todos los PNG y del favicon
+  sw-recordatorio.js      Lo carga el service worker (importScripts): recordatorio diario con la app cerrada y clic en la notificación
+android/twa-manifest.json Configuración del APK (Bubblewrap); el resto de android/ se genera y no se versiona
 src/
+  config.js               APP_NOMBRE y enlaces (web, repo, APK, invitación): un solo lugar para el nombre de la app
   main.js                 Rutas (resolver() sobre analizar()), migas, menú, delegación de eventos y conteo de minutos activos
   areas/<id>/area.js      Cada área: nombre, icono, tono de color, descripción, orden
   estilos/                CSS (lo importa main.js): tokens.css (colores, radios, espaciado, tipografía, modo oscuro),
@@ -80,6 +86,9 @@ src/
     comparar.js           coincide(): compara respuestas escritas (sin DOM; también lo usa npm run revisar)
     ubicacion.js          Examen de ubicación
     repaso.js             Pestaña Repasar: repetición espaciada con práctica intercalada
+    app.js                Experiencia de app: bienvenida (3 pantallas la primera vez), Acerca de, instalar (beforeinstallprompt / iPhone),
+                          invitar (Web Share + QR con qrcode-generator), avisos "sin conexión" y "versión nueva", recordatorio diario
+    usuario.js            'ciberlab-usuario': nombre, materias elegidas (el recomendador las pone primero), bienvenida vista, recordatorio
     notas.js              Pestaña 📝 Notas: lista (búsqueda, filtros, cuadernos área → materia → tema), editor con barra de formato,
                           fotos, dibujo, dictado, enlaces y tarjetas; modo "repasar nota"; resumen automático del tema; respaldo
     cuaderno/             Datos del cuaderno (sin vistas): db.js (IndexedDB 'ciberlab-notas': notas y archivos; persist()),
@@ -115,6 +124,7 @@ src/
 |---|---|
 | (vacía) | Pestaña Aprender: lo siguiente para ti, continuar y tarjetas de área |
 | `repaso` / `logros` / `perfil` | Pestañas Repasar, Logros y Perfil (`#progreso` lleva a Perfil) |
+| `acerca` / `bienvenida` | Acerca de (versión, privacidad, invitar con QR) · la bienvenida (sale sola la primera vez, sin progreso) |
 | `notas` | Pestaña Notas: el cuaderno |
 | `notas/n/<id>` · `notas/tema/<materia>/<tema>` | Editor de una nota · resumen automático de un tema |
 | `<área>` | Página del área: tarjetas de materias (`#estudio`) |
@@ -300,7 +310,10 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 8`; los formatos a
 ## PWA y publicación
 
 - **PWA** con `vite-plugin-pwa` (configuración en `vite.config.js`): manifest con nombre, colores e íconos (`public/icons/`, generados desde `public/favicon.svg`; el `maskable` no tiene esquinas redondeadas y deja el dibujo dentro del círculo seguro). El service worker guarda en caché toda la app (incluidos KaTeX y sus fuentes woff2) y, la primera vez que cargan, las fuentes de Google: funciona sin internet.
-- **Actualización automática**: `skipWaiting` + `clientsClaim` activan la versión nueva en cuanto se instala. `main.js` no recarga de golpe: espera a que el usuario cambie de pantalla (`go()` con otra ruta) para no cortar un ejercicio. Busca actualizaciones al volver a la app y cada hora. La versión instalada se ve al final de "Mi progreso".
+- **Actualización automática**: `skipWaiting` + `clientsClaim` activan la versión nueva en cuanto se instala. `main.js` no recarga de golpe: muestra "✨ Hay una versión nueva · Actualizar" (`avisarVersionNueva` en `app.js`) y recarga solo si la persona toca el botón, para no cortar un ejercicio. Busca actualizaciones al volver a la app y cada hora. La versión instalada se ve en Perfil y en Acerca de.
+- **Nombre e ícono**: el nombre sale de `src/config.js` (manifest, `<title>`, splash, barra superior, Acerca de, invitación, nombre del respaldo y del APK). El ícono es `public/icons/icono.svg`; si lo cambias, `node scripts/iconos.mjs` regenera todos los PNG (el maskable a sangre con el dibujo dentro del círculo seguro del 80 %, y el monocromo para los íconos temáticos de Android).
+- **Sin conexión**: todo funciona salvo la IA y el reconocimiento de voz (en Chrome usa los servidores de Google); una franja avisa cuando no hay red.
+- **Recordatorio diario** (Perfil): con permiso de notificaciones, a la hora elegida, si la meta del día no está cumplida, una notificación (una vez al día). Con la app abierta lo revisa `main.js` cada minuto; con la app cerrada, `sw-recordatorio.js` vía Periodic Background Sync (Chrome/Android con la app instalada; el navegador decide el momento, así que la hora es aproximada). El estado se comparte con el service worker en la caché `ciberlab-recordatorio`.
 - En `npm run dev` no se registra el service worker (para que la caché no confunda al programar). Para probar la PWA: `npm run build` y `npm run preview`.
 - **Publicación**: `.github/workflows/publicar.yml` publica en GitHub Pages en cada push a `main`. Pasa `npm run revisar` (si falla, no publica), compila con `BASE_PATH=/<repositorio>/` porque Pages sirve la app en `https://<usuario>.github.io/<repositorio>/`, y pone `APP_VERSION` con la fecha y el commit.
 - Las rutas son con `#hash`, así que Pages no necesita `404.html`.
@@ -309,7 +322,7 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 8`; los formatos a
 ## Convenciones
 
 - **Nunca subas claves ni secretos** (API keys de Anthropic u otras, archivos `.env`, tokens) al repositorio: es público. La clave de la conversación con IA la pega el usuario en la app y vive solo en el `localStorage` de su dispositivo. No la escribas en el código, en logs ni en mensajes de error. Revisa `git diff` antes de cada commit.
-- JavaScript puro con módulos ES, sin frameworks. Única dependencia de runtime: KaTeX (fórmulas), empaquetada para funcionar sin conexión. Vite solo para desarrollo y build.
+- JavaScript puro con módulos ES, sin frameworks. Dependencias de runtime (versión exacta, empaquetadas para funcionar sin conexión): KaTeX (fórmulas) y qrcode-generator (el QR de "Invitar amigos"). Vite solo para desarrollo y build; playwright-core solo para `scripts/iconos.mjs`.
 - Estilo compacto: plantillas con template strings y `.map(...).join('')`.
 - Todo texto que escriba el usuario (respuestas, notas) se pasa por `esc()` antes de meterlo en HTML.
 - Los colores siempre salen de las variables CSS (`--accent`, `--ok`, `--bad`…) para que funcione el modo oscuro.

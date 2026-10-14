@@ -3,23 +3,26 @@
    Nunca incluye la clave de IA ('ciberlab-ia'): es personal y se vuelve a pegar en el otro dispositivo. */
 import {todasLasNotas,todosLosArchivos,guardarNota,guardarArchivo,vaciar} from './db.js';
 import {reemplazarProgreso,hoy} from '../progreso.js';
+import {APP_NOMBRE} from '../../config.js';
 
 const TIPO='ciberlab-respaldo',FORMATO=1;
-const AJUSTES='ciberlab-ajustes';
+const AJUSTES='ciberlab-ajustes',USUARIO='ciberlab-usuario';
 const aDataUrl=blob=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(blob)});
 async function deDataUrl(u){const r=await fetch(u);return r.blob()}
 
 export async function crearRespaldo(){
   let progreso=null,ajustes=null;
   try{progreso=JSON.parse(localStorage.getItem('ciberlab-progreso'))}catch(e){}
+  let usuario=null;
   try{ajustes=JSON.parse(localStorage.getItem(AJUSTES))}catch(e){}
+  try{usuario=JSON.parse(localStorage.getItem(USUARIO))}catch(e){}
   const notas=await todasLasNotas(),archivos=[];
   for(const a of await todosLosArchivos()){const {blob,...resto}=a;archivos.push({...resto,data:await aDataUrl(blob)})}
-  return {tipo:TIPO,formato:FORMATO,app:'CiberLab',fecha:new Date().toISOString(),progreso,ajustes,notas,archivos};
+  return {tipo:TIPO,formato:FORMATO,app:APP_NOMBRE,fecha:new Date().toISOString(),progreso,ajustes,usuario,notas,archivos};
 }
 export async function descargarRespaldo(){
   const r=await crearRespaldo(),blob=new Blob([JSON.stringify(r)],{type:'application/json'});
-  descargar(blob,`ciberlab-respaldo-${hoy()}.json`);
+  descargar(blob,`${APP_NOMBRE.toLowerCase().replace(/[^a-z0-9]+/g,'-')}-respaldo-${hoy()}.json`);
   return {notas:r.notas.length,archivos:r.archivos.length,bytes:blob.size};
 }
 export function descargar(blob,nombre){
@@ -37,6 +40,7 @@ export async function leerRespaldo(file){
 export async function aplicarRespaldo(r){
   if(r.progreso)reemplazarProgreso(r.progreso);
   if(r.ajustes)try{localStorage.setItem(AJUSTES,JSON.stringify(r.ajustes))}catch(e){}
+  if(r.usuario)try{localStorage.setItem(USUARIO,JSON.stringify(r.usuario))}catch(e){}
   await vaciar();
   for(const n of r.notas)if(n&&typeof n.id==='string')await guardarNota(n);
   for(const a of r.archivos)if(a&&typeof a.id==='string'&&typeof a.data==='string'&&a.data.startsWith('data:image/')){const {data,...resto}=a;await guardarArchivo({...resto,blob:await deDataUrl(data)})}

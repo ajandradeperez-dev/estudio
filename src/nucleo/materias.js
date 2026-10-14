@@ -39,7 +39,7 @@ export const rutaLeccionId=(m,id)=>{const l=leccion(m,id);return l?rutaLeccion(m
 /* analizar(ruta) → {tipo, ruta canónica, area?, m?, t?, l?, seccion?, resto?}
    tipo: 'portada' | 'especial' (repaso, logros, perfil, notas) | 'notas' (subrutas del cuaderno) | 'area' | 'materia' | 'tema' | 'leccion' (habilidad)
          | 'cofre' (<tema>/cofre/<k>) | 'jefe' (<tema>/jefe) | 'ubicacion' | 'seccion' */
-const ESPECIALES=['repaso','logros','perfil','notas'];
+const ESPECIALES=['repaso','logros','perfil','notas','acerca','bienvenida'];
 export function analizar(ruta){
   ruta=String(ruta||'').replace(/^#/,'').replace(/\/+$/,'');
   if(!ruta||ruta==='inicio')return {tipo:'portada',ruta:''};

@@ -5,3 +5,19 @@ dev-dist/
 .env
 .env.*
 *.local
+# Firma del APK: la llave y sus contraseñas NUNCA van al repositorio (viven fuera, en ~/.ciberlab-firma/)
+*.keystore
+*.jks
+*.p12
+*.pem
+*.key
+keystore.properties
+signing.properties
+contraseñas*.txt
+contrasenas*.txt
+# Proyecto Android generado por Bubblewrap: solo se guarda su configuración (android/twa-manifest.json)
+android/*
+!android/twa-manifest.json
+*.apk
+*.aab
+*.idsig

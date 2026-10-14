@@ -244,3 +244,39 @@ body.editando-nota main{padding-bottom:calc(72px + var(--teclado,0px))}
   body.imprimiendo .nota-titulo{border:0}
   body.imprimiendo .tapada span{visibility:visible}
 }
+
+/* ---------- experiencia de app (app.js) ---------- */
+/* franjas superiores: sin conexión y versión nueva */
+.franja{position:fixed;left:0;right:0;top:0;z-index:90;display:flex;align-items:center;justify-content:center;gap:var(--s3);flex-wrap:wrap;
+  padding:calc(6px + env(safe-area-inset-top)) var(--s4) 6px;background:var(--ink);color:var(--bg);font-weight:800;font-size:14px;text-align:center}
+#version-nueva{top:auto;bottom:calc(var(--nav-alto) + env(safe-area-inset-bottom));background:var(--primary);color:var(--on-primary)}
+#version-nueva .btn{background:var(--surface);color:var(--primary);min-height:44px;box-shadow:none}
+body.sesion-activa #version-nueva{bottom:0}
+.saludo{margin:0 0 var(--s2);font-weight:900;font-size:20px}
+a.tarjeta-nav{text-decoration:none;color:inherit}
+input.hora{min-height:44px;padding:0 var(--s3);border:2px solid var(--line);border-radius:var(--r2);background:var(--surface);color:var(--ink);font:inherit;font-weight:800}
+.modal-cuerpo{text-align:left;margin:0 0 var(--s4)}
+.pasos-instalar{padding-left:22px;line-height:1.7}
+.qr{display:flex;justify-content:center;margin:var(--s2) auto}
+.qr svg{width:220px;max-width:70vw;height:auto;background:#fff;border-radius:var(--r2);padding:6px}
+.qr svg rect[fill="#ffffff"],.qr svg path{shape-rendering:crispEdges}
+.centro{text-align:center}
+.acerca-cab{display:flex;align-items:center;gap:var(--s4);margin:0 0 var(--s3)}
+.acerca-cab img{border-radius:20px;box-shadow:var(--sombra)}
+/* bienvenida */
+.bienvenida{max-width:520px;margin:0 auto;padding:var(--s5) var(--s4) calc(var(--s6) + 72px)}
+.bien-puntos{display:flex;gap:6px;justify-content:center;margin:0 0 var(--s5)}
+.bien-puntos span{width:28px;height:6px;border-radius:3px;background:var(--line)}
+.bien-puntos span.on{background:var(--primary)}
+.bien-logo{display:block;margin:0 auto var(--s4);border-radius:22px;box-shadow:0 10px 30px rgb(70 82 208 / .3)}
+.bienvenida h1{text-align:center}
+.bienvenida .intro{text-align:center}
+.bien-materias,.bien-metas{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2)}
+.bien-materia,.bien-meta{all:unset;box-sizing:border-box;min-height:56px;padding:var(--s2) var(--s3);display:flex;align-items:center;gap:var(--s2);border-radius:var(--r2);border:2px solid var(--line);background:var(--surface);font-weight:800;cursor:pointer}
+.bien-meta{flex-direction:column;justify-content:center;gap:0;text-align:center}
+.bien-meta b{font-size:22px}
+.bien-materia[aria-pressed="true"],.bien-meta[aria-pressed="true"]{border-color:var(--primary);background:var(--primary-soft);color:var(--primary-dark)}
+.bien-materia:focus-visible,.bien-meta:focus-visible{outline:3px solid var(--primary)}
+.bien-pie{position:fixed;left:0;right:0;bottom:0;display:flex;gap:var(--s2);padding:var(--s3) var(--s4) calc(var(--s3) + env(safe-area-inset-bottom));background:var(--bg);border-top:2px solid var(--line)}
+.bien-pie .btn{flex:1}
+@media (min-width:761px){.bien-pie{position:static;border:0;padding:var(--s4) 0 0;background:none}.bienvenida{padding-bottom:var(--s6)}}

@@ -1,5 +1,7 @@
 /* Pestaña Aprender: portada (áreas), página de área (materias), página de materia (temas o lecciones),
    camino de un tema (nodos en zigzag), migas de pan con botón atrás y barra superior (racha y meta del día) */
+import {APP_NOMBRE,APP_MARCA} from '../config.js';
+import {usuario} from './usuario.js';
 import {esc} from '../utilidades.js';
 import {areas,analizar,areaDe,rutaMateria,rutaTema,rutaLeccion} from './materias.js';
 import {progreso,datosMateria,nivel,racha,estadoHoy} from './progreso.js';
@@ -22,7 +24,7 @@ export function htmlNivel(xp){
 /* ---------- barra superior ---------- */
 export function htmlBarraSup(){
   const p=progreso(),h=estadoHoy(p),r=racha(p);
-  return `<button class="marca enlace" data-go="" aria-label="CiberLab, ir a Aprender">Ciber<span>Lab</span></button>
+  return `<button class="marca enlace" data-go="" aria-label="${APP_NOMBRE}, ir a Aprender">${APP_MARCA[0]}<span>${APP_MARCA[1]||''}</span></button>
 <span class="sup-chip fuego" title="Racha: días seguidos cumpliendo la meta">🔥 ${r}<span class="oculto"> ${r===1?'día':'días'} de racha</span></span>
 <span class="sup-chip meta" title="Meta de hoy: ${h.hecho} de ${h.meta} ${h.tipo==='minutos'?'minutos':'ejercicios'}">${h.ok?'✅':'🎯'} ${barra(h.hecho,h.meta)}<span class="oculto">Meta de hoy ${h.hecho} de ${h.meta}</span></span>`;
 }
@@ -80,7 +82,8 @@ export const portada={
   titulo:'Aprender',
   vista(){
     const p=progreso(),r=recomendar({},p),c0=continuar(p),c=c0&&c0.ruta!==r.ruta?c0:null;
-    return `${htmlSiguiente(r)}
+    const nombre=usuario().nombre;
+    return `${nombre?`<p class="saludo">Hola, ${esc(nombre)} 👋</p>`:''}${htmlSiguiente(r)}
 ${c?`<div class="card continuar"><div><div class="sup-k">Continuar</div><h3>${esc(c.titulo)}</h3><span class="nota">${esc(c.detalle)}</span></div>${boton({texto:'Seguir',go:c.ruta,clase:'ghost'})}</div>`:''}
 <h2>¿Qué quieres aprender?</h2>
 <div class="lista-nav">${areas.map(a=>{const x=resumenArea(a,p);

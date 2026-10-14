@@ -18,16 +18,19 @@ import {cerrarProcedimiento} from './nucleo/procedimiento.js';
 import {leccion,rutaLeccion} from './nucleo/materias.js';
 import {registerSW} from 'virtual:pwa-register';
 import {hablar} from './nucleo/voz.js';
+import {APP_NOMBRE} from './config.js';
+import {acerca,vistaBienvenida,tocaBienvenida,vigilarConexion,avisarVersionNueva,revisarRecordatorio,sincronizarRecordatorio} from './nucleo/app.js';
 
 /* Rutas (van en el #hash de la URL): ver analizar() en nucleo/materias.js.
    ''  Aprender (portada) · 'repaso' · 'logros' · 'perfil' · 'notas' · '<área>' · '<área>/<materia>' · '…/<tema>' · '…/l/<lección>' · '…/<sección>'
    Las rutas viejas (#ingles/l/can, #algebra/…, #fw, #progreso) se resuelven y se reescriben a la canónica.
    Cada vista exporta vista() y, si las necesita, alEntrar(), alMostrar(), alSalir(), alClic(t, ir, repintar)
    e inmersiva (true mientras es una sesión de práctica a pantalla completa: sin barras de la app). */
-const ESPECIALES={repaso,logros,perfil,get notas(){return vistaNotas([])}};
+const ESPECIALES={repaso,logros,perfil,acerca,get notas(){return vistaNotas([])},get bienvenida(){return vistaBienvenida()}};
 function resolver(ruta){
   const x=analizar(ruta),{m}=x;
-  if(x.tipo==='portada')return {...x,v:portada};
+  // La primera vez (sin progreso) la portada es la bienvenida: nombre, qué estudiar y meta diaria
+  if(x.tipo==='portada')return tocaBienvenida()?{...x,tipo:'especial',ruta:'bienvenida',v:vistaBienvenida()}:{...x,v:portada};
   if(x.tipo==='especial')return {...x,v:ESPECIALES[x.ruta]};
   if(x.tipo==='notas')return {...x,v:vistaNotas(x.resto)};
   if(x.tipo==='area')return {...x,v:vistaArea(x.area)};
@@ -74,11 +77,6 @@ function pintarNav(){
 }
 function go(ruta){
   const nueva=resolver(ruta);
-  // Hay una versión nueva instalada: se aplica al cambiar de pantalla, nunca en medio de un ejercicio
-  if(hayVersionNueva&&cur&&nueva.ruta!==cur.ruta){
-    try{history.replaceState(null,'',nueva.ruta?'#'+nueva.ruta:location.pathname+location.search)}catch(e){}
-    location.reload();return;
-  }
   cur?.v.alSalir?.();cerrarHoja();cerrarProcedimiento();
   cur=nueva;
   if(cur.seccion)visitar(cur.m.id,cur.seccion);
@@ -88,7 +86,7 @@ function go(ruta){
   cur.v.alEntrar?.();
   pintar();pintarBarra();
   if(cur.ruta!==anterior){const v=$('#vista');v.classList.remove('entrando');void v.offsetWidth;v.classList.add('entrando');anterior=cur.ruta}
-  document.title=cur.ruta?`${cur.v.titulo} · CiberLab`:'CiberLab';
+  document.title=cur.ruta?`${cur.v.titulo} · ${APP_NOMBRE}`:APP_NOMBRE;
   try{history.replaceState(null,'',cur.ruta?'#'+cur.ruta:location.pathname+location.search)}catch(e){}
   window.scrollTo(0,0);
 }
@@ -108,7 +106,8 @@ document.addEventListener('click',e=>{
   if(t.dataset.decir!==undefined)hablar(t.dataset.decir,{lento:!!t.dataset.lento});
   cur.v.alClic?.(t,cur.ir||go,pintar);
 });
-window.addEventListener('progreso',()=>{pintarBarra();pintarNav()});
+let sincRec=null;
+window.addEventListener('progreso',()=>{pintarBarra();pintarNav();clearTimeout(sincRec);sincRec=setTimeout(sincronizarRecordatorio,2000)});
 document.addEventListener('repintar',pintar); // p. ej. cuando se acaba el tiempo de un jefe
 
 /* ---------- minutos para la meta diaria: solo cuenta con la pestaña visible y actividad en el último minuto ---------- */
@@ -117,11 +116,10 @@ for(const ev of ['pointerdown','keydown','scroll'])document.addEventListener(ev,
 setInterval(()=>{if(document.visibilityState==='visible'&&Date.now()-ultimaAccion<60000)sumarSegundos(15)},15000);
 
 /* ---------- PWA: funciona sin internet y se actualiza sola ---------- */
-// El service worker nuevo toma el control solo (autoUpdate); en vez de recargar de golpe, go() recarga al cambiar de pantalla.
-let hayVersionNueva=false;
+// El service worker nuevo toma el control solo (autoUpdate); en vez de recargar de golpe, aparece "Hay una versión nueva · Actualizar".
 registerSW({
   immediate:true,
-  onNeedReload(){hayVersionNueva=true},
+  onNeedReload(){avisarVersionNueva()},
   onRegisteredSW(url,reg){
     if(!reg)return;
     const buscar=()=>{if(navigator.onLine)reg.update().catch(()=>{})};
@@ -134,3 +132,8 @@ const rutaDelHash=()=>{try{return decodeURIComponent(location.hash.slice(1))}cat
 // Si alguien cambia el #hash a mano o abre un enlace con la app ya abierta (replaceState no dispara este evento)
 window.addEventListener('hashchange',()=>{const r=rutaDelHash();if(r!==cur.ruta)go(r)});
 go(rutaDelHash());
+// Pantalla de bienvenida (splash) fuera en cuanto se pinta la app
+{const s=document.getElementById('splash');if(s){s.classList.add('fuera');setTimeout(()=>s.remove(),300)}}
+vigilarConexion();
+// Recordatorio diario: con la app abierta se revisa cada minuto y al volver a ella
+setInterval(revisarRecordatorio,60000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')revisarRecordatorio()});revisarRecordatorio();

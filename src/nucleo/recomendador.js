@@ -12,6 +12,7 @@ import {materias,rutaLeccion,rutaTema} from './materias.js';
 import {habilidadActual,cofresTema,cofreAbierto,jefeAbierto,jefeVencido} from './camino.js';
 import {progreso,datosMateria,pendientes,hoy} from './progreso.js';
 import {DOMINIO,estadoDominio} from './metodo.js';
+import {intereses} from './usuario.js';
 
 const nombre=id=>materias.find(m=>m.id===id)?.nombre||id;
 const pct=x=>Math.round(x*100);
@@ -63,6 +64,9 @@ export function recomendar({excluir,materia}={},p=progreso()){
     lista=lista.filter(c=>c.materia===materia);
     return lista[0]||{regla:0,materia,titulo:`¡Al día en ${nm}!`,porque:'Repite lo que quieras o prueba otra materia.',ruta:''};
   }
+  // Lo que eligió estudiar en la bienvenida va primero (sin perder el orden de las reglas)
+  const gusta=intereses();
+  if(gusta.length)lista=[...lista.filter(c=>!c.materia||gusta.includes(c.materia)),...lista.filter(c=>c.materia&&!gusta.includes(c.materia))];
   // Alternancia: tras 3 sesiones seguidas de la misma materia, sugerir otra (primero sus repasos)
   if(cansada){
     const otraRep=Object.entries(porMateria).find(([mid,n])=>mid!==cansada&&n>0);

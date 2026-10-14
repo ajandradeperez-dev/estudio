@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Ícono de la app: cuaderno abierto (estudiar) con una chispa dorada (racha). Fuente de todos los PNG (scripts/iconos.mjs).
+       Todo el dibujo cabe en el círculo seguro del ícono maskable (radio 40 % = 205 px desde el centro). -->
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6470f3"/>
+      <stop offset="1" stop-color="#3540b0"/>
+    </linearGradient>
+  </defs>
+  <rect id="fondo-rect" width="512" height="512" rx="112" fill="url(#fondo)"/>
+  <g id="dibujo">
+    <path d="M256 196C214 166 160 158 112 170v196c48-12 102-4 144 26Z" fill="#ffffff"/>
+    <path d="M256 196c42-30 96-38 144-26v196c-48-12-102-4-144 26Z" fill="#e6e8ff"/>
+    <path d="M140 214c30-6 62-2 92 10M140 252c30-6 62-2 92 10M140 290c30-6 62-2 92 10M140 328c30-6 62-2 92 10" fill="none" stroke="#b9bef5" stroke-width="12" stroke-linecap="round"/>
+    <path d="M280 224c30-12 62-16 92-10M280 262c30-12 62-16 92-10M280 300c30-12 62-16 92-10" fill="none" stroke="#a9afee" stroke-width="12" stroke-linecap="round"/>
+    <path d="M256 70c7 30 20 43 50 50-30 7-43 20-50 50-7-30-20-43-50-50 30-7 43-20 50-50Z" fill="#ffc93c"/>
+  </g>
+</svg>

@@ -12,7 +12,8 @@ import orig2 from './algebra-basica.js';
 // TeX sencillo → texto que entiende compilar(): \dfrac{a}{b} → ((a)/(b)), x^{3} → x^(3), \cdot → *
 export function texATexto(t){
   let s=String(t).replace(/\\left|\\right/g,'').replace(/\\cdot/g,'*').replace(/\\,/g,'');
-  for(let i=0;i<6;i++)s=s.replace(/\^\{([^{}]*)\}/g,'^($1)').replace(/\\d?frac\{([^{}]*)\}\{([^{}]*)\}/g,'(($1)/($2))');
+  for(let i=0;i<6;i++)s=s.replace(/\^\{([^{}]*)\}/g,'^($1)').replace(/\\d?frac\{([^{}]*)\}\{([^{}]*)\}/g,'(($1)/($2))').replace(/\\sqrt\{([^{}]*)\}/g,'sqrt($1)');
+  s=s.replace(/\\(sin|cos|tan|ln|log|exp)\b/g,'$1');
   return s.replace(/[{}]/g,'');
 }
 const dentro=en=>{const m=String(en).match(/\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/);return m?(m[1]||m[2]):''};

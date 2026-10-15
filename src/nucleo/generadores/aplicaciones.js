@@ -159,4 +159,44 @@ export function escenarioNegocio(rng){
   ].map(p=>({...p,profundidad:'escenario',comprobar:()=>p.verificar(p.respuesta)}));
 }
 
-export default {'apl/planes':planes,'apl/boletos':boletos,'apl/areas':areas,'apl/crecimiento':crecimiento};
+/* ---------- Movimiento (derivadas): velocidad, cuándo se detiene, altura máxima ---------- */
+const movimiento={
+  titulo:'Movimiento y derivadas',profundidad:()=> 'aplicacion',
+  alternativa:'La posición cambia; su ritmo de cambio es la velocidad (s′) y el ritmo de cambio de la velocidad es la aceleración (s″). Algo se detiene o llega a lo más alto cuando su velocidad es 0.',
+  generar(n,rng){
+    const ps={
+      pelota:()=>{const v0=rng.entero(2,8)*5,h0=n>=3?rng.entero(0,4)*5:0,pide=n===1?'vel':n===2?'cima':n===3?'hmax':n===4?'vel':'hmax',t=rng.entero(1,Math.max(1,Math.floor(v0/10)));
+        const s=x=>-5*x*x+v0*x+h0,txt=`Una pelota se lanza hacia arriba${h0?` desde ${h0} m`:''}: su altura es \\(h(t) = -5t^{2} + ${v0}t${h0?` + ${h0}`:''}\\) (m, t en s).`;
+        if(pide==='vel'){const v=v0-10*t;return {enunciado:`${txt} ¿Cuál es su velocidad en \\(t = ${t}\\) s (m/s)?`,v,resp:String(v),pasos:[paso('v(t) = h′(t)',`\\(-10t + ${v0}\\)`,'Deriva la altura.'),final('Evalúa',`\\(${c(v)}\\)`,v<0?'Negativa: ya va bajando.':'Positiva: todavía sube.',String(v))],errores:[malNum(s(t),'Esa es la altura.'),malNum(v0-5*t,'(5t²)′ = 10t.'),malNum(-10,'Esa es la aceleración.')].filter(e=>e.valor!==String(v)),comprobar:()=>casi((s(t+1e-6)-s(t-1e-6))/2e-6,v,1e-4)}}
+        const tc=v0/10;if(pide==='cima')return {enunciado:`${txt} ¿En qué momento llega a lo más alto (s)?`,v:tc,resp:numTxt(tc),pasos:[paso('Arriba la velocidad es 0',`\\(-10t + ${v0} = 0\\)`,'h′(t) = 0.'),final('Despeja',`\\(t = ${c(numTxt(tc))}\\)`,'Ahí deja de subir.',numTxt(tc))],errores:[malNum(v0/5,'Ese es cuando vuelve al suelo.'),malNum(s(tc),'Esa es la altura máxima.'),malNum(v0,'Divide entre 10.')],comprobar:()=>s(tc)>=s(tc+0.01)&&s(tc)>=s(tc-0.01)};
+        const hm=s(tc);return {enunciado:`${txt} ¿Cuál es la altura máxima (m)?`,v:hm,resp:numTxt(hm),pasos:[paso('Momento de la cima',`\\(h'(t) = 0 \\Rightarrow t = ${numTxt(tc)}\\)`,'Velocidad cero.'),final('Evalúa la altura',`\\(h(${numTxt(tc)}) = ${c(numTxt(hm))}\\)`,'Altura máxima.',numTxt(hm))],errores:[malNum(tc,'Ese es el tiempo.'),malNum(v0*tc,'Evalúa toda la función.'),malNum(hm-h0,'Suma la altura inicial.')].filter(e=>Math.abs(num(e.valor)-hm)>1e-9),comprobar:()=>{let m=-Infinity;for(let x=0;x<=v0/5;x+=0.01)m=Math.max(m,s(x));return Math.abs(m-hm)<1e-3}}},
+      frenado:()=>{const v0=rng.elegir([10,20,30,40]),a=rng.elegir([2,4,5]),tS=v0/a,d=v0*tS-a*tS*tS/2;const pide=n<=2||n===4?'tiempo':'distancia';
+        const txt=`Un auto frena: su posición es \\(s(t) = ${v0}t - ${numTxt(a/2)}t^{2}\\) (m, t en s).`;
+        if(pide==='tiempo')return {enunciado:`${txt} ¿Cuántos segundos tarda en detenerse?`,v:tS,resp:numTxt(tS),pasos:[paso('v(t) = s′(t)',`\\(${v0} - ${a}t\\)`,'Derivada.'),final('Se detiene: v = 0',`\\(t = ${c(numTxt(tS))}\\)`,'Despeja.',numTxt(tS))],errores:[malNum(d,'Esa es la distancia.'),malNum(v0/(a/2),'(kt²)′ = 2kt.'),malNum(v0,'Divide entre la desaceleración.')],comprobar:()=>casi(v0-a*tS,0)};
+        return {enunciado:`${txt} ¿Qué distancia recorre hasta detenerse (m)?`,v:d,resp:numTxt(d),pasos:[paso('Se detiene cuando v = 0',`\\(${v0} - ${a}t = 0 \\Rightarrow t = ${numTxt(tS)}\\)`,'Derivada = 0.'),final('Posición en ese momento',`\\(s(${numTxt(tS)}) = ${c(numTxt(d))}\\)`,'Distancia de frenado.',numTxt(d))],errores:[malNum(tS,'Ese es el tiempo.'),malNum(v0*tS,'Falta restar el término del frenado.'),malNum(2*d,'Revisa: s(t) = v₀t − (a/2)t².')],comprobar:()=>casi(d,v0*v0/(2*a))}},
+      cohete:()=>{const k=rng.elegir([1,2]),t=rng.entero(1,4),pide=n<=2?'vel':n<=4?'acel':'vel',s=x=>k*x**3+2*x*x,v=3*k*t*t+4*t,ac=6*k*t+4;
+        const txt=`Un cohete de juguete sube con altura \\(s(t) = ${k===1?'':k}t^{3} + 2t^{2}\\) (m) en los primeros segundos.`;
+        if(pide==='acel')return {enunciado:`${txt} ¿Cuál es su aceleración en \\(t = ${t}\\) s (m/s²)?`,v:ac,resp:String(ac),pasos:[paso('v = s′',`\\(${3*k}t^{2} + 4t\\)`,'Primera derivada.'),paso('a = v′ = s″',`\\(${6*k}t + 4\\)`,'Segunda derivada.'),final('Evalúa',`\\(${c(ac)}\\)`,'m/s².',String(ac))],errores:[malNum(v,'Esa es la velocidad.'),malNum(s(t),'Esa es la altura.'),malNum(6*k*t,'Falta el 4.')].filter(e=>e.valor!==String(ac)),comprobar:()=>casi((s(t+1e-3)-2*s(t)+s(t-1e-3))/1e-6,ac,1e-2)};
+        return {enunciado:`${txt} ¿Qué velocidad lleva en \\(t = ${t}\\) s (m/s)?`,v,resp:String(v),pasos:[paso('v = s′',`\\(${3*k}t^{2} + 4t\\)`,'Deriva.'),final('Evalúa',`\\(${c(v)}\\)`,'m/s.',String(v))],errores:[malNum(s(t),'Esa es la altura.'),malNum(ac,'Esa es la aceleración.'),malNum(3*k*t*t,'Falta el término 4t.')].filter(e=>e.valor!==String(v)),comprobar:()=>casi((s(t+1e-6)-s(t-1e-6))/2e-6,v,1e-4)}}
+    };
+    const x=plantillas(rng,ps);
+    return {plantilla:x.plantilla,enunciado:x.enunciado,respuesta:x.resp,verificar:e=>igualNum(String(e).replace(/\s*(m\/s²|m\/s|m|s)\s*$/,''),x.v),pasos:x.pasos,errores:x.errores,
+      regla:'Velocidad = s′(t), aceleración = s″(t); se detiene o llega a lo más alto cuando la velocidad es 0.',pista:'Deriva la posición.',teclado:'mat',comprobar:x.comprobar};
+  }
+};
+
+/* ---------- Escenario: el cohete de agua (cálculo diferencial) ---------- */
+export function escenarioCohete(rng){
+  const v0=rng.entero(3,8)*10,h0=rng.entero(1,4)*5,h=t=>-5*t*t+v0*t+h0,tc=v0/10,hm=h(tc),tf=(v0+Math.sqrt(v0*v0+20*h0))/10;
+  const ctx=`<p class="contexto">En la feria de ciencias lanzas un cohete de agua desde un techo de ${h0} m. Su altura es \\(h(t) = -5t^{2} + ${v0}t + ${h0}\\) (m, t en segundos).</p>`;
+  const regla='Velocidad = h′(t); en lo más alto h′ = 0; toca el suelo cuando h = 0.';
+  const q=(enun,v,txt,pasos,errores,tol=1e-6)=>({tipo:'escribir',enunciado:ctx+enun,respuesta:txt,verificar:e=>{const x=num(String(e).replace(/\s*(m\/s|m|s)\s*$/,''));return Number.isFinite(x)&&Math.abs(x-v)<=tol*Math.max(1,Math.abs(v))},pasos,errores,regla,pista:'Deriva la altura.',teclado:'mat',profundidad:'escenario'});
+  return [
+    q('1/4 · ¿Con qué velocidad sale el cohete (m/s)?',v0,String(v0),[paso('v(t) = h′(t)',`\\(-10t + ${v0}\\)`,'Deriva.'),final('En t = 0',`\\(${c(v0)}\\)`,'Velocidad inicial.',String(v0))],[malNum(h0,'Esa es la altura inicial.'),malNum(-10,'Esa es la aceleración.'),malNum(v0/10,'Evalúa en t = 0.')]),
+    q('2/4 · ¿En qué momento llega a lo más alto (s)?',tc,numTxt(tc),[paso('h′(t) = 0',`\\(-10t + ${v0} = 0\\)`,'Velocidad cero.'),final('Despeja',`\\(t = ${c(numTxt(tc))}\\)`,'Cima.',numTxt(tc))],[malNum(v0/5,'Divide entre 10.'),malNum(hm,'Esa es la altura máxima.'),malNum(+tf.toFixed(2),'Ese es cuando cae.')]),
+    q('3/4 · ¿Qué altura máxima alcanza (m)?',hm,numTxt(hm),[paso('Evalúa en la cima',`\\(h(${numTxt(tc)})\\)`,'Sustituye.'),final('Resultado',`\\(${c(numTxt(hm))}\\)`,'Altura máxima.',numTxt(hm))],[malNum(hm-h0,'Suma la altura del techo.'),malNum(tc,'Ese es el tiempo.'),malNum(v0*tc,'Evalúa toda la función.')]),
+    q('4/4 · ¿Cuándo toca el suelo (s, 2 decimales)?',tf,tf.toFixed(2),[paso('h(t) = 0',`\\(-5t^{2} + ${v0}t + ${h0} = 0\\)`,'Cuadrática.'),final('Fórmula general (solución positiva)',`\\(t \\approx ${c(tf.toFixed(2))}\\)`,'La negativa no tiene sentido.',tf.toFixed(2))],[malNum(+(v0/5).toFixed(2),'Eso sería saliendo desde el suelo.'),malNum(+((v0-Math.sqrt(v0*v0+20*h0))/10).toFixed(2),'Esa solución es negativa.'),malNum(tc,'Esa es la cima.')],0.003)
+  ].map(p=>({...p,comprobar:()=>p.verificar(p.respuesta)&&Math.abs(h(tf))<1e-6}));
+}
+
+export default {'apl/planes':planes,'apl/boletos':boletos,'apl/areas':areas,'apl/crecimiento':crecimiento,'apl/movimiento':movimiento};

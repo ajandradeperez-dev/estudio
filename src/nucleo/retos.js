@@ -5,7 +5,7 @@
           crear(rng) → [preguntas] (con contexto)  ó  ir:'<ruta>' (abre una herramienta o pantalla, p. ej. el laboratorio)}
    Sin DOM: npm run revisar comprueba que cada reto genere preguntas válidas y que cada tema completo tenga al menos uno. */
 import {crear,BANCOS} from './generadores/index.js';
-import {escenarioNegocio} from './generadores/aplicaciones.js';
+import {escenarioNegocio,escenarioCohete} from './generadores/aplicaciones.js';
 import {escenarioFabrica} from './generadores/aplicaciones-lineal.js';
 
 const con=(contexto,p)=>p&&{...p,enunciado:`<p class="contexto">${contexto}</p>${p.enunciado}`};
@@ -16,6 +16,7 @@ const aplicacion=(id,niveles)=>()=>niveles.map(n=>crear(id,n)).filter(Boolean);
 // Simulacro de un tema: n preguntas mezcladas de sus generadores, de nivel 2 a 4, sin repetir habilidad seguida
 const simulacro=(gens,n=12)=>rng=>{const orden=rng.barajar(gens);return Array.from({length:n},(_,i)=>{const p=crear(orden[i%orden.length],2+(i%3));return p&&{...p,etiqueta:'📝 Simulacro'}}).filter(Boolean)};
 const LINEAL=['al/vector-magnitud','al/vector-operaciones','al/producto-punto','al/angulo','al/producto-cruz','al/matriz-producto','al/gauss','al/gauss-jordan','al/determinante','al/inversa','al/combinacion-lineal','al/independencia','al/transformaciones','al/valores-propios'];
+const DIFERENCIAL=['cd/limites','cd/continuidad','cd/definicion','cd/derivada-polinomio','cd/producto','cd/cociente','cd/cadena','cd/trascendentes','cd/implicita','cd/maximos','cd/optimizacion','cd/razon-cambio','cd/lhopital'];
 const ALGEBRA=['alg/expresiones','alg/ecuacion-lineal','alg/desigualdad','alg/sistema-2x2','alg/sistema-3x3','alg/productos-notables','alg/factorizacion','alg/fracciones-algebraicas','alg/cuadratica','alg/exponentes','alg/logaritmos','alg/funciones'];
 
 export const RETOS=[
@@ -60,6 +61,17 @@ export const RETOS=[
    desc:'Recursos, costos, ganancia y producción con matrices: un caso en 4 preguntas.',crear:escenarioFabrica},
   {id:'mat-simulacro-lineal',materia:'matematicas',tema:'algebra-lineal',titulo:'Simulacro de Álgebra lineal',profundidad:'escenario',dificultad:3,simulacro:true,
    desc:'12 preguntas mezcladas de todo el tema, como un examen.',crear:simulacro(LINEAL)},
+  // ---------- Matemáticas · Cálculo diferencial ----------
+  {id:'mat-optimizar',materia:'matematicas',tema:'calculo-diferencial',titulo:'Optimiza: cercas, cajas y ganancias',profundidad:'aplicacion',dificultad:3,
+   desc:'Problemas reales de máximo y mínimo resueltos con la derivada.',crear:aplicacion('cd/optimizacion',[2,3,4,5])},
+  {id:'mat-razones',materia:'matematicas',tema:'calculo-diferencial',titulo:'Globos, escaleras y conos',profundidad:'aplicacion',dificultad:4,
+   desc:'Razones de cambio relacionadas: cómo cambia una cosa cuando cambia otra.',crear:aplicacion('cd/razon-cambio',[2,3,4,5])},
+  {id:'mat-movimiento',materia:'matematicas',tema:'calculo-diferencial',titulo:'Pelotas, autos y cohetes',profundidad:'aplicacion',dificultad:2,
+   desc:'Velocidad, aceleración, cuándo se detiene y altura máxima.',crear:aplicacion('apl/movimiento',[1,2,3,4])},
+  {id:'mat-cohete',materia:'matematicas',tema:'calculo-diferencial',titulo:'El cohete de agua',profundidad:'escenario',dificultad:3,
+   desc:'Un lanzamiento completo en 4 preguntas: velocidad, cima, altura máxima y caída.',crear:escenarioCohete},
+  {id:'mat-simulacro-diferencial',materia:'matematicas',tema:'calculo-diferencial',titulo:'Simulacro de Cálculo diferencial',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema, como un examen.',crear:simulacro(DIFERENCIAL)},
   // ---------- Inglés: los jefes de cada unidad son escenarios (una tarea real en inglés) ----------
   ...[['presentarte','Presentarte en una reunión'],['rutina-trabajo','Contar tu rutina de trabajo'],['pedir-comprar','Pedir y comprar'],['ciudad-viajes','Moverte en otra ciudad'],
     ['contar-pasado','Contar lo que pasó'],['trabajo-ti','Una conversación de trabajo en TI']].map(([u,t],i)=>

@@ -421,13 +421,14 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | 1 · Profundidad (básicos que se retiran, refuerzo, retos ⭐), PLAN.md, estados ✅🟡⚪, 📚 Lectura | ✅ terminado |
 | 2a · Matemáticas · Álgebra (12 habilidades, 3 plantillas por nivel, 5 retos + simulacro) | ✅ terminado |
 | 2b · Matemáticas · Álgebra lineal (14 habilidades, 3 plantillas por nivel, 3 retos + escenario + simulacro) | ✅ terminado |
-| 2c · Matemáticas: Cálculo diferencial → Cálculo integral; luego Trigonometría y Prealgebra | ⏳ siguiente |
+| 2c · Matemáticas · Cálculo diferencial (13 habilidades, 3 plantillas por nivel, 3 retos + escenario + simulacro) | ✅ terminado |
+| 2d · Matemáticas: Cálculo integral; luego Trigonometría y Prealgebra | ⏳ siguiente |
 | 3 · Ciberseguridad: Fundamentos de redes → Firewalls → Seguridad defensiva → resto | pendiente |
 | 4 · Inglés: completar A1 y A2, luego B1 | pendiente |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | pendiente |
 | 6 · Inglés B2 y temas avanzados | pendiente |
 
-Conteos al terminar el bloque 1: 22 temas (✅ 0 · 🟡 15 · ⚪ 7), 50 generadores, 2 bancos, 15 retos (8 de Ciberseguridad, 7 de Inglés). Conteos al terminar el bloque 2a: ✅ 1 (Álgebra) · 🟡 14 · ⚪ 7, 62 generadores, 21 retos. Bloque 2b: ✅ 2 · 🟡 13 · ⚪ 7, 71 generadores, 26 retos.
+Conteos al terminar el bloque 1: 22 temas (✅ 0 · 🟡 15 · ⚪ 7), 50 generadores, 2 bancos, 15 retos (8 de Ciberseguridad, 7 de Inglés). Conteos al terminar el bloque 2a: ✅ 1 (Álgebra) · 🟡 14 · ⚪ 7, 62 generadores, 21 retos. Bloque 2b: ✅ 2 · 🟡 13 · ⚪ 7, 71 generadores, 26 retos. Bloque 2c: ✅ 3 · 🟡 12 · ⚪ 7, 80 generadores, 31 retos. En las respuestas de expresiones se acepta `sen` (además de `sin`) y `bonito()` (calculo-dif.js) muestra la respuesta como la escribiría una persona.
 
 Cómo se hace un tema de Matemáticas (ver Álgebra): generadores en `generadores/algebra-temas*.js` con `plantillas(rng,{nombre:()=>…})` (3 por nivel, `p.plantilla`), `profundidad(n)`, `referencia`, ≥3 errores con `valor` y `comprobar()` (segundo cálculo independiente: sustituir, probar puntos; `revisar` falla si da false). Para mejorar un generador viejo sin cambiar su id: `conVariantes(g, {nivel:{plantilla:rng=>…}}, comprobar, {regla,pista,teclado})` de `algebra-variantes.js` (ejemplos: `algebra-variantes.js`, `algebra-lineal-variantes.js`), registrado al FINAL de `GENERADORES` en `index.js` para que pise al original. Compara números calculados con una tolerancia directa, no con `celdasIguales` (su lector de texto no entiende `1e-16`). Aplicaciones con contexto en `generadores/aplicaciones.js` (`apl/…`) y retos, escenario y simulacro (`simulacro(gens)`) en `retos.js`. Matemáticas empieza cada habilidad con 2 ejemplos resueltos (`ejemplosResueltos:2` en su materia.js). `revisar` avisa de los generadores de Matemáticas con menos de 3 plantillas y de lo que le falta a cada tema 🟡.
 

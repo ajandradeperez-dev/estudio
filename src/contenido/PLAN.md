@@ -203,18 +203,18 @@ Fuente de verdad del contenido de la app. `npm run revisar` comprueba que cada `
 ### Cálculo diferencial `calculo-diferencial`
 
 - [x] Límites `limites`
-- [ ] Continuidad
-- [ ] Definición de derivada
+- [x] Continuidad `continuidad`
+- [x] Definición de derivada `definicion-derivada`
 - [x] Derivada de polinomios `derivada-polinomio`
 - [x] Regla del producto `regla-producto`
 - [x] Regla del cociente `regla-cociente`
 - [x] Regla de la cadena `regla-cadena`
-- [ ] Derivadas trigonométricas, exponenciales y logarítmicas
-- [ ] Derivación implícita
-- [ ] Máximos y mínimos
-- [ ] Optimización
-- [ ] Razón de cambio
-- [ ] Regla de L’Hôpital
+- [x] Derivadas trigonométricas, exponenciales y logarítmicas `derivadas-trascendentes`
+- [x] Derivación implícita `derivacion-implicita`
+- [x] Máximos y mínimos `maximos-minimos`
+- [x] Optimización `optimizacion`
+- [x] Razón de cambio `razon-cambio`
+- [x] Regla de L’Hôpital `lhopital`
 
 ### Cálculo integral `calculo-integral`
 

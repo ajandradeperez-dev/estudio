@@ -11,7 +11,7 @@ export const PROFUNDIDAD={
   'alg/ecuacion-lineal':{nivel:hasta(2)},'alg/sistema-2x2':{nivel:hasta(1)},'alg/factorizacion':{nivel:hasta(1)},'alg/exponentes':{nivel:hasta(2)},
   'al/vector-magnitud':{nivel:hasta(1)},'al/vector-operaciones':{nivel:hasta(2)},'al/producto-punto':{nivel:hasta(1)},'al/angulo':{nivel:hasta(1)},
   'al/matriz-producto':{nivel:hasta(1)},'al/determinante':{nivel:hasta(1)},'al/inversa':{nivel:hasta(1)},'al/gauss':{nivel:hasta(1)},
-  'cd/limites':{nivel:hasta(2)},'cd/derivada-polinomio':{nivel:hasta(1)},'cd/producto':{nivel:()=>P},'cd/cociente':{nivel:()=>P},'cd/cadena':{nivel:()=>P},
+  'cd/limites':{nivel:hasta(2)},'cd/derivada-polinomio':{nivel:hasta(1)},'cd/producto':{nivel:hasta(1)},'cd/cociente':{nivel:hasta(1)},'cd/cadena':{nivel:hasta(1)},
   'ci/antiderivada':{nivel:hasta(1)},'ci/definida':{nivel:()=>P},'ci/sustitucion':{nivel:()=>P},'ci/area':{nivel:()=>P},
   'red/bases':{nivel:hasta(2),plantilla:p=>(p.enunciado.match(/a (binario|decimal|hexadecimal)/)||[])[1]||'base'},
   'red/puertos':{nivel:()=>B,plantilla:p=>p.tipo==='emparejar'?'emparejar':p.tipo==='opcion'?'protocolo':/En qué puerto/.test(p.enunciado)?'servicio-a-puerto':'puerto-a-servicio'},

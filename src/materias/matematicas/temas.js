@@ -47,18 +47,18 @@ export default [
   ]},
   {id:'calculo-diferencial',titulo:'Cálculo diferencial',icono:'📈',descripcion:'Límites, continuidad, derivadas y sus aplicaciones.',nodos:[
     {id:'limites',gen:'cd/limites'},
-    {titulo:'Continuidad',proximo:true},
-    {titulo:'Definición de derivada',proximo:true},
+    {id:'continuidad',titulo:'Continuidad',gen:'cd/continuidad'},
+    {id:'definicion-derivada',titulo:'Definición de derivada',gen:'cd/definicion'},
     {id:'derivada-polinomio',titulo:'Derivada de polinomios',gen:'cd/derivada-polinomio'},
     {id:'regla-producto',titulo:'Regla del producto',gen:'cd/producto'},
     {id:'regla-cociente',titulo:'Regla del cociente',gen:'cd/cociente'},
     {id:'regla-cadena',titulo:'Regla de la cadena',gen:'cd/cadena'},
-    {titulo:'Derivadas trigonométricas, exponenciales y logarítmicas',proximo:true},
-    {titulo:'Derivación implícita',proximo:true},
-    {titulo:'Máximos y mínimos',proximo:true},
-    {titulo:'Optimización',proximo:true},
-    {titulo:'Razón de cambio',proximo:true},
-    {titulo:'Regla de L’Hôpital',proximo:true}
+    {id:'derivadas-trascendentes',titulo:'Derivadas trigonométricas, exponenciales y logarítmicas',gen:'cd/trascendentes'},
+    {id:'derivacion-implicita',titulo:'Derivación implícita',gen:'cd/implicita'},
+    {id:'maximos-minimos',titulo:'Máximos y mínimos',gen:'cd/maximos'},
+    {id:'optimizacion',titulo:'Optimización',gen:'cd/optimizacion'},
+    {id:'razon-cambio',titulo:'Razón de cambio',gen:'cd/razon-cambio'},
+    {id:'lhopital',titulo:'Regla de L’Hôpital',gen:'cd/lhopital'}
   ]},
   {id:'calculo-integral',titulo:'Cálculo integral',icono:'∫',descripcion:'Antiderivadas, integral definida, técnicas de integración y aplicaciones.',nodos:[
     {id:'antiderivadas',gen:'ci/antiderivada'},

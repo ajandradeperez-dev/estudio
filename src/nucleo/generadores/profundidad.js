@@ -8,7 +8,7 @@ const B='basico',P='procedimiento',A='aplicacion';
 const hasta=(k,a=B,b=P)=>n=>n<=k?a:b;
 const pregunta=p=>/Escribe la pregunta/.test(p.enunciado);
 export const PROFUNDIDAD={
-  'alg/ecuacion-lineal':{nivel:hasta(2)},'alg/sistema-2x2':{nivel:()=>P},'alg/factorizacion':{nivel:hasta(1)},'alg/exponentes':{nivel:hasta(2)},
+  'alg/ecuacion-lineal':{nivel:hasta(2)},'alg/sistema-2x2':{nivel:hasta(1)},'alg/factorizacion':{nivel:hasta(1)},'alg/exponentes':{nivel:hasta(2)},
   'al/vector-magnitud':{nivel:hasta(1)},'al/vector-operaciones':{nivel:hasta(2)},'al/producto-punto':{nivel:hasta(1)},'al/angulo':{nivel:()=>P},
   'al/matriz-producto':{nivel:()=>P},'al/determinante':{nivel:hasta(1)},'al/inversa':{nivel:()=>P},'al/gauss':{nivel:()=>P},
   'cd/limites':{nivel:hasta(2)},'cd/derivada-polinomio':{nivel:hasta(1)},'cd/producto':{nivel:()=>P},'cd/cociente':{nivel:()=>P},'cd/cadena':{nivel:()=>P},
@@ -34,6 +34,6 @@ export const NOMBRE_PROFUNDIDAD={basico:'Básico',procedimiento:'Procedimiento',
 export function clasificar(id,g,n,p){
   const t=g.profundidad?{nivel:typeof g.profundidad==='function'?g.profundidad:()=>g.profundidad,plantilla:g.plantilla,item:g.item}:PROFUNDIDAD[id]||{nivel:()=>P};
   const profundidad=p.profundidad||t.nivel(n,p)||P;
-  const basico=profundidad===B?(t.item?`gi:${id}:${p.clave}`:`g:${id}:${(t.plantilla?.(p,n))||`n${n}`}`):null;
+  const basico=profundidad===B?(t.item?`gi:${id}:${p.clave}`:`g:${id}:${(t.plantilla?.(p,n))||p.plantilla||`n${n}`}`):null;
   return {profundidad,basico};
 }

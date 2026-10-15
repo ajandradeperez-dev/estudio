@@ -419,17 +419,22 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | Bloque | Estado |
 |---|---|
 | 1 · Profundidad (básicos que se retiran, refuerzo, retos ⭐), PLAN.md, estados ✅🟡⚪, 📚 Lectura | ✅ terminado |
-| 2 · Matemáticas: Álgebra → Álgebra lineal → Cálculo diferencial → Cálculo integral; luego Trigonometría y Prealgebra | ⏳ siguiente |
+| 2a · Matemáticas · Álgebra (12 habilidades, 3 plantillas por nivel, 5 retos + simulacro) | ✅ terminado |
+| 2b · Matemáticas: Álgebra lineal → Cálculo diferencial → Cálculo integral; luego Trigonometría y Prealgebra | ⏳ siguiente |
 | 3 · Ciberseguridad: Fundamentos de redes → Firewalls → Seguridad defensiva → resto | pendiente |
 | 4 · Inglés: completar A1 y A2, luego B1 | pendiente |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | pendiente |
 | 6 · Inglés B2 y temas avanzados | pendiente |
 
-Conteos al terminar el bloque 1: 22 temas (✅ 0 · 🟡 15 · ⚪ 7), 50 generadores, 2 bancos, 15 retos (8 de Ciberseguridad, 7 de Inglés). Meta por habilidad de Matemáticas: 2 ejemplos resueltos, 1 con huecos, generador de 5 niveles con ≥3 plantillas por nivel, ≥3 errores típicos; por tema ≥3 aplicaciones, ≥1 escenario y un simulacro de 10–15 preguntas. Por unidad de Inglés: escucha de 80–150 palabras con 5 preguntas, ≥12 chunks, 2 gramáticas con generador, 2 diálogos, pronunciación, 4-3-2, jefe, ≥40 palabras de vocabulario y ≥3 lecturas graduadas por nivel.
+Conteos al terminar el bloque 1: 22 temas (✅ 0 · 🟡 15 · ⚪ 7), 50 generadores, 2 bancos, 15 retos (8 de Ciberseguridad, 7 de Inglés). Conteos al terminar el bloque 2a: ✅ 1 (Álgebra) · 🟡 14 · ⚪ 7, 62 generadores, 21 retos.
+
+Cómo se hace un tema de Matemáticas (ver Álgebra): generadores en `generadores/algebra-temas*.js` con `plantillas(rng,{nombre:()=>…})` (3 por nivel, `p.plantilla`), `profundidad(n)`, `referencia`, ≥3 errores con `valor` y `comprobar()` (segundo cálculo independiente: sustituir, probar puntos; `revisar` falla si da false). Para mejorar un generador viejo sin cambiar su id: `algebra-variantes.js` (`conVariantes`). Aplicaciones con contexto en `generadores/aplicaciones.js` (`apl/…`) y retos, escenario y simulacro (`simulacro(gens)`) en `retos.js`. Matemáticas empieza cada habilidad con 2 ejemplos resueltos (`ejemplosResueltos:2` en su materia.js). `revisar` avisa de los generadores de Matemáticas con menos de 3 plantillas y de lo que le falta a cada tema 🟡.
+
+Meta por habilidad de Matemáticas: 2 ejemplos resueltos, 1 con huecos, generador de 5 niveles con ≥3 plantillas por nivel, ≥3 errores típicos; por tema ≥3 aplicaciones, ≥1 escenario y un simulacro de 10–15 preguntas. Por unidad de Inglés: escucha de 80–150 palabras con 5 preguntas, ≥12 chunks, 2 gramáticas con generador, 2 diálogos, pronunciación, 4-3-2, jefe, ≥40 palabras de vocabulario y ≥3 lecturas graduadas por nivel.
 
 ## Calidad
 
-- `npm run revisar` (también lo corre la publicación): método de las lecciones, jerarquía (áreas, temas, nodos, enlaces a secciones, ids), contenido de habla de Inglés, migración del progreso, los 50 generadores (200 ejercicios por nivel que pasan su `verificar`, fórmulas KaTeX válidas, regla, profundidad y variedad), PLAN.md ↔ temas.js y los retos.
+- `npm run revisar` (también lo corre la publicación): método de las lecciones, jerarquía (áreas, temas, nodos, enlaces a secciones, ids), contenido de habla de Inglés, migración del progreso, los generadores (200 ejercicios por nivel que pasan su `verificar`, fórmulas KaTeX válidas, regla, profundidad, comprobación independiente y variedad), PLAN.md ↔ temas.js y los retos.
 - `npm run calidad` (`scripts/calidad.mjs`) detecta textos encimados comparando los rectángulos de cada texto visible (`getClientRects`), además de scroll horizontal y toques chicos. Evita anchos fijos y posiciones absolutas en elementos con texto; usa filas con `flex-wrap` (como el Mapa MCER). No reutilices nombres de clase genéricos entre secciones (`.casilla` del mapa chocó con las casillas del cuaderno): usa un prefijo (`mapa-`, `nota-`).
 - Antes de publicar un cambio de interfaz, revísalo a **360 × 800**, en claro y en oscuro: sin scroll horizontal, toques ≥ 44 px, fórmulas largas dentro de su caja; y sin conexión (la app, KaTeX y sus fuentes están en la caché del service worker).
 - Si cambias el formato guardado, sube `VERSION` en `progreso.js`, agrega su paso en `migrar()` y amplía la comprobación de migración de `revisar` (lecciones dominadas, XP, racha, repasos, notas, medallas; los ajustes y la clave de IA viven en otras claves y no se tocan).

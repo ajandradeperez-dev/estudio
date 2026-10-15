@@ -61,7 +61,8 @@ function sesionHabilidad(m,h,{salir,volver,alTerminar}){
   const retirados={has:k=>basicoRetirado(k)};
   const ronda=h.rondas?.length?ejerciciosDe(m,h).filter(x=>h.rondas[(d0?.intentos||0)%h.rondas.length].includes(x.ej))
     .filter(x=>!(profundidadLeccion(h,x.ej)==='basico'&&basicoRetirado(claveBasicoLeccion(x.ref)))):[];
-  let previos=nueva&&gen?['ejemplo','hueco']:[],k=0,porqueHecho=false,ind=0,okInd=0,res=null;
+  // m.ejemplosResueltos (Matemáticas: 2) ejemplos resueltos antes del ejemplo con hueco
+  let previos=nueva&&gen?[...Array(m.ejemplosResueltos||1).fill('ejemplo'),'hueco']:[],k=0,porqueHecho=false,ind=0,okInd=0,res=null;
   const total=()=>previos.length+SESION+(porqueHecho?1:0);
   const cola=[];
   // refuerzo: tras fallar un ejercicio de nivel superior de esta habilidad, vuelve una vez un básico retirado
@@ -150,7 +151,7 @@ export function vistaHabilidad(m,h){
       return `<div class="area-${tono}"><p class="etiqueta-actividad">${t?`${t.icono} ${t.titulo}`:m.nombre}</p>
 <h1>${h.titulo}</h1>${h.resumen?`<p class="lead">${h.resumen}</p>`:''}
 <div class="row" style="margin-bottom:12px">${d?.dominada?chip('👑 Dominada','ok'):chip(faltaDominio({...e,dominada:false}),'area')}<span class="chip">Dificultad ${puntos(nivelDe(d?.rating||1))}</span></div>
-${explicacion?`<div class="card">${explicacion}</div>`:''}
+${explicacion?`<div class="card">${explicacion}${g?.referencia?`<p class="nota" style="margin:8px 0 0">📖 ${g.referencia}</p>`:''}</div>`:''}
 <div class="row hoja-acciones">${explicacion?'<button type="button" class="btn ghost btn-chico" id="hab-nota-exp">📝 Guardar explicación</button>':''}<button type="button" class="btn ghost btn-chico" id="hab-nota-nueva">🗒️ Nota nueva del tema</button></div>
 ${nota?`<div class="card nota-propia"><div class="ej-k">Tu resumen</div>${esc(nota.texto)}</div>`:''}
 ${todoRetirado?`<div class="card" style="margin-top:20px"><p><b>✅ Ya dominas lo básico de esta habilidad.</b> Lo acertaste sin pista en sesiones distintas, así que ya no sale en la práctica: volverá solo como refuerzo si fallas algo más difícil.</p>

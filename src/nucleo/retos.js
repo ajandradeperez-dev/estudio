@@ -5,10 +5,16 @@
           crear(rng) → [preguntas] (con contexto)  ó  ir:'<ruta>' (abre una herramienta o pantalla, p. ej. el laboratorio)}
    Sin DOM: npm run revisar comprueba que cada reto genere preguntas válidas y que cada tema completo tenga al menos uno. */
 import {crear,BANCOS} from './generadores/index.js';
+import {escenarioNegocio} from './generadores/aplicaciones.js';
 
 const con=(contexto,p)=>p&&{...p,enunciado:`<p class="contexto">${contexto}</p>${p.enunciado}`};
 const delGenerador=(id,niveles,contexto)=>rng=>niveles.map(n=>con(typeof contexto==='function'?contexto(rng):contexto,crear(id,n))).filter(Boolean);
 const delBanco=(id,n)=>rng=>{const l=BANCOS[id]?.()||[];return rng.barajar(l).slice(0,n)};
+// Varias preguntas de generadores de aplicación (cada una con su contexto en el enunciado)
+const aplicacion=(id,niveles)=>()=>niveles.map(n=>crear(id,n)).filter(Boolean);
+// Simulacro de un tema: n preguntas mezcladas de sus generadores, de nivel 2 a 4, sin repetir habilidad seguida
+const simulacro=(gens,n=12)=>rng=>{const orden=rng.barajar(gens);return Array.from({length:n},(_,i)=>{const p=crear(orden[i%orden.length],2+(i%3));return p&&{...p,etiqueta:'📝 Simulacro'}}).filter(Boolean)};
+const ALGEBRA=['alg/expresiones','alg/ecuacion-lineal','alg/desigualdad','alg/sistema-2x2','alg/sistema-3x3','alg/productos-notables','alg/factorizacion','alg/fracciones-algebraicas','alg/cuadratica','alg/exponentes','alg/logaritmos','alg/funciones'];
 
 export const RETOS=[
   // ---------- Ciberseguridad ----------
@@ -28,6 +34,19 @@ export const RETOS=[
    desc:'Encuentra el patrón en cada registro y decide qué hacer.',crear:delGenerador('def/logs',[3,4,5],'Estás de turno en el centro de operaciones de seguridad (SOC).')},
   {id:'ciber-incidentes-caso',materia:'ciberseguridad',tema:'defensa',titulo:'Casos de incidentes',profundidad:'escenario',dificultad:4,desc:'Diagnostica y responde casos reales (siempre defensivo).',crear:delBanco('ciber/incidentes',3)},
   {id:'ciber-laboratorio',materia:'ciberseguridad',tema:'defensa',titulo:'Laboratorio de incidentes',profundidad:'escenario',dificultad:4,desc:'Casos completos con evidencia, diagnóstico y respuesta.',ir:'ciberseguridad/incidentes'},
+  // ---------- Matemáticas · Álgebra ----------
+  {id:'mat-planes',materia:'matematicas',tema:'algebra-basica',titulo:'¿Qué plan me conviene?',profundidad:'aplicacion',dificultad:2,
+   desc:'Celular, gimnasio o taxi: costo fijo + precio por uso. Encuentra dónde conviene cada uno.',crear:aplicacion('apl/planes',[1,2,3,5])},
+  {id:'mat-boletos',materia:'matematicas',tema:'algebra-basica',titulo:'Boletos, cafés y monedas',profundidad:'aplicacion',dificultad:3,
+   desc:'Problemas de dos incógnitas que se resuelven con un sistema 2×2.',crear:aplicacion('apl/boletos',[1,3,5])},
+  {id:'mat-areas',materia:'matematicas',tema:'algebra-basica',titulo:'Terrenos, marcos y pelotas',profundidad:'aplicacion',dificultad:3,
+   desc:'Áreas y lanzamientos que llevan a una ecuación cuadrática.',crear:aplicacion('apl/areas',[2,3,5])},
+  {id:'mat-crecimiento',materia:'matematicas',tema:'algebra-basica',titulo:'Bacterias, intereses y depreciación',profundidad:'aplicacion',dificultad:4,
+   desc:'Crecimiento y decrecimiento exponencial; logaritmos para despejar el tiempo.',crear:aplicacion('apl/crecimiento',[1,3,4,5])},
+  {id:'mat-negocio',materia:'matematicas',tema:'algebra-basica',titulo:'Tu propio negocio',profundidad:'escenario',dificultad:3,
+   desc:'Costos, ganancia, punto de equilibrio y meta del mes: un caso completo en 4 preguntas.',crear:escenarioNegocio},
+  {id:'mat-simulacro-algebra',materia:'matematicas',tema:'algebra-basica',titulo:'Simulacro de Álgebra',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema, como un examen.',crear:simulacro(ALGEBRA)},
   // ---------- Inglés: los jefes de cada unidad son escenarios (una tarea real en inglés) ----------
   ...[['presentarte','Presentarte en una reunión'],['rutina-trabajo','Contar tu rutina de trabajo'],['pedir-comprar','Pedir y comprar'],['ciudad-viajes','Moverte en otra ciudad'],
     ['contar-pasado','Contar lo que pasó'],['trabajo-ti','Una conversación de trabajo en TI']].map(([u,t],i)=>

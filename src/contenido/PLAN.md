@@ -165,16 +165,16 @@ Fuente de verdad del contenido de la app. `npm run revisar` comprueba que cada `
 
 - [x] Términos semejantes y propiedad distributiva `expresiones`
 - [x] Ecuaciones lineales `ecuaciones-lineales`
-- [ ] Desigualdades
+- [x] Desigualdades `desigualdades`
 - [x] Sistemas de ecuaciones 2×2 `sistemas-2x2`
-- [ ] Sistemas 3×3
-- [ ] Productos notables
+- [x] Sistemas 3×3 `sistemas-3x3`
+- [x] Productos notables `productos-notables`
 - [x] Factorización `factorizacion`
-- [ ] Fracciones algebraicas
-- [ ] Ecuaciones cuadráticas
+- [x] Fracciones algebraicas `fracciones-algebraicas`
+- [x] Ecuaciones cuadráticas `ecuaciones-cuadraticas`
 - [x] Leyes de exponentes `exponentes`
-- [ ] Exponenciales y logaritmos
-- [ ] Funciones y gráficas
+- [x] Exponenciales y logaritmos `logaritmos`
+- [x] Funciones y gráficas `funciones`
 
 ### Trigonometría `trigonometria`
 

@@ -10,18 +10,18 @@ export default [
     {titulo:'Notación científica',proximo:true}
   ]},
   {id:'algebra-basica',titulo:'Álgebra',icono:'🧮',descripcion:'Expresiones, ecuaciones, sistemas, factorización, cuadráticas, logaritmos y funciones.',nodos:[
-    {id:'expresiones'},
+    {id:'expresiones',gen:'alg/expresiones'},
     {id:'ecuaciones-lineales',gen:'alg/ecuacion-lineal'},
-    {titulo:'Desigualdades',proximo:true},
+    {id:'desigualdades',titulo:'Desigualdades',gen:'alg/desigualdad'},
     {id:'sistemas-2x2',gen:'alg/sistema-2x2'},
-    {titulo:'Sistemas 3×3',proximo:true},
-    {titulo:'Productos notables',proximo:true},
+    {id:'sistemas-3x3',titulo:'Sistemas 3×3',gen:'alg/sistema-3x3'},
+    {id:'productos-notables',titulo:'Productos notables',gen:'alg/productos-notables'},
     {id:'factorizacion',titulo:'Factorización',gen:'alg/factorizacion'},
-    {titulo:'Fracciones algebraicas',proximo:true},
-    {titulo:'Ecuaciones cuadráticas',proximo:true},
+    {id:'fracciones-algebraicas',titulo:'Fracciones algebraicas',gen:'alg/fracciones-algebraicas'},
+    {id:'ecuaciones-cuadraticas',titulo:'Ecuaciones cuadráticas',gen:'alg/cuadratica'},
     {id:'exponentes',titulo:'Leyes de exponentes',gen:'alg/exponentes'},
-    {titulo:'Exponenciales y logaritmos',proximo:true},
-    {titulo:'Funciones y gráficas',proximo:true}
+    {id:'logaritmos',titulo:'Exponenciales y logaritmos',gen:'alg/logaritmos'},
+    {id:'funciones',titulo:'Funciones y gráficas',gen:'alg/funciones'}
   ]},
   {id:'trigonometria',titulo:'Trigonometría',icono:'📐',descripcion:'Razones, círculo unitario, identidades y ecuaciones (lo necesario para cálculo).',nodos:[
     {titulo:'Razones trigonométricas',proximo:true},

@@ -227,10 +227,10 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
   for(const id of Object.keys(GENERADORES))if(!PROFUNDIDAD[id]&&!GENERADORES[id].profundidad)mal(`generador ${id}`,'falta su profundidad en generadores/profundidad.js');
   const katex=(await import(pathToFileURL(join(raiz,'..','..','node_modules','katex','dist','katex.mjs')).href)).default;
   const formulas=t=>[...String(t).matchAll(/\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]/g)].map(m=>m[1]||m[2]);
-  let total=0;
+  let total=0;const sinPlantillas=new Set();
   for(const id of Object.keys(GENERADORES)){
     for(let n=1;n<=5;n++){
-      const claves=new Set(),dg=`generador ${id} nivel ${n}`;let primero='';
+      const claves=new Set(),plantillas=new Set(),dg=`generador ${id} nivel ${n}`;let primero='';
       for(let i=0;i<200;i++){
         let p;try{p=crear(id,n,{semilla:i*7919+n})}catch(e){mal(dg,`falla al generar: ${e.message}`);break}
         total++;claves.add(p.clave);const t=p.tipo||'escribir';
@@ -238,6 +238,9 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
         if(!ok&&!primero)primero=`su respuesta no pasa su verificar: ${String(p.enunciado).slice(0,80)} → ${p.respuesta}`;
         if(!p.regla&&!primero)primero='falta la regla';
         if(!PROFUNDIDADES.includes(p.profundidad)&&!primero)primero=`sin nivel de profundidad válido (${p.profundidad}): agrégalo en generadores/profundidad.js`;
+        // segundo cálculo independiente (sustituir la solución, probar puntos…)
+        if(p.comprobar){let ok=false;try{ok=p.comprobar()}catch(e){}if(!ok&&!primero)primero=`la comprobación independiente falla: ${String(p.enunciado).slice(0,80)} → ${p.respuesta}`}
+        if(p.plantilla)plantillas.add(p.plantilla);
         // Procedimiento: pasos {que, como, porque}; el último con res, que da la respuesta
         const ps=p.pasos||[],ult=ps.at(-1),plano=x=>String(x??'').replace(/<[^>]+>/g,'').trim().toLowerCase();
         if(!(ps.length>=2&&ps.every(x=>x&&typeof x==='object'&&x.que&&x.como&&x.porque))&&!primero)primero='los pasos deben ser ≥ 2 objetos {que, como, porque}';
@@ -248,9 +251,12 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
       }
       if(primero)mal(dg,primero);
       if(claves.size<8)mal(dg,`solo ${claves.size} ejercicios distintos en 200 (mínimo 8, una sesión entera)`);
+      // Matemáticas: al menos 3 plantillas por nivel (aviso mientras se completan las habilidades viejas)
+      if(/^(alg|al|cd|ci|tri|pre|apl)\//.test(id)&&plantillas.size<3)sinPlantillas.add(id);
     }
   }
   for(const [id,f] of Object.entries(BANCOS)){const l=f();if(!l.length||l.some(x=>!x.ref||!x.regla))mal(`banco ${id}`,'vacío o con ejercicios sin ref o sin regla')}
+  if(sinPlantillas.size)avisos.push(`generadores de Matemáticas con menos de 3 plantillas por nivel: ${[...sinPlantillas].join(', ')}`);
   console.log(`generadores: ${Object.keys(GENERADORES).length} · ${total} ejercicios generados y verificados · ${Object.keys(BANCOS).length} bancos`);
 }
 // Plan de contenido (src/contenido/PLAN.md, la fuente de verdad), retos y estado de cada tema (✅ completo / 🟡 parcial / ⚪ próximo)
@@ -279,7 +285,7 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
     if(!r.titulo||!r.desc)mal(dr,'falta titulo o desc');
     if(r.crear)for(let i=0;i<20;i++){let l;try{l=r.crear(crearRng(i*977+1))}catch(e){mal(dr,`falla al crear: ${e.message}`);break}
       if(!l?.length){mal(dr,'no genera preguntas');break}
-      const malas=l.filter(q=>!q||!q.regla||(q.verificar&&(q.tipo||'escribir')==='escribir'&&!q.forma&&!q.verificar(q.respuesta)));
+      const malas=l.filter(q=>!q||!q.regla||(q.verificar&&(q.tipo||'escribir')==='escribir'&&!q.forma&&!q.verificar(q.respuesta))||(q.comprobar&&!q.comprobar()));
       if(malas.length){mal(dr,'genera preguntas sin regla o cuya respuesta no pasa su verificar');break}
       nRetos+=l.length}
   }
@@ -304,7 +310,8 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
       const rev=habs.map(h=>({h,...revisarHabilidad(h)})),completas=rev.filter(x=>x.completa).length;
       const estado=!habs.length?'proximo':!prox&&completas===habs.length&&retos.length?'completo':'parcial';
       estados[estado]++;
-      if(estado==='parcial'&&!retos.length)avisos.push(`${materia}/${t.id}: tema sin retos de aplicación ni escenarios todavía`);
+      if(estado==='parcial'){const falta=[...(retos.length?[]:['retos de aplicación o escenario']),...(prox?[`${prox} habilidades próximamente`]:[]),...rev.filter(x=>!x.completa).map(x=>`${x.h.id}: ${x.faltan.join(', ')}`)];
+        avisos.push(`${materia}/${t.id} 🟡 falta: ${falta.join(' · ')}`)}
     }
   }
   for(const r of RETOS){const defs=existsSync(join(raiz,r.materia,'temas.js'))?(await import(pathToFileURL(join(raiz,r.materia,'temas.js')).href)).default:[];

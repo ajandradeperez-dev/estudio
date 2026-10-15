@@ -1,9 +1,14 @@
-/* npm run atras: el botón Atrás nivel por nivel, en teléfono (360 px, táctil) y en escritorio.
-   - 6 niveles (Aprender → Estudio → Matemáticas → Álgebra lineal → lección → procedimiento abierto) y 7 Atrás: recorre cada nivel
-     en orden inverso y termina en Aprender sin salir; un Atrás más en Aprender no sale (teléfono: «Toca otra vez para salir»).
-   - Lo mismo entrando por un enlace directo a la lección y después de recargar; el ← de las migas; y las otras ramas
-     (Hablar, Acerca de, ✨ IA, Propuestas, Mis materias, Notas, una sección de Ciberseguridad, una pestaña).
-   Atrás del sistema = history.back(). Compila, levanta `vite preview` en el puerto 4798 y lo apaga al terminar. */
+/* npm run atras: el botón Atrás con el modelo "una entrada por cada navegación del usuario" (ver main.js), en teléfono
+   (360 px, táctil) y en escritorio. Atrás = page.goBack() (el Atrás del navegador, como el botón del teléfono).
+   - 6 niveles por toques (Aprender → Estudio → Matemáticas → Álgebra lineal → lección → práctica con hoja y procedimiento):
+     Atrás cierra procedimiento, hoja, sale de la práctica y baja lección → tema → materia → Estudio → Aprender; en Aprender
+     un Atrás más muestra «Toca otra vez para salir» sin salir.
+   - Enlace directo a una lección + primer toque: se reconstruye la cadena de padres y Atrás baja nivel por nivel.
+   - Recarga a mitad del camino: las entradas siguen y Atrás baja igual.
+   - Práctica: varias preguntas seguidas no acumulan entradas; «¿Salir de la lección?» se cierra con Atrás; «Salir» vuelve a
+     la lección sin dejar entradas de más.
+   - popstate nunca hace push ni replace (lo verifica el diagnóstico) y Acerca de muestra el diagnóstico con 3 toques.
+   Compila, levanta `vite preview` en el puerto 4798 y lo apaga al terminar. */
 import {existsSync} from 'node:fs';
 import {spawn,execSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
@@ -17,113 +22,109 @@ if(!process.argv.includes('--sin-build'))execSync('npm run build',{cwd:raiz,stdi
 const servidor=spawn(`npx vite preview --port ${PUERTO} --strictPort`,{cwd:raiz,shell:true,stdio:'ignore'});
 const apagar=()=>{try{process.platform==='win32'?execSync(`taskkill /PID ${servidor.pid} /T /F`,{stdio:'ignore'}):servidor.kill()}catch(e){}};
 await new Promise(r=>setTimeout(r,3500));
+
 let f = 0; const check = (c, m) => { console.log((c ? 'OK   ' : 'FALLO') + ' ' + m); if (!c) f++; };
-const ruta=candidatos.find(x=>existsSync(x));if(!ruta){console.log('No encontré Chrome ni Edge (pon la ruta en NAVEGADOR).');apagar();process.exit(1)}
+const ruta = candidatos.find(x => existsSync(x)); if (!ruta) { console.log('No encontré Chrome ni Edge (pon la ruta en NAVEGADOR).'); apagar(); process.exit(1); }
 const b = await chromium.launch({executablePath: ruta});
 const hash = p => decodeURIComponent(new URL(p.url()).hash.slice(1));
 const dentro = p => p.url().startsWith(BASE);
-const atras = async p => { await p.evaluate(() => history.back()); await p.waitForTimeout(450); };
-for (const [nombre, op] of [['teléfono', {viewport: {width: 360, height: 800}, isMobile: true, hasTouch: true}], ['escritorio', {viewport: {width: 1280, height: 800}}]]) {
-  console.log(`--- ${nombre}`);
-  const ctx = await b.newContext(op);
-  await ctx.addInitScript(() => { if (!localStorage.getItem('ciberlab-usuario')) localStorage.setItem('ciberlab-usuario', '{"bienvenida":true,"nombre":"Ana"}'); });
-  const p = await ctx.newPage(); const err = []; p.on('pageerror', e => err.push(e.message));
-  await p.goto(BASE); await p.waitForTimeout(600);
-  // 6 niveles: Aprender → Estudio → Matemáticas → Álgebra lineal → lección → procedimiento abierto
-  await p.click('#vista .tarjeta-nav >> text=Estudio'); await p.waitForTimeout(300);
-  await p.click('#vista .tarjeta-nav >> text=Matemáticas'); await p.waitForTimeout(300);
-  await p.click('#vista .tarjeta-nav >> text=Álgebra lineal'); await p.waitForTimeout(300);
-  const tema = hash(p);
-  await p.click('#vista [data-go*="/l/"]'); await p.waitForTimeout(300);
-  const leccion = hash(p);
-  check(/\/l\//.test(leccion), `entra a la lección: ${leccion}`);
-  await p.click('#hab-empezar'); await p.waitForTimeout(300);
-  // responde lo que toque hasta que una hoja de feedback ofrezca «📖 Ver procedimiento»
-  for (let k = 0; k < 16 && !(await p.locator('#hoja-proc').count()); k++) {
-    if (await p.locator('#hoja-seguir').count()) { await p.click('#hoja-seguir'); await p.waitForTimeout(250); continue; }
+const atras = async p => { await p.goBack({timeout: 2500}).catch(() => {}); await p.waitForTimeout(400); };
+const estado = async p => !dentro(p) ? 'FUERA' : await p.locator('#procedimiento').count() ? 'proc' : await p.locator('.modal-fondo').count() ? 'modal'
+  : await p.locator('#hoja').count() ? 'hoja' : await p.locator('.sesion').count() ? 'sesion' : hash(p) || 'Aprender';
+// Responde lo que toque hasta que la hoja de feedback ofrezca «📖 Ver procedimiento» (o hasta n respuestas)
+async function responder(p, {hastaProc = true, veces = 16} = {}) {
+  for (let k = 0; k < veces; k++) {
+    if (hastaProc && await p.locator('#hoja-proc').count()) return true;
+    if (await p.locator('#hoja-seguir').count()) { if (!hastaProc && k > 0) return true; await p.click('#hoja-seguir'); await p.waitForTimeout(250); continue; }
     if (await p.locator('#ses-resp:not([readonly])').count()) await p.fill('#ses-resp', '1');
     if (await p.locator('#vista .opcion:not([disabled])').count()) await p.click('#vista .opcion:not([disabled]) >> nth=0');
     for (const c of await p.$$('#vista .celda:not([readonly])')) await c.fill('1');
     const c = p.locator('#ses-comprobar'); if (await c.count() && await c.isEnabled()) await c.click(); else if (await p.locator('#ses-continuar').count()) await p.click('#ses-continuar');
     await p.waitForTimeout(300);
   }
-  if (!(await p.locator('#hoja-proc').count())) console.log('     botones: ' + (await p.$$eval('#vista button, #hoja button', l => l.map(x => x.id || x.textContent.trim().slice(0, 20)))).join(' | '));
-  await p.click('#hoja-proc', {timeout: 5000}); await p.waitForTimeout(300);
-  check(await p.locator('#procedimiento').count() === 1, 'procedimiento abierto (nivel 6)');
+  return !!(await p.locator('#hoja-proc').count());
+}
+const toque = (p, sel) => p.click(sel);
+
+for (const [nombre, op] of [['teléfono', {viewport: {width: 360, height: 800}, isMobile: true, hasTouch: true}], ['escritorio', {viewport: {width: 1280, height: 800}}]]) {
+  console.log(`--- ${nombre}`);
+  const ctx = await b.newContext(op);
+  await ctx.addInitScript(() => { if (!localStorage.getItem('ciberlab-usuario')) localStorage.setItem('ciberlab-usuario', '{"bienvenida":true,"nombre":"Ana"}'); });
+  const p = await ctx.newPage(); const err = []; p.on('pageerror', e => err.push(e.message));
+  await p.goto(BASE); await p.waitForTimeout(600);
+  const largo0 = await p.evaluate(() => history.length);
+  await toque(p, '#vista .tarjeta-nav >> text=Estudio'); await p.waitForTimeout(250);
+  await toque(p, '#vista .tarjeta-nav >> text=Matemáticas'); await p.waitForTimeout(250);
+  await toque(p, '#vista .tarjeta-nav >> text=Álgebra lineal'); await p.waitForTimeout(250);
+  const tema = hash(p);
+  await toque(p, '#vista [data-go*="/l/"]'); await p.waitForTimeout(250);
+  const leccion = hash(p);
+  check(/\/l\//.test(leccion), `entra a la lección: ${leccion}`);
+  check(await p.evaluate(() => history.length) - largo0 === 5, `una entrada por cada navegación (portada + 4 pantallas): ${await p.evaluate(() => history.length) - largo0}`);
+  await toque(p, '#hab-empezar'); await p.waitForTimeout(300);
+  check(await responder(p), 'la hoja de feedback ofrece «Ver procedimiento»');
+  await toque(p, '#hoja-proc'); await p.waitForTimeout(300);
+  check(await estado(p) === 'proc', 'procedimiento abierto (nivel 6)');
   const pasos = [];
-  for (let i = 1; i <= 7; i++) { await atras(p); pasos.push(dentro(p) ? (await p.locator('#procedimiento').count() ? 'proc' : await p.locator('.modal-fondo').count() ? 'modal' : await p.locator('.sesion').count() ? 'sesion' : hash(p) || 'Aprender') : 'FUERA'); }
+  for (let i = 1; i <= 8; i++) { await atras(p); pasos.push(await estado(p)); }
   console.log('     ' + pasos.join(' → '));
-  check(pasos[0] === 'sesion' || pasos[0] === 'modal', '1.º Atrás cierra el procedimiento');
-  const sinCapas = pasos.filter(x => !['sesion', 'modal', 'proc'].includes(x));
-  check(sinCapas.join() === [leccion, tema, 'estudio/matematicas', 'estudio', 'Aprender'].join(), 'recorre lección → tema → materia → Estudio → Aprender: ' + sinCapas.join(' → '));
-  check(pasos[6] === 'Aprender' && !pasos.includes('FUERA'), 'el 7.º Atrás termina en Aprender sin salir');
-  // en Aprender: un Atrás más no sale (teléfono: «Toca otra vez para salir»; laptop: nada)
-  await p.waitForTimeout(2300); await atras(p);
-  check(dentro(p) && hash(p) === '', 'en Aprender, Atrás no sale de la app');
-  if (nombre === 'teléfono') check(/Toca otra vez para salir/.test(await p.textContent('#aviso').catch(() => '')), 'teléfono: «Toca otra vez para salir»');
-  else check(!(await p.locator('#aviso').count()) || !/salir/.test(await p.textContent('#aviso')), 'escritorio: no hace nada');
-  await p.waitForTimeout(2300);
-  // enlace directo a la lección y después de recargar
+  check(pasos.slice(0, 7).join() === ['hoja', 'sesion', leccion, tema, 'estudio/matematicas', 'estudio', 'Aprender'].join(), 'procedimiento → hoja → práctica → lección → tema → materia → Estudio → Aprender');
+  check(pasos[7] === 'Aprender' && /Toca otra vez para salir/.test(await p.textContent('#aviso').catch(() => '')), 'en Aprender: «Toca otra vez para salir» sin salir');
+  // popstate nunca hizo push ni replace: el diagnóstico marca cada push/replace hecho dentro de popstate (enPop)
+  const diag = await p.evaluate(() => JSON.parse(localStorage.getItem('ciberlab-diagnostico') || '[]'));
+  const malos = diag.filter(x => ['push', 'replace'].includes(x.tipo) && x.enPop).map(x => x.tipo);
+  check(!malos.length && diag.some(x => x.tipo === 'popstate'), `popstate no agrega ni reemplaza entradas (${diag.length} eventos en el diagnóstico)`);
+
+  // práctica: varias preguntas no acumulan entradas; «¿Salir?» se cierra con Atrás; «Salir» vuelve a la lección
+  await p.goto(BASE); await p.waitForTimeout(500);
+  await toque(p, '#vista .tarjeta-nav >> text=Estudio'); await p.waitForTimeout(200);
+  await toque(p, '#vista .tarjeta-nav >> text=Matemáticas'); await p.waitForTimeout(200);
+  await toque(p, '#vista .tarjeta-nav >> text=Álgebra lineal'); await p.waitForTimeout(200);
+  await toque(p, '#vista [data-go*="/l/"]'); await p.waitForTimeout(250);
+  const largoLeccion = await p.evaluate(() => history.length);
+  await toque(p, '#hab-empezar'); await p.waitForTimeout(300);
+  for (let q = 0; q < 3; q++) await responder(p, {hastaProc: false, veces: 6});
+  await p.waitForTimeout(300);
+  const largoPractica = await p.evaluate(() => history.length);
+  check(largoPractica - largoLeccion <= 2, `3 preguntas no acumulan entradas (+${largoPractica - largoLeccion})`);
+  if (await p.locator('#hoja-seguir').count()) { await p.click('#hoja-seguir'); await p.waitForTimeout(300); }
+  await toque(p, '#vista [data-salir]'); await p.waitForTimeout(300);
+  if (await p.locator('.modal-fondo').count()) {
+    await atras(p); check(await estado(p) === 'sesion', 'Atrás cierra «¿Salir de la lección?» y sigues en la práctica');
+    await toque(p, '#vista [data-salir]'); await p.waitForTimeout(300); await toque(p, '.modal [data-r="1"]'); await p.waitForTimeout(600);
+  } else await p.waitForTimeout(400);
+  check(await estado(p) === leccion, `«Salir» vuelve a la lección (${await estado(p)})`);
+  await atras(p); check(await estado(p) === tema, `luego Atrás va al tema, sin entradas de más (${await estado(p)})`);
+
+  // enlace directo a la lección: el primer toque reconstruye la cadena; y recarga a mitad del camino
   for (const modo of ['enlace directo', 'recarga']) {
     const q = await ctx.newPage();
     await q.goto(BASE + '#' + leccion); await q.waitForTimeout(600);
     if (modo === 'recarga') { await q.reload(); await q.waitForTimeout(600); }
-    const r = [];
-    for (let i = 0; i < 5; i++) { await atras(q); r.push(dentro(q) ? hash(q) || 'Aprender' : 'FUERA'); }
-    check(r.slice(0, 4).join() === [tema, 'estudio/matematicas', 'estudio', 'Aprender'].join() && r[4] === 'Aprender', `${modo}: ${r.join(' → ')}`);
+    await q.click('#vista h1'); await q.waitForTimeout(200);   // primer toque (sin navegar)
+    const r = []; for (let i = 0; i < 5; i++) { await atras(q); r.push(await estado(q)); }
+    check(r.join() === [tema, 'estudio/matematicas', 'estudio', 'Aprender', 'Aprender'].join(), `${modo} + primer toque: ${r.join(' → ')}`);
     await q.close();
   }
-  // ← de las migas: también nivel por nivel
-  await p.goto(BASE + '#' + tema); await p.waitForTimeout(500);
-  await p.click('.migas .atras'); await p.waitForTimeout(300); const m1 = hash(p);
-  await p.click('.migas .atras'); await p.waitForTimeout(300); const m2 = hash(p);
-  check(m1 === 'estudio/matematicas' && m2 === 'estudio', `← de las migas: ${m1} → ${m2}`);
-  // otras ramas: Hablar, Notas, Propuestas, Acerca de, Mis materias, sección de Ciberseguridad
-  for (const [desde, esperado] of [['estudio/ingles/hablar/ia', ['estudio/ingles/hablar', 'estudio/ingles', 'estudio', 'Aprender']], ['acerca', ['perfil', 'Aprender']], ['ajustes-ia', ['perfil', 'Aprender']],
-    ['propuestas/nueva', ['propuestas', 'Aprender']], ['mias/nueva', ['mias', 'Aprender']], ['notas/foto', ['notas', 'Aprender']], ['cursos/ciberseguridad/fw', ['cursos/ciberseguridad', 'cursos', 'Aprender']], ['logros', ['Aprender']]]) {
-    const q = await ctx.newPage(); await q.goto(BASE + '#' + desde); await q.waitForTimeout(600);
-    const r = []; for (let i = 0; i < esperado.length; i++) { await atras(q); r.push(dentro(q) ? hash(q) || 'Aprender' : 'FUERA'); }
-    check(r.join() === esperado.join(), `#${desde}: ${r.join(' → ')}`); await q.close();
+  {
+    const q = await ctx.newPage(); await q.goto(BASE); await q.waitForTimeout(500);
+    await q.click('#vista .tarjeta-nav >> text=Estudio'); await q.waitForTimeout(200); await q.click('#vista .tarjeta-nav >> text=Matemáticas'); await q.waitForTimeout(200);
+    await q.reload(); await q.waitForTimeout(700);
+    const r = []; for (let i = 0; i < 3; i++) { await atras(q); r.push(await estado(q)); }
+    check(r.join() === ['estudio', 'Aprender', 'Aprender'].join(), `recarga a mitad del camino: ${r.join(' → ')}`);
+    await q.close();
   }
+  // ← de las migas = Atrás; Perfil → Acerca de → Atrás; diagnóstico con 3 toques en la versión
+  await p.goto(BASE); await p.waitForTimeout(400);
+  await toque(p, '#vista .tarjeta-nav >> text=Estudio'); await p.waitForTimeout(200); await toque(p, '#vista .tarjeta-nav >> text=Matemáticas'); await p.waitForTimeout(200);
+  await toque(p, '.migas .atras'); await p.waitForTimeout(400); check(hash(p) === 'estudio', `← de las migas: #${hash(p)}`);
+  await toque(p, '.nav-tab[data-go="perfil"]'); await p.waitForTimeout(250); await toque(p, '[data-go="acerca"]'); await p.waitForTimeout(250);
+  for (let k = 0; k < 3; k++) await toque(p, '#acerca-version');
+  const t = await p.textContent('#diag-texto').catch(() => '');
+  check(/Versión de la app/.test(t) && /TWA \(APK\)/.test(t) && /popstate|push/.test(t) && await p.locator('#diag-copiar').count() === 1, 'Acerca de: diagnóstico con 3 toques y botón «Copiar»');
+  await atras(p); check(hash(p) === 'perfil', `Acerca de → Atrás → Perfil (#${hash(p)})`);
+  await atras(p); check(hash(p) === 'estudio', `Perfil → Atrás → la pantalla anterior (#${hash(p)})`);
   check(!err.length, 'sin errores de JS ' + err.join(' | '));
-  await ctx.close();
-}
-// Secuencia real de Android: el Atrás del NAVEGADOR (page.goBack, como el botón del teléfono: aplica la protección de Chrome que
-// se salta entradas agregadas sin un toque), 5 niveles y 6 Atrás seguidos SIN tocar la pantalla; con y sin recarga en medio, con y
-// sin pageshow desde la bfcache. history.length nunca baja de 2 y la app no se cierra antes de la portada.
-{
-  console.log('--- Android (Atrás del navegador, sin toques entre Atrás)');
-  const ctx = await b.newContext({viewport: {width: 360, height: 800}, isMobile: true, hasTouch: true});
-  await ctx.addInitScript(() => { if (!localStorage.getItem('ciberlab-usuario')) localStorage.setItem('ciberlab-usuario', '{"bienvenida":true,"nombre":"Ana"}'); });
-  for (const variante of ['seguido', 'recarga en medio', 'pageshow desde bfcache']) {
-    const p = await ctx.newPage(); const err = []; p.on('pageerror', e => err.push(e.message));
-    await p.goto(BASE); await p.waitForTimeout(600);
-    await p.tap('#vista .tarjeta-nav >> text=Estudio'); await p.waitForTimeout(250);
-    await p.tap('#vista .tarjeta-nav >> text=Matemáticas'); await p.waitForTimeout(250);
-    await p.tap('#vista .tarjeta-nav >> text=Álgebra lineal'); await p.waitForTimeout(250);
-    const tema = hash(p);
-    await p.tap('#vista [data-go*="/l/"]'); await p.waitForTimeout(250);
-    const leccion = hash(p);
-    await p.tap('#hab-empezar'); await p.waitForTimeout(300);
-    const r = [], largos = [];
-    for (let i = 1; i <= 6; i++) {
-      if (variante === 'recarga en medio' && i === 3) { await p.reload(); await p.waitForTimeout(700); }
-      if (variante === 'pageshow desde bfcache' && i === 3) { await p.evaluate(() => { const e = new PageTransitionEvent('pageshow', {persisted: true}); dispatchEvent(e); document.dispatchEvent(new Event('visibilitychange')); }); await p.waitForTimeout(200); }
-      await p.goBack({timeout: 2500}).catch(() => {}); await p.waitForTimeout(450);
-      const fuera = !dentro(p);
-      r.push(fuera ? 'FUERA' : await p.locator('.modal-fondo').count() ? 'modal' : await p.locator('.sesion').count() ? 'sesion' : hash(p) || 'Aprender');
-      largos.push(fuera ? 0 : await p.evaluate(() => history.length));
-    }
-    const sin = r.filter(x => !['modal', 'sesion'].includes(x));
-    const esperado = variante === 'recarga en medio' ? null : [leccion, tema, 'estudio/matematicas', 'estudio', 'Aprender'];
-    check(!r.includes('FUERA'), `${variante}: no se cierra (${r.join(' → ')})`);
-    if (esperado) check(sin.slice(0, 5).join() === esperado.join(), `${variante}: baja nivel por nivel hasta Aprender`);
-    else check(sin.includes('Aprender') || sin.at(-1) === 'estudio', `${variante}: sigue bajando nivel por nivel después de recargar`);
-    const antesPortada = r.slice(0, r.indexOf('Aprender') < 0 ? r.length : r.indexOf('Aprender'));
-    check(largos.slice(0, antesPortada.length).every(n => n >= 2), `${variante}: history.length ≥ 2 antes de la portada (${largos.join(', ')})`);
-    check(!err.length, `${variante}: sin errores de JS ${err.join(' | ')}`);
-    await p.close();
-  }
   await ctx.close();
 }
 await b.close(); apagar(); console.log(f ? `${f} FALLOS` : 'Botón Atrás: todo bien en teléfono y escritorio.'); process.exit(f ? 1 : 0);

@@ -13,6 +13,7 @@ import {logros} from './nucleo/logros.js';
 import {vistaNotas} from './nucleo/notas.js';
 import {vistaMias} from './nucleo/mias/vistas.js';
 import {ajustesIA} from './nucleo/ia-ajustes.js';
+import {registrar} from './nucleo/diagnostico.js';
 import {vistaPropuestas,recibirEnlaceMagico,sincronizarPropuestas} from './nucleo/propuestas/vistas.js';
 import {cargarMias} from './nucleo/mias/datos.js';
 import {vistaUbicacion} from './nucleo/ubicacion.js';
@@ -72,6 +73,8 @@ const PESTANAS=[['','🏠','Aprender'],['repaso','🔁','Repasar'],['notas','�
 const pestana=()=>cur.tipo==='notas'?'notas':cur.tipo==='especial'?cur.ruta:''; // Mis materias (mias) es parte de Aprender
 function pintar(){
   const inm=!!cur.v.inmersiva;
+  if(inm&&!enPop&&pintadaRuta===cur.ruta&&!pintadaInm&&!est()?.inm){const e=est()||{};empujar(cur.ruta,{inm:1,desde:e.i??0})}
+  pintadaRuta=cur.ruta;pintadaInm=inm;
   document.body.classList.toggle('sesion-activa',inm);
   $('#vista').innerHTML=(inm?'':htmlMigas(cur))+cur.v.vista();
   cur.v.alMostrar?.();
@@ -83,78 +86,103 @@ function pintarNav(){
   const rep=pendientes().length,act=pestana();
   $('#nav').innerHTML=PESTANAS.map(([ruta,icono,txt])=>`<button class="nav-tab" data-go="${ruta}"${act===ruta?' aria-current="page"':''}><span class="nav-icono" aria-hidden="true">${icono}</span><span>${txt}</span>${ruta==='repaso'&&rep?`<span class="nav-insignia" aria-label="${rep} pendientes">${rep>99?'99+':rep}</span>`:''}</button>`).join('');
 }
-/* ---------- botón Atrás (Android, PWA, APK/TWA, laptop y el ← de las migas) ----------
-   No depende de cuántas entradas tenga el historial: cada pantalla sabe cuál es su ruta padre por su forma (padreDe en
-   nucleo/materias.js). Navegar dentro de la app solo REEMPLAZA la entrada actual (replaceState), nunca agrega entradas.
-   Colchón de historial: Chrome en Android (y el APK/TWA) SE SALTA con el botón Atrás las entradas agregadas con pushState
-   sin que la persona haya tocado la pantalla ("history manipulation intervention"); por eso una sola "trampa" repuesta
-   después de cada Atrás no basta (al segundo Atrás se cerraba la app). La app mantiene COLCHON entradas propias encima de
-   la base ({i: 0…n}) y las rellena en cada toque o tecla (con activación del usuario no se saltan), al cargar, al volver
-   de segundo plano (visibilitychange) y desde la bfcache (pageshow persisted). Cada Atrás baja una entrada: popstate →
-   se cierra lo abierto (modal, dibujo, procedimiento), se sale de la práctica con su ✕ o se va a la ruta padre; y se
-   intenta reponer lo consumido. Así hay margen para muchos Atrás seguidos sin tocar la pantalla.
-   Portada de Aprender: en el teléfono, «Toca otra vez para salir»: se baja hasta la base y un segundo Atrás en 2 s cierra
-   la app (en la base ya no hay entradas propias); en la laptop no hace nada. Hay UN solo listener de popstate (este).
-   Ninguna pantalla cambia location.hash ni usa location.replace: navegan con go() o con el evento 'ir'. */
-const COLCHON=12;
-let salida=null,ignorarPop=0;
+/* ---------- historial y botón Atrás (Android, APK/TWA, PWA, laptop y el ← de las migas) ----------
+   El historial del navegador ES la pila de pantallas: UNA entrada por cada navegación que hace la persona, creada con
+   pushState de forma síncrona dentro del toque o clic (lleva la activación del usuario; Chrome en Android se salta con el
+   botón Atrás las entradas agregadas sin ella, "history manipulation intervention"). Las navegaciones automáticas
+   (redirecciones, rutas viejas, la vuelta de un enlace) usan replaceState. No hay entradas de relleno ni trampas.
+   - popstate SOLO pinta la ruta guardada en la entrada (o cierra la capa de encima): nunca hace push ni replace.
+   - Capas (modal, hoja de feedback, procedimiento, dibujo, visor): cada una agrega su propia entrada al abrirse (se abren
+     con un toque) y Atrás la cierra; si se cierra con su botón, la app quita su entrada con history.back().
+   - Práctica (vista inmersiva sobre la misma ruta): al empezarla con un toque se agrega una entrada; Atrás sale de ella.
+   - Enlace directo o recarga en una ruta profunda: al PRIMER toque se reconstruye la cadena de padres (Aprender → … →
+     la pantalla) con pushState, ya con activación, para que Atrás baje nivel por nivel.
+   - Portada de Aprender: debajo queda una entrada "base"; Atrás llega a ella y muestra «Toca otra vez para salir»; el
+     siguiente Atrás ya no tiene entradas de la app y cierra (en la laptop, sale de la página).
+   Estado de cada entrada: {app:1, i (posición), ruta, inm? (práctica), capa? (id), desde? (posición de la pantalla debajo)}.
+   Diagnóstico: los últimos 30 eventos se guardan (nucleo/diagnostico.js) y se ven en Acerca de (3 toques en la versión). */
+let enPop=false,ignorarPop=0,traversando=false,capaN=0,pintadaRuta=null,pintadaInm=false;
 const urlDe=r=>r?'#'+r:location.pathname+location.search;
-const esTelefono=()=>matchMedia('(pointer:coarse)').matches||matchMedia('(display-mode: standalone)').matches||document.referrer.startsWith('android-app://');
-const posicion=()=>Number.isInteger(history.state?.i)?history.state.i:0;
-// La entrada actual muestra la ruta actual (sin agregar entradas)
-function marcar(ruta){try{history.replaceState({i:posicion()},'',urlDe(ruta))}catch(e){}}
-// Rellena el colchón hasta COLCHON entradas por encima de la base (lo agregado con un toque no se lo salta Chrome)
-function rellenar(){
-  if(salida)return;   // esperando el segundo Atrás para salir: no se rellena
-  try{let p=posicion();const u=urlDe(cur?.ruta||'');while(p<COLCHON){p++;history.pushState({i:p},'',u)}}catch(e){}
+const est=()=>history.state&&history.state.app?history.state:null;
+const pos=()=>est()?.i??0;
+function empujar(ruta,extra={}){try{history.pushState({app:1,i:pos()+1,ruta,...extra},'',urlDe(ruta));registrar('push',{ruta,nota:extra.capa?'capa':extra.inm?'práctica':'',enPop})}catch(e){}}
+function reemplazar(ruta,extra={}){try{const e=est()||{};history.replaceState({app:1,i:e.i??0,ruta,...(e.base&&ruta===''?{base:1}:{}),...extra},'',urlDe(ruta));registrar('replace',{ruta,enPop})}catch(e){}}
+// Primer toque: si la app se abrió en una ruta profunda (enlace o recarga sin cadena), reconstruye Aprender → padres → pantalla;
+// en la portada sin nada debajo, agrega la entrada de la portada sobre la base (así Atrás muestra «Toca otra vez para salir»)
+function alPrimerToque(){
+  if(enPop||!cur)return;
+  const e=est();
+  if(e&&e.i>0)return;
+  if(cur.tipo==='portada'){if(!e||e.i===0){reemplazar('',{base:1});empujar('')}return}
+  if(e&&e.cadena)return;
+  const cadena=[];let r=padreDe(cur);
+  while(r!==null&&r!==undefined&&cadena.length<12){cadena.unshift(r);r=r===''?null:padreDe(r)}
+  try{
+    history.replaceState({app:1,i:0,ruta:'',base:1},'',urlDe(''));
+    let k=0;for(const x of cadena){history.pushState({app:1,i:++k,ruta:x},'',urlDe(x))}
+    history.pushState({app:1,i:++k,ruta:cur.ruta,cadena:1},'',urlDe(cur.ruta));
+    registrar('cadena',{ruta:cur.ruta,nota:cadena.join(' > ')||'(portada)'});
+  }catch(x){}
 }
-// Lo que esté abierto encima de la pantalla se cierra primero (modal, dibujo, procedimiento, hoja de feedback)
-function cerrarCapa(){
-  const modal=[...document.querySelectorAll('.modal-fondo')].pop();
-  if(modal){const b=modal.dataset.atras==='si'?modal.querySelector('[data-r="1"]'):modal.querySelector('[data-r="0"],[data-x],[data-cancelar]');b?b.click():modal.remove();return true}
-  const dib=document.querySelector('.dibujo-fondo');if(dib){dib.querySelector('[data-d="cancelar"]')?.click();return true}
-  if(document.getElementById('procedimiento')){cerrarProcedimiento();return true}
-  // la hoja de feedback de una práctica es parte de la práctica: Atrás sale de la práctica (con su ✕), no pasa a la siguiente pregunta
-  const hoja=document.getElementById('hoja');if(hoja&&!cur.v.inmersiva){cerrarHoja();return true}
-  return false;
-}
-// Un nivel hacia atrás (lo usan el botón Atrás del sistema y el ← de las migas)
-function atras({sistema=false}={}){
-  if(cerrarCapa()){marcar(cur.ruta);return}
-  // lección o práctica en curso: su ✕ pregunta "¿Salir de la lección?" (si no respondió nada, sale directo)
-  const salir=cur.v.inmersiva&&!document.querySelector('.fin-sesion')&&document.querySelector('#vista [data-salir]');
-  if(salir){marcar(cur.ruta);salir.click();return}
-  const padre=padreDe(cur);
-  if(padre!==null){go(padre);return}
-  // portada de Aprender
-  marcar('');
-  if(!sistema||!esTelefono())return;
-  aviso('Toca otra vez para salir',2000);
-  // baja hasta la base (sin entradas propias abajo): el siguiente Atrás cierra la app; si pasan 2 s, se rellena otra vez
-  const p=posicion();
-  if(p>0){ignorarPop++;try{history.go(-p)}catch(e){ignorarPop--}}
-  clearTimeout(salida);salida=setTimeout(()=>{salida=null;marcar(cur.ruta);rellenar()},2000);
-}
-window.addEventListener('popstate',e=>{
-  if(!e.state)return;                       // un <a href="#…"> agrega entradas sin estado: lo maneja hashchange
-  marcar(cur.ruta);                         // la entrada a la que se bajó muestra la pantalla actual (su hashchange no navega)
-  if(ignorarPop){ignorarPop--;return}       // la bajada a la base que hizo la propia app
-  if(salida){clearTimeout(salida);salida=null}
-  atras({sistema:true});
-  if(!salida)rellenar();                    // reponer lo consumido (si Chrome se lo salta, aún quedan entradas abajo)
-});
-// Rellenar con activación del usuario, al volver de segundo plano y al restaurarse desde la bfcache
-// (un toque mientras se espera el segundo Atrás de salida cancela la salida: la persona sigue usando la app)
-const cancelarSalida=()=>{if(salida){clearTimeout(salida);salida=null}};
-for(const ev of ['pointerdown','keydown'])document.addEventListener(ev,()=>{cancelarSalida();if(posicion()<COLCHON)rellenar()},{capture:true,passive:true});
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')rellenar()});
-addEventListener('pageshow',e=>{if(e.persisted)rellenar()});
-// Navegación pedida por otros módulos sin tocar location.hash: document.dispatchEvent(new CustomEvent('ir',{detail:'ruta'}))
-document.addEventListener('ir',e=>go(String(e.detail||'')));
+for(const ev of ['pointerdown','keydown'])document.addEventListener(ev,alPrimerToque,{capture:true,passive:true});
 
-function go(ruta){
-  const nueva=resolver(ruta);
-  if(salida){clearTimeout(salida);salida=null}
+/* ---------- capas con su propia entrada ---------- */
+const SELECTOR_CAPA='.modal-fondo,.dibujo-fondo,#procedimiento,#hoja';
+// Cierra una capa sin tocar el historial (la llama popstate): cancelar en modales, cerrar procedimiento/hoja/dibujo
+function cerrarElemento(el){
+  if(el.matches('.modal-fondo')){const b=el.querySelector('[data-r="0"],[data-x],[data-cancelar],.cerrar,[aria-label="Cerrar"]');b?b.click():el.remove();return}
+  if(el.matches('.dibujo-fondo')){const b=el.querySelector('[data-d="cancelar"]');b?b.click():el.remove();return}
+  if(el.id==='procedimiento'){cerrarProcedimiento();return}
+  if(el.id==='hoja'){cerrarHoja();return}
+  el.remove();
+}
+new MutationObserver(cambios=>{
+  for(const c of cambios){
+    for(const n of c.addedNodes){if(n.nodeType!==1||!n.matches(SELECTOR_CAPA)||n.dataset.capa)continue;
+      n.dataset.capa=String(++capaN);
+      if(!enPop){const e=est()||{};empujar(cur.ruta,{capa:capaN,inm:e.inm,desde:e.desde??e.i??0})}}
+    for(const n of c.removedNodes){if(n.nodeType!==1||!n.dataset?.capa||n.dataset.sinVolver)continue;
+      // cerrada con su propio botón: se quita su entrada (si sigue siendo la de arriba y no hay ya un regreso en camino,
+      // p. ej. «Salir» de la práctica, que vuelve de un salto a la pantalla de abajo)
+      const id=+n.dataset.capa;
+      setTimeout(()=>{if(!traversando&&!enPop&&est()?.capa===id){traversando=true;ignorarPop++;registrar('back',{ruta:cur.ruta,nota:'cerrar capa'});history.back()}},0);}
+  }
+}).observe(document.body,{childList:true});
+
+window.addEventListener('popstate',e=>{
+  registrar('popstate',{ruta:e.state?.ruta,nota:ignorarPop?'propio':''});
+  if(ignorarPop){ignorarPop--;traversando=false;return}
+  const s=e.state&&e.state.app?e.state:null;
+  enPop=true;
+  try{
+    // 1) capas abiertas que ya no tienen su entrada: se cierran (de arriba hacia abajo)
+    const abiertas=[...document.querySelectorAll(SELECTOR_CAPA)].filter(x=>x.dataset.capa).sort((a,b)=>+b.dataset.capa-+a.dataset.capa);
+    for(const el of abiertas)if(!s?.capa||+el.dataset.capa>s.capa){el.dataset.sinVolver='1';cerrarElemento(el)}
+    // 2) la pantalla de la entrada (sin práctica si la entrada no es de práctica)
+    const ruta=s?s.ruta:rutaDelHash();
+    if(ruta!==cur.ruta||(cur.v.inmersiva&&!s?.inm))go(ruta,{modo:'pop'});
+    // 3) en la base de la portada: aviso de salida (el siguiente Atrás cierra la app)
+    else if(s?.base&&cur.tipo==='portada')aviso('Toca otra vez para salir',2000);
+  }finally{enPop=false}
+});
+// El ← de las migas: un Atrás si hay una pantalla de la app debajo; si no (enlace directo sin toques), va al padre
+function atras(){if(pos()>0){registrar('back',{ruta:cur.ruta,nota:'← migas'});history.back()}else{const p=padreDe(cur);if(p!==null)go(p,{modo:'replace'})}}
+// Navegación pedida por otros módulos: document.dispatchEvent(new CustomEvent('ir',{detail:'ruta'})) o {detail:{ruta, reemplazar:true}}
+document.addEventListener('ir',e=>{const d=e.detail;typeof d==='object'&&d?go(String(d.ruta||''),{modo:d.reemplazar?'replace':'push'}):go(String(d||''))});
+
+/* modo: 'push' (la persona navegó: una entrada nueva, síncrona dentro de su toque) · 'replace' (automático) · 'pop' (Atrás:
+   solo pinta). Volver a la misma ruta saliendo de una práctica o capa regresa a su entrada en vez de agregar otra. */
+function go(ruta,{modo='push'}={}){
+  const nueva=resolver(ruta),e=est();
+  registrar('nav',{ruta:nueva.ruta,nota:modo});
+  if(modo==='push'&&cur){
+    if((e?.inm||e?.capa)&&nueva.ruta===e.ruta&&e.desde!==undefined&&e.i>e.desde){   // salir de la práctica o capa: un solo salto
+      document.querySelectorAll('[data-capa]').forEach(x=>{x.dataset.sinVolver='1'});
+      traversando=true;ignorarPop++;registrar('back',{ruta:nueva.ruta,nota:`salto ${e.desde-e.i}`});history.go(e.desde-e.i)}
+    else if(e?.capa)reemplazar(nueva.ruta);              // una capa (p. ej. la hoja) que lleva a otra pantalla: la reemplaza
+    else if(nueva.ruta===cur.ruta)reemplazar(nueva.ruta);
+    else empujar(nueva.ruta);
+  }else if(modo==='replace'||!cur){if(!enPop)reemplazar(nueva.ruta)}
   cur?.v.alSalir?.();cerrarHoja();cerrarProcedimiento();
   cur=nueva;
   if(cur.seccion)visitar(cur.m.id,cur.seccion);
@@ -165,8 +193,6 @@ function go(ruta){
   pintar();pintarBarra();
   if(cur.ruta!==anterior){const v=$('#vista');v.classList.remove('entrando');void v.offsetWidth;v.classList.add('entrando');anterior=cur.ruta}
   document.title=cur.ruta?`${cur.v.titulo} · ${APP_NOMBRE}`:APP_NOMBRE;
-  marcar(cur.ruta);   // solo reemplaza la entrada actual: navegar nunca agrega entradas
-  rellenar();          // si se navegó justo después de un Atrás en la portada, el colchón vuelve
   window.scrollTo(0,0);
 }
 
@@ -220,17 +246,16 @@ registerSW({
 
 const rutaDelHash=()=>{try{return decodeURIComponent(location.hash.slice(1))}catch(e){return ''}};
 // Si alguien cambia el #hash a mano o abre un enlace con la app ya abierta (replaceState no dispara este evento)
-window.addEventListener('hashchange',()=>{if(recibirEnlaceMagico(location.hash)){go('propuestas/admin');return}const r=rutaDelHash();if(r!==cur.ruta)go(r)});
+// (cuando lo dispara un Atrás, popstate ya pintó esa ruta y aquí no pasa nada)
+window.addEventListener('hashchange',()=>{if(recibirEnlaceMagico(location.hash)){go('propuestas/admin',{modo:'replace'});return}const r=rutaDelHash();if(r!==cur.ruta)go(r,{modo:'replace'})});   // la entrada que creó el navegador queda con la ruta canónica
 // Las materias propias se leen de IndexedDB antes de pintar (el repaso y la portada las necesitan); como mucho 1,5 s de espera
 await Promise.race([cargarMias(),new Promise(r=>setTimeout(r,1500))]);
 window.addEventListener('mias',()=>{pintarNav();if(!cur?.v.inmersiva&&['portada','mias'].includes(cur?.tipo))pintar()});
 // Vuelta del enlace mágico del administrador (#access_token=…): se guarda la sesión y se abre el modo administrador
-if(recibirEnlaceMagico(location.hash))try{history.replaceState({i:0},'',location.pathname+location.search+'#propuestas/admin')}catch(e){}
-// Historial: la entrada base (i: 0) y el colchón encima (ver atras()); también al entrar por un enlace directo o al recargar.
-// Al recargar, el navegador conserva las entradas: se sigue desde la posición en que estaba.
-try{if(!Number.isInteger(history.state?.i))history.replaceState({i:0},'',location.href)}catch(e){}
-go(rutaDelHash());
-rellenar();
+if(recibirEnlaceMagico(location.hash))try{history.replaceState({app:1,i:0,ruta:'propuestas/admin'},'',location.pathname+location.search+'#propuestas/admin')}catch(e){}
+// Primera pantalla: sin agregar entradas. Al recargar, el navegador conserva las entradas de la app y su estado.
+registrar('carga',{ruta:rutaDelHash(),nota:document.referrer?'referrer '+document.referrer:''});
+go(rutaDelHash(),{modo:'replace'});
 // Pantalla de bienvenida (splash) fuera en cuanto se pinta la app
 {const s=document.getElementById('splash');if(s){s.classList.add('fuera');setTimeout(()=>s.remove(),300)}}
 vigilarConexion();

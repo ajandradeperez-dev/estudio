@@ -407,3 +407,6 @@ body{padding-top:var(--franja,0px)}
 .propuesta-cab .icono{font-size:24px}
 .destacado-ok{background:var(--success-soft);display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2)}
 .version-boton{min-height:44px;padding:0;margin:4px 0 0;background:none;border:0;cursor:pointer;color:var(--muted)}
+
+/* Diagnóstico del botón Atrás (Acerca de) */
+.diag-texto{white-space:pre-wrap;word-break:break-all;font-size:12px;max-height:50vh;overflow:auto}

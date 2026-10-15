@@ -9,6 +9,7 @@ import {areas,materias,rutaMateria} from './materias.js';
 import {progreso,cambiarMeta,METAS,estadoHoy,racha,hoy} from './progreso.js';
 import {usuario,guardarUsuario} from './usuario.js';
 import {aviso,boton} from './ui.js';
+import {textoDiagnostico,borrarDiagnostico} from './diagnostico.js';
 import qrcode from 'qrcode-generator';
 import {misMaterias} from './mias/datos.js';
 
@@ -198,6 +199,8 @@ export const acerca={
     const u=usuario();
     return `<div class="nota-cab"><button type="button" class="btn-icono" data-go="perfil" aria-label="Volver a Perfil">←</button><span></span><span></span></div>
 <div class="acerca-cab"><img src="icons/icon-192.png" alt="" width="88" height="88"><div><h1 style="margin:0">${APP_NOMBRE}</h1><button type="button" class="enlace nota version-boton" id="acerca-version">Versión ${__VERSION__}</button><p class="nota" id="acerca-estado-version" style="margin:0" role="status">${versionNueva?'✨ Actualización disponible':navigator.onLine===false?'Sin conexión: no se puede revisar ahora':'✅ Al día'}</p></div></div>
+<div class="card" id="acerca-diag" hidden><h2 style="margin-top:0">🩺 Diagnóstico del botón Atrás</h2><p class="nota">Los últimos 30 eventos de navegación de este teléfono. Cópialos y envíalos para revisar el botón Atrás. No incluye tu progreso ni tus notas.</p>
+<pre class="ej-codigo diag-texto" id="diag-texto"></pre><div class="row" style="gap:8px;flex-wrap:wrap">${boton({texto:'📋 Copiar',id:'diag-copiar'})}${boton({texto:'🔄 Actualizar',id:'diag-actualizar',clase:'ghost'})}${boton({texto:'🗑️ Borrar',id:'diag-borrar',clase:'ghost'})}</div></div>
 <p class="intro">Una app para estudiar ciberseguridad, inglés, matemáticas y ciencia de datos con lecciones cortas, repaso espaciado y metas diarias.</p>
 <div class="pila" style="margin:8px 0 16px">${versionNueva?boton({texto:'✨ Actualizar ahora',id:'acerca-actualizar',clase:'ancho'}):boton({texto:'🔄 Buscar actualización',id:'acerca-buscar',clase:'ghost ancho'})}</div>
 <h2>💾 Tus datos en este dispositivo</h2>
@@ -219,7 +222,13 @@ ${!esIOS()?`<a class="btn ghost ancho" href="${APK_URL}" rel="noopener">🤖 Des
   alMostrar(){navigator.storage?.persisted?.().then(x=>{const el=document.getElementById('acerca-persistente');if(el)el.textContent=x?'✅ Almacenamiento persistente: el navegador no borrará estos datos por falta de espacio.':'ℹ️ El navegador podría borrar estos datos si se queda sin espacio: instala la app y haz respaldos de vez en cuando.'}).catch(()=>{})},
   async alClic(t){
     // 7 toques en la versión abren el modo administrador de Propuestas
-    if(t.id==='acerca-version'){toquesVersion=Date.now()-ultimoToque<1500?toquesVersion+1:1;ultimoToque=Date.now();if(toquesVersion>=7){toquesVersion=0;document.dispatchEvent(new CustomEvent('ir',{detail:'propuestas/admin'}))}return true}
+    if(t.id==='acerca-version'){toquesVersion=Date.now()-ultimoToque<1500?toquesVersion+1:1;ultimoToque=Date.now();
+      // 3 toques: diagnóstico del botón Atrás (últimos 30 eventos) con «Copiar» para enviarlo
+      if(toquesVersion===3){const d=document.getElementById('acerca-diag');if(d){d.hidden=false;document.getElementById('diag-texto').textContent=textoDiagnostico(__VERSION__)}}
+      if(toquesVersion>=7){toquesVersion=0;document.dispatchEvent(new CustomEvent('ir',{detail:'propuestas/admin'}))}return true}
+    if(t.id==='diag-copiar'){const x=textoDiagnostico(__VERSION__);try{await navigator.clipboard.writeText(x);aviso('📋 Copiado: pégalo en un mensaje')}catch(e){const r=document.createRange();r.selectNodeContents(document.getElementById('diag-texto'));const s=getSelection();s.removeAllRanges();s.addRange(r);aviso('Selecciona y copia el texto')}return true}
+    if(t.id==='diag-actualizar'){document.getElementById('diag-texto').textContent=textoDiagnostico(__VERSION__);return true}
+    if(t.id==='diag-borrar'){borrarDiagnostico();document.getElementById('diag-texto').textContent=textoDiagnostico(__VERSION__);return true}
     if(t.id==='acerca-actualizar'){location.reload();return true}
     if(t.id==='acerca-buscar'){const e=document.getElementById('acerca-estado-version');if(e)e.textContent='Buscando…';const n=await buscarActualizacion();if(e)e.textContent=n?'✨ Actualización disponible':navigator.onLine===false?'Sin conexión: no se puede revisar ahora':'✅ Al día';if(n)t.outerHTML=boton({texto:'✨ Actualizar ahora',id:'acerca-actualizar',clase:'ancho'});return true}
     if(t.id==='acerca-invitar'){await invitar();return true}

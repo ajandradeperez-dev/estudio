@@ -155,7 +155,7 @@ function vistaAbrir(id){
   return {titulo:'Abriendo',vista:()=>'<p class="nota">Abriendo…</p>',
     // la primera vez abre lo que pediste; si se vuelve aquí con Atrás (ya visto), regresa a Aprender en vez de reabrirlo
     alMostrar(){const pr=propuestas(),p=pr.datos.lista.find(x=>x.id===+id),ya=!pr.nuevasDisponibles().some(x=>x.id===+id);pr.marcarVisto(+id);
-      setTimeout(()=>document.dispatchEvent(new CustomEvent('ir',{detail:ya?'':p?.enlace||'propuestas'})),0)}};
+      setTimeout(()=>document.dispatchEvent(new CustomEvent('ir',{detail:{ruta:ya?'':p?.enlace||'propuestas',reemplazar:true}})),0)}};
 }
 
 export function vistaPropuestas(resto=[]){

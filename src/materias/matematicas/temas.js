@@ -3,11 +3,11 @@
    que el PLAN pide y todavía no existe: al crearlo, cámbialo por {id, gen…} y márcalo [x] en PLAN.md. */
 export default [
   {id:'prealgebra',titulo:'Aritmética y prealgebra',icono:'🔢',descripcion:'Fracciones, porcentajes, potencias, raíces y notación científica.',nodos:[
-    {titulo:'Fracciones',proximo:true},
-    {titulo:'Porcentajes',proximo:true},
-    {titulo:'Potencias y raíces',proximo:true},
-    {titulo:'Orden de operaciones',proximo:true},
-    {titulo:'Notación científica',proximo:true}
+    {id:'fracciones',titulo:'Fracciones',gen:'pre/fracciones'},
+    {id:'porcentajes',titulo:'Porcentajes',gen:'pre/porcentajes'},
+    {id:'potencias-raices',titulo:'Potencias y raíces',gen:'pre/potencias'},
+    {id:'orden-operaciones',titulo:'Orden de operaciones',gen:'pre/operaciones'},
+    {id:'notacion-cientifica',titulo:'Notación científica',gen:'pre/cientifica'}
   ]},
   {id:'algebra-basica',titulo:'Álgebra',icono:'🧮',descripcion:'Expresiones, ecuaciones, sistemas, factorización, cuadráticas, logaritmos y funciones.',nodos:[
     {id:'expresiones',gen:'alg/expresiones'},
@@ -24,10 +24,10 @@ export default [
     {id:'funciones',titulo:'Funciones y gráficas',gen:'alg/funciones'}
   ]},
   {id:'trigonometria',titulo:'Trigonometría',icono:'📐',descripcion:'Razones, círculo unitario, identidades y ecuaciones (lo necesario para cálculo).',nodos:[
-    {titulo:'Razones trigonométricas',proximo:true},
-    {titulo:'Círculo unitario',proximo:true},
-    {titulo:'Identidades básicas',proximo:true},
-    {titulo:'Ecuaciones trigonométricas',proximo:true}
+    {id:'razones-trigonometricas',titulo:'Razones trigonométricas',gen:'tri/razones'},
+    {id:'circulo-unitario',titulo:'Círculo unitario',gen:'tri/circulo'},
+    {id:'identidades-trigonometricas',titulo:'Identidades básicas',gen:'tri/identidades'},
+    {id:'ecuaciones-trigonometricas',titulo:'Ecuaciones trigonométricas',gen:'tri/ecuaciones'}
   ]},
   {id:'algebra-lineal',titulo:'Álgebra lineal',icono:'🧭',descripcion:'Vectores, matrices, Gauss, determinantes, espacios vectoriales y valores propios.',nodos:[
     {id:'vectores',gen:'al/vector-magnitud'},

@@ -155,11 +155,11 @@ Fuente de verdad del contenido de la app. `npm run revisar` comprueba que cada `
 
 ### Aritmética y prealgebra `prealgebra`
 
-- [ ] Fracciones
-- [ ] Porcentajes
-- [ ] Potencias y raíces
-- [ ] Orden de operaciones
-- [ ] Notación científica
+- [x] Fracciones `fracciones`
+- [x] Porcentajes `porcentajes`
+- [x] Potencias y raíces `potencias-raices`
+- [x] Orden de operaciones `orden-operaciones`
+- [x] Notación científica `notacion-cientifica`
 
 ### Álgebra `algebra-basica`
 
@@ -178,10 +178,10 @@ Fuente de verdad del contenido de la app. `npm run revisar` comprueba que cada `
 
 ### Trigonometría `trigonometria`
 
-- [ ] Razones trigonométricas
-- [ ] Círculo unitario
-- [ ] Identidades básicas
-- [ ] Ecuaciones trigonométricas
+- [x] Razones trigonométricas `razones-trigonometricas`
+- [x] Círculo unitario `circulo-unitario`
+- [x] Identidades básicas `identidades-trigonometricas`
+- [x] Ecuaciones trigonométricas `ecuaciones-trigonometricas`
 
 ### Álgebra lineal `algebra-lineal`
 

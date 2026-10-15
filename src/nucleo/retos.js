@@ -5,7 +5,7 @@
           crear(rng) → [preguntas] (con contexto)  ó  ir:'<ruta>' (abre una herramienta o pantalla, p. ej. el laboratorio)}
    Sin DOM: npm run revisar comprueba que cada reto genere preguntas válidas y que cada tema completo tenga al menos uno. */
 import {crear,BANCOS} from './generadores/index.js';
-import {escenarioNegocio,escenarioCohete,escenarioPresa} from './generadores/aplicaciones.js';
+import {escenarioNegocio,escenarioCohete,escenarioPresa,escenarioCerro,escenarioFiesta} from './generadores/aplicaciones.js';
 import {escenarioFabrica} from './generadores/aplicaciones-lineal.js';
 
 const con=(contexto,p)=>p&&{...p,enunciado:`<p class="contexto">${contexto}</p>${p.enunciado}`};
@@ -18,6 +18,8 @@ const simulacro=(gens,n=12)=>rng=>{const orden=rng.barajar(gens);return Array.fr
 const LINEAL=['al/vector-magnitud','al/vector-operaciones','al/producto-punto','al/angulo','al/producto-cruz','al/matriz-producto','al/gauss','al/gauss-jordan','al/determinante','al/inversa','al/combinacion-lineal','al/independencia','al/transformaciones','al/valores-propios'];
 const DIFERENCIAL=['cd/limites','cd/continuidad','cd/definicion','cd/derivada-polinomio','cd/producto','cd/cociente','cd/cadena','cd/trascendentes','cd/implicita','cd/maximos','cd/optimizacion','cd/razon-cambio','cd/lhopital'];
 const INTEGRAL=['ci/antiderivada','ci/definida','ci/sustitucion','ci/partes','ci/fracciones-parciales','ci/sustitucion-trig','ci/area','ci/volumenes','ci/impropias'];
+const TRIGO=['tri/razones','tri/circulo','tri/identidades','tri/ecuaciones'];
+const PREALGEBRA=['pre/fracciones','pre/porcentajes','pre/potencias','pre/operaciones','pre/cientifica'];
 const ALGEBRA=['alg/expresiones','alg/ecuacion-lineal','alg/desigualdad','alg/sistema-2x2','alg/sistema-3x3','alg/productos-notables','alg/factorizacion','alg/fracciones-algebraicas','alg/cuadratica','alg/exponentes','alg/logaritmos','alg/funciones'];
 
 export const RETOS=[
@@ -38,6 +40,28 @@ export const RETOS=[
    desc:'Encuentra el patrón en cada registro y decide qué hacer.',crear:delGenerador('def/logs',[3,4,5],'Estás de turno en el centro de operaciones de seguridad (SOC).')},
   {id:'ciber-incidentes-caso',materia:'ciberseguridad',tema:'defensa',titulo:'Casos de incidentes',profundidad:'escenario',dificultad:4,desc:'Diagnostica y responde casos reales (siempre defensivo).',crear:delBanco('ciber/incidentes',3)},
   {id:'ciber-laboratorio',materia:'ciberseguridad',tema:'defensa',titulo:'Laboratorio de incidentes',profundidad:'escenario',dificultad:4,desc:'Casos completos con evidencia, diagnóstico y respuesta.',ir:'ciberseguridad/incidentes'},
+  // ---------- Matemáticas · Aritmética y prealgebra ----------
+  {id:'mat-compras',materia:'matematicas',tema:'prealgebra',titulo:'De compras: ofertas, recetas y cuentas',profundidad:'aplicacion',dificultad:2,
+   desc:'Ofertas 3×2 contra descuentos, recetas a escala y la cuenta con IVA y propina.',crear:aplicacion('apl/compras',[1,3,5])},
+  {id:'mat-descuentos',materia:'matematicas',tema:'prealgebra',titulo:'Descuentos, aumentos e intereses',profundidad:'aplicacion',dificultad:2,
+   desc:'Porcentajes de la vida diaria.',crear:aplicacion('pre/porcentajes',[2,3,4,5])},
+  {id:'mat-ciencia-numeros',materia:'matematicas',tema:'prealgebra',titulo:'Números enormes y diminutos',profundidad:'aplicacion',dificultad:3,
+   desc:'La luz, los átomos y las distancias con notación científica.',crear:aplicacion('pre/cientifica',[3,4,5])},
+  {id:'mat-fiesta',materia:'matematicas',tema:'prealgebra',titulo:'Organiza la fiesta',profundidad:'escenario',dificultad:2,
+   desc:'Pizzas, refrescos, descuento y cuánto pone cada quien: 4 preguntas.',crear:escenarioFiesta},
+  {id:'mat-simulacro-prealgebra',materia:'matematicas',tema:'prealgebra',titulo:'Simulacro de Aritmética y prealgebra',profundidad:'escenario',dificultad:2,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(PREALGEBRA)},
+  // ---------- Matemáticas · Trigonometría ----------
+  {id:'mat-alturas',materia:'matematicas',tema:'trigonometria',titulo:'Edificios, rampas y escaleras',profundidad:'aplicacion',dificultad:2,
+   desc:'Alturas y distancias con seno, coseno y tangente.',crear:aplicacion('apl/triangulos',[1,2,3])},
+  {id:'mat-angulos',materia:'matematicas',tema:'trigonometria',titulo:'¿Qué ángulo es?',profundidad:'aplicacion',dificultad:3,
+   desc:'Ángulos de rampas y elevaciones a partir de medidas.',crear:aplicacion('apl/triangulos',[4,5,5])},
+  {id:'mat-razones-reales',materia:'matematicas',tema:'trigonometria',titulo:'Triángulos del mundo real',profundidad:'aplicacion',dificultad:3,
+   desc:'Árboles, rampas y sombras resueltos con razones trigonométricas.',crear:aplicacion('tri/razones',[2,3,4])},
+  {id:'mat-cerro',materia:'matematicas',tema:'trigonometria',titulo:'Mide un cerro sin subirlo',profundidad:'escenario',dificultad:4,
+   desc:'Dos ángulos de elevación y una caminata: 3 preguntas.',crear:escenarioCerro},
+  {id:'mat-simulacro-trigo',materia:'matematicas',tema:'trigonometria',titulo:'Simulacro de Trigonometría',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(TRIGO)},
   // ---------- Matemáticas · Álgebra ----------
   {id:'mat-planes',materia:'matematicas',tema:'algebra-basica',titulo:'¿Qué plan me conviene?',profundidad:'aplicacion',dificultad:2,
    desc:'Celular, gimnasio o taxi: costo fijo + precio por uso. Encuentra dónde conviene cada uno.',crear:aplicacion('apl/planes',[1,2,3,5])},

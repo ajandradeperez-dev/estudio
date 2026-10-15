@@ -9,8 +9,8 @@ const hasta=(k,a=B,b=P)=>n=>n<=k?a:b;
 const pregunta=p=>/Escribe la pregunta/.test(p.enunciado);
 export const PROFUNDIDAD={
   'alg/ecuacion-lineal':{nivel:hasta(2)},'alg/sistema-2x2':{nivel:hasta(1)},'alg/factorizacion':{nivel:hasta(1)},'alg/exponentes':{nivel:hasta(2)},
-  'al/vector-magnitud':{nivel:hasta(1)},'al/vector-operaciones':{nivel:hasta(2)},'al/producto-punto':{nivel:hasta(1)},'al/angulo':{nivel:()=>P},
-  'al/matriz-producto':{nivel:()=>P},'al/determinante':{nivel:hasta(1)},'al/inversa':{nivel:()=>P},'al/gauss':{nivel:()=>P},
+  'al/vector-magnitud':{nivel:hasta(1)},'al/vector-operaciones':{nivel:hasta(2)},'al/producto-punto':{nivel:hasta(1)},'al/angulo':{nivel:hasta(1)},
+  'al/matriz-producto':{nivel:hasta(1)},'al/determinante':{nivel:hasta(1)},'al/inversa':{nivel:hasta(1)},'al/gauss':{nivel:hasta(1)},
   'cd/limites':{nivel:hasta(2)},'cd/derivada-polinomio':{nivel:hasta(1)},'cd/producto':{nivel:()=>P},'cd/cociente':{nivel:()=>P},'cd/cadena':{nivel:()=>P},
   'ci/antiderivada':{nivel:hasta(1)},'ci/definida':{nivel:()=>P},'ci/sustitucion':{nivel:()=>P},'ci/area':{nivel:()=>P},
   'red/bases':{nivel:hasta(2),plantilla:p=>(p.enunciado.match(/a (binario|decimal|hexadecimal)/)||[])[1]||'base'},

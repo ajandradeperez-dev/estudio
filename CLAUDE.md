@@ -420,15 +420,16 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 |---|---|
 | 1 · Profundidad (básicos que se retiran, refuerzo, retos ⭐), PLAN.md, estados ✅🟡⚪, 📚 Lectura | ✅ terminado |
 | 2a · Matemáticas · Álgebra (12 habilidades, 3 plantillas por nivel, 5 retos + simulacro) | ✅ terminado |
-| 2b · Matemáticas: Álgebra lineal → Cálculo diferencial → Cálculo integral; luego Trigonometría y Prealgebra | ⏳ siguiente |
+| 2b · Matemáticas · Álgebra lineal (14 habilidades, 3 plantillas por nivel, 3 retos + escenario + simulacro) | ✅ terminado |
+| 2c · Matemáticas: Cálculo diferencial → Cálculo integral; luego Trigonometría y Prealgebra | ⏳ siguiente |
 | 3 · Ciberseguridad: Fundamentos de redes → Firewalls → Seguridad defensiva → resto | pendiente |
 | 4 · Inglés: completar A1 y A2, luego B1 | pendiente |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | pendiente |
 | 6 · Inglés B2 y temas avanzados | pendiente |
 
-Conteos al terminar el bloque 1: 22 temas (✅ 0 · 🟡 15 · ⚪ 7), 50 generadores, 2 bancos, 15 retos (8 de Ciberseguridad, 7 de Inglés). Conteos al terminar el bloque 2a: ✅ 1 (Álgebra) · 🟡 14 · ⚪ 7, 62 generadores, 21 retos.
+Conteos al terminar el bloque 1: 22 temas (✅ 0 · 🟡 15 · ⚪ 7), 50 generadores, 2 bancos, 15 retos (8 de Ciberseguridad, 7 de Inglés). Conteos al terminar el bloque 2a: ✅ 1 (Álgebra) · 🟡 14 · ⚪ 7, 62 generadores, 21 retos. Bloque 2b: ✅ 2 · 🟡 13 · ⚪ 7, 71 generadores, 26 retos.
 
-Cómo se hace un tema de Matemáticas (ver Álgebra): generadores en `generadores/algebra-temas*.js` con `plantillas(rng,{nombre:()=>…})` (3 por nivel, `p.plantilla`), `profundidad(n)`, `referencia`, ≥3 errores con `valor` y `comprobar()` (segundo cálculo independiente: sustituir, probar puntos; `revisar` falla si da false). Para mejorar un generador viejo sin cambiar su id: `algebra-variantes.js` (`conVariantes`). Aplicaciones con contexto en `generadores/aplicaciones.js` (`apl/…`) y retos, escenario y simulacro (`simulacro(gens)`) en `retos.js`. Matemáticas empieza cada habilidad con 2 ejemplos resueltos (`ejemplosResueltos:2` en su materia.js). `revisar` avisa de los generadores de Matemáticas con menos de 3 plantillas y de lo que le falta a cada tema 🟡.
+Cómo se hace un tema de Matemáticas (ver Álgebra): generadores en `generadores/algebra-temas*.js` con `plantillas(rng,{nombre:()=>…})` (3 por nivel, `p.plantilla`), `profundidad(n)`, `referencia`, ≥3 errores con `valor` y `comprobar()` (segundo cálculo independiente: sustituir, probar puntos; `revisar` falla si da false). Para mejorar un generador viejo sin cambiar su id: `conVariantes(g, {nivel:{plantilla:rng=>…}}, comprobar, {regla,pista,teclado})` de `algebra-variantes.js` (ejemplos: `algebra-variantes.js`, `algebra-lineal-variantes.js`), registrado al FINAL de `GENERADORES` en `index.js` para que pise al original. Compara números calculados con una tolerancia directa, no con `celdasIguales` (su lector de texto no entiende `1e-16`). Aplicaciones con contexto en `generadores/aplicaciones.js` (`apl/…`) y retos, escenario y simulacro (`simulacro(gens)`) en `retos.js`. Matemáticas empieza cada habilidad con 2 ejemplos resueltos (`ejemplosResueltos:2` en su materia.js). `revisar` avisa de los generadores de Matemáticas con menos de 3 plantillas y de lo que le falta a cada tema 🟡.
 
 Meta por habilidad de Matemáticas: 2 ejemplos resueltos, 1 con huecos, generador de 5 niveles con ≥3 plantillas por nivel, ≥3 errores típicos; por tema ≥3 aplicaciones, ≥1 escenario y un simulacro de 10–15 preguntas. Por unidad de Inglés: escucha de 80–150 palabras con 5 preguntas, ≥12 chunks, 2 gramáticas con generador, 2 diálogos, pronunciación, 4-3-2, jefe, ≥40 palabras de vocabulario y ≥3 lecturas graduadas por nivel.
 

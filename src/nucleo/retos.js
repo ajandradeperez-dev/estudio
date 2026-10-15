@@ -6,6 +6,7 @@
    Sin DOM: npm run revisar comprueba que cada reto genere preguntas válidas y que cada tema completo tenga al menos uno. */
 import {crear,BANCOS} from './generadores/index.js';
 import {escenarioNegocio} from './generadores/aplicaciones.js';
+import {escenarioFabrica} from './generadores/aplicaciones-lineal.js';
 
 const con=(contexto,p)=>p&&{...p,enunciado:`<p class="contexto">${contexto}</p>${p.enunciado}`};
 const delGenerador=(id,niveles,contexto)=>rng=>niveles.map(n=>con(typeof contexto==='function'?contexto(rng):contexto,crear(id,n))).filter(Boolean);
@@ -14,6 +15,7 @@ const delBanco=(id,n)=>rng=>{const l=BANCOS[id]?.()||[];return rng.barajar(l).sl
 const aplicacion=(id,niveles)=>()=>niveles.map(n=>crear(id,n)).filter(Boolean);
 // Simulacro de un tema: n preguntas mezcladas de sus generadores, de nivel 2 a 4, sin repetir habilidad seguida
 const simulacro=(gens,n=12)=>rng=>{const orden=rng.barajar(gens);return Array.from({length:n},(_,i)=>{const p=crear(orden[i%orden.length],2+(i%3));return p&&{...p,etiqueta:'📝 Simulacro'}}).filter(Boolean)};
+const LINEAL=['al/vector-magnitud','al/vector-operaciones','al/producto-punto','al/angulo','al/producto-cruz','al/matriz-producto','al/gauss','al/gauss-jordan','al/determinante','al/inversa','al/combinacion-lineal','al/independencia','al/transformaciones','al/valores-propios'];
 const ALGEBRA=['alg/expresiones','alg/ecuacion-lineal','alg/desigualdad','alg/sistema-2x2','alg/sistema-3x3','alg/productos-notables','alg/factorizacion','alg/fracciones-algebraicas','alg/cuadratica','alg/exponentes','alg/logaritmos','alg/funciones'];
 
 export const RETOS=[
@@ -47,6 +49,17 @@ export const RETOS=[
    desc:'Costos, ganancia, punto de equilibrio y meta del mes: un caso completo en 4 preguntas.',crear:escenarioNegocio},
   {id:'mat-simulacro-algebra',materia:'matematicas',tema:'algebra-basica',titulo:'Simulacro de Álgebra',profundidad:'escenario',dificultad:3,simulacro:true,
    desc:'12 preguntas mezcladas de todo el tema, como un examen.',crear:simulacro(ALGEBRA)},
+  // ---------- Matemáticas · Álgebra lineal ----------
+  {id:'mat-mezclas',materia:'matematicas',tema:'algebra-lineal',titulo:'Dietas, mezclas y recursos',profundidad:'aplicacion',dificultad:3,
+   desc:'Tablas de aportes que se vuelven un sistema 3×3.',crear:aplicacion('apl/mezclas',[1,3,5])},
+  {id:'mat-markov',materia:'matematicas',tema:'algebra-lineal',titulo:'¿Quién se muda? Cadenas de Markov',profundidad:'aplicacion',dificultad:4,
+   desc:'Matriz de transición por vector: el futuro y el estado estable.',crear:aplicacion('apl/markov',[1,3,5])},
+  {id:'mat-graficos',materia:'matematicas',tema:'algebra-lineal',titulo:'Gráficos de videojuegos y apps',profundidad:'aplicacion',dificultad:2,
+   desc:'Escalar, rotar y reflejar con matrices; el determinante y el área.',crear:aplicacion('apl/graficos',[1,3,4])},
+  {id:'mat-fabrica',materia:'matematicas',tema:'algebra-lineal',titulo:'La fábrica de muebles',profundidad:'escenario',dificultad:3,
+   desc:'Recursos, costos, ganancia y producción con matrices: un caso en 4 preguntas.',crear:escenarioFabrica},
+  {id:'mat-simulacro-lineal',materia:'matematicas',tema:'algebra-lineal',titulo:'Simulacro de Álgebra lineal',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema, como un examen.',crear:simulacro(LINEAL)},
   // ---------- Inglés: los jefes de cada unidad son escenarios (una tarea real en inglés) ----------
   ...[['presentarte','Presentarte en una reunión'],['rutina-trabajo','Contar tu rutina de trabajo'],['pedir-comprar','Pedir y comprar'],['ciudad-viajes','Moverte en otra ciudad'],
     ['contar-pasado','Contar lo que pasó'],['trabajo-ti','Una conversación de trabajo en TI']].map(([u,t],i)=>

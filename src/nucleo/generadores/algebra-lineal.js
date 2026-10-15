@@ -5,13 +5,13 @@ import {frac,par,mat,vec} from './formato.js';
 import {paso,final,c} from './pasos.js';
 import {planoVectores} from './diagramas.js';
 
-const celdasIguales=(e,valores,tol=1e-6)=>Array.isArray(e)&&e.length===valores.length&&e.every((x,i)=>casi(num(x),valores[i],tol));
-const vecAl=(rng,n,R)=>Array.from({length:n},()=>rng.entero(-R,R));
+export const celdasIguales=(e,valores,tol=1e-6)=>Array.isArray(e)&&e.length===valores.length&&e.every((x,i)=>casi(num(x),valores[i],tol));
+export const vecAl=(rng,n,R)=>Array.from({length:n},()=>rng.entero(-R,R));
 const TRIPLES2=[[3,4,5],[6,8,10],[5,12,13],[8,15,17],[9,12,15],[7,24,25],[12,16,20]];
 const TRIPLES3=[[1,2,2,3],[2,3,6,7],[1,4,8,9],[4,4,7,9],[2,6,9,11],[2,10,11,15],[6,6,7,11],[3,4,12,13]];
 const conSignos=(rng,v)=>v.map(x=>x*rng.signo());
-const comoVector=valores=>({forma:{filas:1,cols:valores.length},celdas:valores.map(String),respuesta:vec(valores),verificar:e=>celdasIguales(e,valores)});
-const comoMatriz=M=>({forma:{filas:M.length,cols:M[0].length},celdas:M.flat().map(String),respuesta:`\\(${mat(M)}\\)`,verificar:e=>celdasIguales(e,M.flat())});
+export const comoVector=valores=>({forma:{filas:1,cols:valores.length},celdas:valores.map(String),respuesta:vec(valores),verificar:e=>celdasIguales(e,valores)});
+export const comoMatriz=M=>({forma:{filas:M.length,cols:M[0].length},celdas:M.flat().map(String),respuesta:`\\(${mat(M)}\\)`,verificar:e=>celdasIguales(e,M.flat())});
 const enPlano=vs=>vs.every(x=>x.v.length===2)?planoVectores(vs):undefined;
 
 // Vector entre dos puntos (1), norma con ternas pitagóricas (2–3), norma no entera (4), distancia en 3D (5)
@@ -141,8 +141,8 @@ const productoMatrices={
   }
 };
 
-const det2=M=>M[0][0]*M[1][1]-M[0][1]*M[1][0];
-const det3=M=>M[0][0]*(M[1][1]*M[2][2]-M[1][2]*M[2][1])-M[0][1]*(M[1][0]*M[2][2]-M[1][2]*M[2][0])+M[0][2]*(M[1][0]*M[2][1]-M[1][1]*M[2][0]);
+export const det2=M=>M[0][0]*M[1][1]-M[0][1]*M[1][0];
+export const det3=M=>M[0][0]*(M[1][1]*M[2][2]-M[1][2]*M[2][1])-M[0][1]*(M[1][0]*M[2][2]-M[1][2]*M[2][0])+M[0][2]*(M[1][0]*M[2][1]-M[1][1]*M[2][0]);
 // Determinante 2×2 (1–3) y 3×3 (4–5)
 const determinante={
   titulo:'Determinantes',

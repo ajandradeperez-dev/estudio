@@ -34,16 +34,16 @@ export default [
     {id:'operaciones-producto-punto',gen:'al/vector-operaciones'},
     {id:'producto-punto',titulo:'Producto punto',gen:'al/producto-punto'},
     {id:'angulo-vectores',titulo:'Ángulo entre vectores',gen:'al/angulo'},
-    {titulo:'Producto cruz',proximo:true},
+    {id:'producto-cruz',titulo:'Producto cruz',gen:'al/producto-cruz'},
     {id:'matrices',titulo:'Multiplicación de matrices',gen:'al/matriz-producto'},
     {id:'gauss',titulo:'Sistemas por Gauss',gen:'al/gauss'},
-    {titulo:'Gauss-Jordan',proximo:true},
+    {id:'gauss-jordan',titulo:'Gauss-Jordan y rango',gen:'al/gauss-jordan'},
     {id:'determinantes',titulo:'Determinantes',gen:'al/determinante'},
     {id:'inversa',titulo:'Inversa de una matriz 2×2',gen:'al/inversa'},
-    {titulo:'Espacios vectoriales',proximo:true},
-    {titulo:'Independencia lineal y base',proximo:true},
-    {titulo:'Transformaciones lineales',proximo:true},
-    {titulo:'Valores y vectores propios',proximo:true}
+    {id:'espacios-vectoriales',titulo:'Espacios vectoriales',gen:'al/combinacion-lineal'},
+    {id:'independencia-lineal',titulo:'Independencia lineal y base',gen:'al/independencia'},
+    {id:'transformaciones-lineales',titulo:'Transformaciones lineales',gen:'al/transformaciones'},
+    {id:'valores-propios',titulo:'Valores y vectores propios',gen:'al/valores-propios'}
   ]},
   {id:'calculo-diferencial',titulo:'Cálculo diferencial',icono:'📈',descripcion:'Límites, continuidad, derivadas y sus aplicaciones.',nodos:[
     {id:'limites',gen:'cd/limites'},

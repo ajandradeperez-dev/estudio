@@ -20,17 +20,17 @@ const dentro=en=>{const m=String(en).match(/\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\
 const equivRel=(a,b,vars=['x','y'])=>{try{const f=compilar(a),g=compilar(b);return [0.6,0.9,1.13,1.37,1.71].every((t,i)=>{const v=Object.fromEntries(vars.map((k,j)=>[k,t+0.11*j*(i%2?1:-1)]));const A=f(v),B=g(v);return Number.isFinite(A)&&Number.isFinite(B)&&Math.abs(A-B)<=1e-9*Math.max(1,Math.abs(A),Math.abs(B))})}catch(e){return false}};
 const ladosOk=(eq,vals)=>{const [i,d]=texATexto(eq).split('=');try{return casi(compilar(i)(vals),compilar(d)(vals))}catch(e){return false}};
 // Comprobación independiente de la plantilla clásica, leyendo el ejercicio de su propio enunciado
-const COMPROBAR={
+export const COMPROBAR={
   ecuacion:p=>ladosOk(dentro(p.enunciado),{x:num(p.respuesta)}),
   sistema:p=>{const v=parXY(p.respuesta),m=p.enunciado.match(/\\begin\{cases\}([\s\S]*?)\\end\{cases\}/);return !!v&&!!m&&m[1].split('\\\\').every(eq=>ladosOk(eq,{x:v[0],y:v[1]}))},
   factor:p=>equivRel(p.respuesta,texATexto(dentro(p.enunciado))),
   exponente:p=>equivRel(p.respuesta,texATexto(dentro(p.enunciado)))
 };
 // Envuelve un generador: en cada nivel elige entre la plantilla clásica y las nuevas de ese nivel
-const conVariantes=(g,extra,tipo)=>({...g,generar(n,rng){
+export const conVariantes=(g,extra,tipo,def={})=>({...g,generar(n,rng){
   const ks=['clasica',...Object.keys(extra[n]||{})],k=rng.elegir(ks);
-  if(k==='clasica'){const p=g.generar(n,rng);return {...p,plantilla:'clasica',comprobar:()=>COMPROBAR[tipo](p)}}
-  return {...extra[n][k](rng),plantilla:k};
+  if(k==='clasica'){const p=g.generar(n,rng);return {...p,plantilla:'clasica',comprobar:()=>typeof tipo==='function'?tipo(p,n):COMPROBAR[tipo](p)}}
+  return {...def,...extra[n][k](rng),plantilla:k};
 }});
 
 /* ---------- Ecuaciones lineales ---------- */

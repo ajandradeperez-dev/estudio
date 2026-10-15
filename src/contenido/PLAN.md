@@ -189,16 +189,16 @@ Fuente de verdad del contenido de la app. `npm run revisar` comprueba que cada `
 - [x] Operaciones con vectores y producto punto `operaciones-producto-punto`
 - [x] Producto punto `producto-punto`
 - [x] Ángulo entre vectores `angulo-vectores`
-- [ ] Producto cruz
+- [x] Producto cruz `producto-cruz`
 - [x] Multiplicación de matrices `matrices`
 - [x] Sistemas por Gauss `gauss`
-- [ ] Gauss-Jordan
+- [x] Gauss-Jordan y rango `gauss-jordan`
 - [x] Determinantes `determinantes`
 - [x] Inversa de una matriz 2×2 `inversa`
-- [ ] Espacios vectoriales
-- [ ] Independencia lineal y base
-- [ ] Transformaciones lineales
-- [ ] Valores y vectores propios
+- [x] Espacios vectoriales `espacios-vectoriales`
+- [x] Independencia lineal y base `independencia-lineal`
+- [x] Transformaciones lineales `transformaciones-lineales`
+- [x] Valores y vectores propios `valores-propios`
 
 ### Cálculo diferencial `calculo-diferencial`
 

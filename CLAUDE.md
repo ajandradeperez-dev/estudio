@@ -86,6 +86,7 @@ src/
     vista-retos.js        Pantalla de retos: filtros, ⭐ y sesión
     contenido.js          Estado de cada tema (✅ completo · 🟡 parcial · ⚪ próximo) según el PLAN
     camino.js             Estados del camino: desbloqueo, cofres cada 3 habilidades y jefe del tema
+    excel/                formulas.js (evaluador de fórmulas, sin DOM) y hoja.js (mini hoja táctil)
     rng.js                Números aleatorios con semilla (para reproducir y probar ejercicios)
     generadores/          Un generador por habilidad (ver "Escribir un generador"), verificación tolerante (verificar.js)
                           y profundidad.js (nivel de profundidad y plantilla de cada generador)
@@ -135,6 +136,7 @@ src/
                           hablar/: index.js (rutas), unidades.js, contenido.js, pasos.js (escucha, fluidez),
                           dialogos.js, frases.js, practica.js, dialogo.js, ia.js + claude.js (API), juego.js
     matematicas/          materia.js + temas.js (lista de temas) + temas/<tema>/NN-….js (antes "algebra": alias y migración v6)
+    excel/                materia.js + temas.js + secciones/ (hoja libre, tabla dinámica, organizar)
     ciencia-datos/        materia.js + temas.js + temas/<tema>/NN-….js
     lectura/              materia.js (⚪ próximamente: proximo:true, sin lecciones; modelo de datos documentado)
   contenido/PLAN.md       Árbol completo del contenido (fuente de verdad; revisar lo compara con cada temas.js)
@@ -405,6 +407,16 @@ Hoy cada teléfono guarda lo suyo (no hay cuentas) y se pasa de uno a otro con *
 - **Pantalla de práctica**: siempre con `crearSesion()` (una pregunta por pantalla, ✕, barra de progreso, "Comprobar" abajo, hoja verde o roja con la respuesta correcta, el porqué, el error típico y la regla). No escribas pantallas de ejercicios a mano.
 - El laboratorio de incidentes es **defensivo**: identificar ataques y elegir respuestas, nunca enseñar a ejecutarlos.
 
+## 📊 Curso de Excel (`src/materias/excel/`, área 💼 Cursos)
+
+12 temas (Interfaz y datos → Fórmulas y referencias → Resumen → Lógica → Condicionales → Búsqueda → Texto y fechas → Ordenar, filtrar y formato → Tablas dinámicas → Gráficos → Atajos → Escenarios y herramientas), 25 habilidades `xl/…`, todas ✅.
+
+- **Evaluador** (`nucleo/excel/formulas.js`, sin DOM ni librerías): referencias relativas/absolutas/mixtas, rangos, operadores con la precedencia de Excel (`=-2^2` = 4), `;` o `,` como separador (con `;` la coma es decimal), funciones en español y en inglés (`SUMA`/`SUM`, `BUSCARV`/`VLOOKUP`…; lista en `FUNCIONES`), fechas como número de serie (`serial`, `HOY` usa `hoja.hoy` si está fijo), criterios de CONTAR.SI con operadores y comodines, y errores reales (`#¡DIV/0!`, `#N/A`, `#¿NOMBRE?`, `#¡REF!` también para referencias circulares, `#¡VALOR!`, `#¡ERROR!` = fórmula mal escrita). `copiarFormula(f, de, a)` mueve lo relativo. Casos de prueba en `scripts/fixtures/excel-casos.mjs` (150, con resultado esperado; `revisar` exige un caso por función y por error).
+- **Mini hoja** (`nucleo/excel/hoja.js`): `htmlHoja(h)`, `activarHoja` y `insertarRef`. Un toque en una celda escribe su referencia en la respuesta; otro toque enseguida la convierte en rango (A2 → A2:A9); con mouse se puede arrastrar. Solo la hoja se desplaza de lado (`.xl-marco`), filas de 40 px. En la práctica (`sesion.js`) una pregunta con `hoja` la muestra bajo el enunciado; con `teclado:'xl'` los toques escriben referencias, hay teclado de símbolos y la hoja muestra en vivo el resultado (y el de sus copias).
+- **Generadores** (`generadores/excel-base.js`, `excel.js`, `excel2.js`): tablas realistas (`tablaVentas`, `tablaCalif` con «Pendiente», `tablaInventario`, `tablaNomina`; clientes y gastos en sus archivos). `formulaQ` verifica **por resultado**: la fórmula del usuario se evalúa en la hoja que ve y en otra con otros datos (y en todas sus copias si se copia hacia abajo, `copiar:n`, o a un rectángulo, `destinos`; con `virtual:true` se evalúa sin escribirla, para reglas de formato condicional) y debe dar lo mismo que la correcta; `esperado(d)` es el segundo cálculo independiente en JavaScript (`comprobar`). Los errores típicos son fórmulas (`[fórmula, por]`) que se detectan por su resultado, más avisos genéricos de #¿NOMBRE?, #N/A, fórmula incompleta y «no fijaste con $». `valorQ` es para preguntas con la hoja a la vista y respuesta escrita. Niveles 1–2 básicos, 3–5 procedimiento.
+- **Retos** (`retos.js`): una aplicación por tema y, en Escenarios, 4 escenarios de 4 fórmulas sobre la misma hoja (`excel-escenarios.js`: reporte de ventas, gastos personales, calificaciones, inventario con alertas) y un simulacro.
+- **Herramientas** (secciones): `hoja` (hoja libre con datos de ejemplo, barra de fórmulas y explicación de cada error; se guarda en `localStorage['ciberlab-excel']`), `dinamica` (simulador de tabla dinámica: filas, columnas, Suma/Cuenta/Promedio y filtro de mes) y `organizar` (ordenar, filtrar, formato condicional, barras de datos y validación).
+
 ## 📚 Lectura (⚪ próximamente)
 
 `src/materias/lectura/materia.js` con `proximo:true`: la tarjeta del área dice "⚪ Próximamente" y su página muestra solo "Agrega tus libros, marca tu avance por capítulos, guarda citas y notas, y repasa ideas clave" con "➕ Agregar libro" deshabilitado. No cuenta para metas ni racha, no sale en la bienvenida, en Perfil ni en "Lo siguiente". Modelo previsto (irá en `materias.lectura.extra`; al implementarlo, sube `VERSION`):
@@ -426,7 +438,9 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | 2d · Matemáticas · Cálculo integral (9 habilidades, 3 plantillas por nivel, 3 retos + escenario + simulacro) | ✅ terminado |
 | 2e · Matemáticas · Trigonometría (4) y Aritmética y prealgebra (5), con retos, escenarios y simulacros | ✅ terminado: **Matemáticas completa (6 temas ✅)** |
 | 3a · Ciberseguridad · Fundamentos de redes (12 habilidades: OSI, IPv4, VLSM, IPv6, DNS, DHCP, ARP nuevas; 2 retos + escenario + simulacro) | ✅ terminado |
-| Cursos · Ciberseguridad pasa a 💼 Cursos, curso de Excel, 🗳️ Propuestas, IA con Gemini o Claude (PROMPT aparte) | ⏳ en curso |
+| Cursos fase 1 · Ciberseguridad pasa a 💼 Cursos (progreso v10) | ✅ terminado |
+| Cursos fase 2 · Curso de Excel: evaluador, mini hoja, 25 generadores, 12 retos/escenarios, 3 herramientas | ✅ terminado |
+| Cursos fase 3–4 · 🗳️ Propuestas (Supabase) e IA con Gemini o Claude | ⏳ en curso |
 | 3b · Ciberseguridad: Conmutación → Firewalls → VPN → Seguridad defensiva | pendiente |
 | 4 · Inglés: completar A1 y A2, luego B1 | pendiente |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | pendiente |

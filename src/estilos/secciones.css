@@ -373,3 +373,30 @@ body{padding-top:var(--franja,0px)}
 .btn-icono.estrella{color:var(--muted)}
 .btn-icono.estrella.activa{color:var(--warn)}
 .contexto{background:var(--area-soft,var(--surface-2));border-radius:var(--r2);padding:var(--s2) var(--s3);margin:0 0 var(--s2)}
+
+/* ---------- Excel: mini hoja de cálculo (solo la hoja se desplaza de lado) ---------- */
+.xl-marco{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line-2);border-radius:var(--r2);margin:0 0 var(--s4);background:var(--surface)}
+.xl-hoja{border-collapse:separate;border-spacing:0;font-size:15px;font-variant-numeric:tabular-nums}
+.xl-hoja th{background:var(--surface-2);color:var(--muted);font-weight:700;font-size:13px;padding:4px 6px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
+.xl-hoja tbody th{position:sticky;left:0;z-index:1;min-width:28px}
+.xl-hoja td{min-width:64px;height:40px;padding:0 8px;white-space:nowrap;border-right:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--ink);cursor:pointer;user-select:none;-webkit-user-select:none}
+.xl-hoja td.xl-num{text-align:right}
+.xl-hoja td.xl-destino{box-shadow:inset 0 0 0 2px var(--area,var(--primary));background:var(--area-soft,var(--primary-soft));font-weight:800;text-align:center}
+.xl-hoja td.xl-copia{background:var(--area-soft,var(--primary-soft));text-align:center}
+.xl-hoja td.xl-sel{background:var(--primary-soft);box-shadow:inset 0 0 0 2px var(--primary)}
+.xl-hoja td.xl-activa{box-shadow:inset 0 0 0 3px var(--success)}
+.xl-hoja td.xl-marca{background:var(--warn-soft);font-weight:800}
+.xl-hoja td.xl-err{color:var(--error);font-weight:700}
+.xl-hoja td.xl-pinta{background:var(--error-soft)}
+.xl-ayuda{margin:var(--s1) 0 0}
+.xl-barra{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap;margin:0 0 var(--s3)}
+.xl-barra .xl-ref{font-weight:800;min-width:44px;text-align:center;color:var(--muted)}
+.xl-barra input{flex:1 1 180px;min-height:48px;font-size:18px;font-family:var(--f-mono)}
+.xl-funciones{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 var(--s3)}
+.xl-controles{display:flex;flex-wrap:wrap;gap:var(--s3);margin:0 0 var(--s3)}
+.xl-controles label{display:flex;flex-direction:column;gap:4px;font-weight:700;flex:1 1 140px}
+.xl-controles select,.xl-controles input{min-height:44px}
+.xl-pivote td,.xl-pivote th{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.xl-pivote td{text-align:right}
+.xl-pivote tr.xl-total td,.xl-pivote tr.xl-total th{font-weight:800;border-top:2px solid var(--line-2)}
+.xl-barrita{display:inline-block;height:10px;border-radius:5px;background:var(--area,var(--primary));vertical-align:middle;margin-left:6px}

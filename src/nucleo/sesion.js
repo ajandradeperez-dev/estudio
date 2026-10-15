@@ -24,16 +24,19 @@ import {agregarAlTema,bloqueProcedimiento,bloqueError} from './cuaderno/notas.js
 import {htmlPaso,normalPaso,textoPlano,abrirProcedimiento,cerrarProcedimiento} from './procedimiento.js';
 import {vibrar} from './ajustes.js';
 import {conFormulas} from './formula.js';
+import {htmlHoja,activarHoja,insertarRef,previa,olvidarRef} from './excel/hoja.js';
 
 const mezclar=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
 const ELOGIOS=['¡Bien!','¡Excelente!','¡Correcto!','¡Muy bien!','¡Así se hace!'];
 const TECLADOS={
   mat:['√','^','/','(',')','π','−','x','·',','],
   ip:['.','/','0','1','2','5'],
-  vector:['(',')',',','−','/','√']
+  vector:['(',')',',','−','/','√'],
+  xl:['=','(',')',';',':','$','"','<','>','&','*','/','+','-']
 };
 const etiqueta=(icono,txt)=>`<p class="etiqueta-actividad"><span aria-hidden="true">${icono}</span>${txt}</p>`;
-const enunciado=p=>`<div class="pregunta">${conFormulas(p.enunciado||'')}</div>${p.codigo?`<pre class="ej-codigo" style="margin-bottom:16px">${esc(p.codigo)}</pre>`:''}${p.oir?`<div class="row" style="margin-bottom:16px">${htmlOir(p.oir)}</div>`:''}`;
+// p.hoja: mini hoja de cálculo (Excel); con teclado 'xl' los toques en las celdas escriben su referencia en la respuesta
+const enunciado=p=>`<div class="pregunta">${conFormulas(p.enunciado||'')}</div>${p.hoja?htmlHoja(p.hoja):''}${p.codigo?`<pre class="ej-codigo" style="margin-bottom:16px">${esc(p.codigo)}</pre>`:''}${p.oir?`<div class="row" style="margin-bottom:16px">${htmlOir(p.oir)}</div>`:''}`;
 const teclado=p=>p.teclado&&TECLADOS[p.teclado]?`<div class="teclado" aria-label="Símbolos">${TECLADOS[p.teclado].map(k=>`<button type="button" class="tecla" data-tecla="${esc(k)}">${esc(k)}</button>`).join('')}</div>`:'';
 const casillaFoco={el:null};
 
@@ -44,7 +47,7 @@ export const ACT={
     html(p){
       const previos=p.pasosPrevios?.length?`<ol class="pasos-proc">${p.pasosPrevios.map((x,i)=>htmlPaso(x,i,{acciones:false})).join('')}<li class="paso-proc hueco"><p class="paso-que">${conFormulas(p.hueco||'¿Cuál es el resultado?')}</p></li></ol>`:'';
       const campo=p.forma?`<div class="matriz" style="grid-template-columns:repeat(${p.forma.cols},auto)" role="group" aria-label="${p.forma.filas>1?'Matriz':'Vector'}">${Array.from({length:p.forma.filas*p.forma.cols},(_,k)=>`<input class="celda" data-k="${k}" inputmode="text" autocomplete="off" aria-label="Fila ${Math.floor(k/p.forma.cols)+1}, columna ${k%p.forma.cols+1}">`).join('')}</div>`
-        :`<input class="respuesta-libre" id="ses-resp" autocomplete="off" autocapitalize="off" spellcheck="false"${p.lang?` lang="${p.lang}"`:''} placeholder="Tu respuesta" aria-label="Tu respuesta">`;
+        :`<input class="respuesta-libre" id="ses-resp" autocomplete="off" autocapitalize="off" spellcheck="false"${p.lang?` lang="${p.lang}"`:''} placeholder="${p.teclado==='xl'?'=fórmula (toca las celdas)':'Tu respuesta'}" aria-label="${p.teclado==='xl'?'Barra de fórmulas':'Tu respuesta'}">${p.teclado==='xl'?'<p class="nota xl-ayuda">Toca una celda para escribir su referencia; toca otra enseguida para hacer un rango (B2:B9).</p>':''}`;
       return `${etiqueta(previos?'🧩':'✍️',previos?'Completa el último paso':p.etiqueta||'Escribe la respuesta')}${enunciado(p)}${previos}${campo}${teclado(p)}`;
     },
     listo:()=>{const c=document.querySelectorAll('#vista .celda');return c.length?[...c].every(x=>x.value.trim()):!!$('#ses-resp')?.value.trim()},
@@ -264,6 +267,19 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
         inp.addEventListener('focus',()=>{casillaFoco.el=inp});
         inp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();$('#ses-comprobar')?.click()}});
       });
+      // Excel: tocar celdas escribe referencias y la hoja muestra en vivo el resultado de la fórmula
+      const p=st.actual,marco=document.querySelector('#vista .xl-marco'),resp=$('#ses-resp');
+      if(p?.hoja&&marco){
+        olvidarRef();
+        // que se vea la celda de la respuesta (si está a la derecha, la hoja se desplaza sola)
+        const td=p.hoja.destino&&marco.querySelector(`td[data-celda="${p.hoja.destino}"]`);
+        if(td&&td.offsetLeft+td.offsetWidth>marco.clientWidth)marco.scrollLeft=td.offsetLeft+td.offsetWidth-marco.clientWidth+8;
+        if(p.teclado==='xl'&&resp&&st.fase==='pregunta'){
+          activarHoja(marco,{alTocar:r=>insertarRef(resp,r,marco),alRango:r=>{const [a,b]=r.split(':');insertarRef(resp,a,marco);insertarRef(resp,b,marco)}});
+          resp.addEventListener('input',()=>{let pv={};try{pv=previa(p.hoja,resp.value)}catch(e){}
+            for(const [k,v] of Object.entries(pv)){const td=marco.querySelector(`td[data-celda="${k}"]`);if(td){td.textContent=v;td.classList.toggle('xl-err',/^#/.test(v))}}});
+        }
+      }
       const primero=$('#ses-resp')||document.querySelector('#vista .celda');
       if(primero&&st.fase==='pregunta'&&matchMedia('(pointer:fine)').matches)primero.focus({preventScroll:true});
     },

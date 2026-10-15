@@ -7,9 +7,12 @@
 import {crear,BANCOS} from './generadores/index.js';
 import {escenarioNegocio,escenarioCohete,escenarioPresa,escenarioCerro,escenarioFiesta} from './generadores/aplicaciones.js';
 import {escenarioFabrica} from './generadores/aplicaciones-lineal.js';
+import {escenarioReporteVentas,escenarioGastos,escenarioCalificaciones,escenarioInventario} from './generadores/excel-escenarios.js';
 
 const con=(contexto,p)=>p&&{...p,enunciado:`<p class="contexto">${contexto}</p>${p.enunciado}`};
 const delGenerador=(id,niveles,contexto)=>rng=>niveles.map(n=>con(typeof contexto==='function'?contexto(rng):contexto,crear(id,n))).filter(Boolean);
+// Varias preguntas de distintos generadores [[id, nivel]…], todas con el mismo contexto
+const delGenerador2=(lista,contexto)=>()=>lista.map(([id,n])=>con(contexto,crear(id,n))).filter(Boolean);
 const delBanco=(id,n)=>rng=>{const l=BANCOS[id]?.()||[];return rng.barajar(l).slice(0,n)};
 // Varias preguntas de generadores de aplicación (cada una con su contexto en el enunciado)
 const aplicacion=(id,niveles)=>()=>niveles.map(n=>crear(id,n)).filter(Boolean);
@@ -21,6 +24,7 @@ const INTEGRAL=['ci/antiderivada','ci/definida','ci/sustitucion','ci/partes','ci
 const TRIGO=['tri/razones','tri/circulo','tri/identidades','tri/ecuaciones'];
 const PREALGEBRA=['pre/fracciones','pre/porcentajes','pre/potencias','pre/operaciones','pre/cientifica'];
 const REDES=['red/osi','red/ipv4','red/bases','red/subred','red/mascara','red/prefijo-hosts','red/vlsm','red/ipv6','red/puertos','red/dns','red/dhcp','red/arp'];
+const EXCEL=['xl/operadores','xl/referencias','xl/suma-promedio','xl/contar-max-min','xl/redondear','xl/si','xl/y-o','xl/si-anidado','xl/si-error','xl/contar-si','xl/sumar-si','xl/buscarv','xl/buscarx','xl/indice-coincidir','xl/texto','xl/fechas','xl/formato-condicional','xl/tabla-dinamica'];
 const ALGEBRA=['alg/expresiones','alg/ecuacion-lineal','alg/desigualdad','alg/sistema-2x2','alg/sistema-3x3','alg/productos-notables','alg/factorizacion','alg/fracciones-algebraicas','alg/cuadratica','alg/exponentes','alg/logaritmos','alg/funciones'];
 
 export const RETOS=[
@@ -52,6 +56,35 @@ export const RETOS=[
    desc:'Encuentra el patrón en cada registro y decide qué hacer.',crear:delGenerador('def/logs',[3,4,5],'Estás de turno en el centro de operaciones de seguridad (SOC).')},
   {id:'ciber-incidentes-caso',materia:'ciberseguridad',tema:'defensa',titulo:'Casos de incidentes',profundidad:'escenario',dificultad:4,desc:'Diagnostica y responde casos reales (siempre defensivo).',crear:delBanco('ciber/incidentes',3)},
   {id:'ciber-laboratorio',materia:'ciberseguridad',tema:'defensa',titulo:'Laboratorio de incidentes',profundidad:'escenario',dificultad:4,desc:'Casos completos con evidencia, diagnóstico y respuesta.',ir:'cursos/ciberseguridad/incidentes'},
+  // ---------- Curso de Excel ----------
+  {id:'xl-captura',materia:'excel',tema:'interfaz',titulo:'Revisa una hoja de captura',profundidad:'aplicacion',dificultad:2,
+   desc:'Rangos, tipos de datos y formatos de una hoja que te pasaron.',crear:delGenerador2([['xl/celdas',5],['xl/tipos-datos',4],['xl/formato',4],['xl/formato',5]],'Te pasan una hoja de captura y tienes que revisarla antes de usarla.')},
+  {id:'xl-cotizacion',materia:'excel',tema:'formulas',titulo:'Arma una cotización',profundidad:'aplicacion',dificultad:3,
+   desc:'Totales, IVA, descuentos y un tipo de cambio fijo con $.',crear:delGenerador2([['xl/operadores',2],['xl/operadores',3],['xl/referencias',3],['xl/referencias',5]],'Un cliente pide una cotización: arma las fórmulas para que se puedan copiar.')},
+  {id:'xl-resumen-grupo',materia:'excel',tema:'resumen',titulo:'Resumen de un grupo',profundidad:'aplicacion',dificultad:2,
+   desc:'Totales, promedios, cuántos entregaron, el más alto y el más bajo.',crear:delGenerador2([['xl/suma-promedio',3],['xl/suma-promedio',4],['xl/contar-max-min',3],['xl/contar-max-min',5]],'La coordinación pide el resumen de calificaciones del grupo.')},
+  {id:'xl-reglas-negocio',materia:'excel',tema:'logica',titulo:'Reglas de la empresa',profundidad:'aplicacion',dificultad:3,
+   desc:'Descuentos por volumen, comisiones por tramos y alertas, sin errores en pantalla.',crear:delGenerador2([['xl/si',4],['xl/y-o',4],['xl/si-anidado',4],['xl/si-error',2]],'Recursos humanos y ventas te dan sus reglas para automatizarlas.')},
+  {id:'xl-tablero-region',materia:'excel',tema:'condicionales',titulo:'Tablero por región',profundidad:'aplicacion',dificultad:3,
+   desc:'Cuántas ventas y cuántas unidades por región y por condición.',crear:delGenerador2([['xl/contar-si',3],['xl/contar-si',5],['xl/sumar-si',3],['xl/sumar-si',4]],'Arma el tablero semanal de ventas por región.')},
+  {id:'xl-catalogo',materia:'excel',tema:'busqueda',titulo:'Consulta el catálogo',profundidad:'aplicacion',dificultad:3,
+   desc:'Busca datos por nombre o código con BUSCARV, BUSCARX e INDICE + COINCIDIR.',crear:delGenerador2([['xl/buscarv',3],['xl/buscarx',3],['xl/indice-coincidir',4],['xl/indice-coincidir',5]],'Atención a clientes necesita consultar datos rápido.')},
+  {id:'xl-limpiar-base',materia:'excel',tema:'texto-fechas',titulo:'Limpia una base de clientes',profundidad:'aplicacion',dificultad:3,
+   desc:'Nombres, códigos y antigüedad listos para un reporte.',crear:delGenerador2([['xl/texto',3],['xl/texto',5],['xl/fechas',2],['xl/fechas',4]],'La base de datos llegó desordenada: déjala lista para el reporte.')},
+  {id:'xl-depurar',materia:'excel',tema:'organizar-datos',titulo:'Depura el inventario',profundidad:'aplicacion',dificultad:3,
+   desc:'Ordena, filtra, resalta lo urgente y valida lo que se captura.',crear:delGenerador2([['xl/ordenar-filtrar',4],['xl/ordenar-filtrar',5],['xl/formato-condicional',3],['xl/validacion',4]],'Antes de la junta, deja el inventario fácil de leer.')},
+  {id:'xl-pivote-ventas',materia:'excel',tema:'dinamicas',titulo:'Resume las ventas con una tabla dinámica',profundidad:'aplicacion',dificultad:3,
+   desc:'Suma, cuenta, cruces y filtros sobre las ventas del trimestre.',crear:delGenerador2([['xl/tabla-dinamica',3],['xl/tabla-dinamica',4],['xl/tabla-dinamica',5]],'Dirección quiere las ventas del trimestre resumidas.')},
+  {id:'xl-simulador-dinamica',materia:'excel',tema:'dinamicas',titulo:'Simulador de tabla dinámica',profundidad:'escenario',dificultad:2,desc:'Arma tu propia tabla dinámica.',ir:'cursos/excel/dinamica'},
+  {id:'xl-graficos-reporte',materia:'excel',tema:'graficos',titulo:'Gráficos para un reporte',profundidad:'aplicacion',dificultad:2,
+   desc:'Elige el gráfico correcto para cada pregunta y detecta los engañosos.',crear:delGenerador2([['xl/graficos',2],['xl/graficos',3],['xl/graficos',4]],'Preparas las gráficas del informe mensual.')},
+  {id:'xl-atajos-dia',materia:'excel',tema:'atajos-teclado',titulo:'Un día con atajos',profundidad:'aplicacion',dificultad:2,
+   desc:'Secuencias de atajos para tareas comunes.',crear:delGenerador2([['xl/atajos',3],['xl/atajos',4],['xl/atajos',5]],'Quieres terminar tu reporte sin tocar el mouse.')},
+  {id:'xl-reporte-ventas',materia:'excel',tema:'escenarios',titulo:'Reporte de ventas',profundidad:'escenario',dificultad:4,desc:'Totales, ventas por región, el mejor vendedor y quién superó el promedio: 4 fórmulas.',crear:escenarioReporteVentas},
+  {id:'xl-gastos',materia:'excel',tema:'escenarios',titulo:'Control de gastos personales',profundidad:'escenario',dificultad:3,desc:'Total, por categoría, alerta de presupuesto y % de renta: 4 fórmulas.',crear:escenarioGastos},
+  {id:'xl-calificaciones',materia:'excel',tema:'escenarios',titulo:'Calificaciones de un grupo',profundidad:'escenario',dificultad:3,desc:'Promedios, estado, aprobados y mejor alumno: 4 fórmulas.',crear:escenarioCalificaciones},
+  {id:'xl-inventario',materia:'excel',tema:'escenarios',titulo:'Inventario con alertas',profundidad:'escenario',dificultad:3,desc:'Alertas, cuánto pedir, cuántos pedir y existencias por categoría: 4 fórmulas.',crear:escenarioInventario},
+  {id:'xl-simulacro',materia:'excel',tema:'escenarios',titulo:'Simulacro de Excel',profundidad:'escenario',dificultad:3,simulacro:true,desc:'12 fórmulas mezcladas de todo el curso.',crear:simulacro(EXCEL)},
   // ---------- Matemáticas · Aritmética y prealgebra ----------
   {id:'mat-compras',materia:'matematicas',tema:'prealgebra',titulo:'De compras: ofertas, recetas y cuentas',profundidad:'aplicacion',dificultad:2,
    desc:'Ofertas 3×2 contra descuentos, recetas a escala y la cuenta con IVA y propina.',crear:aplicacion('apl/compras',[1,3,5])},

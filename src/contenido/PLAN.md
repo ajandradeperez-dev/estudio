@@ -87,6 +87,72 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 - 🔧 FortiGate a fondo → `forti`
 - 🔧 Examen rápido → `quiz`
 
+## 💼 Curso · 📊 Excel `excel`
+
+### Interfaz y datos `interfaz`
+
+- [x] Celdas y rangos `celdas`
+- [x] Tipos de datos `tipos-datos`
+- [x] Formato de números y fechas `formato-numeros`
+
+### Fórmulas y referencias `formulas`
+
+- [x] Fórmulas y operadores `operadores`
+- [x] Referencias relativas, absolutas y mixtas `referencias`
+
+### Funciones de resumen `resumen`
+
+- [x] SUMA y PROMEDIO `suma-promedio`
+- [x] CONTAR, CONTARA, MAX y MIN `contar-max-min`
+- [x] REDONDEAR `redondear`
+
+### Lógica `logica`
+
+- [x] Función SI `si`
+- [x] Y, O `y-o`
+- [x] SI anidado `si-anidado`
+- [x] SI.ERROR `si-error`
+
+### Condicionales `condicionales`
+
+- [x] CONTAR.SI y CONTAR.SI.CONJUNTO `contar-si`
+- [x] SUMAR.SI y PROMEDIO.SI `sumar-si`
+
+### Búsqueda `busqueda`
+
+- [x] BUSCARV `buscarv`
+- [x] BUSCARX `buscarx`
+- [x] INDICE + COINCIDIR `indice-coincidir`
+
+### Texto y fechas `texto-fechas`
+
+- [x] Funciones de texto `texto`
+- [x] Funciones de fecha `fechas`
+
+### Ordenar, filtrar y formato `organizar-datos`
+
+- [x] Ordenar y filtrar `ordenar-filtrar`
+- [x] Formato condicional `formato-condicional`
+- [x] Validación de datos `validacion`
+
+### Tablas dinámicas `dinamicas`
+
+- [x] Tablas dinámicas `tabla-dinamica`
+
+### Gráficos `graficos`
+
+- [x] Gráficos: cuál elegir `graficos`
+
+### Atajos de teclado `atajos-teclado`
+
+- [x] Atajos de teclado `atajos`
+
+### Escenarios y herramientas `escenarios`
+
+- 🔧 Hoja libre → `hoja`
+- 🔧 Simulador de tabla dinámica → `dinamica`
+- 🔧 Ordenar, filtrar y formato → `organizar`
+
 ## 🇺🇸 Inglés (MCER, 4 vertientes de Nation) `ingles`
 
 ### A1 · Primeros pasos `a1`

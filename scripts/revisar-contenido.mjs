@@ -178,6 +178,19 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   for(const id of Object.keys(CONTENIDO))if(!UNIDADES.some(u=>u.id===id))mal(`contenido ${id}`,'no corresponde a ninguna unidad');
   console.log(`ingles/hablar: ${DIALOGOS.length} diálogos (${turnos} turnos) · ${SONIDOS.length} sonidos · ${UNIDADES.length} unidades`);
 }
+// Excel: el evaluador de fórmulas da el resultado esperado en cada caso de la tabla (cada función y cada error)
+{
+  const XL=await import(pathToFileURL(join(raiz,'..','nucleo','excel','formulas.js')).href);
+  const {HOJA,HOY,CASOS,COPIAS}=await import(pathToFileURL(join(raiz,'..','..','scripts','fixtures','excel-casos.mjs')).href);
+  const h=XL.crearHoja(HOJA,{filas:12,cols:8,hoy:HOY});let n=0;
+  for(const [f,esp] of CASOS){const v=XL.evaluar(h,f);if(!XL.mismoValor(v,esp))mal('excel: evaluador',`${f} da ${JSON.stringify(v)} (se esperaba ${JSON.stringify(esp)})`);n++}
+  for(const [f,de,a,esp] of COPIAS){const v=XL.copiarFormula(f,de,a);if(v!==esp)mal('excel: copiar fórmula',`${f} de ${de} a ${a} da ${v} (se esperaba ${esp})`)}
+  const faltan=['SUMA','PROMEDIO','CONTAR','CONTARA','MAX','MIN','REDONDEAR','SI','Y','O','SI.ERROR','CONTAR.SI','SUMAR.SI','PROMEDIO.SI','BUSCARV','BUSCARX','INDICE','COINCIDIR','CONCATENAR','CONCAT','IZQUIERDA','DERECHA','EXTRAE','LARGO','MAYUSC','MINUSC','ESPACIOS','HOY','FECHA','DIAS']
+    .filter(fn=>!CASOS.some(([f])=>f.toUpperCase().includes(fn+'(')));
+  if(faltan.length)mal('excel: casos de prueba',`faltan casos de ${faltan.join(', ')}`);
+  for(const e of ['#¡DIV/0!','#N/A','#¿NOMBRE?','#¡REF!','#¡VALOR!'])if(!CASOS.some(([,x])=>x?.err===e))mal('excel: casos de prueba',`falta un caso que dé ${e}`);
+  console.log(`excel: ${n} casos del evaluador (cada función y cada error) y ${COPIAS.length} copias de fórmulas`);
+}
 // Migración: un progreso v5 (con la materia 'algebra') llega a la versión actual sin perder nada
 {
   const mem={};
@@ -341,7 +354,7 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
   if(l.length!==2||l[0].temas.length!==2||l[1].temas[0].subtemas[0]!=='Derivación implícita')mal(e,'el lector de temarios no reconoce «Unidad N» con «N.M» y letras');
   if(T.leerTemario('- A\n- B\n- C')[0]?.temas.length!==3||T.leerTemario('1. X\n1.1 Y\n2. Z')[1]?.titulo!=='Z')mal(e,'el lector de temarios no reconoce viñetas o numeración de dos niveles');
   // emparejamiento con el catálogo (de los temas.js de cada materia)
-  const cat=[];for(const m of ['ciberseguridad','ingles','matematicas','ciencia-datos']){const t=(await import(pathToFileURL(join(raiz,m,'temas.js')).href)).default;
+  const cat=[];for(const m of ['ciberseguridad','excel','ingles','matematicas','ciencia-datos']){const t=(await import(pathToFileURL(join(raiz,m,'temas.js')).href)).default;
     for(const x of t)for(const n of x.nodos.filter(n=>n.id))cat.push({materia:m,id:n.id,titulo:n.titulo||n.id.replace(/-/g,' ')})}
   for(const [q,esperado] of [['Producto escalar','producto-punto'],['Subnetting','subredes-cidr'],['Derivación implícita','regla-cadena'],['Media, mediana y moda','tendencia-central'],['Past simple','pasado-simple']])
     if(EM.emparejar(q,cat)?.id!==esperado)mal(e,`«${q}» debería emparejar con ${esperado} (dio ${EM.emparejar(q,cat)?.id})`);

@@ -89,6 +89,36 @@ export function analizar(ruta){
   return {...base,tipo:'materia',ruta:rutaMateria(m)};
 }
 
+/* Ruta padre de una pantalla, calculada solo con su forma (la usa el botón Atrás; no depende del historial):
+   lección → tema → materia → área (Estudio, Cursos) → Aprender · cofre/jefe/retos del tema → tema · ubicación/retos → materia
+   sección de una materia → la materia (Hablar: unidad/paso → unidad → portada de Hablar) · notas, mias, propuestas: su
+   portada y luego Aprender · Acerca de y ✨ IA → Perfil · las pestañas (Repasar, Notas, Logros, Perfil) → Aprender.
+   Devuelve null solo en la portada de Aprender. */
+const PADRE_ESPECIAL={acerca:'perfil','ajustes-ia':'perfil'};
+export function padreDe(x){
+  if(typeof x==='string')x=analizar(x);
+  const r=x.ruta||'',s=r.split('/');
+  if(x.tipo==='portada')return null;
+  if(x.tipo==='especial')return PADRE_ESPECIAL[r]??'';
+  if(x.tipo==='notas'||x.tipo==='propuestas')return s.length>1?s[0]:'';
+  if(x.tipo==='mias'){if(s.length===1)return '';if(s.length===2)return 'mias';return `mias/${s[1]}`}
+  if(x.tipo==='area')return '';
+  const m=x.m,rm=rutaMateria(m);
+  if(x.tipo==='materia'){const a=area(m.area);return a&&rm!==m.id?a.id:''}
+  if(x.tipo==='tema')return rm;
+  if(x.tipo==='leccion')return x.t?rutaTema(m,x.t):rm;
+  if(['cofre','jefe'].includes(x.tipo)||(x.tipo==='retos'&&x.t))return rutaTema(m,x.t);
+  if(x.tipo==='retos'||x.tipo==='ubicacion')return rm;
+  if(x.tipo==='seccion'){
+    const resto=x.resto||[],raiz=`${rm}/${x.seccion}`;
+    if(!resto.length)return rm;
+    // unidad de Hablar con un paso abierto (u/<id>/<paso>) → la unidad; cualquier otra subpantalla → la portada de la sección
+    if(resto[0]==='u'&&resto.length>2)return `${raiz}/u/${resto[1]}`;
+    return raiz;
+  }
+  return '';
+}
+
 // Una tarjeta se da por buena si coincide o si contiene todas las palabras importantes de la respuesta (en otro orden)
 const palabras=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(w=>w.length>2);
 export function tarjetaBien(entrada,respuesta){

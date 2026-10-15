@@ -3,9 +3,9 @@ import './estilos/base.css';
 import './estilos/componentes.css';
 import './estilos/secciones.css';
 import {$} from './utilidades.js';
-import {analizar,rutaMateria,rutaTema} from './nucleo/materias.js';
+import {analizar,rutaMateria,rutaTema,padreDe} from './nucleo/materias.js';
 import {visitar,guardarUltimo,sumarSegundos,registrarSesion,pendientes} from './nucleo/progreso.js';
-import {portada,vistaArea,vistaMateria,vistaTema,htmlBarraSup,htmlMigas,rutaPadre} from './nucleo/portada.js';
+import {portada,vistaArea,vistaMateria,vistaTema,htmlBarraSup,htmlMigas} from './nucleo/portada.js';
 import {vistaHabilidad,vistaCofre,vistaJefe} from './nucleo/habilidad.js';
 import {repaso} from './nucleo/repaso.js';
 import {perfil} from './nucleo/miprogreso.js';
@@ -83,49 +83,55 @@ function pintarNav(){
   const rep=pendientes().length,act=pestana();
   $('#nav').innerHTML=PESTANAS.map(([ruta,icono,txt])=>`<button class="nav-tab" data-go="${ruta}"${act===ruta?' aria-current="page"':''}><span class="nav-icono" aria-hidden="true">${icono}</span><span>${txt}</span>${ruta==='repaso'&&rep?`<span class="nav-insignia" aria-label="${rep} pendientes">${rep>99?'99+':rep}</span>`:''}</button>`).join('');
 }
-/* ---------- botón Atrás (Android, PWA, APK y el ← de la barra) ----------
-   La app lleva su propia pila de pantallas y el historial del navegador siempre tiene dos entradas: una "base" y la actual.
-   Atrás del sistema → el navegador vuelve a la base (popstate) → atras() decide: cierra el modal u hoja abierta; en una lección
-   pregunta antes de salir; en la raíz de una pestaña vuelve a Aprender; si no, a la pantalla anterior (o a la de arriba).
-   Después repone la entrada actual. Solo en la portada de Aprender se queda en la base 2 s: un segundo Atrás sale de la app. */
-const pila=[],RAICES=['repaso','notas','logros','perfil'];
-let enBase=false,salida=null;
+/* ---------- botón Atrás (Android, PWA, APK, laptop y el ← de las migas) ----------
+   No depende de cuántas entradas tenga el historial: cada pantalla sabe cuál es su ruta padre por su forma (padreDe en
+   nucleo/materias.js). El historial del navegador siempre tiene una entrada "base" y encima una entrada "trampa" con la
+   ruta actual; navegar dentro de la app solo REEMPLAZA la trampa (replaceState), nunca agrega entradas.
+   Atrás del sistema → el navegador baja a la base (popstate) → se cierra lo que esté abierto (modal, dibujo, procedimiento,
+   hoja de feedback) o se sale de la práctica con su ✕, o se va a la ruta padre; y se vuelve a poner la trampa. Así Atrás
+   funciona infinitas veces, nivel por nivel, aunque se entre con un enlace directo o se recargue la página.
+   Solo en la portada de Aprender: en el teléfono, «Toca otra vez para salir» y un segundo Atrás en 2 s sale; en la laptop
+   no hace nada. Hay UN solo listener de popstate (este). */
+let salida=null,sinTrampa=false;
 const urlDe=r=>r?'#'+r:location.pathname+location.search;
-function ponerActual(){try{if(enBase){history.pushState({app:1},'',urlDe(cur.ruta));enBase=false}else history.replaceState({app:1},'',urlDe(cur.ruta))}catch(e){}}
+const esTelefono=()=>matchMedia('(pointer:coarse)').matches||matchMedia('(display-mode: standalone)').matches||document.referrer.startsWith('android-app://');
+// Pone la URL de la ruta en la entrada trampa: si estamos en la base (después de un Atrás), la trampa se vuelve a crear
+function marcar(ruta){try{if(sinTrampa){history.pushState({trampa:1},'',urlDe(ruta));sinTrampa=false}else history.replaceState({trampa:1},'',urlDe(ruta))}catch(e){}}
 // Lo que esté abierto encima de la pantalla se cierra primero (modal, dibujo, procedimiento, hoja de feedback)
 function cerrarCapa(){
   const modal=[...document.querySelectorAll('.modal-fondo')].pop();
-  if(modal){const b=modal.querySelector('[data-r="0"],[data-x],[data-cancelar]');b?b.click():modal.remove();return true}
+  if(modal){const b=modal.dataset.atras==='si'?modal.querySelector('[data-r="1"]'):modal.querySelector('[data-r="0"],[data-x],[data-cancelar]');b?b.click():modal.remove();return true}
   const dib=document.querySelector('.dibujo-fondo');if(dib){dib.querySelector('[data-d="cancelar"]')?.click();return true}
   if(document.getElementById('procedimiento')){cerrarProcedimiento();return true}
-  const hoja=document.getElementById('hoja');if(hoja){const s=hoja.querySelector('#hoja-seguir');s?s.click():cerrarHoja();return true}
+  // la hoja de feedback de una práctica es parte de la práctica: Atrás sale de la práctica (con su ✕), no pasa a la siguiente pregunta
+  const hoja=document.getElementById('hoja');if(hoja&&!cur.v.inmersiva){cerrarHoja();return true}
   return false;
 }
-async function atras(){
-  clearTimeout(salida);
-  if(cerrarCapa())return;
+// Un nivel hacia atrás (lo usan el botón Atrás del sistema y el ← de las migas). Devuelve 'salir' en la portada del teléfono.
+function atras(){
+  if(cerrarCapa()){marcar(cur.ruta);return}
   // lección o práctica en curso: su ✕ pregunta "¿Salir de la lección?" (si no respondió nada, sale directo)
   const salir=cur.v.inmersiva&&!document.querySelector('.fin-sesion')&&document.querySelector('#vista [data-salir]');
-  if(salir){salir.click();return}
-  if(RAICES.includes(cur.ruta)){pila.length=0;go('',{atras:true});return}
-  while(pila.length){const r=pila.pop();if(r!==cur.ruta){go(r,{atras:true});return}}
-  if(cur.ruta){go(rutaPadre(cur),{atras:true});return}
-  // portada de Aprender: aviso, y un segundo Atrás en 2 s sale (seguimos en la base del historial)
+  if(salir){marcar(cur.ruta);salir.click();return}
+  const padre=padreDe(cur);
+  if(padre!==null){marcar(padre);go(padre);return}
+  // portada de Aprender
+  if(!esTelefono()){marcar('');return}
   aviso('Toca otra vez para salir',2000);
-  salida=setTimeout(()=>{if(enBase)ponerActual()},2000);
+  // se queda en la base: un segundo Atrás en 2 s sale de la app; si no, se vuelve a poner la trampa
+  clearTimeout(salida);salida=setTimeout(()=>{if(sinTrampa)marcar(cur.ruta)},2000);
   return 'salir';
 }
-// Solo volver a la entrada base es un Atrás; abrir un #enlace también dispara popstate (sin estado) y lo maneja hashchange
-// (si se vuelve a una entrada vieja de la app —p. ej. tras escribir una URL a mano— también es un Atrás, y esa entrada pasa a ser la actual)
-window.addEventListener('popstate',e=>{if(!e.state?.base&&!e.state?.app)return;enBase=!!e.state.base;Promise.resolve(atras()).then(r=>{if(r!=='salir')ponerActual()})});
+window.addEventListener('popstate',e=>{
+  if(!e.state)return;                 // un <a href="#…"> agrega entradas sin estado: lo maneja hashchange
+  sinTrampa=!!e.state.base;           // bajamos a la base: hay que volver a poner la trampa
+  // la base guarda la URL con la que se abrió la app: se actualiza a la pantalla actual para que su hashchange no navegue
+  if(sinTrampa)try{history.replaceState({base:1},'',urlDe(cur.ruta))}catch(x){}
+  atras();
+});
 
-function go(ruta,{atras:hacia=false}={}){
+function go(ruta){
   const nueva=resolver(ruta);
-  if(cur&&nueva.ruta!==cur.ruta){
-    // ir a la pantalla de la que vienes cuenta como volver (no se apila dos veces)
-    if(hacia||pila[pila.length-1]===nueva.ruta){if(pila[pila.length-1]===nueva.ruta)pila.pop()}
-    else{pila.push(cur.ruta);if(pila.length>60)pila.shift()}
-  }
   clearTimeout(salida);
   cur?.v.alSalir?.();cerrarHoja();cerrarProcedimiento();
   cur=nueva;
@@ -137,7 +143,7 @@ function go(ruta,{atras:hacia=false}={}){
   pintar();pintarBarra();
   if(cur.ruta!==anterior){const v=$('#vista');v.classList.remove('entrando');void v.offsetWidth;v.classList.add('entrando');anterior=cur.ruta}
   document.title=cur.ruta?`${cur.v.titulo} · ${APP_NOMBRE}`:APP_NOMBRE;
-  ponerActual();
+  marcar(cur.ruta);   // solo reemplaza la entrada actual (o repone la trampa): navegar nunca agrega entradas
   window.scrollTo(0,0);
 }
 
@@ -190,8 +196,8 @@ await Promise.race([cargarMias(),new Promise(r=>setTimeout(r,1500))]);
 window.addEventListener('mias',()=>{pintarNav();if(!cur?.v.inmersiva&&['portada','mias'].includes(cur?.tipo))pintar()});
 // Vuelta del enlace mágico del administrador (#access_token=…): se guarda la sesión y se abre el modo administrador
 if(recibirEnlaceMagico(location.hash))try{history.replaceState(null,'',location.pathname+location.search+'#propuestas/admin')}catch(e){location.hash='propuestas/admin'}
-// Historial: una entrada base y la actual (ver atras())
-try{history.replaceState({base:1},'',location.href);history.pushState({app:1},'',location.href)}catch(e){}
+// Historial: una entrada base y encima la trampa (ver atras()); también al entrar por un enlace directo o al recargar
+try{history.replaceState({base:1},'',location.href);history.pushState({trampa:1},'',location.href)}catch(e){}
 go(rutaDelHash());
 // Pantalla de bienvenida (splash) fuera en cuanto se pinta la app
 {const s=document.getElementById('splash');if(s){s.classList.add('fuera');setTimeout(()=>s.remove(),300)}}

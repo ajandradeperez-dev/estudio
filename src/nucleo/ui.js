@@ -34,9 +34,10 @@ export function cerrarHoja(){document.getElementById('hoja')?.remove()}
 
 /* ---------- modal de confirmación ---------- */
 // Devuelve una promesa con el valor del botón elegido (o null si se cierra)
-export function confirmar({titulo,texto='',si='Sí',no='Cancelar',peligro=false}){
+// atrasConfirma: el botón Atrás del sistema, con este diálogo abierto, cuenta como «sí» (p. ej. «¿Salir de la lección?»)
+export function confirmar({titulo,texto='',si='Sí',no='Cancelar',peligro=false,atrasConfirma=false}){
   return new Promise(res=>{
-    const f=document.createElement('div');f.className='modal-fondo';
+    const f=document.createElement('div');f.className='modal-fondo';if(atrasConfirma)f.dataset.atras='si';
     f.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-t"><h2 id="modal-t">${titulo}</h2>${texto?`<p>${texto}</p>`:''}
 <div class="pila"><button class="btn ${peligro?'peligro':''} ancho" data-r="1">${si}</button><button class="btn ghost ancho" data-r="0">${no}</button></div></div>`;
     const cerrar=v=>{f.remove();document.removeEventListener('keydown',tecla,true);res(v)};

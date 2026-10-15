@@ -3,7 +3,7 @@
    sonido/<id>          pares mínimos y frases de un sonido difícil
    frases/<A1|A2>       frases útiles del nivel
    dialogo/<id>         diálogo guiado
-   ia                   conversación libre con Claude
+   ia                   conversación libre con IA (Gemini o Claude)
    u/<id>[/escucha|frases|fluidez]  unidad y sus pasos · jefe/<id>  tarea final */
 import {esc} from '../../../utilidades.js';
 import {soporte,AVISO_SIN_RECONOCIMIENTO} from '../../../nucleo/voz.js';
@@ -14,7 +14,7 @@ import {FRASES} from './frases.js';
 import {sesionPronunciacion,itemsElegir} from './practica.js';
 import {vistaDialogo} from './dialogo.js';
 import {vistaIA} from './ia.js';
-import {leerAjustes} from './claude.js';
+import {leerAjustes} from '../../../nucleo/ia.js';
 import {nivelIngles} from './nivel.js';
 import {misionHabla,MISION} from '../../../nucleo/progreso.js';
 import {barra,intro} from '../../../nucleo/ui.js';

@@ -1,9 +1,9 @@
 /* "📸 Foto a nota" y "🧠 Resuélvelo conmigo" (rutas 'notas/foto' y 'notas/foto/<materia>/<tema>' para archivarla en ese tema).
-   - Con API key: Claude (visión) convierte la foto del cuaderno en una nota limpia (texto con formato, fórmulas $…$, pasos),
+   - Con clave de IA (Gemini o Claude, con imágenes) convierte la foto del cuaderno en una nota limpia (texto con formato, fórmulas $…$, pasos),
      marca con ⚠️ los posibles errores de cálculo (sin cambiar lo que dice la foto) y sugiere tarjetas; o guía paso a paso un
      ejercicio sin resolver: pregunta, da pistas graduales y muestra el paso solo si te atoras dos veces.
    - Sin API key: la foto se guarda en la nota y se ofrece OCR local (Tesseract.js, se baja la primera vez y queda en caché).
-   Las fotos solo se envían a api.anthropic.com al tocar el botón, comprimidas. */
+   Las fotos solo se envían a la API del proveedor elegido al tocar el botón, comprimidas (ver nucleo/ia.js). */
 import {esc} from '../../utilidades.js';
 import {aviso,vacio,confirmar} from '../ui.js';
 import {tex} from '../formula.js';
@@ -14,7 +14,7 @@ import {crear} from '../generadores/index.js';
 import {generadorDe} from '../practica.js';
 import {materias as registro,rutaLeccion} from '../materias.js';
 import {registrarEjercicio,registrarRespuesta} from '../progreso.js';
-import {pedirJSON,ErrorIA} from '../../materias/ingles/hablar/claude.js';
+import {pedirJSON,ErrorIA,nombreProveedor} from '../ia.js';
 import {guardarArchivo,leerArchivo,nuevoId} from './db.js';
 import {comprimirFoto} from './medios.js';
 import {render} from './formato.js';
@@ -170,7 +170,7 @@ ${fotos.length&&!ocupado?`<div class="pila" style="margin-top:12px">
 ${disponible()?'':`<p class="nota">${SIN_CLAVE}</p>`}
 <button class="btn ghost ancho" id="fn-ocr">🔤 Transcribir sin IA <span class="nota">(con fórmulas funciona mal)</span></button>
 <button class="btn ghost ancho" id="fn-solo">💾 Guardar solo la foto</button></div>`:''}
-<p class="nota" style="margin-top:12px">🔒 Las fotos solo se envían a Anthropic si tocas un botón ✨ o 🧠, y solo con tu propia clave.</p>`;
+<p class="nota" style="margin-top:12px">🔒 Las fotos solo se envían a ${nombreProveedor()} si tocas un botón ✨ o 🧠, y solo con tu propia clave.</p>`;
       if(modo==='revisar')return `${cab}<h1>Revisa tu nota</h1>${res?'<p class="ia-etiqueta">✨ Hecha con IA a partir de tu foto: compárala con el original.</p>':''}
 <div class="fn-lado">${tiraFotos()}<div class="fn-edicion">
 <label class="campo">Título<input id="fn-titulo" class="mp-input" value="${esc(titulo)}" maxlength="120"></label>

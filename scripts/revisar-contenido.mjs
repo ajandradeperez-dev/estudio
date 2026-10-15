@@ -248,6 +248,49 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   for(const f of archivos){if(/\.(png|jpg|webp|ico|woff2?)$/.test(f))continue;let t='';try{t=leer(join(raiz,'..','..',f),'utf8')}catch(e){continue}
     if(/service_role['"]?\s*[:=]\s*['"]eyJ|sk-ant-[a-z0-9]{10}|AIza[0-9A-Za-z_-]{30}|sb_secret_[A-Za-z0-9]{10}|-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(t))mal(f,'parece contener una clave privada: no la subas al repositorio')}
 }
+// IA: la capa común (nucleo/ia.js) arma bien las peticiones de Gemini y de Claude (texto, imágenes y JSON por esquema),
+// lee sus respuestas y da mensajes amables (429, clave inválida, respuesta cortada); con respuestas simuladas, sin red real
+{
+  const mem={},antes={ls:globalThis.localStorage,f:globalThis.fetch};
+  globalThis.localStorage={getItem:k=>mem[k]??null,setItem:(k,v)=>{mem[k]=String(v)},removeItem:k=>{delete mem[k]}};
+  const IA=await import(pathToFileURL(join(raiz,'..','nucleo','ia.js')).href);
+  const e='ia';let ult=null,resp=null;
+  globalThis.fetch=async(url,op)=>{ult={url,op,cuerpo:JSON.parse(op.body)};const [st,cu]=resp(ult);return {ok:st<300,status:st,json:async()=>cu}};
+  const esquema={type:'object',additionalProperties:false,required:['explicacion'],properties:{explicacion:{type:'string'}}};
+  const img={media_type:'image/jpeg',data:'AAAA'};
+  // por defecto: Gemini; una clave vieja de Anthropic ({clave, modelo}) sigue funcionando con Claude
+  if(IA.leerAjustes().proveedor!=='gemini')mal(e,'el proveedor por defecto no es Gemini');
+  mem['ciberlab-ia']=JSON.stringify({clave:'sk-ant-vieja',modelo:'claude-haiku-5-5'});
+  if(IA.leerAjustes().proveedor!=='claude'||IA.leerAjustes().clave!=='sk-ant-vieja')mal(e,'se pierde la clave de Anthropic guardada antes');
+  // Gemini
+  IA.guardarAjustes({proveedor:'gemini',clave:'AIzaPRUEBA'});
+  resp=()=>[200,{candidates:[{finishReason:'STOP',content:{parts:[{text:'{"explicacion":"Hola"}'}]}}],usageMetadata:{promptTokenCount:10,candidatesTokenCount:5}}];
+  let uso=null;const g=await IA.pedir({sistema:'S',mensajes:[{role:'user',content:'Explica'}],imagenes:[img],esquemaJSON:esquema,nivel:'vision',alUso:u=>{uso=u}});
+  const gc=ult.cuerpo;
+  if(g?.explicacion!=='Hola')mal(e,'Gemini: no lee la respuesta JSON');
+  if(!/\/models\/gemini-3\.8-flash:generateContent$/.test(ult.url)||ult.op.headers['x-goog-api-key']!=='AIzaPRUEBA')mal(e,'Gemini: URL, modelo o cabecera de la clave incorrectos');
+  if(gc.systemInstruction?.parts?.[0]?.text!=='S'||gc.generationConfig?.responseMimeType!=='application/json'||!gc.generationConfig?.responseJsonSchema)mal(e,'Gemini: falta systemInstruction o el esquema JSON');
+  if(!gc.contents[0].parts[0].inlineData||gc.contents[0].parts[0].inlineData.mimeType!=='image/jpeg'||gc.contents[0].parts.at(-1).text!=='Explica')mal(e,'Gemini: la imagen no va como inlineData');
+  if(uso?.input_tokens!==10)mal(e,'Gemini: no reporta los tokens usados');
+  await IA.pedir({mensajes:[{role:'user',content:'a'},{role:'assistant',content:'b'},{role:'user',content:'c'}]});
+  if(ult.cuerpo.contents.map(c=>c.role).join()!=='user,model,user')mal(e,'Gemini: los turnos del asistente no van como model');
+  for(const [st,cu,codigo] of [[429,{error:{status:'RESOURCE_EXHAUSTED',message:'quota'}},'429'],[400,{error:{status:'INVALID_ARGUMENT',message:'API key not valid. Please pass a valid API key.'}},'401'],[200,{candidates:[{finishReason:'MAX_TOKENS',content:{parts:[{text:'{"ex'}]}}]},'cortada']]){
+    resp=()=>[st,cu];try{await IA.pedir({mensajes:[{role:'user',content:'x'}],esquemaJSON:esquema});mal(e,`Gemini: no falla con ${codigo}`)}catch(x){if(x.codigo!==codigo||!x.message)mal(e,`Gemini: error ${codigo} mal reportado (${x.codigo})`)}}
+  // Claude
+  IA.guardarAjustes({proveedor:'claude',clave:'sk-ant-PRUEBA',modelo:'claude-haiku-5-5'});
+  resp=()=>[200,{stop_reason:'end_turn',content:[{type:'text',text:'{"explicacion":"Hi"}'}],usage:{input_tokens:7,output_tokens:3}}];
+  const c=await IA.pedir({sistema:'S',mensajes:[{role:'user',content:'Explica'}],imagenes:[img],esquemaJSON:esquema,nivel:'vision'});
+  if(c?.explicacion!=='Hi')mal(e,'Claude: no lee la respuesta JSON');
+  if(ult.url!=='https://api.anthropic.com/v1/messages'||ult.op.headers['x-api-key']!=='sk-ant-PRUEBA'||ult.cuerpo.model!=='claude-sonnet-5-5')mal(e,'Claude: URL, clave o modelo de visión incorrectos');
+  if(ult.cuerpo.messages[0].content[0].type!=='image'||ult.cuerpo.output_config?.format?.type!=='json_schema')mal(e,'Claude: la imagen o el esquema no van en el formato de Anthropic');
+  await IA.pedirJSON({system:'S',messages:[{role:'user',content:'x'}],schema:esquema});if(ult.cuerpo.model!=='claude-haiku-5-5')mal(e,'Claude: el texto no usa el modelo elegido');
+  resp=()=>[429,{error:{message:'rate'}}];try{await IA.pedir({mensajes:[{role:'user',content:'x'}]});mal(e,'Claude: no falla con 429')}catch(x){if(x.codigo!=='429')mal(e,'Claude: 429 mal reportado')}
+  // sin clave: mensaje que dice dónde ponerla
+  IA.guardarAjustes({proveedor:'gemini',clave:''});try{await IA.pedir({mensajes:[{role:'user',content:'x'}]});mal(e,'sin clave no avisa')}catch(x){if(x.codigo!=='sin-clave')mal(e,'sin clave: error equivocado')}
+  if(IA.costoUSD('texto',1e6,1e6)!==0)mal(e,'Gemini gratis no debería mostrar costo');
+  globalThis.localStorage=antes.ls;globalThis.fetch=antes.f;
+  console.log('ia: Gemini y Claude con texto, imágenes y JSON, turnos, tokens, 429, clave inválida, respuesta cortada y clave vieja (respuestas simuladas)');
+}
 // Migración: un progreso v5 (con la materia 'algebra') llega a la versión actual sin perder nada
 {
   const mem={};

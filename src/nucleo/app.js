@@ -194,7 +194,7 @@ export const acerca={
 <div class="card"><p style="margin-top:0"><b>Tus datos se quedan en tu teléfono.</b> No hay cuentas ni servidores: tu progreso, tus notas y tus fotos se guardan solo en este navegador o app.</p>
 <ul class="nota" style="padding-left:20px;margin-bottom:0"><li>Cada persona tiene lo suyo: si compartes la app con amigos, nadie ve tu progreso ni tus notas.</li>
 <li>Para cambiar de teléfono usa <b>Exportar todo</b> e <b>Importar</b> (en Perfil).</li>
-<li>La IA es opcional y usa <b>tu propia clave</b> de Anthropic, guardada solo en este teléfono. Cuando la usas, el texto del ejercicio va a Anthropic; nada más sale de tu teléfono.</li>
+<li>La IA es opcional y usa <b>tu propia clave</b> (Gemini de Google o Claude de Anthropic), guardada solo en este teléfono. Cuando la usas, el texto o la foto que pides analizar va a ese proveedor; nada más sale de tu teléfono. En el plan gratuito de Gemini, Google puede usar lo que envíes para mejorar sus modelos: no envíes datos personales.</li>
 <li>El reconocimiento de voz lo hace tu navegador (en Chrome, con los servidores de Google).</li>
 <li>🗳️ En Propuestas, para votar se envía un identificador anónimo de este dispositivo y tus votos o propuestas; nada más. Tu progreso y tus notas siguen solo en tu teléfono.</li></ul></div>
 <h2>🤝 Invita a tus amigos</h2>

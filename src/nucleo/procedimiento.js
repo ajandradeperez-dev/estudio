@@ -53,7 +53,7 @@ ${vistos<pasos.length?`<p class="nota">¿Cuál crees que es el paso ${vistos+1}?
     if(t.dataset.leerPaso!==undefined){hablar(textoPaso(pasos[+t.dataset.leerPaso]),{idioma});return}
     if(t.dataset.notaPaso!==undefined&&guardar){await guardar(pasos[+t.dataset.notaPaso]);t.textContent='✅';return}
     if(t.dataset.notaTodo!==undefined&&guardar){await guardar(null);t.textContent='✅ Guardado';t.disabled=true;return}
-    if(t.dataset.ia!==undefined&&ia){const caja=f.querySelector('#proc-ia');t.disabled=true;caja.innerHTML='<p class="cargando">Preguntando a Claude</p>';
+    if(t.dataset.ia!==undefined&&ia){const caja=f.querySelector('#proc-ia');t.disabled=true;caja.innerHTML='<p class="cargando">Preguntando a la IA</p>';
       try{caja.innerHTML=`<div class="ia-explica">${conFormulas(esc(await ia()).replace(/\\\\/g,'\\').replace(/\n/g,'<br>'))}</div>`}catch(err){caja.innerHTML=`<p class="deny">${esc(err.message||'No se pudo conectar. Usa la explicación de arriba.')}</p>`}}
   });
   f.addEventListener('keydown',e=>{if(e.key==='Escape')cerrarProcedimiento()});

@@ -12,6 +12,7 @@ import {perfil} from './nucleo/miprogreso.js';
 import {logros} from './nucleo/logros.js';
 import {vistaNotas} from './nucleo/notas.js';
 import {vistaMias} from './nucleo/mias/vistas.js';
+import {ajustesIA} from './nucleo/ia-ajustes.js';
 import {vistaPropuestas,recibirEnlaceMagico,sincronizarPropuestas} from './nucleo/propuestas/vistas.js';
 import {cargarMias} from './nucleo/mias/datos.js';
 import {vistaUbicacion} from './nucleo/ubicacion.js';
@@ -30,7 +31,7 @@ import {acerca,vistaBienvenida,tocaBienvenida,vigilarConexion,avisarVersionNueva
    Las rutas viejas (#ingles/l/can, #algebra/…, #fw, #progreso) se resuelven y se reescriben a la canónica.
    Cada vista exporta vista() y, si las necesita, alEntrar(), alMostrar(), alSalir(), alClic(t, ir, repintar)
    e inmersiva (true mientras es una sesión de práctica a pantalla completa: sin barras de la app). */
-const ESPECIALES={repaso,logros,perfil,acerca,get notas(){return vistaNotas([])},get bienvenida(){return vistaBienvenida()}};
+const ESPECIALES={repaso,logros,perfil,acerca,'ajustes-ia':ajustesIA,get notas(){return vistaNotas([])},get bienvenida(){return vistaBienvenida()}};
 function resolver(ruta){
   const x=analizar(ruta),{m}=x;
   // La primera vez (sin progreso) la portada es la bienvenida: nombre, qué estudiar y meta diaria

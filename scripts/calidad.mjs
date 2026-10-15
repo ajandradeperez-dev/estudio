@@ -17,7 +17,7 @@ const apagar=()=>{try{process.platform==='win32'?execSync(`taskkill /PID ${servi
 await new Promise(r=>setTimeout(r,3500));
 
 // Rutas: las fijas y la de cada materia y tema (del mismo registro que usa la app, leído del texto de temas.js)
-const RUTAS=['','logros','perfil','notas','notas/foto','mias','mias/nueva','acerca','repaso','estudio','cursos','cursos/ciberseguridad','cursos/excel','cursos/excel/hoja','cursos/excel/dinamica','cursos/excel/organizar','cursos/excel/escenarios/retos','propuestas','propuestas/nueva','propuestas/admin','estudio/ingles','estudio/matematicas','estudio/ciencia-datos','estudio/ingles/hablar','cursos/ciberseguridad/retos','cursos/ciberseguridad/firewalls/retos','estudio/ingles/hablar-escuchar/retos','estudio/lectura','estudio/matematicas/algebra-basica'];
+const RUTAS=['','logros','perfil','notas','notas/foto','mias','mias/nueva','acerca','ajustes-ia','repaso','estudio','cursos','cursos/ciberseguridad','cursos/excel','cursos/excel/hoja','cursos/excel/dinamica','cursos/excel/organizar','cursos/excel/escenarios/retos','propuestas','propuestas/nueva','propuestas/admin','estudio/ingles','estudio/matematicas','estudio/ciencia-datos','estudio/ingles/hablar','cursos/ciberseguridad/retos','cursos/ciberseguridad/firewalls/retos','estudio/ingles/hablar-escuchar/retos','estudio/lectura','estudio/matematicas/algebra-basica'];
 for(const [area,mat] of [['ciberseguridad',null],['estudio','ingles'],['estudio','matematicas'],['estudio','ciencia-datos']]){
   const temas=(await import(pathToFileURL(join(raiz,'src','materias',mat||area,'temas.js')).href)).default;
   for(const t of temas)RUTAS.push(mat?`${area}/${mat}/${t.id}`:`${area}/${t.id}`);

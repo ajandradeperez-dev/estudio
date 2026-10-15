@@ -90,6 +90,8 @@ src/
     rng.js                Números aleatorios con semilla (para reproducir y probar ejercicios)
     generadores/          Un generador por habilidad (ver "Escribir un generador"), verificación tolerante (verificar.js)
                           y profundidad.js (nivel de profundidad y plantilla de cada generador)
+    ia.js                 Capa común de IA: pedir({sistema, mensajes, imagenes, esquemaJSON}) con Gemini o Claude (ver «IA»)
+    ia-ajustes.js         Perfil → ✨ Inteligencia artificial (#ajustes-ia): proveedor, clave propia, probar y borrar
     ia-preguntas.js       "✨ Pregunta nueva con IA" (opcional, con la clave del usuario; sin clave se usa el generador)
     materias.js           Registro de áreas y materias, rutas canónicas (rutaMateria/rutaTema/rutaLeccion), analizar(ruta)
                           que entiende rutas nuevas y viejas, y búsqueda de ejercicios por referencia de repaso
@@ -134,7 +136,7 @@ src/
     ingles/               materia.js + temas.js + temas/<tema>/NN-….js, metodo.md (4 vertientes),
                           errores-pronunciacion.js (sonidos difíciles: causa, tip físico, pares mínimos, detecta())
                           hablar/: index.js (rutas), unidades.js, contenido.js, pasos.js (escucha, fluidez),
-                          dialogos.js, frases.js, practica.js, dialogo.js, ia.js + claude.js (API), juego.js
+                          dialogos.js, frases.js, practica.js, dialogo.js, ia.js (conversación con IA), juego.js
     matematicas/          materia.js + temas.js (lista de temas) + temas/<tema>/NN-….js (antes "algebra": alias y migración v6)
     excel/                materia.js + temas.js + secciones/ (hoja libre, tabla dinámica, organizar)
     ciencia-datos/        materia.js + temas.js + temas/<tema>/NN-….js
@@ -361,9 +363,19 @@ Materias propias del usuario a partir de su temario real. Todo funciona sin IA; 
 - **Simulacro**: mezcla práctica de la app y ejercicios generados de los temas del examen, con tiempo, sin pistas y sin feedback hasta el final (`crearSesion({sinFeedback:true})`); al final, calificación, revisión de cada error con su procedimiento y resultado guardado.
 - **Compartir**: `paqueteMateria` → `.json` con el temario, las fechas y lo generado (sin fotos ni resultados) por Web Share o descarga; «📥 Importar» en Mis materias. El respaldo completo incluye materias y lo generado.
 
+### IA: Gemini o Claude (`src/nucleo/ia.js`)
+
+Todas las funciones con IA (conversación de Hablar, «Explícamelo de otra forma», pregunta nueva, Foto a nota, Resuélvelo conmigo, temario, ejercicios y simulacros de Mis materias) llaman a `pedir({sistema, mensajes, imagenes, esquemaJSON, maxTokens, nivel:'texto'|'vision', esfuerzo})` (o `pedirJSON` con el formato anterior) y funcionan igual con los dos proveedores, incluidas imágenes y respuestas JSON por esquema.
+
+- **Gemini** (recomendado y por defecto): `gemini-3.8-flash` (el Flash estable más reciente; gratis en el plan gratuito) para texto e imágenes, con `generateContent` (`x-goog-api-key`, `systemInstruction`, `inlineData`, `generationConfig.responseJsonSchema` y `thinkingConfig.thinkingLevel`). Verificado en ai.google.dev en octubre de 2026. **En el plan gratuito, Google puede usar lo enviado para mejorar sus modelos**: Ajustes y Acerca de lo avisan.
+- **Claude** (de pago): `claude-haiku-5-5` para texto (o Sonnet si se elige) y `claude-sonnet-5-5` para fotos, con la Messages API (`output_config.format` json_schema).
+- **Clave**: `localStorage['ciberlab-ia']` = `{proveedor, claves:{gemini, claude}, modelo}`; el formato viejo `{clave, modelo}` se lee como clave de Claude (nadie pierde la suya). Solo en este teléfono, nunca en respaldos, código, git ni logs; solo se envía a la API de su proveedor. Se configura en `#ajustes-ia` (guía de 3 pasos con enlace a aistudio.google.com para la clave gratis de Gemini).
+- **Errores amables**: 429 (límite de uso; en Gemini, «límite gratuito»), clave inválida, sin conexión, respuesta cortada o bloqueada. Costos estimados con `costoUSD` (0 con Gemini: los botones dicen «gratis con Gemini» y no piden confirmar).
+- **Pruebas**: `revisar` simula las respuestas de los dos proveedores (formato de la petición, imágenes, JSON, turnos, tokens, 429, clave inválida, respuesta cortada, clave vieja).
+
 ### IA de Mis materias (`ia.js`, `cuaderno/foto.js`)
 
-- **Modelos** (verificados en la documentación de Anthropic): `claude-haiku-5-5` para generar texto ($0.10 / $0.50 por millón de tokens de entrada / salida) y `claude-sonnet-5-5` solo para fotos ($2 / $10). Cada botón muestra el costo estimado (`costo()`); si pasa de 2 centavos pide confirmar. Las fotos se comprimen (1280 px) y solo se envían al tocar el botón.
+- **Modelos**: los de `nucleo/ia.js` según el proveedor (nivel `texto` para generar, `vision` para fotos). Con Claude, Haiku 5.5 ($0.10 / $0.50 por millón de tokens) y Sonnet 5.5 para fotos ($2 / $10): cada botón muestra el costo estimado (`costo()`) y si pasa de 2 centavos pide confirmar; con Gemini dice «gratis con Gemini». Las fotos se comprimen (1280 px) y solo se envían al tocar el botón.
 - **Banco generado de un tema** (IndexedDB `generados`, id `'<materia>/<tema>'`): `{leccion:{idea, ejemplo:{enunciado, pasos}, hueco:{enunciado, pasos, pregunta, respuesta, alternativas}}, ejercicios:[{id, nivel:1–3, tipo:'numero'|'expresion'|'texto'|'opcion', enunciado, respuesta, tolerancia?, alternativas?, opciones?, correcta?, pasos:[{que,como,porque,ojo?}], errores:[{valor,por}], regla, pista}]}`. `validarBanco` descarta los ejercicios que no cumplen (la respuesta debe pasar su propia verificación y ningún error típico puede ser correcto) y exige lección completa y ≥ 10 ejercicios en ≥ 2 niveles; si no, se pide de nuevo **una vez** (también si el JSON llega inválido). `aPregunta` lo convierte en pregunta de `sesion.js` (número con tolerancia, expresión equivalente con sus variables, texto con alternativas u opción). Se paga una vez y funciona sin conexión. Etiqueta «✨ Generado con IA: revisa con tu libro o profesor» y «⚠️ Reportar error» (lo marca en `reportados` y lo saca del repaso).
 - **Fixtures**: `scripts/fixtures/bancos.mjs` (trigonométricas, Independencia de México, molaridad, y uno inválido a propósito); `npm run revisar` los valida sin llamar a la API y las pruebas los usan como respuestas simuladas.
 - **📸 Foto a nota**: Sonnet devuelve `{titulo, tema_sugerido, tipo, contenido_markdown, pasos, conceptos_clave, tarjetas, dudas_o_partes_ilegibles, posibles_errores_en_la_foto}`; vista previa editable con la foto, archivada en el tema sugerido (materias propias primero, luego el catálogo); los errores de la foto quedan como `> ⚠️` sin cambiar el texto; «🃏 Crear tarjetas» las agrega al repaso. **🧠 Resuélvelo conmigo**: el primer turno lleva la foto (Sonnet) y los siguientes solo texto (Haiku); preguntas, pistas graduales, el paso completo al segundo error en el mismo paso, solución en formato de procedimiento y 3 ejercicios parecidos (del generador de la app si empareja; si no, con IA y validados).
@@ -453,8 +465,8 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | Cursos fase 1 · Ciberseguridad pasa a 💼 Cursos (progreso v10) | ✅ terminado |
 | Cursos fase 2 · Curso de Excel: evaluador, mini hoja, 25 generadores, 12 retos/escenarios, 3 herramientas | ✅ terminado |
 | Cursos fase 3 · 🗳️ Propuestas y votos (Supabase; falta crear el proyecto y pegar URL y clave pública) | ✅ código listo |
-| Cursos fase 4 · IA con Gemini o Claude (capa común `nucleo/ia.js`) | ⏳ en curso |
-| 3b · Ciberseguridad: Conmutación → Firewalls → VPN → Seguridad defensiva | pendiente |
+| Cursos fase 4 · IA con Gemini (gratis, por defecto) o Claude, capa común `nucleo/ia.js`; pruebas de todo lo nuevo | ✅ terminado |
+| 3b · Ciberseguridad (curso): Conmutación → Firewalls → VPN → Seguridad defensiva | ⏳ siguiente |
 | 4 · Inglés: completar A1 y A2, luego B1 | pendiente |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | pendiente |
 | 6 · Inglés B2 y temas avanzados | pendiente |

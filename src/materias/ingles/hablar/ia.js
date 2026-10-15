@@ -1,4 +1,4 @@
-/* Conversación libre con Claude. Flujo: hablas → transcripción → Claude (con el historial) → respuesta leída en voz alta.
+/* Conversación libre con IA (Gemini o Claude, ver nucleo/ia.js). Flujo: hablas → transcripción → la IA (con el historial) → respuesta leída en voz alta.
    Cada respuesta trae correcciones en español y una versión mejorada de lo que dijiste. Al terminar, un reporte final
    cuyas frases y errores entran al repaso espaciado y a "Mis notas". */
 import {$,esc} from '../../../utilidades.js';
@@ -7,7 +7,7 @@ import {evaluar} from '../../../nucleo/pronunciacion.js';
 import {registrarEjercicio,registrarHabla,registrarSonidos,guardarFrase,programarRepaso,guardarNota,hoy} from '../../../nucleo/progreso.js';
 import {SONIDOS} from '../errores-pronunciacion.js';
 import {DIALOGOS} from './dialogos.js';
-import {MODELOS,leerAjustes,guardarAjustes,borrarClave,claveOculta,pedirJSON,probarClave} from './claude.js';
+import {leerAjustes,pedirJSON,nombreModelo,nombreProveedor} from '../../../nucleo/ia.js';
 import {nivelIngles} from './nivel.js';
 import {htmlCierre,xpHoy} from '../../../nucleo/cierre.js';
 import {premiarTurno,htmlPremio,terminarConversacion} from './juego.js';
@@ -46,25 +46,10 @@ export function vistaIA(){
   let st={fase:'elegir'};
   const ajustes=()=>leerAjustes();
 
-  function htmlAjustes(msg=''){
-    const a=ajustes();
-    return `<div class="card"><h3>Ajustes de la conversación con IA</h3>
-<ol class="pasos"><li>Entra a <b>console.anthropic.com</b> e inicia sesión (o crea una cuenta).</li>
-<li>En <b>Billing</b> agrega créditos y pon un <b>límite de gasto</b> bajo (por ejemplo, 5 USD).</li>
-<li>En <b>API Keys</b> pulsa <b>Create Key</b> y copia la clave (empieza con <code>sk-ant-</code>).</li><li>Pégala aquí y guárdala.</li></ol>
-<p class="nota">🔒 La clave se guarda <b>solo en este dispositivo</b> (localStorage) y solo se envía a api.anthropic.com. No se sube a ningún repositorio. Quien use este navegador podría usarla: pon un límite de gasto y bórrala si prestas el teléfono.</p>
-<form class="ajustes-ia" id="ej-form">
-<label for="ia-clave">API key de Anthropic${a.clave?` (guardada: ${esc(claveOculta(a.clave))})`:''}<input id="ia-clave" type="password" autocomplete="off" spellcheck="false" placeholder="${a.clave?'Deja vacío para conservar la actual':'sk-ant-…'}"></label>
-<fieldset class="modelos"><legend>Modelo</legend>${MODELOS.map(m=>`<label class="opcion-radio"><input type="radio" name="ia-modelo" value="${m.id}"${m.id===a.modelo?' checked':''}> <span><b>${m.nombre}</b> · ${m.nota}</span></label>`).join('')}</fieldset>
-<div class="row"><button class="btn" id="ia-guardar">Guardar</button><button type="button" class="btn ghost" id="ia-probar">Probar clave</button>${a.clave?'<button type="button" class="btn ghost" id="ia-borrar">Borrar clave</button>':''}</div>
-</form><p class="progress" id="ia-msg" role="status">${esc(msg)}</p>
-<p class="nota">Costo aproximado: con Haiku, una conversación de 10 turnos cuesta menos de 1 centavo de dólar; con Sonnet, unos pocos centavos.</p>
-${a.clave?'<div class="row"><button class="btn ghost" id="ia-volver-elegir">Volver a los escenarios</button></div>':''}</div>`;
-  }
   function htmlElegir(){
     const a=ajustes();
-    return `${!a.clave?`<div class="card aviso"><h3>Falta tu API key</h3><p>La conversación libre usa Claude con tu propia clave de Anthropic. Mientras la consigues, practica con los <button class="enlace" data-go="estudio/ingles/hablar">diálogos guiados</button>, que funcionan sin internet y sin clave.</p><div class="row"><button class="btn" id="ia-ajustes">Configurar la clave</button></div></div>`
-      :`<p class="nota">Modelo: ${esc(MODELOS.find(m=>m.id===a.modelo)?.nombre||a.modelo)} · Nivel ${nivelIngles()} · máximo ${MAX_TURNOS} turnos. <button class="enlace" id="ia-ajustes">Ajustes</button></p>`}
+    return `${!a.clave?`<div class="card aviso"><h3>Falta tu API key</h3><p>La conversación libre usa la IA con tu propia clave (Gemini es gratis con tu cuenta de Google). Mientras la consigues, practica con los <button class="enlace" data-go="estudio/ingles/hablar">diálogos guiados</button>, que funcionan sin internet y sin clave.</p><div class="row"><button class="btn" data-go="ajustes-ia">Configurar la IA</button></div></div>`
+      :`<p class="nota">Modelo: ${esc(nombreModelo())} · Nivel ${nivelIngles()} · máximo ${MAX_TURNOS} turnos. <button class="enlace" data-go="ajustes-ia">Ajustes</button></p>`}
 <div class="grid">${ESCENARIOS.map(e=>`<button class="card click escenario" data-escenario="${e.id}"${a.clave?'':' disabled'}><h3>${e.titulo}</h3><p class="nota">${e.desc}</p></button>`).join('')}</div>`;
   }
   const tarjetaTutor=(m,k)=>`<div class="burbuja pj"><span class="quien">Tutor</span><span lang="en">${esc(m.data.respuesta)}</span>${htmlOir(m.data.respuesta)}
@@ -139,25 +124,11 @@ ${htmlCierre({xp:xpHoy()-(st.xp0||0),aprendido:r.errores_frecuentes.map(e=>`${es
     alEntrar(){st={fase:leerAjustes().clave?'elegir':'elegir'}},
     vista(){
       const cab=`<p class="miga"><button class="enlace" data-go="estudio/ingles/hablar">Hablar</button> › Conversación con IA</p><h1>Conversación libre con IA</h1>`;
-      if(st.fase==='ajustes')return cab+htmlAjustes(st.msg||'');
       if(st.fase==='elegir')return `${cab}<p class="lead">Habla de lo que quieras con un tutor que se adapta a tu nivel, te corrige en español y te propone una versión más natural de lo que dijiste.</p>${htmlElegir()}`;
       if(st.fase==='reporte')return cab+htmlReporte();
       return cab+htmlChat();
     },
     async alClic(t,ir,repintar){
-      if(t.id==='ia-ajustes'){st.fase='ajustes';st.msg='';repintar();return true}
-      if(t.id==='ia-volver-elegir'){st.fase='elegir';repintar();return true}
-      if(t.id==='ia-guardar'){
-        const v=$('#ia-clave').value.trim(),modelo=document.querySelector('[name=ia-modelo]:checked')?.value||MODELOS[0].id,a=leerAjustes();
-        if(v&&!/^sk-ant-/.test(v)){st.msg='Esa no parece una API key de Anthropic (empieza con sk-ant-).';repintar();return true}
-        guardarAjustes({clave:v||a.clave,modelo});st.msg=v||a.clave?'Guardado.':'Falta la clave.';
-        if(v||a.clave)st.fase='elegir';repintar();return true}
-      if(t.id==='ia-borrar'){borrarClave();st.msg='Clave borrada de este dispositivo.';repintar();return true}
-      if(t.id==='ia-probar'){
-        const v=$('#ia-clave').value.trim();if(v)guardarAjustes({clave:v,modelo:document.querySelector('[name=ia-modelo]:checked')?.value||MODELOS[0].id});
-        $('#ia-msg').textContent='Probando…';
-        try{await probarClave();st.msg='✓ La clave funciona.'}catch(e){st.msg=e.message}
-        repintar();return true}
       if(t.dataset.escenario){
         st={fase:'chat',xp0:xpHoy(),esc:ESCENARIOS.find(e=>e.id===t.dataset.escenario),nivel:nivelIngles(),mensajes:[{role:'user',content:'[INICIO] Saluda brevemente y hazme tu primera pregunta del escenario.'}],log:[],turnos:0,escribir:!soporte.escuchar};
         await turnoTutor(repintar);return true}

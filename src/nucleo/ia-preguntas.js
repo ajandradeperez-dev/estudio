@@ -1,7 +1,7 @@
-/* "✨ Pregunta nueva con IA" (opcional): si hay clave de Anthropic guardada en este dispositivo, pide a Claude un ejercicio
+/* "✨ Pregunta nueva con IA" (opcional): si hay clave de IA (Gemini o Claude) guardada en este dispositivo, pide un ejercicio
    para la habilidad y el nivel actuales, en el mismo formato que los generadores. Si no hay clave o falla, la sesión sigue
-   con el generador local: la app funciona 100 % sin IA. La clave nunca sale de localStorage salvo hacia api.anthropic.com. */
-import {leerAjustes,pedirJSON} from '../materias/ingles/hablar/claude.js';
+   con el generador local: la app funciona 100 % sin IA. La clave nunca sale de localStorage salvo hacia la API de su proveedor (ver nucleo/ia.js). */
+import {leerAjustes,pedirJSON} from './ia.js';
 import {crear} from './generadores/index.js';
 import {igualNum,equivalente,igualTexto,num} from './generadores/verificar.js';
 import {coincide} from './comparar.js';

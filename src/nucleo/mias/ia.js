@@ -1,12 +1,12 @@
-/* IA opcional de "Mis materias" con la API key propia del usuario (la de Ajustes; vive solo en este dispositivo).
-   - Haiku 5.5 (económico) para generar texto; Sonnet 5.5 solo para leer fotos (letra a mano y fórmulas). IDs verificados en la
-     documentación de Anthropic (models overview). Precios por millón de tokens: Haiku $0.10 entrada / $0.50 salida; Sonnet $2 / $10.
+/* IA opcional de "Mis materias" con la clave propia del usuario (Gemini o Claude, en Perfil; vive solo en este dispositivo).
+   - Todo pasa por nucleo/ia.js: nivel 'texto' para generar y 'vision' para leer fotos (letra a mano y fórmulas). Con Gemini es
+     gratis (plan gratuito); con Claude, Haiku 5.5 para texto y Sonnet 5.5 para fotos (precios en PRECIOS de ia.js).
    - Todo bajo demanda (por tema), con el costo estimado a la vista y un solo reintento si la respuesta no pasa la validación
      estricta (esquema.js). Lo generado se guarda en IndexedDB: se paga una vez y luego funciona sin conexión.
-   - Las fotos solo se envían a api.anthropic.com cuando el usuario toca el botón, comprimidas (lado mayor 1280 px). */
+   - Las fotos solo se envían a la API del proveedor cuando el usuario toca el botón, comprimidas (lado mayor 1280 px). */
 import {esc} from '../../utilidades.js';
 import {aviso,confirmar,vacio} from '../ui.js';
-import {leerAjustes,pedirJSON,ErrorIA} from '../../materias/ingles/hablar/claude.js';
+import {leerAjustes,pedirJSON,ErrorIA,costoUSD,nombreProveedor} from '../ia.js';
 import {leerArchivo} from '../cuaderno/db.js';
 import {render} from '../cuaderno/formato.js';
 import {tex} from '../formula.js';
@@ -17,24 +17,23 @@ import {validarBanco,validarEjercicio,FORMATO} from './esquema.js';
 import {normal} from './emparejar.js';
 import {miMateria,guardarGenerado,buscarTema} from './datos.js';
 
-export const MODELO_TEXTO='claude-haiku-5-5',MODELO_VISION='claude-sonnet-5-5';
-const PRECIO={[MODELO_TEXTO]:[0.10,0.50],[MODELO_VISION]:[2,10]};   // USD por millón de tokens (entrada, salida)
+export const MODELO_TEXTO='texto',MODELO_VISION='vision';   // niveles de nucleo/ia.js (el modelo concreto depende del proveedor)
 export const disponible=()=>!!leerAjustes().clave;
-export const SIN_CLAVE='Para usar ✨ necesitas tu propia API key de Anthropic (se crea en console.anthropic.com → API Keys y se pega en Perfil → ✨ Inteligencia artificial). Se guarda solo en este teléfono. Sin clave, todo lo demás funciona igual.';
+export const SIN_CLAVE='Para usar ✨ necesitas tu propia clave de IA: la de Gemini es gratis con tu cuenta de Google (aistudio.google.com → Get API key) y se pega en Perfil → ✨ Inteligencia artificial. Se guarda solo en este teléfono. Sin clave, todo lo demás funciona igual.';
 
 /* ---------- costo estimado ---------- */
 // tokens aproximados: una foto comprimida ~1 600 de entrada; lo demás según lo que se pide
 const ESTIMADOS={foto:{m:MODELO_VISION,ent:1800,sal:1500},tema:{m:MODELO_TEXTO,ent:1500,sal:14000},simulacro:{m:MODELO_VISION,ent:1800,sal:9000,porFoto:true},
   pregunta:{m:MODELO_TEXTO,ent:2500,sal:1500},'foto-nota':{m:MODELO_VISION,ent:1800,sal:2500},tutor:{m:MODELO_VISION,ent:2500,sal:1200}};
 export function dolares(tipo,n=1){
-  const e=ESTIMADOS[tipo],[pi,po]=PRECIO[e.m];
+  const e=ESTIMADOS[tipo];
   const ent=tipo==='simulacro'?e.ent*n+1500:e.ent*n,sal=tipo==='simulacro'?e.sal:e.sal*(tipo==='foto'||tipo==='foto-nota'?n:1);
-  return (ent*pi+sal*po)/1e6;
+  return costoUSD(e.m,ent,sal);
 }
-export function costo(tipo,n=1){const c=Math.max(1,Math.ceil(dolares(tipo,n)*100));return `~${c} ${c===1?'centavo':'centavos'} de dólar`}
+export function costo(tipo,n=1){if(dolares(tipo,n)===0)return 'gratis con Gemini';const c=Math.max(1,Math.ceil(dolares(tipo,n)*100));return `~${c} ${c===1?'centavo':'centavos'} de dólar`}
 async function confirmarCosto(tipo,n,que){
   if(dolares(tipo,n)<0.02)return true;
-  return confirmar({titulo:`¿${que}?`,texto:`Usa tu clave de Anthropic y cuesta ${costo(tipo,n)} de tu saldo.`,si:'Sí, continuar'});
+  return confirmar({titulo:`¿${que}?`,texto:`Usa tu clave de ${nombreProveedor()} y cuesta ${costo(tipo,n)} de tu saldo.`,si:'Sí, continuar'});
 }
 
 /* ---------- llamada común ---------- */

@@ -65,8 +65,8 @@ ${rec.activo?`<div class="ajuste"><label for="rec-hora">⏰ A qué hora</label><
 </div>
 
 <h2>✨ Inteligencia artificial (opcional)</h2>
-<div class="card"><p style="margin-top:0"><b>Cada persona usa su propia clave de Anthropic.</b> Tu clave se guarda solo en este teléfono: no se sube a ningún lado, no va en los respaldos y nunca se comparte con quien instale la app. Si invitas a amigos, cada quien pone la suya (o usa la app sin IA: todo lo demás funciona igual).</p>
-<button class="btn ghost ancho" data-go="estudio/ingles/hablar/ia">✨ Configurar mi clave</button></div>
+<div class="card"><p style="margin-top:0"><b>Cada persona usa su propia clave: Gemini (gratis con tu cuenta de Google) o Claude (de pago).</b> Tu clave se guarda solo en este teléfono: no se sube a ningún lado, no va en los respaldos y nunca se comparte con quien instale la app. Si invitas a amigos, cada quien pone la suya (o usa la app sin IA: todo lo demás funciona igual).</p>
+<button class="btn ghost ancho" data-go="ajustes-ia">✨ Configurar la IA</button></div>
 
 <h2>📲 La app</h2>
 <div class="lista-nav">

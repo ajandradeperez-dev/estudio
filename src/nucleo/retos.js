@@ -5,7 +5,7 @@
           crear(rng) → [preguntas] (con contexto)  ó  ir:'<ruta>' (abre una herramienta o pantalla, p. ej. el laboratorio)}
    Sin DOM: npm run revisar comprueba que cada reto genere preguntas válidas y que cada tema completo tenga al menos uno. */
 import {crear,BANCOS} from './generadores/index.js';
-import {escenarioNegocio,escenarioCohete} from './generadores/aplicaciones.js';
+import {escenarioNegocio,escenarioCohete,escenarioPresa} from './generadores/aplicaciones.js';
 import {escenarioFabrica} from './generadores/aplicaciones-lineal.js';
 
 const con=(contexto,p)=>p&&{...p,enunciado:`<p class="contexto">${contexto}</p>${p.enunciado}`};
@@ -17,6 +17,7 @@ const aplicacion=(id,niveles)=>()=>niveles.map(n=>crear(id,n)).filter(Boolean);
 const simulacro=(gens,n=12)=>rng=>{const orden=rng.barajar(gens);return Array.from({length:n},(_,i)=>{const p=crear(orden[i%orden.length],2+(i%3));return p&&{...p,etiqueta:'📝 Simulacro'}}).filter(Boolean)};
 const LINEAL=['al/vector-magnitud','al/vector-operaciones','al/producto-punto','al/angulo','al/producto-cruz','al/matriz-producto','al/gauss','al/gauss-jordan','al/determinante','al/inversa','al/combinacion-lineal','al/independencia','al/transformaciones','al/valores-propios'];
 const DIFERENCIAL=['cd/limites','cd/continuidad','cd/definicion','cd/derivada-polinomio','cd/producto','cd/cociente','cd/cadena','cd/trascendentes','cd/implicita','cd/maximos','cd/optimizacion','cd/razon-cambio','cd/lhopital'];
+const INTEGRAL=['ci/antiderivada','ci/definida','ci/sustitucion','ci/partes','ci/fracciones-parciales','ci/sustitucion-trig','ci/area','ci/volumenes','ci/impropias'];
 const ALGEBRA=['alg/expresiones','alg/ecuacion-lineal','alg/desigualdad','alg/sistema-2x2','alg/sistema-3x3','alg/productos-notables','alg/factorizacion','alg/fracciones-algebraicas','alg/cuadratica','alg/exponentes','alg/logaritmos','alg/funciones'];
 
 export const RETOS=[
@@ -72,6 +73,17 @@ export const RETOS=[
    desc:'Un lanzamiento completo en 4 preguntas: velocidad, cima, altura máxima y caída.',crear:escenarioCohete},
   {id:'mat-simulacro-diferencial',materia:'matematicas',tema:'calculo-diferencial',titulo:'Simulacro de Cálculo diferencial',profundidad:'escenario',dificultad:3,simulacro:true,
    desc:'12 preguntas mezcladas de todo el tema, como un examen.',crear:simulacro(DIFERENCIAL)},
+  // ---------- Matemáticas · Cálculo integral ----------
+  {id:'mat-acumulacion',materia:'matematicas',tema:'calculo-integral',titulo:'Distancias, tanques y costos',profundidad:'aplicacion',dificultad:2,
+   desc:'La integral como total acumulado: de la velocidad a la distancia, del caudal a los litros.',crear:aplicacion('apl/acumulacion',[1,2,3,4])},
+  {id:'mat-volumenes',materia:'matematicas',tema:'calculo-integral',titulo:'Sólidos que giran',profundidad:'aplicacion',dificultad:3,
+   desc:'Volúmenes de conos, esferas y vasijas con discos, arandelas y casquetes.',crear:aplicacion('ci/volumenes',[1,2,3,4])},
+  {id:'mat-areas-integral',materia:'matematicas',tema:'calculo-integral',titulo:'Áreas entre curvas',profundidad:'aplicacion',dificultad:3,
+   desc:'Regiones encerradas por dos curvas o que cruzan el eje.',crear:aplicacion('ci/area',[3,4,5])},
+  {id:'mat-presa',materia:'matematicas',tema:'calculo-integral',titulo:'La presa en temporada de lluvias',profundidad:'escenario',dificultad:3,
+   desc:'Entrada, salida y agua acumulada en 3 preguntas.',crear:escenarioPresa},
+  {id:'mat-simulacro-integral',materia:'matematicas',tema:'calculo-integral',titulo:'Simulacro de Cálculo integral',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema, como un examen.',crear:simulacro(INTEGRAL)},
   // ---------- Inglés: los jefes de cada unidad son escenarios (una tarea real en inglés) ----------
   ...[['presentarte','Presentarte en una reunión'],['rutina-trabajo','Contar tu rutina de trabajo'],['pedir-comprar','Pedir y comprar'],['ciudad-viajes','Moverte en otra ciudad'],
     ['contar-pasado','Contar lo que pasó'],['trabajo-ti','Una conversación de trabajo en TI']].map(([u,t],i)=>

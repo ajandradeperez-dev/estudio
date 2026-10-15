@@ -11,7 +11,7 @@ export const sg=n=>n<0?`- ${-n}`:`+ ${n}`;
 export const plantillas=(rng,ps)=>{const k=rng.elegir(Object.keys(ps));return {...ps[k](),plantilla:k}};
 export const mal=(valor,por,o={})=>({valor,si:e=>equivalente(e,valor,o),por});
 // Número como texto: entero, fracción con denominador ≤ 12 o 4 decimales
-export const numTxt=v=>{if(Number.isInteger(v))return String(v);for(let d=2;d<=12;d++){const k=Math.round(v*d);if(Math.abs(v*d-k)<1e-9)return `${k}/${d}`}return String(+v.toFixed(4))};
+export const numTxt=v=>{if(Math.abs(v-Math.round(v))<1e-9)return String(Math.round(v));for(let d=2;d<=12;d++){const k=Math.round(v*d);if(Math.abs(v*d-k)<1e-9)return `${k}/${d}`}return String(+v.toFixed(4))};
 export const malNum=(v,por)=>({valor:numTxt(v),si:e=>{const x=num(e);return Number.isFinite(x)&&Math.abs(x-v)<=1e-3*Math.max(1,Math.abs(v))},por});
 // Términos al nivel de afuera de una expresión ("3x^2 - 2x + 1" → 3); sirve para pedir la forma simplificada
 export function terminos(e){

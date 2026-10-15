@@ -221,12 +221,12 @@ Fuente de verdad del contenido de la app. `npm run revisar` comprueba que cada `
 - [x] Antiderivadas básicas `antiderivadas`
 - [x] Integral definida y Teorema Fundamental `integral-definida`
 - [x] Integración por sustitución `sustitucion`
-- [ ] Integración por partes
-- [ ] Fracciones parciales
-- [ ] Sustitución trigonométrica
+- [x] Integración por partes `integracion-partes`
+- [x] Fracciones parciales `fracciones-parciales`
+- [x] Sustitución trigonométrica `sustitucion-trigonometrica`
 - [x] Área bajo la curva y entre curvas `area-curva`
-- [ ] Volúmenes de revolución
-- [ ] Integrales impropias
+- [x] Volúmenes de revolución `volumenes-revolucion`
+- [x] Integrales impropias `integrales-impropias`
 
 ## 📊 Ciencia de datos `ciencia-datos`
 

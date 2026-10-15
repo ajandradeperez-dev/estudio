@@ -8,11 +8,12 @@
 const SUP='⁰¹²³⁴⁵⁶⁷⁸⁹';
 export const limpiar=s=>String(s??'').trim()
   .replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]+/g,d=>'^'+[...d].map(c=>SUP.indexOf(c)).join(''))
-  .replace(/[−–—]/g,'-').replace(/[×·∙]/g,'*').replace(/÷/g,'/').replace(/π/g,'pi').replace(/√/g,'sqrt')
+  .replace(/[−–—]/g,'-').replace(/[×·∙]/g,'*').replace(/÷/g,'/').replace(/π/g,'pi').replace(/√/g,'sqrt').replace(/\|([^|]+)\|/g,'abs($1)')
   .replace(/\s+/g,' ');
 
 /* ---------- expresiones: parser pequeño con multiplicación implícita ---------- */
-const FUNCIONES={sqrt:Math.sqrt,sen:Math.sin,sin:Math.sin,cos:Math.cos,tan:Math.tan,tg:Math.tan,ln:Math.log,log:Math.log10,exp:Math.exp,abs:Math.abs};
+const FUNCIONES={sqrt:Math.sqrt,sen:Math.sin,sin:Math.sin,cos:Math.cos,tan:Math.tan,tg:Math.tan,ln:Math.log,log:Math.log10,exp:Math.exp,abs:Math.abs,
+  arcsen:Math.asin,arcsin:Math.asin,asin:Math.asin,arccos:Math.acos,acos:Math.acos,arctan:Math.atan,arctg:Math.atan,atan:Math.atan};
 function tokens(s){
   const t=[];let i=0;
   while(i<s.length){

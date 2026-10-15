@@ -239,7 +239,7 @@ const area={
   explicacion:'El área entre una curva positiva y el eje x, de a a b, es ∫ₐᵇ f(x) dx. Si la curva queda bajo el eje, el área es el valor absoluto.',
   alternativa:'Imagina rellenar con pintura la zona entre la curva y el suelo (el eje x). La integral suma franjas finísimas de alto f(x): eso es el área. Si la curva está bajo el suelo, la integral sale negativa, pero un área siempre se mide en positivo.',
   generar(n,rng){
-    if(n<=3){let cf,a,b;do{cf=coefsAl(rng,n===1?1:2,5);a=rng.entero(0,2);b=a+rng.entero(1,3)}while([a,b,(a+b)/2,a+.25,b-.25].some(x=>evalp(cf,x)<=0));
+    if(n<=3){let cf,a,b;do{cf=coefsAl(rng,n===1?1:2,5);a=rng.entero(0,2);b=a+rng.entero(1,3)}while(Array.from({length:41},(_,i)=>a+(b-a)*i/40).some(x=>evalp(cf,x)<=0));
       const [N,D]=definidaExacta(cf,a,b),A=antider(cf);
       return {enunciado:`Área bajo \\(f(x) = ${T(cf)}\\) entre \\(x = ${a}\\) y \\(x = ${b}\\)`,respuesta:frac(N,D,{tex:false}),verificar:e=>igualNum(e,N/D),diagrama:areaCurva(x=>evalp(cf,x),a,b),
         pasos:[paso('Comprueba que la curva está sobre el eje',`\\(f(${a}) = ${evalp(cf,a)}\\), \\(f(${b}) = ${evalp(cf,b)}\\): positiva`,'Si f ≥ 0, el área es directamente la integral.'),

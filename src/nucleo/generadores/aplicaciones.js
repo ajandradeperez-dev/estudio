@@ -199,4 +199,43 @@ export function escenarioCohete(rng){
   ].map(p=>({...p,comprobar:()=>p.verificar(p.respuesta)&&Math.abs(h(tf))<1e-6}));
 }
 
-export default {'apl/planes':planes,'apl/boletos':boletos,'apl/areas':areas,'apl/crecimiento':crecimiento,'apl/movimiento':movimiento};
+/* ---------- Acumulación (integral definida): distancia, agua, costo total ---------- */
+const simpsonA=(f,a,b,n=2000)=>{const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=(i%2?4:2)*f(a+i*h);return s*h/3};
+const acumulacion={
+  titulo:'Acumulación con integrales',profundidad:()=> 'aplicacion',
+  alternativa:'Si sabes qué tan rápido cambia algo (velocidad, caudal, costo por unidad), la integral suma esos cambios y te da el total acumulado: distancia recorrida, litros que entraron o costo total.',
+  generar(n,rng){
+    const ps={
+      distancia:()=>{const a=rng.entero(1,4)*(n>=3?1:0),b=rng.entero(2,10),T=rng.entero(2,n<=2?4:6),v=t=>a*t*t+b,tot=a*T**3/3+b*T;
+        return {enunciado:`Un ciclista va a \\(v(t) = ${a?`${a===1?'':a}t^{2} + `:''}${b}\\) m/s. ¿Cuántos metros recorre en los primeros ${T} segundos?`,v:tot,resp:numTxt(tot),
+          pasos:[paso('Distancia = ∫ velocidad',`\\(\\int_{0}^{${T}} (${a?`${a}t^{2} + `:''}${b})\\,dt\\)`,'La integral de la velocidad es lo recorrido.'),final('Integra y evalúa',`\\(${a?`\\tfrac{${a}t^{3}}{3} + `:''}${b}t\\Big|_{0}^{${T}} = ${c(numTxt(tot))}\\)`,'Metros.',numTxt(tot))],
+          errores:[malNum(v(T),'Esa es la velocidad final, no la distancia.'),malNum(v(T)*T,'La velocidad no es constante: integra.'),malNum(a*T*T+b,'Integra, no evalúes.')].filter(e=>Math.abs(num(e.valor)-tot)>1e-9),comprobar:()=>Math.abs(simpsonA(v,0,T)-tot)<1e-6}},
+      tanque:()=>{const r0=rng.entero(5,20),k=rng.entero(1,4),T=rng.entero(2,n<=2?5:10),f=t=>r0+k*t,tot=r0*T+k*T*T/2;
+        return {enunciado:`A un tanque entra agua a razón de \\(r(t) = ${r0} + ${k===1?'':k}t\\) litros por minuto. ¿Cuántos litros entran en ${T} minutos?`,v:tot,resp:numTxt(tot),
+          pasos:[paso('Total = ∫ razón',`\\(\\int_{0}^{${T}} (${r0} + ${k}t)\\,dt\\)`,'Suma de lo que entra cada instante.'),final('Integra',`\\(${r0}t + \\tfrac{${k}t^{2}}{2}\\Big|_{0}^{${T}} = ${c(numTxt(tot))}\\)`,'Litros.',numTxt(tot))],
+          errores:[malNum(f(T),'Esa es la razón al final.'),malNum(r0*T,'La razón aumenta: integra el término '+k+'t.'),malNum(f(T)*T,'No es constante.')].filter(e=>Math.abs(num(e.valor)-tot)>1e-9),comprobar:()=>Math.abs(simpsonA(f,0,T)-tot)<1e-6}},
+      costo:()=>{const a=rng.entero(1,5),b=rng.entero(5,40),q1=rng.entero(0,10)*10,q2=q1+rng.entero(1,5)*10,m=q=>a*q/10+b,tot=a*(q2*q2-q1*q1)/20+b*(q2-q1);
+        return {enunciado:`El costo marginal de producir es \\(C'(q) = ${numTxt(a/10)}q + ${b}\\) pesos por unidad. ¿Cuánto aumenta el costo al pasar de ${q1} a ${q2} unidades?`,v:tot,resp:numTxt(tot),
+          pasos:[paso('Aumento = ∫ costo marginal',`\\(\\int_{${q1}}^{${q2}} (${numTxt(a/10)}q + ${b})\\,dq\\)`,'Teorema fundamental: C(q₂) − C(q₁).'),final('Integra',`\\(\\tfrac{${numTxt(a/10)}q^{2}}{2} + ${b}q\\Big|_{${q1}}^{${q2}} = ${c(numTxt(tot))}\\)`,'Pesos.',numTxt(tot))],
+          errores:[malNum(m(q2)-m(q1),'Eso es el cambio del marginal, no del costo.'),malNum(m(q2)*(q2-q1),'El marginal no es constante.'),malNum(b*(q2-q1),'Falta el término que crece con q.')].filter(e=>Math.abs(num(e.valor)-tot)>1e-9),comprobar:()=>Math.abs(simpsonA(m,q1,q2)-tot)<1e-6}}
+    };
+    const x=plantillas(rng,ps);
+    return {plantilla:x.plantilla,enunciado:x.enunciado,respuesta:x.resp,verificar:e=>igualNum(String(e).replace(/\s*(m|litros|l|pesos|\$)\s*$/i,'').replace('$',''),x.v),pasos:x.pasos,errores:x.errores,
+      regla:'Total acumulado = ∫ (razón de cambio) dt: la integral de la velocidad es la distancia; la del caudal, el volumen; la del costo marginal, el costo.',pista:'Integra la razón entre los dos instantes.',teclado:'mat',comprobar:x.comprobar};
+  }
+};
+
+/* ---------- Escenario: la presa (cálculo integral) ---------- */
+export function escenarioPresa(rng){
+  const a=rng.entero(2,6),b=rng.entero(10,40),T=rng.entero(4,10),sal=rng.entero(5,15),r=t=>b+a*t,entra=b*T+a*T*T/2,neto=entra-sal*T,tc=(sal-b)/a;
+  const ctx=`<p class="contexto">En temporada de lluvias, a una presa le entra agua a razón de \\(r(t) = ${b} + ${a}t\\) miles de m³ por día (t en días) y se sueltan ${sal} mil m³ por día por las compuertas.</p>`;
+  const regla='Lo que se acumula es la integral de lo que entra menos lo que sale.';
+  const q=(enun,v,txt,pasos,errores)=>({tipo:'escribir',enunciado:ctx+enun,respuesta:txt,verificar:e=>igualNum(e,v),pasos,errores,regla,pista:'Integra la razón de entrada.',teclado:'mat',profundidad:'escenario'});
+  return [
+    q(`1/3 · ¿Cuánta agua entra (miles de m³) en los primeros ${T} días?`,entra,numTxt(entra),[paso('∫ de la entrada',`\\(\\int_{0}^{${T}} (${b} + ${a}t)\\,dt\\)`,'Total que entra.'),final('Integra',`\\(${b}\\cdot${T} + \\tfrac{${a}\\cdot${T*T}}{2} = ${c(numTxt(entra))}\\)`,'Miles de m³.',numTxt(entra))],[malNum(r(T),'Esa es la razón del último día.'),malNum(b*T,'Falta el término que crece.'),malNum(r(T)*T,'La razón no es constante.')]),
+    q(`2/3 · ¿Cuánto aumenta el agua almacenada en esos ${T} días (entra menos sale)?`,neto,numTxt(neto),[paso('Neto = ∫(entra − sale)',`\\(\\int_{0}^{${T}} (${b} + ${a}t - ${sal})\\,dt\\)`,'Lo que se queda.'),final('Integra',`\\(${numTxt(entra)} - ${sal}\\cdot${T} = ${c(numTxt(neto))}\\)`,'Miles de m³.',numTxt(neto))],[malNum(entra,'Resta lo que sale.'),malNum(entra-sal,'Sale '+sal+' cada día: '+sal*T+' en total.'),malNum(sal*T,'Eso es lo que sale.')]),
+    q(`3/3 · ¿Cuál es la razón de entrada (miles de m³/día) el día ${T}?`,r(T),String(r(T)),[paso('Evalúa la razón',`\\(r(${T}) = ${b} + ${a}\\cdot${T}\\)`,'No hay que integrar.'),final('Resultado',`\\(${c(r(T))}\\)`,'Razón instantánea.',String(r(T)))],[malNum(entra,'Eso es el total acumulado.'),malNum(r(T)-sal,'Pide solo la entrada.'),malNum(b,'Esa es la del día 0.')])
+  ].map(p=>({...p,errores:p.errores.filter(e=>e.valor!==p.respuesta),comprobar:()=>p.verificar(p.respuesta)&&Math.abs(simpsonA(r,0,T)-entra)<1e-6}));
+}
+
+export default {'apl/planes':planes,'apl/boletos':boletos,'apl/areas':areas,'apl/crecimiento':crecimiento,'apl/movimiento':movimiento,'apl/acumulacion':acumulacion};

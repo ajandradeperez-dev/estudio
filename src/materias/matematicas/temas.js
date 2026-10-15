@@ -64,11 +64,11 @@ export default [
     {id:'antiderivadas',gen:'ci/antiderivada'},
     {id:'integral-definida',titulo:'Integral definida y Teorema Fundamental',gen:'ci/definida'},
     {id:'sustitucion',titulo:'Integración por sustitución',gen:'ci/sustitucion'},
-    {titulo:'Integración por partes',proximo:true},
-    {titulo:'Fracciones parciales',proximo:true},
-    {titulo:'Sustitución trigonométrica',proximo:true},
+    {id:'integracion-partes',titulo:'Integración por partes',gen:'ci/partes'},
+    {id:'fracciones-parciales',titulo:'Fracciones parciales',gen:'ci/fracciones-parciales'},
+    {id:'sustitucion-trigonometrica',titulo:'Sustitución trigonométrica',gen:'ci/sustitucion-trig'},
     {id:'area-curva',titulo:'Área bajo la curva y entre curvas',gen:'ci/area'},
-    {titulo:'Volúmenes de revolución',proximo:true},
-    {titulo:'Integrales impropias',proximo:true}
+    {id:'volumenes-revolucion',titulo:'Volúmenes de revolución',gen:'ci/volumenes'},
+    {id:'integrales-impropias',titulo:'Integrales impropias',gen:'ci/impropias'}
   ]}
 ];

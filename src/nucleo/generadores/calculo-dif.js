@@ -16,7 +16,7 @@ const dnum=(f,x,h=1e-5)=>(f({x:x+h})-f({x:x-h}))/(2*h);
 const derOk=(fTxt,dTxt,pts=[0.7,1.3,2.1])=>{const f=fx(fTxt),d=fx(dTxt);return !!f&&!!d&&pts.every(x=>Math.abs(dnum(f,x)-d({x}))<=1e-4*Math.max(1,Math.abs(d({x}))))};
 // La expresión como la escribiría una persona (y que compilar() sigue entendiendo): 2e^x, sen(x), sin 1* ni + -
 export const bonito=t=>String(t).replace(/\^1(?![\d.])/g,'').replace(/(^|[^\^\d.])(\d+)\*(?=[a-z(])/g,'$1$2').replace(/(^|[^\^\d.])1(?=[a-z(])/g,'$1')
-  .replace(/exp\(([^()]*)\)/g,(m,a)=>a.trim()==='x'?'e^x':`e^(${a})`).replace(/\bsin\(/g,'sen(').replace(/\+ -/g,'- ').replace(/- -/g,'+ ').replace(/\(-1x\)/g,'(-x)').replace(/\s+/g,' ').trim();
+  .replace(/exp\(([^()]*)\)/g,(m,a)=>a.trim()==='x'?'e^x':`e^(${a})`).replace(/(?<![a-z])sin\(/g,'sen(').replace(/\+ -/g,'- ').replace(/- -/g,'+ ').replace(/\(-1x\)/g,'(-x)').replace(/\s+/g,' ').trim();
 const expr=(enun,f,resp,pasos,errores,extra={})=>({enunciado:enun,respuesta:bonito(resp),verificar:e=>equivalente(sinPrefijo(e),resp),pasos:pasos.map((p,i)=>i===pasos.length-1&&p.res!==undefined?{...p,res:bonito(p.res)}:p),errores:errores.map(er=>({...er,valor:er.valor===undefined?undefined:bonito(er.valor),si:er.si||(e=>equivalente(sinPrefijo(e),er.valor))})),comprobar:()=>derOk(f,resp)&&equivalente(bonito(resp),resp),...extra});
 const numQ=(enun,v,txt,pasos,errores,comprobar,extra={})=>({enunciado:enun,respuesta:txt,verificar:extra.ver||(e=>igualNum(String(e).replace(/^\s*[a-z]\s*=\s*/i,''),v)),pasos,errores,comprobar,...extra});
 const esSi=e=>/^\s*(s[ií]|continua)(?![a-zñáéíóú])/i.test(limpiar(e)),esNo=e=>/^\s*(no|discontinua)(?![a-zñáéíóú])/i.test(limpiar(e));

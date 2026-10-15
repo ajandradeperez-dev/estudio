@@ -12,7 +12,7 @@ export const PROFUNDIDAD={
   'al/vector-magnitud':{nivel:hasta(1)},'al/vector-operaciones':{nivel:hasta(2)},'al/producto-punto':{nivel:hasta(1)},'al/angulo':{nivel:hasta(1)},
   'al/matriz-producto':{nivel:hasta(1)},'al/determinante':{nivel:hasta(1)},'al/inversa':{nivel:hasta(1)},'al/gauss':{nivel:hasta(1)},
   'cd/limites':{nivel:hasta(2)},'cd/derivada-polinomio':{nivel:hasta(1)},'cd/producto':{nivel:hasta(1)},'cd/cociente':{nivel:hasta(1)},'cd/cadena':{nivel:hasta(1)},
-  'ci/antiderivada':{nivel:hasta(1)},'ci/definida':{nivel:()=>P},'ci/sustitucion':{nivel:()=>P},'ci/area':{nivel:()=>P},
+  'ci/antiderivada':{nivel:hasta(1)},'ci/definida':{nivel:hasta(1)},'ci/sustitucion':{nivel:hasta(1)},'ci/area':{nivel:hasta(1)},
   'red/bases':{nivel:hasta(2),plantilla:p=>(p.enunciado.match(/a (binario|decimal|hexadecimal)/)||[])[1]||'base'},
   'red/puertos':{nivel:()=>B,plantilla:p=>p.tipo==='emparejar'?'emparejar':p.tipo==='opcion'?'protocolo':/En qué puerto/.test(p.enunciado)?'servicio-a-puerto':'puerto-a-servicio'},
   'red/subred':{nivel:()=>P},'red/mascara':{nivel:hasta(2),plantilla:p=>/wildcard/.test(p.enunciado)?'wildcard':/prefijo/.test(p.enunciado)?'mascara-a-prefijo':'prefijo-a-mascara'},

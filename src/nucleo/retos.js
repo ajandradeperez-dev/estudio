@@ -20,6 +20,7 @@ const DIFERENCIAL=['cd/limites','cd/continuidad','cd/definicion','cd/derivada-po
 const INTEGRAL=['ci/antiderivada','ci/definida','ci/sustitucion','ci/partes','ci/fracciones-parciales','ci/sustitucion-trig','ci/area','ci/volumenes','ci/impropias'];
 const TRIGO=['tri/razones','tri/circulo','tri/identidades','tri/ecuaciones'];
 const PREALGEBRA=['pre/fracciones','pre/porcentajes','pre/potencias','pre/operaciones','pre/cientifica'];
+const REDES=['red/osi','red/ipv4','red/bases','red/subred','red/mascara','red/prefijo-hosts','red/vlsm','red/ipv6','red/puertos','red/dns','red/dhcp','red/arp'];
 const ALGEBRA=['alg/expresiones','alg/ecuacion-lineal','alg/desigualdad','alg/sistema-2x2','alg/sistema-3x3','alg/productos-notables','alg/factorizacion','alg/fracciones-algebraicas','alg/cuadratica','alg/exponentes','alg/logaritmos','alg/funciones'];
 
 export const RETOS=[
@@ -29,6 +30,17 @@ export const RETOS=[
    crear:rng=>{const area=rng.elegir(['ventas','soporte','contabilidad','desarrollo']);
      return [...delGenerador('red/prefijo-hosts',[3,4],`Una empresa abre una sucursal: el área de ${area} y la red de invitados necesitan su propia subred.`)(rng),
        ...delGenerador('red/subred',[4,5],'Ya asignaste los prefijos; ahora verifica las direcciones de cada subred.')(rng)]}},
+  {id:'ciber-vlsm-campus',materia:'ciberseguridad',tema:'redes-y-protocolos',titulo:'Reparte la red de un campus con VLSM',profundidad:'aplicacion',dificultad:4,
+   desc:'Laboratorios, oficinas y enlaces de distintos tamaños en una sola /24.',crear:delGenerador('red/vlsm',[2,3,4,5],'El campus tiene una sola red /24 y varias áreas de distinto tamaño.')},
+  {id:'ciber-sin-internet',materia:'ciberseguridad',tema:'redes-y-protocolos',titulo:'"No tengo internet": diagnóstico',profundidad:'escenario',dificultad:3,
+   desc:'Un usuario no navega: revisa capa por capa, DHCP, ARP y DNS.',
+   crear:rng=>[...delGenerador('red/osi',[4],'Mesa de ayuda: un usuario dice que "no tiene internet". Empieza por ubicar la capa.')(rng),
+     ...delGenerador('red/ipv4',[1],'Su equipo muestra una dirección 169.254.x.x: revisa qué significa.')(rng),
+     ...delGenerador('red/dhcp',[3],'Sospechas del servidor DHCP de la oficina.')(rng),
+     ...delGenerador('red/arp',[3],'Revisas la tabla ARP del equipo por si hay algo raro.')(rng),
+     ...delGenerador('red/dns',[3],'Ya tiene IP, pero los nombres no resuelven bien.')(rng)]},
+  {id:'ciber-simulacro-redes',materia:'ciberseguridad',tema:'redes-y-protocolos',titulo:'Simulacro de Fundamentos de redes',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(REDES)},
   {id:'ciber-auditar-politica',materia:'ciberseguridad',tema:'firewalls',titulo:'Auditar una política de firewall',profundidad:'aplicacion',dificultad:3,
    desc:'Para cada paquete, decide qué regla se aplica: primera coincidencia y deny implícito.',
    crear:delGenerador('fw/reglas',[4,5,5],'Auditoría: el equipo de seguridad te pide comprobar qué hace la política con el tráfico real de hoy.')},

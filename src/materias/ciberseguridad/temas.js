@@ -4,18 +4,18 @@
    Los nodos {titulo, proximo:true} son lo que el PLAN pide y todavía no existe. */
 export default [
   {id:'redes-y-protocolos',titulo:'Fundamentos de redes',icono:'🌐',descripcion:'OSI, direcciones IP, subredes, puertos y servicios de red.',nodos:[
-    {titulo:'Modelos OSI y TCP/IP',proximo:true},
-    {titulo:'Direcciones IP y clases',proximo:true},
+    {id:'osi-tcpip',titulo:'Modelos OSI y TCP/IP',gen:'red/osi'},
+    {id:'ipv4-clases',titulo:'Direcciones IP y clases',gen:'red/ipv4'},
     {id:'binario-hex',titulo:'Binario, decimal y hexadecimal',gen:'red/bases'},
     {id:'subredes-cidr',gen:'red/subred',herramienta:'subred'},
     {id:'mascaras',titulo:'Máscara de subred /24 a /30',gen:'red/mascara',herramienta:'subred'},
     {id:'prefijo-hosts',titulo:'Prefijo para N hosts',gen:'red/prefijo-hosts',herramienta:'subred'},
-    {titulo:'VLSM',proximo:true},
-    {titulo:'IPv6 básico',proximo:true},
+    {id:'vlsm',titulo:'VLSM',gen:'red/vlsm',herramienta:'subred'},
+    {id:'ipv6',titulo:'IPv6 básico',gen:'red/ipv6'},
     {id:'puertos-y-servicios',gen:'red/puertos',herramienta:'redes'},
-    {titulo:'DNS',proximo:true},
-    {titulo:'DHCP',proximo:true},
-    {titulo:'ARP',proximo:true}
+    {id:'dns',titulo:'DNS',gen:'red/dns'},
+    {id:'dhcp',titulo:'DHCP',gen:'red/dhcp'},
+    {id:'arp',titulo:'ARP',gen:'red/arp'}
   ]},
   {id:'conmutacion',titulo:'Conmutación y enrutamiento',icono:'🔀',descripcion:'Switches, VLAN, STP, rutas, OSPF y Wi-Fi seguro.',nodos:[
     {titulo:'Switches, MAC y tablas',proximo:true},

@@ -18,18 +18,18 @@ Fuente de verdad del contenido de la app. `npm run revisar` comprueba que cada `
 
 ### Fundamentos de redes `redes-y-protocolos`
 
-- [ ] Modelos OSI y TCP/IP
-- [ ] Direcciones IP y clases
+- [x] Modelos OSI y TCP/IP `osi-tcpip`
+- [x] Direcciones IP y clases `ipv4-clases`
 - [x] Binario, decimal y hexadecimal `binario-hex`
 - [x] Subredes CIDR `subredes-cidr`
 - [x] Máscara de subred /24 a /30 `mascaras`
 - [x] Prefijo para N hosts `prefijo-hosts`
-- [ ] VLSM
-- [ ] IPv6 básico
+- [x] VLSM `vlsm`
+- [x] IPv6 básico `ipv6`
 - [x] Puertos y servicios `puertos-y-servicios`
-- [ ] DNS
-- [ ] DHCP
-- [ ] ARP
+- [x] DNS `dns`
+- [x] DHCP `dhcp`
+- [x] ARP `arp`
 
 ### Conmutación y enrutamiento `conmutacion`
 

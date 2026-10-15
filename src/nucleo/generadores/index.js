@@ -25,13 +25,14 @@ import prealgebra from './prealgebra.js';
 import algebraLineal from './algebra-lineal.js';
 import calculo from './calculo.js';
 import redes from './redes.js';
+import redes2 from './redes2.js';
 import seguridad from './seguridad.js';
 import datos from './datos.js';
 import ingles from './ingles.js';
 import {bancos} from './bancos.js';
 import {clasificar} from './profundidad.js';
 
-export const GENERADORES={...matematicas,...algebraBasica,...algebraTemas,...algebraTemas2,...aplicaciones,...algebraVariantes,...algebraLineal2,...aplicacionesLineal,...algebraLineal,...calculo,...redes,...seguridad,...datos,...ingles,...calculoDif,...calculoInt,...trigonometria,...prealgebra,...algebraLinealVariantes,...calculoDifVariantes,...calculoIntVariantes};
+export const GENERADORES={...matematicas,...algebraBasica,...algebraTemas,...algebraTemas2,...aplicaciones,...algebraVariantes,...algebraLineal2,...aplicacionesLineal,...algebraLineal,...calculo,...redes,...redes2,...seguridad,...datos,...ingles,...calculoDif,...calculoInt,...trigonometria,...prealgebra,...algebraLinealVariantes,...calculoDifVariantes,...calculoIntVariantes};
 export const BANCOS=bancos;
 
 // Una pregunta nueva del generador al nivel pedido; con vistos (Set de claves) no se repite en la sesión;

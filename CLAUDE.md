@@ -424,7 +424,9 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | 2c · Matemáticas · Cálculo diferencial (13 habilidades, 3 plantillas por nivel, 3 retos + escenario + simulacro) | ✅ terminado |
 | 2d · Matemáticas · Cálculo integral (9 habilidades, 3 plantillas por nivel, 3 retos + escenario + simulacro) | ✅ terminado |
 | 2e · Matemáticas · Trigonometría (4) y Aritmética y prealgebra (5), con retos, escenarios y simulacros | ✅ terminado: **Matemáticas completa (6 temas ✅)** |
-| 3 · Ciberseguridad: Fundamentos de redes → Firewalls → Seguridad defensiva → resto | ⏳ siguiente |
+| 3a · Ciberseguridad · Fundamentos de redes (12 habilidades: OSI, IPv4, VLSM, IPv6, DNS, DHCP, ARP nuevas; 2 retos + escenario + simulacro) | ✅ terminado |
+| Cursos · Ciberseguridad pasa a 💼 Cursos, curso de Excel, 🗳️ Propuestas, IA con Gemini o Claude (PROMPT aparte) | ⏳ en curso |
+| 3b · Ciberseguridad: Conmutación → Firewalls → VPN → Seguridad defensiva | pendiente |
 | 4 · Inglés: completar A1 y A2, luego B1 | pendiente |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | pendiente |
 | 6 · Inglés B2 y temas avanzados | pendiente |

@@ -3,12 +3,12 @@ import {igualNum,igualTexto,normalTexto} from './verificar.js';
 import {paso,final,marca,c} from './pasos.js';
 import {bitsSubred} from './diagramas.js';
 
-const ip2n=ip=>ip.split('.').reduce((a,o)=>a*256+(+o),0);
-const n2ip=n=>[n>>>24&255,n>>>16&255,n>>>8&255,n&255].join('.');
-const mascara=p=>p===0?0:(0xFFFFFFFF<<(32-p))>>>0;
-const ipValida=s=>/^\d{1,3}(\.\d{1,3}){3}$/.test(s)&&s.split('.').every(o=>+o<=255);
+export const ip2n=ip=>ip.split('.').reduce((a,o)=>a*256+(+o),0);
+export const n2ip=n=>[n>>>24&255,n>>>16&255,n>>>8&255,n&255].join('.');
+export const mascara=p=>p===0?0:(0xFFFFFFFF<<(32-p))>>>0;
+export const ipValida=s=>/^\d{1,3}(\.\d{1,3}){3}$/.test(s)&&s.split('.').every(o=>+o<=255);
 const limpiaIP=e=>String(e).trim().replace(/\s/g,'').replace(/\/\d+$/,'');
-const igualIP=(e,ip)=>{const s=limpiaIP(e);return ipValida(s)&&ip2n(s)===ip2n(ip)};
+export const igualIP=(e,ip)=>{const s=limpiaIP(e);return ipValida(s)&&ip2n(s)===ip2n(ip)};
 const ipAl=(rng,privada=true)=>{const t=rng.elegir(privada?[10,172,192]:[23,45,64,80,100,131,200,203]);
   return t===10?`10.${rng.entero(0,255)}.${rng.entero(0,255)}.${rng.entero(1,254)}`:t===172?`172.${rng.entero(16,31)}.${rng.entero(0,255)}.${rng.entero(1,254)}`:t===192?`192.168.${rng.entero(0,255)}.${rng.entero(1,254)}`:`${t}.${rng.entero(0,255)}.${rng.entero(0,255)}.${rng.entero(1,254)}`};
 export const calcularSubred=(ip,p)=>{const m=mascara(p),red=(ip2n(ip)&m)>>>0,bc=(red|(~m>>>0))>>>0;
@@ -54,7 +54,7 @@ const PUERTOS=[[22,'SSH','tcp',['ssh']],[80,'HTTP','tcp',['http','web']],[443,'H
   [123,'NTP','udp',['ntp']],[67,'DHCP','udp',['dhcp']],[389,'LDAP','tcp',['ldap']],[445,'SMB','tcp',['smb','cifs']],[3306,'MySQL','tcp',['mysql']],[5432,'PostgreSQL','tcp',['postgresql','postgres']],
   [500,'IKE (IPsec)','udp',['ike','ipsec','isakmp']],[514,'Syslog','udp',['syslog']],[1194,'OpenVPN','udp',['openvpn']],[69,'TFTP','udp',['tftp']],[636,'LDAPS','tcp',['ldaps']],[993,'IMAPS','tcp',['imaps']],[8080,'HTTP alternativo','tcp',['http alternativo','http','proxy']]];
 const puertos={
-  titulo:'Puertos y servicios',
+  titulo:'Puertos y servicios',profundidad:n=>n<=2?'basico':'procedimiento',
   explicacion:'Cada servicio escucha en un puerto conocido: 22 SSH, 53 DNS, 80 HTTP, 443 HTTPS… Saberlos es la base para leer reglas y registros.',
   alternativa:'La IP es la dirección de un edificio y el <b>puerto es el número de departamento</b>: 80 es la tienda web, 443 la tienda web con candado, 22 la puerta de mantenimiento (SSH), 53 la guía telefónica (DNS). TCP es como una llamada (confirma que llegó); UDP es como un mensaje rápido sin confirmación.',
   generar(n,rng){
@@ -134,7 +134,7 @@ const mascaras={
 
 // ¿Qué prefijo necesito para N hosts? / ¿cuántos hosts tiene un /x? / ¿cuántas subredes /y caben en un /x?
 const prefijoHosts={
-  titulo:'Prefijo para N hosts',
+  titulo:'Prefijo para N hosts',profundidad:n=>n<=2?'basico':'procedimiento',
   explicacion:'Con b bits de host caben 2^b − 2 equipos. Para N hosts, busca la menor potencia de 2 tal que 2^b − 2 ≥ N; el prefijo es 32 − b.',
   alternativa:'Es como elegir una caja: las cajas vienen en tamaños 4, 8, 16, 32, 64… (potencias de 2), pero a cada una le quitas 2 lugares (red y broadcast). Escoge la caja más chica en la que quepan tus equipos. Los bits que no son de host son el prefijo.',
   generar(n,rng){

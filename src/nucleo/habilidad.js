@@ -24,7 +24,7 @@ import {conFormulas} from './formula.js';
 import {preguntaIA,iaDisponible,explicarIA} from './ia-preguntas.js';
 import {retosDe} from './retos.js';
 
-const tonoDe=m=>{const a=areaDe(m);return a.tono||a.id};
+const tonoDe=m=>{const a=areaDe(m);return m.tono||a.tono||a.id};
 export const teoriaLeccion=l=>`${(l.explicacion||[]).map(p=>`<p class="lec-p">${conFormulas(p)}</p>`).join('')}
 ${l.ejemplos?.length?`<ul class="ejemplos">${l.ejemplos.map(([t,nt])=>`<li><span>${conFormulas(t)}</span>${nt?`<span class="nota">${nt}</span>`:''}</li>`).join('')}</ul>`:''}`;
 export const formNota=(texto='')=>`<div class="nota-form"><label for="lec-nota">Resume en 1 o 2 frases lo que aprendiste (va a Mis notas)

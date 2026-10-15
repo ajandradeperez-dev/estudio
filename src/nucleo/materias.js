@@ -8,7 +8,8 @@
      <área>/<materia>/<tema>                  camino de lecciones del tema
      <área>/<materia>/<tema>/l/<lección>      lección de un tema   ·   <área>/<materia>/l/<lección> si la materia no tiene temas
      <área>/<materia>/ubicacion | /<sección>[/…]
-   Un área con una sola materia del mismo id (Ciberseguridad) no repite el nivel: #ciberseguridad/fw.
+   Un área con una sola materia del mismo id no repite el nivel. Ciberseguridad vive en 💼 Cursos: #cursos/ciberseguridad/fw
+   (las rutas viejas #ciberseguridad/… y #fw siguen funcionando y se reescriben a la nueva).
    Rutas viejas que siguen funcionando: #<materia>/… (#ingles/l/can, #algebra/l/expresiones vía alias) y #fw, #vpn… */
 import {ejerciciosLeccion,nivelDe} from './metodo.js';
 import {progreso,datosHabilidad,basicoRetirado} from './progreso.js';
@@ -51,6 +52,8 @@ export function analizar(ruta){
   if(ruta.startsWith('notas/'))return {tipo:'notas',ruta,resto:ruta.split('/').slice(1)};
   // Mis materias: mias · mias/nueva · mias/<id>[/editar|/t/<tema>|/simulacro|/preguntar[/<tema>]]
   if(ruta==='mias'||ruta.startsWith('mias/'))return {tipo:'mias',ruta,resto:ruta.split('/').slice(1)};
+  // 🗳️ Propuestas: propuestas · propuestas/nueva · propuestas/admin
+  if(ruta==='propuestas'||ruta.startsWith('propuestas/'))return {tipo:'propuestas',ruta,resto:ruta.split('/').slice(1)};
   let segs=ruta.split('/'),a=area(segs[0]),m=null;
   if(a){
     if(colapsa(a)){m=a.materias[0];segs=segs.slice(1)}

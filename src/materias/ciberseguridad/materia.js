@@ -18,7 +18,7 @@ import defs from './temas.js';
 
 const temas=cargarTemas(import.meta.glob('./temas/*/*.js',{eager:true}),defs);
 
-// Las claves (redes, subred, fw…) forman la ruta (#ciberseguridad/fw) y se guardan en el progreso: no las cambies.
+// Las claves (redes, subred, fw…) forman la ruta (#cursos/ciberseguridad/fw; la vieja #ciberseguridad/fw redirige) y se guardan en el progreso: no las cambies.
 // intro y como: cabecera común (main.js); habilidad: el botón "Practicar" lleva a esa habilidad del camino; propia: la sección pinta su cabecera
 const secciones={
   redes:{titulo:'Redes',grupo:'Fundamentos',desc:'Modelo OSI, puertos y protocolos que todo firewall usa.',modulo:redes,intro:'Qué capas mira un firewall y qué puerto usa cada servicio.',como:['Recorre el modelo OSI de abajo hacia arriba.','Fíjate en qué capa trabaja cada protocolo.','Practica los puertos para recordarlos.'],habilidad:'puertos-y-servicios'},
@@ -33,7 +33,7 @@ const secciones={
 };
 
 export default {
-  nombre:'Ciberseguridad',sigla:'CS',icono:'🛡️',area:'ciberseguridad',orden:1,
+  nombre:'Ciberseguridad',sigla:'CS',icono:'🛡️',area:'cursos',tono:'ciber',orden:1,
   descripcion:'Redes, firewalls (FortiGate, Palo Alto, Cisco ASA y pfSense), VPN e incidentes, con simuladores.',
   intro:'Aprende seguridad de redes practicando. Primero las lecciones con lo que más se usa; después, los simuladores y el laboratorio. Los paquetes, firewalls y registros son simulados, así que puedes experimentar sin tocar ningún equipo real.',
   temas,

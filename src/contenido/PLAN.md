@@ -3,6 +3,8 @@
 Fuente de verdad del contenido de la app. `npm run revisar` comprueba que cada `src/materias/<materia>/temas.js` siga este árbol
 (mismos temas en el mismo orden, mismas habilidades y un nodo "Próximamente" por cada pendiente).
 
+Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáticas, Ciencia de datos, Lectura) · 💼 Cursos (Ciberseguridad, Excel y los que ganen en 🗳️ Propuestas).
+
 - `- [x] Título `id`` → la habilidad existe (lección, generador o banco). Su id va en el progreso: no se cambia.
 - `- [ ] Título` → pendiente; en la app se ve como ⚪ Próximamente. Al crearla, ponle id en temas.js y márcala aquí con [x].
 - `- 🔧 Título → ruta` → enlace a una herramienta (no cuenta para el dominio).
@@ -14,7 +16,7 @@ Fuente de verdad del contenido de la app. `npm run revisar` comprueba que cada `
   política de firewall, VPN entre sedes · Matemáticas → problemas de aplicación (optimización, física, economía, redes) y simulacro
   mixto por tema · Ciencia de datos → analizar un dataset generado de principio a fin · Inglés → el jefe de cada unidad.
 
-## 🛡️ Ciberseguridad `ciberseguridad`
+## 💼 Curso · 🛡️ Ciberseguridad `ciberseguridad`
 
 ### Fundamentos de redes `redes-y-protocolos`
 

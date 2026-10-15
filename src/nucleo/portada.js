@@ -36,6 +36,7 @@ export function htmlBarraSup(){
 function niveles(c){
   const n=[{ruta:'',txt:'Aprender'}];
   if(c.tipo==='portada')return {n:[],actual:''};
+  if(c.tipo==='propuestas')return {n,actual:c.resto?.length?'':'🗳️ Propuestas'};
   if(c.tipo==='especial'||c.tipo==='notas'||c.tipo==='mias')return {n:[],actual:''}; // el cuaderno pone su propio botón ←
   const a=c.area;
   if(c.tipo==='area')return {n,actual:`${a.icono||''} ${a.nombre}`};
@@ -95,7 +96,8 @@ ${c?`<div class="card continuar"><div><div class="sup-k">Continuar</div><h3>${es
 <div class="lista-nav">${areas.map(a=>{const x=resumenArea(a,p);
   return tarjetaNav({go:a.id,icono:a.icono,titulo:a.nombre,clase:`area area-${tonoDe(a)}`,
     desc:a.materias.length>1?a.materias.map(m=>m.nombre).join(' · '):a.descripcion,
-    pie:x.total?`${barra(x.hechas,x.total)}<span class="nota">${x.hechas}/${x.total} dominadas</span>`:''})}).join('')}</div>`;
+    pie:x.total?`${barra(x.hechas,x.total)}<span class="nota">${x.hechas}/${x.total} dominadas</span>`:''})}).join('')}
+${tarjetaNav({go:'propuestas',icono:'🗳️',titulo:'Propuestas',clase:'area area-votos',desc:'Vota qué curso, tema o libro sigue en la app.'})}</div>`;
   }
 };
 
@@ -107,14 +109,15 @@ export function vistaArea(a){
       const p=progreso();
       return `<div class="area-${tonoDe(a)}">${cabecera({icono:a.icono,titulo:a.nombre,desc:a.descripcion})}
 <div class="lista-nav">${a.materias.map(m=>{const d=datosMateria(p,m.id),{hechas,total}=conteo(d,m.lecciones||[]);
-  return tarjetaNav({go:rutaMateria(m),icono:m.icono||m.sigla,titulo:m.nombre,desc:m.descripcion,clase:m.proximo?'proximo':'',pie:m.proximo?chip('⚪ Próximamente'):total?`${barra(hechas,total)}<span class="nota">${hechas}/${total} dominadas · ${d.xp} XP</span>`:''})}).join('')}</div></div>`;
+  return tarjetaNav({go:rutaMateria(m),icono:m.icono||m.sigla,titulo:m.nombre,desc:m.descripcion,clase:`${m.proximo?'proximo':''} ${m.tono?`area-${m.tono}`:''}`,pie:m.proximo?chip('⚪ Próximamente'):total?`${barra(hechas,total)}<span class="nota">${hechas}/${total} dominadas · ${d.xp} XP</span>`:''})}).join('')}
+${a.id==='cursos'?tarjetaNav({go:'propuestas',icono:'⚪',titulo:'Próximamente…',clase:'proximo',desc:'Los cursos que ganen en 🗳️ Propuestas. Vota el que quieres.'}):''}</div></div>`;
     }
   };
 }
 
 /* ---------- página de una materia: lo siguiente, temas (o lecciones) y herramientas ---------- */
 export function vistaMateria(m){
-  const tono=tonoDe(areaDe(m));
+  const tono=m.tono||tonoDe(areaDe(m));
   return {
     titulo:m.nombre,
     vista(){
@@ -146,7 +149,7 @@ ${m.temas?'':grupos.map(g=>`<h2>${g||'Herramientas'}</h2><div class="lista-nav">
 // Cofre 🎁 cada 3 habilidades · Jefe 🏆 al final · Herramienta (enlace) · Próximamente (gris con candado)
 const ZIGZAG=[0,52,76,52,0,-52,-76,-52];
 export function vistaTema(m,t){
-  const tono=tonoDe(areaDe(m));
+  const tono=m.tono||tonoDe(areaDe(m));
   return {
     titulo:t.titulo,
     vista(){

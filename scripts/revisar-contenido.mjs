@@ -191,7 +191,7 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
     notas:{'algebra/expresiones':{texto:'Resumen',fecha:f(3)}},ultimo:{ruta:'algebra/l/ecuaciones-lineales',materia:'algebra'},frases:{},historial:[{materia:'algebra',tipo:'algebra/l/expresiones',fecha:f(0)}]};
   mem['ciberlab-progreso']=JSON.stringify(v5);
   const p=P.progreso(),m=p.materias.matematicas,e='migración v5';
-  if(p.v!==9)mal(e,`queda en la versión ${p.v} (se esperaba 9)`);
+  if(p.v!==10)mal(e,`queda en la versión ${p.v} (se esperaba 10)`);
   if(p.materias.algebra||m?.xp!==230||!m.lecciones.expresiones?.dominada||m.lecciones['ecuaciones-lineales']?.mejor!==0.4)mal(e,'se pierden la XP o las lecciones de Álgebra (ahora Matemáticas)');
   if(!p.materias.ingles?.lecciones['verbo-to-be']?.dominada)mal(e,'se pierden lecciones de otras materias');
   if(!p.repaso['matematicas/l/expresiones/3']||!p.repaso['ingles/l/can/2'])mal(e,'se pierden o no se renombran repasos: '+Object.keys(p.repaso).join(', '));
@@ -217,7 +217,18 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   if(P.racha(p)!==3||p.mejorRacha!==4||p.dominados!==2)mal(e,`se pierde la racha (${P.racha(p)} días)`);
   if(p.ultimo?.materia!=='matematicas'||p.historial[0]?.materia!=='matematicas')mal(e,'"continuar" o el historial siguen apuntando a algebra');
   if(JSON.parse(mem['ciberlab-progreso']).v!==p.v)mal(e,'la migración no se guarda');
-  console.log(`progreso: un v5 migra a v${p.v} conservando lecciones, XP, racha, repasos y notas`);
+  // v10: Ciberseguridad pasa a 💼 Cursos: un progreso v9 conserva todo y "continuar" apunta a la ruta nueva
+  const v9={...JSON.parse(mem['ciberlab-progreso']),v:9,ultimo:{ruta:'ciberseguridad/fw',materia:'ciberseguridad'},historial:[{materia:'ciberseguridad',tipo:'ciberseguridad/quiz',fecha:f(0)}]};
+  v9.materias.ciberseguridad={xp:340,lecciones:{'subredes-cidr':l(true)},extra:{visitadas:['fw']},visitadas:['fw']};
+  v9.repaso['ciberseguridad/examen/3']={rep:1,int:1,ef:2.5,proxima:f(0),fallos:1};v9.notas['ciberseguridad/subredes-cidr']={texto:'Red y broadcast',fecha:f(1)};
+  mem['ciberlab-progreso']=JSON.stringify(v9);
+  const q=P.progreso(),e10='migración v10 (Cursos)';
+  if(q.v!==10)mal(e10,`queda en la versión ${q.v}`);
+  if(q.materias.ciberseguridad?.xp!==340||!q.materias.ciberseguridad.lecciones['subredes-cidr']?.dominada)mal(e10,'se pierden la XP o las habilidades de Ciberseguridad');
+  if(!q.repaso['ciberseguridad/examen/3']||q.notas['ciberseguridad/subredes-cidr']?.texto!=='Red y broadcast')mal(e10,'se pierden repasos o notas de Ciberseguridad');
+  if(q.ultimo?.ruta!=='cursos/ciberseguridad/fw'||q.historial[0]?.tipo!=='cursos/ciberseguridad/quiz')mal(e10,'"continuar" sigue en la ruta vieja: '+q.ultimo?.ruta);
+  if(q.materias.matematicas?.xp!==230||P.racha(q)!==3)mal(e10,'se pierde lo de otras materias o la racha');
+  console.log(`progreso: un v5 migra a v${p.v} conservando lecciones, XP, racha, repasos y notas; un v9 con Ciberseguridad pasa a Cursos sin perder nada`);
 }
 sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
 // Generadores: 200 ejercicios por nivel sin errores, cuya respuesta pasa su propio verificar, con fórmulas válidas y sin repetirse demasiado

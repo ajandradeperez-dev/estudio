@@ -10,7 +10,7 @@ import {areaDe,rutaMateria,rutaLeccion} from './materias.js';
 
 export function vistaUbicacion(m){
   // Solo las habilidades con lección escrita (sus preguntas de la última ronda)
-  const ls=(m.lecciones||[]).filter(l=>l.rondas?.length),a=areaDe(m),tono=a.tono||a.id;
+  const ls=(m.lecciones||[]).filter(l=>l.rondas?.length),a=areaDe(m),tono=m.tono||a.tono||a.id;
   let fase='inicio',ses=null;
   function empezar(){
     const k=repartoUbicacion(ls.length),preguntas=ls.flatMap((l,j)=>preguntasUbicacion(l,k[j]).map(x=>({leccion:l,...x})));

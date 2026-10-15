@@ -10,6 +10,9 @@
   --warn:#9a6200; --warn-bg:#f5a524; --warn-soft:#fff4dd;
   --t-ciber:#1677c2; --t-ciber-dark:#0f5b96; --t-ciber-soft:#e6f2fb;
   --t-estudio:#c2560f; --t-estudio-dark:#97420a; --t-estudio-soft:#fdf0e5;
+  --t-cursos:#7b3fc4; --t-cursos-dark:#5e2c9a; --t-cursos-soft:#f2ebfb;
+  --t-excel:#1b7d4a; --t-excel-dark:#125c36; --t-excel-soft:#e6f5ec;
+  --t-votos:#c2185b; --t-votos-dark:#930f43; --t-votos-soft:#fce8f0;
   --on-area:#ffffff;
   --code:#f4f5f8;
   --r1:8px; --r2:14px; --r3:16px; --r-full:999px;
@@ -30,6 +33,9 @@
   --warn:#f7bd4f; --warn-bg:#f5a524; --warn-soft:#352a12;
   --t-ciber:#5db6f7; --t-ciber-dark:#2f86c4; --t-ciber-soft:#14283a;
   --t-estudio:#ffa257; --t-estudio-dark:#c7722c; --t-estudio-soft:#36230f;
+  --t-cursos:#b98af5; --t-cursos-dark:#8a5cc7; --t-cursos-soft:#2a1c3d;
+  --t-excel:#5fd394; --t-excel-dark:#36a068; --t-excel-soft:#15301f;
+  --t-votos:#ff7fae; --t-votos-dark:#c7547f; --t-votos-soft:#3a1624;
   --on-area:#101218; --code:#232733; --sombra:none;
   color-scheme:dark}}
 :root[data-theme="dark"]{
@@ -40,8 +46,14 @@
   --warn:#f7bd4f; --warn-bg:#f5a524; --warn-soft:#352a12;
   --t-ciber:#5db6f7; --t-ciber-dark:#2f86c4; --t-ciber-soft:#14283a;
   --t-estudio:#ffa257; --t-estudio-dark:#c7722c; --t-estudio-soft:#36230f;
+  --t-cursos:#b98af5; --t-cursos-dark:#8a5cc7; --t-cursos-soft:#2a1c3d;
+  --t-excel:#5fd394; --t-excel-dark:#36a068; --t-excel-soft:#15301f;
+  --t-votos:#ff7fae; --t-votos-dark:#c7547f; --t-votos-soft:#3a1624;
   --on-area:#101218; --code:#232733; --sombra:none;
   color-scheme:dark}
 /* Color del área actual: lo heredan barras, nodos y botones de su pantalla */
 .area-ciber{--area:var(--t-ciber);--area-dark:var(--t-ciber-dark);--area-soft:var(--t-ciber-soft)}
 .area-estudio{--area:var(--t-estudio);--area-dark:var(--t-estudio-dark);--area-soft:var(--t-estudio-soft)}
+.area-cursos{--area:var(--t-cursos);--area-dark:var(--t-cursos-dark);--area-soft:var(--t-cursos-soft)}
+.area-excel{--area:var(--t-excel);--area-dark:var(--t-excel-dark);--area-soft:var(--t-excel-soft)}
+.area-votos{--area:var(--t-votos);--area-dark:var(--t-votos-dark);--area-soft:var(--t-votos-soft)}

@@ -10,7 +10,7 @@ let fase='inicio',ses=null;
 function empezar(){
   const reglas=[];
   ses=crearSesion({
-    titulo:'Examen rápido',tono:'ciber',salir:'ciberseguridad/quiz',sinPistas:true,materia:'ciberseguridad',
+    titulo:'Examen rápido',tono:'ciber',salir:'cursos/ciberseguridad/quiz',sinPistas:true,materia:'ciberseguridad',
     total:()=>quiz.length,
     siguiente:st=>st.i<quiz.length?{...deBanco(quiz[st.i]),n:st.i}:null,
     responder(p,r){if(!r.correcto)reglas.push(p.regla);ejercicio(`examen/${p.n}`,r.correcto);return {}},
@@ -18,7 +18,7 @@ function empezar(){
       registrarExamen(st.ok,quiz.length);
       return `<span class="fin-icono" aria-hidden="true">${st.ok===quiz.length?'🏅':'🛡️'}</span><h1>${st.ok} de ${quiz.length}</h1>
 <p class="nota">${st.ok===quiz.length?'Excelente, dominas lo básico.':'Las que fallaste ya están en Repasar.'}</p>
-<button class="btn ancho" id="qreset">Repetir</button>${htmlCierre({xp:st.xp,aprendido:reglas,excluir:'ciberseguridad/quiz'})}`;
+<button class="btn ancho" id="qreset">Repetir</button>${htmlCierre({xp:st.xp,aprendido:reglas,excluir:'cursos/ciberseguridad/quiz'})}`;
     }
   });
   ses.alEntrar();fase='sesion';

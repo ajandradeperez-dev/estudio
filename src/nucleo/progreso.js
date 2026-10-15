@@ -35,7 +35,7 @@
    Inglés: sonidos {id:{ok, n, ult:[1,0…]}}, unidades, dialogos, medallas, combo. */
 import {DOMINIO,ULTIMAS,estadoDominio,nuevoRating,calidad,sm2,SALE_DEL_REPASO,TOPE_HABILIDAD,INTERVALOS_V6} from './metodo.js';
 
-const CLAVE='ciberlab-progreso',VERSION=9;
+const CLAVE='ciberlab-progreso',VERSION=10;
 const RAPIDO=12000; // ms: responder bien en menos de esto cuenta como "rápido" (sube más la dificultad y el intervalo)
 export const METAS=[['ejercicios',10],['ejercicios',20],['ejercicios',30],['minutos',5],['minutos',10],['minutos',15]];
 const XP_LECCION=20;
@@ -52,7 +52,7 @@ export function sumarDias(fecha,n){const [a,m,d]=fecha.split('-').map(Number);re
 const obj=x=>x&&typeof x==='object'&&!Array.isArray(x)?x:null;
 // v1 guardaba la última sección abierta aparte, en 'ciberlab-s'
 function ultimoV1(){
-  try{const s=localStorage.getItem('ciberlab-s');if(s&&s!=='inicio')return {ruta:'ciberseguridad/'+s,materia:'ciberseguridad'}}catch(e){}
+  try{const s=localStorage.getItem('ciberlab-s');if(s&&s!=='inicio')return {ruta:'cursos/ciberseguridad/'+s,materia:'ciberseguridad'}}catch(e){}
   return null;
 }
 function migrar(p){
@@ -122,6 +122,13 @@ function migrar(p){
   if(p.v===8){ // v8 → v9: niveles de profundidad (básicos retirados, refuerzos) y retos con ⭐; lo demás no cambia
     p.basicos=obj(p.basicos)||{};p.refuerzos=obj(p.refuerzos)||{};p.estrellas=obj(p.estrellas)||{};
     p.v=9;
+  }
+  if(p.v===9){ // v9 → v10: Ciberseguridad pasa al área 💼 Cursos (#cursos/ciberseguridad/…). Sus datos se guardan por materia
+    // ('ciberseguridad'), así que no cambian; solo se reescriben las rutas guardadas (las viejas también se siguen resolviendo).
+    const ren=r=>typeof r==='string'&&/^ciberseguridad(\/|$)/.test(r)?'cursos/'+r:r;
+    if(obj(p.ultimo))p.ultimo={...p.ultimo,ruta:ren(p.ultimo.ruta)};
+    if(Array.isArray(p.historial))p.historial=p.historial.map(h=>obj(h)?{...h,tipo:ren(h.tipo)}:h);
+    p.v=10;
   }
   return p;
 }

@@ -11,7 +11,7 @@ import {htmlCierre} from './cierre.js';
 import {crearRng} from './rng.js';
 import {areaDe,rutaMateria,rutaTema} from './materias.js';
 
-const tonoDe=m=>{const a=areaDe(m);return a.tono||a.id};
+const tonoDe=m=>{const a=areaDe(m);return m.tono||a.tono||a.id};
 export const rutaRetos=(m,t)=>`${t?rutaTema(m,t):rutaMateria(m)}/retos`;
 
 export function vistaRetos(m,t=null){

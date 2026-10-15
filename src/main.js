@@ -12,6 +12,7 @@ import {perfil} from './nucleo/miprogreso.js';
 import {logros} from './nucleo/logros.js';
 import {vistaNotas} from './nucleo/notas.js';
 import {vistaMias} from './nucleo/mias/vistas.js';
+import {vistaPropuestas} from './nucleo/propuestas/vistas.js';
 import {cargarMias} from './nucleo/mias/datos.js';
 import {vistaUbicacion} from './nucleo/ubicacion.js';
 import {vistaRetos} from './nucleo/vista-retos.js';
@@ -37,6 +38,7 @@ function resolver(ruta){
   if(x.tipo==='especial')return {...x,v:ESPECIALES[x.ruta]};
   if(x.tipo==='notas')return {...x,v:vistaNotas(x.resto)};
   if(x.tipo==='mias')return {...x,v:vistaMias(x.resto)};
+  if(x.tipo==='propuestas')return {...x,v:vistaPropuestas(x.resto)};
   if(x.tipo==='area')return {...x,v:vistaArea(x.area)};
   if(x.tipo==='tema')return {...x,v:vistaTema(m,x.t)};
   if(x.tipo==='leccion')return {...x,v:vistaHabilidad(m,x.l),ultimo:true};

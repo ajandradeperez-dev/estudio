@@ -15,3 +15,8 @@ export const APK_PAQUETE='io.github.ajandradeperez.estudio';
 export const APK_ARCHIVO='EstudioPlus';
 export const APK_URL=`${REPO_URL}/releases/latest/download/${APK_ARCHIVO}.apk`;
 export const INVITACION=`Estoy estudiando con ${APP_NOMBRE}: lecciones cortas, repaso espaciado y racha diaria. Es gratis, funciona sin internet y tus datos se quedan en tu teléfono.`;
+// 🗳️ Propuestas y votos (Supabase, plan gratuito). Pega aquí la URL del proyecto y su clave PÚBLICA (anon o publishable):
+// es pública por diseño; la seguridad está en la base (supabase/propuestas.sql, Row Level Security). La clave service_role
+// NUNCA va aquí ni en git. Vacías = la sección muestra las propuestas iniciales y dice que la votación se activa pronto.
+export const SUPABASE_URL='';
+export const SUPABASE_CLAVE_PUBLICA='';

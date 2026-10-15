@@ -154,6 +154,7 @@ src/
 | `notas/foto[/<materia>/<tema>]` | 📸 Foto a nota y 🧠 Resuélvelo conmigo (archiva en ese tema) |
 | `mias` · `mias/nueva` · `mias/<id>[/editar]` | Mis materias: lista · asistente · materia (cuenta regresiva, hoy, preparación, plan) · editar |
 | `mias/<id>/t/<tema>` · `mias/<id>/simulacro` · `mias/<id>/preguntar[/<tema>]` | Tema · simulacro de examen · "Pregúntale a tu temario" |
+| `propuestas` · `propuestas/nueva` · `propuestas/admin` | 🗳️ Propuestas: votar · proponer · administrador (7 toques en la versión) |
 | `<área>` | Página del área: tarjetas de materias (`#estudio`) |
 | `<área>/<materia>` | Página de la materia: temas (o lecciones), ubicación y secciones (`#estudio/matematicas`) |
 | `<área>/<materia>/<tema>` | Camino de lecciones del tema (`#estudio/matematicas/algebra-lineal`) |
@@ -417,6 +418,17 @@ Hoy cada teléfono guarda lo suyo (no hay cuentas) y se pasa de uno a otro con *
 - **Retos** (`retos.js`): una aplicación por tema y, en Escenarios, 4 escenarios de 4 fórmulas sobre la misma hoja (`excel-escenarios.js`: reporte de ventas, gastos personales, calificaciones, inventario con alertas) y un simulacro.
 - **Herramientas** (secciones): `hoja` (hoja libre con datos de ejemplo, barra de fórmulas y explicación de cada error; se guarda en `localStorage['ciberlab-excel']`), `dinamica` (simulador de tabla dinámica: filas, columnas, Suma/Cuenta/Promedio y filtro de mes) y `organizar` (ordenar, filtrar, formato condicional, barras de datos y validación).
 
+## 🗳️ Propuestas y votos (`src/nucleo/propuestas/`, Supabase)
+
+Lo único de la app que usa un servidor: los votos tienen que ser compartidos. Todo lo demás sigue solo en el teléfono.
+
+- **Configuración**: `SUPABASE_URL` y `SUPABASE_CLAVE_PUBLICA` en `src/config.js` (la clave **anon/publishable**, pública por diseño). Vacías → la sección muestra las propuestas iniciales (`SEMILLA`) y «La votación todavía no está activa». La clave **service_role / sb_secret** nunca va al código ni a git (`revisar` busca claves privadas en los archivos versionados).
+- **Base de datos**: `supabase/propuestas.sql` (se pega en Supabase → SQL Editor; se puede volver a correr). Tablas `propuestas(id, tipo curso|tema|libro, titulo ≤60, descripcion ≤280, estado, motivo, respuesta, enlace, autor uuid, creada, actualizada, aprobada_en)`, `votos(dispositivo, propuesta)` con llave primaria compuesta (1 voto por propuesta por dispositivo) y `admins(usuario → auth.users)`. Estados: `pendiente` (no se ve) → `votacion` → `aprobada` (sola, al llegar a 5 votos) → `preparacion` → `disponible`; o `descartada` (con motivo) / `rechazada` (spam, no se ve).
+- **RLS**: con la clave pública no se puede leer ni escribir ninguna tabla directamente; solo las funciones `security definer`: `listar_propuestas()` (publicadas, con votos, sin autor), `mis_votos(dispositivo)`, `votar()` (bloquea la fila, 1 por propuesta, **máximo 3 votos activos**, aprueba a los 5), `quitar_voto()` (solo en votación) y `proponer()` (largos, tipo, filtro de palabras `ofensivo()` y **2 por dispositivo cada 7 días**; entra como `pendiente`). El administrador (usuario autenticado que está en `admins`) puede leer y cambiar todo en `propuestas` por la política `admin_todo`. Límite honesto: el identificador anónimo se puede regenerar borrando los datos del navegador; el administrador revisa antes de publicar y puede corregir.
+- **App**: `logica.js` (reglas y mensajes, sin DOM), `api.js` (fetch a `/rest/v1/rpc/…` y Auth; 429 → «espera un minuto»), `estado.js` (identificador anónimo `ciberlab-dispositivo`, último estado `ciberlab-propuestas` para verlo sin conexión, cola de votos/propuestas que se envía al volver la red, avisos ya vistos), `vistas.js` (rutas `propuestas`, `propuestas/nueva`, `propuestas/admin`, `propuestas/abrir/<id>`). Nada de esto entra al respaldo. La portada muestra «🎉 ¡Ya está lo que pediste!» cuando algo que este teléfono votó pasa a disponible.
+- **Administrar**: Perfil → Acerca de → tocar **7 veces** la versión → correo → enlace mágico (Supabase Auth; vuelve a la app con `#access_token=…`, que `main.js` guarda en `ciberlab-admin` y lleva a `#propuestas/admin`). La primera vez, en el SQL Editor: `insert into public.admins(usuario) select id from auth.users where email = '<tu correo>';` (el correo no se escribe en el repositorio). La pantalla muestra cuántas hay pendientes de revisión y aprobadas por preparar; ✅ Publicar / ⛔ Rechazar, estado, respuesta, motivo y enlace. Para un correo automático al aprobarse algo: Supabase → Database → Webhooks sobre `propuestas` (update) hacia una Edge Function o un servicio de correo (opcional).
+- **Pruebas**: `scripts/fixtures/supabase-simulado.mjs` imita las funciones con las mismas reglas; `revisar` prueba límites, duplicados, aprobación a los 5, cola sin conexión, 429, propuestas pendientes ocultas y el aviso de disponible.
+
 ## 📚 Lectura (⚪ próximamente)
 
 `src/materias/lectura/materia.js` con `proximo:true`: la tarjeta del área dice "⚪ Próximamente" y su página muestra solo "Agrega tus libros, marca tu avance por capítulos, guarda citas y notas, y repasa ideas clave" con "➕ Agregar libro" deshabilitado. No cuenta para metas ni racha, no sale en la bienvenida, en Perfil ni en "Lo siguiente". Modelo previsto (irá en `materias.lectura.extra`; al implementarlo, sube `VERSION`):
@@ -440,7 +452,8 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | 3a · Ciberseguridad · Fundamentos de redes (12 habilidades: OSI, IPv4, VLSM, IPv6, DNS, DHCP, ARP nuevas; 2 retos + escenario + simulacro) | ✅ terminado |
 | Cursos fase 1 · Ciberseguridad pasa a 💼 Cursos (progreso v10) | ✅ terminado |
 | Cursos fase 2 · Curso de Excel: evaluador, mini hoja, 25 generadores, 12 retos/escenarios, 3 herramientas | ✅ terminado |
-| Cursos fase 3–4 · 🗳️ Propuestas (Supabase) e IA con Gemini o Claude | ⏳ en curso |
+| Cursos fase 3 · 🗳️ Propuestas y votos (Supabase; falta crear el proyecto y pegar URL y clave pública) | ✅ código listo |
+| Cursos fase 4 · IA con Gemini o Claude (capa común `nucleo/ia.js`) | ⏳ en curso |
 | 3b · Ciberseguridad: Conmutación → Firewalls → VPN → Seguridad defensiva | pendiente |
 | 4 · Inglés: completar A1 y A2, luego B1 | pendiente |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | pendiente |

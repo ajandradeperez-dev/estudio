@@ -180,12 +180,13 @@ function htmlDatos(){
 <p style="margin-bottom:4px">🔥 Racha: <b>${r} ${r===1?'día':'días'}</b> · últimos 7 días:</p><div class="dias-meta" aria-label="Meta cumplida en los últimos 7 días">${dias.map(d=>`<span class="${d.ok?'ok':''}" title="${d.f}${d.ok?' · meta cumplida':''}">${d.l}</span>`).join('')}</div>
 <p class="nota" id="acerca-persistente" style="margin-bottom:0"></p>`;
 }
+let toquesVersion=0,ultimoToque=0;
 export const acerca={
   titulo:'Acerca de',
   vista(){
     const u=usuario();
     return `<div class="nota-cab"><button type="button" class="btn-icono" data-go="perfil" aria-label="Volver a Perfil">←</button><span></span><span></span></div>
-<div class="acerca-cab"><img src="icons/icon-192.png" alt="" width="88" height="88"><div><h1 style="margin:0">${APP_NOMBRE}</h1><p class="nota" style="margin:4px 0 0">Versión ${__VERSION__}</p></div></div>
+<div class="acerca-cab"><img src="icons/icon-192.png" alt="" width="88" height="88"><div><h1 style="margin:0">${APP_NOMBRE}</h1><button type="button" class="enlace nota version-boton" id="acerca-version">Versión ${__VERSION__}</button></div></div>
 <p class="intro">Una app para estudiar ciberseguridad, inglés, matemáticas y ciencia de datos con lecciones cortas, repaso espaciado y metas diarias.</p>
 <h2>💾 Tus datos en este dispositivo</h2>
 <div class="card" id="acerca-datos">${htmlDatos()}</div>
@@ -194,7 +195,8 @@ export const acerca={
 <ul class="nota" style="padding-left:20px;margin-bottom:0"><li>Cada persona tiene lo suyo: si compartes la app con amigos, nadie ve tu progreso ni tus notas.</li>
 <li>Para cambiar de teléfono usa <b>Exportar todo</b> e <b>Importar</b> (en Perfil).</li>
 <li>La IA es opcional y usa <b>tu propia clave</b> de Anthropic, guardada solo en este teléfono. Cuando la usas, el texto del ejercicio va a Anthropic; nada más sale de tu teléfono.</li>
-<li>El reconocimiento de voz lo hace tu navegador (en Chrome, con los servidores de Google).</li></ul></div>
+<li>El reconocimiento de voz lo hace tu navegador (en Chrome, con los servidores de Google).</li>
+<li>🗳️ En Propuestas, para votar se envía un identificador anónimo de este dispositivo y tus votos o propuestas; nada más. Tu progreso y tus notas siguen solo en tu teléfono.</li></ul></div>
 <h2>🤝 Invita a tus amigos</h2>
 <div class="card centro"><div class="qr">${htmlQR(APP_URL)}</div><p class="nota" style="word-break:break-all">${APP_URL}</p>${boton({texto:'🤝 Compartir el enlace',id:'acerca-invitar',clase:'ancho'})}</div>
 <h2>📲 Instálala</h2>
@@ -204,6 +206,8 @@ ${!esIOS()?`<a class="btn ghost ancho" href="${APK_URL}" rel="noopener">🤖 Des
   },
   alMostrar(){navigator.storage?.persisted?.().then(x=>{const el=document.getElementById('acerca-persistente');if(el)el.textContent=x?'✅ Almacenamiento persistente: el navegador no borrará estos datos por falta de espacio.':'ℹ️ El navegador podría borrar estos datos si se queda sin espacio: instala la app y haz respaldos de vez en cuando.'}).catch(()=>{})},
   async alClic(t){
+    // 7 toques en la versión abren el modo administrador de Propuestas
+    if(t.id==='acerca-version'){toquesVersion=Date.now()-ultimoToque<1500?toquesVersion+1:1;ultimoToque=Date.now();if(toquesVersion>=7){toquesVersion=0;location.hash='propuestas/admin'}return true}
     if(t.id==='acerca-invitar'){await invitar();return true}
     if(t.id==='acerca-instalar'){await instalar();return true}
   }

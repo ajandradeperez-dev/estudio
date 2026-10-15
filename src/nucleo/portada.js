@@ -1,5 +1,6 @@
 /* Pestaña Aprender: portada (áreas), página de área (materias), página de materia (temas o lecciones),
    camino de un tema (nodos en zigzag), migas de pan con botón atrás y barra superior (racha y meta del día) */
+import {htmlAvisoPropuestas} from './propuestas/vistas.js';
 import {APP_NOMBRE,APP_MARCA} from '../config.js';
 import {usuario} from './usuario.js';
 import {htmlMiasPortada} from './mias/vistas.js';
@@ -90,7 +91,7 @@ export const portada={
   vista(){
     const p=progreso(),r=recomendar({},p),c0=continuar(p),c=c0&&c0.ruta!==r.ruta?c0:null;
     const nombre=usuario().nombre;
-    return `${nombre?`<p class="saludo">Hola, ${esc(nombre)} 👋</p>`:''}${htmlMiasPortada()}${htmlSiguiente(r)}
+    return `${nombre?`<p class="saludo">Hola, ${esc(nombre)} 👋</p>`:''}${htmlAvisoPropuestas()}${htmlMiasPortada()}${htmlSiguiente(r)}
 ${c?`<div class="card continuar"><div><div class="sup-k">Continuar</div><h3>${esc(c.titulo)}</h3><span class="nota">${esc(c.detalle)}</span></div>${boton({texto:'Seguir',go:c.ruta,clase:'ghost'})}</div>`:''}
 <h2>¿Qué quieres aprender?</h2>
 <div class="lista-nav">${areas.map(a=>{const x=resumenArea(a,p);

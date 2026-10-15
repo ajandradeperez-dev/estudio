@@ -12,7 +12,7 @@ import {perfil} from './nucleo/miprogreso.js';
 import {logros} from './nucleo/logros.js';
 import {vistaNotas} from './nucleo/notas.js';
 import {vistaMias} from './nucleo/mias/vistas.js';
-import {vistaPropuestas} from './nucleo/propuestas/vistas.js';
+import {vistaPropuestas,recibirEnlaceMagico,sincronizarPropuestas} from './nucleo/propuestas/vistas.js';
 import {cargarMias} from './nucleo/mias/datos.js';
 import {vistaUbicacion} from './nucleo/ubicacion.js';
 import {vistaRetos} from './nucleo/vista-retos.js';
@@ -183,15 +183,20 @@ registerSW({
 
 const rutaDelHash=()=>{try{return decodeURIComponent(location.hash.slice(1))}catch(e){return ''}};
 // Si alguien cambia el #hash a mano o abre un enlace con la app ya abierta (replaceState no dispara este evento)
-window.addEventListener('hashchange',()=>{const r=rutaDelHash();if(r!==cur.ruta)go(r)});
+window.addEventListener('hashchange',()=>{if(recibirEnlaceMagico(location.hash)){go('propuestas/admin');return}const r=rutaDelHash();if(r!==cur.ruta)go(r)});
 // Las materias propias se leen de IndexedDB antes de pintar (el repaso y la portada las necesitan); como mucho 1,5 s de espera
 await Promise.race([cargarMias(),new Promise(r=>setTimeout(r,1500))]);
 window.addEventListener('mias',()=>{pintarNav();if(!cur?.v.inmersiva&&['portada','mias'].includes(cur?.tipo))pintar()});
+// Vuelta del enlace mágico del administrador (#access_token=…): se guarda la sesión y se abre el modo administrador
+if(recibirEnlaceMagico(location.hash))try{history.replaceState(null,'',location.pathname+location.search+'#propuestas/admin')}catch(e){location.hash='propuestas/admin'}
 // Historial: una entrada base y la actual (ver atras())
 try{history.replaceState({base:1},'',location.href);history.pushState({app:1},'',location.href)}catch(e){}
 go(rutaDelHash());
 // Pantalla de bienvenida (splash) fuera en cuanto se pinta la app
 {const s=document.getElementById('splash');if(s){s.classList.add('fuera');setTimeout(()=>s.remove(),300)}}
 vigilarConexion();
+// 🗳️ Votos pendientes y novedades de Propuestas: al abrir y al volver la red (sin bloquear la app)
+const sincProp=()=>sincronizarPropuestas().then(()=>{if(cur?.tipo==='portada')pintar()});
+sincProp();addEventListener('online',sincProp);
 // Recordatorio diario: con la app abierta se revisa cada minuto y al volver a ella
 setInterval(revisarRecordatorio,60000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')revisarRecordatorio()});revisarRecordatorio();

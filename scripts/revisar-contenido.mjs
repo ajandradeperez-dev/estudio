@@ -191,6 +191,63 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   for(const e of ['#¡DIV/0!','#N/A','#¿NOMBRE?','#¡REF!','#¡VALOR!'])if(!CASOS.some(([,x])=>x?.err===e))mal('excel: casos de prueba',`falta un caso que dé ${e}`);
   console.log(`excel: ${n} casos del evaluador (cada función y cada error) y ${COPIAS.length} copias de fórmulas`);
 }
+// 🗳️ Propuestas: reglas y cliente contra un Supabase simulado (límites, duplicados, aprobación a los 5 votos, sin conexión)
+{
+  const src=join(raiz,'..','nucleo','propuestas');
+  const L=await import(pathToFileURL(join(src,'logica.js')).href);
+  const {crearApi}=await import(pathToFileURL(join(src,'api.js')).href);
+  const {crearPropuestas}=await import(pathToFileURL(join(src,'estado.js')).href);
+  const {crearSimulado}=await import(pathToFileURL(join(raiz,'..','..','scripts','fixtures','supabase-simulado.mjs')).href);
+  const e='propuestas';
+  if(L.validarPropuesta({tipo:'curso',titulo:'Python',descripcion:''})||L.validarPropuesta({tipo:'curso',titulo:'ab'})!=='titulo'||L.validarPropuesta({tipo:'x',titulo:'Python'})!=='tipo'
+    ||L.validarPropuesta({tipo:'tema',titulo:'Algo',descripcion:'x'.repeat(281)})!=='descripcion'||L.validarPropuesta({tipo:'libro',titulo:'eres un idiota'})!=='ofensivo'
+    ||L.validarPropuesta({tipo:'tema',titulo:'Volumen de un cono'}))mal(e,'la validación de propuestas falla (largo, tipo o filtro de palabras)');
+  const sim=crearSimulado();for(let i=0;i<6;i++)sim.agregar('curso',`Curso ${i+1}`);sim.agregar('tema','Ya hecho','disponible',{enlace:'cursos/excel'});
+  const api=crearApi({url:'https://x.supabase.co',clave:'sb_publishable_prueba',fetch:sim.fetch});
+  const mem=()=>{const m={};return {getItem:k=>m[k]??null,setItem:(k,v)=>{m[k]=String(v)}}};
+  const yo=crearPropuestas({api,almacen:mem()});
+  if(!(await yo.cargar()).ok||yo.datos.lista.length!==7)mal(e,'no carga la lista publicada');
+  for(const id of [1,2,3])if(!(await yo.votar(id)).ok)mal(e,`no deja votar la propuesta ${id}`);
+  if((await yo.votar(4)).error!=='limite_votos')mal(e,'deja votar más de 3 propuestas a la vez');
+  await yo.votar(1);if(sim.db.votos.filter(v=>v.propuesta===1).length!==1)mal(e,'un voto repetido cuenta dos veces');
+  if(!(await yo.quitar(3)).ok||!(await yo.votar(4)).ok)mal(e,'no se puede quitar un voto y moverlo a otra');
+  // la base también lo impide aunque la app se salte la regla
+  const d=yo.dispositivo;if((await api.votar(d,5)).error!=='limite_votos')mal(e,'la base acepta un 4.º voto activo');
+  // 5 dispositivos distintos → aprobada sola
+  for(let k=0;k<4;k++){const otro=crearPropuestas({api,almacen:mem()});await otro.cargar();await otro.votar(1)}
+  await yo.cargar();if(yo.datos.lista.find(p=>p.id===1).estado!=='aprobada')mal(e,'con 5 votos no pasa a aprobada');
+  if((await yo.quitar(1)).error!=='cerrada')mal(e,'deja quitar el voto de una propuesta ya aprobada');
+  // sin conexión: el voto queda en cola, se ve, y se envía al volver la red
+  sim.red(false);const r=await yo.votar(6);
+  if(!r.ok||!r.enCola||!yo.datos.mios.includes(6)||yo.datos.cola.length!==1)mal(e,'sin conexión el voto no queda en cola');
+  if((await yo.cargar()).ok)mal(e,'sin conexión dice que cargó');
+  if(yo.datos.lista.length!==7)mal(e,'sin conexión se pierde el último estado guardado');
+  sim.red(true);await yo.cargar();
+  if(yo.datos.cola.length||!sim.db.votos.some(v=>v.dispositivo===d&&v.propuesta===6))mal(e,'al volver la red no se envían los votos pendientes');
+  // 429: mensaje amable y nada se pierde
+  sim.limite(true);const q=await api.listar();sim.limite(false);if(q.error!=='limite_uso'||!L.MENSAJES.limite_uso)mal(e,'un 429 no da el mensaje de límite de uso');
+  // propuestas: quedan pendientes (no se ven) y máximo 2 por semana
+  const p1=await yo.proponer({tipo:'libro',titulo:'Cien años de soledad',descripcion:'Para leer en grupo'}),p2=await yo.proponer({tipo:'tema',titulo:'Física II'});
+  if(!p1.ok||!p2.ok)mal(e,'no deja proponer');
+  if((await yo.proponer({tipo:'curso',titulo:'Uno más'})).error!=='limite_propuestas')mal(e,'deja más de 2 propuestas por semana');
+  if((await api.proponer('otro-disp',{tipo:'curso',titulo:'maldito idiota'})).error!=='ofensivo')mal(e,'la base acepta palabras ofensivas');
+  await yo.cargar();if(yo.datos.lista.some(p=>p.estado==='pendiente'))mal(e,'una propuesta pendiente se ve en la lista pública');
+  // «¡Ya está lo que pediste!»: solo a quien votó, una vez
+  sim.db.propuestas[3].estado='disponible';await yo.cargar();
+  if(yo.nuevasDisponibles().map(p=>p.id).join()!=='4')mal(e,'no avisa que ya está lo que votaste');
+  yo.marcarVisto(4);if(yo.nuevasDisponibles().length)mal(e,'el aviso se repite');
+  // sin servidor configurado: no rompe
+  const nada=crearPropuestas({api:crearApi({}),almacen:mem()});if((await nada.cargar()).error!=='sin_servidor'||nada.datos.lista.length!==L.SEMILLA.length)mal(e,'sin Supabase configurado no muestra la lista inicial');
+  console.log('propuestas: límites (3 votos, 1 por propuesta, 2 por semana), aprobación a los 5, cola sin conexión, 429 y avisos con un Supabase simulado');
+}
+// Las claves privadas nunca van al repositorio (la pública de Supabase sí puede ir en src/config.js)
+{
+  const {execSync}=await import('node:child_process');
+  let archivos=[];try{archivos=execSync('git ls-files',{cwd:join(raiz,'..','..'),encoding:'utf8'}).split('\n').filter(Boolean)}catch(e){}
+  const {readFileSync:leer}=await import('node:fs');
+  for(const f of archivos){if(/\.(png|jpg|webp|ico|woff2?)$/.test(f))continue;let t='';try{t=leer(join(raiz,'..','..',f),'utf8')}catch(e){continue}
+    if(/service_role['"]?\s*[:=]\s*['"]eyJ|sk-ant-[a-z0-9]{10}|AIza[0-9A-Za-z_-]{30}|sb_secret_[A-Za-z0-9]{10}|-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(t))mal(f,'parece contener una clave privada: no la subas al repositorio')}
+}
 // Migración: un progreso v5 (con la materia 'algebra') llega a la versión actual sin perder nada
 {
   const mem={};

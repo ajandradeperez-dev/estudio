@@ -400,3 +400,10 @@ body{padding-top:var(--franja,0px)}
 .xl-pivote td{text-align:right}
 .xl-pivote tr.xl-total td,.xl-pivote tr.xl-total th{font-weight:800;border-top:2px solid var(--line-2)}
 .xl-barrita{display:inline-block;height:10px;border-radius:5px;background:var(--area,var(--primary));vertical-align:middle;margin-left:6px}
+
+/* ---------- 🗳️ Propuestas ---------- */
+.propuesta-cab{display:flex;align-items:center;gap:var(--s2)}
+.propuesta-cab h3{margin:0}
+.propuesta-cab .icono{font-size:24px}
+.destacado-ok{background:var(--success-soft);display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2)}
+.version-boton{min-height:44px;padding:0;margin:4px 0 0;background:none;border:0;cursor:pointer;color:var(--muted)}

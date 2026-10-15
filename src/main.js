@@ -24,7 +24,7 @@ import {leccion,rutaLeccion} from './nucleo/materias.js';
 import {registerSW} from 'virtual:pwa-register';
 import {hablar} from './nucleo/voz.js';
 import {APP_NOMBRE} from './config.js';
-import {acerca,vistaBienvenida,tocaBienvenida,vigilarConexion,avisarVersionNueva,revisarRecordatorio,sincronizarRecordatorio} from './nucleo/app.js';
+import {acerca,vistaBienvenida,tocaBienvenida,vigilarConexion,avisarVersionNueva,guardarRegistroSW,revisarRecordatorio,sincronizarRecordatorio} from './nucleo/app.js';
 
 /* Rutas (van en el #hash de la URL): ver analizar() en nucleo/materias.js.
    ''  Aprender (portada) · 'repaso' · 'logros' · 'perfil' · 'notas' · '<área>' · '<área>/<materia>' · '…/<tema>' · '…/l/<lección>' · '…/<sección>'
@@ -83,20 +83,31 @@ function pintarNav(){
   const rep=pendientes().length,act=pestana();
   $('#nav').innerHTML=PESTANAS.map(([ruta,icono,txt])=>`<button class="nav-tab" data-go="${ruta}"${act===ruta?' aria-current="page"':''}><span class="nav-icono" aria-hidden="true">${icono}</span><span>${txt}</span>${ruta==='repaso'&&rep?`<span class="nav-insignia" aria-label="${rep} pendientes">${rep>99?'99+':rep}</span>`:''}</button>`).join('');
 }
-/* ---------- botón Atrás (Android, PWA, APK, laptop y el ← de las migas) ----------
+/* ---------- botón Atrás (Android, PWA, APK/TWA, laptop y el ← de las migas) ----------
    No depende de cuántas entradas tenga el historial: cada pantalla sabe cuál es su ruta padre por su forma (padreDe en
-   nucleo/materias.js). El historial del navegador siempre tiene una entrada "base" y encima una entrada "trampa" con la
-   ruta actual; navegar dentro de la app solo REEMPLAZA la trampa (replaceState), nunca agrega entradas.
-   Atrás del sistema → el navegador baja a la base (popstate) → se cierra lo que esté abierto (modal, dibujo, procedimiento,
-   hoja de feedback) o se sale de la práctica con su ✕, o se va a la ruta padre; y se vuelve a poner la trampa. Así Atrás
-   funciona infinitas veces, nivel por nivel, aunque se entre con un enlace directo o se recargue la página.
-   Solo en la portada de Aprender: en el teléfono, «Toca otra vez para salir» y un segundo Atrás en 2 s sale; en la laptop
-   no hace nada. Hay UN solo listener de popstate (este). */
-let salida=null,sinTrampa=false;
+   nucleo/materias.js). Navegar dentro de la app solo REEMPLAZA la entrada actual (replaceState), nunca agrega entradas.
+   Colchón de historial: Chrome en Android (y el APK/TWA) SE SALTA con el botón Atrás las entradas agregadas con pushState
+   sin que la persona haya tocado la pantalla ("history manipulation intervention"); por eso una sola "trampa" repuesta
+   después de cada Atrás no basta (al segundo Atrás se cerraba la app). La app mantiene COLCHON entradas propias encima de
+   la base ({i: 0…n}) y las rellena en cada toque o tecla (con activación del usuario no se saltan), al cargar, al volver
+   de segundo plano (visibilitychange) y desde la bfcache (pageshow persisted). Cada Atrás baja una entrada: popstate →
+   se cierra lo abierto (modal, dibujo, procedimiento), se sale de la práctica con su ✕ o se va a la ruta padre; y se
+   intenta reponer lo consumido. Así hay margen para muchos Atrás seguidos sin tocar la pantalla.
+   Portada de Aprender: en el teléfono, «Toca otra vez para salir»: se baja hasta la base y un segundo Atrás en 2 s cierra
+   la app (en la base ya no hay entradas propias); en la laptop no hace nada. Hay UN solo listener de popstate (este).
+   Ninguna pantalla cambia location.hash ni usa location.replace: navegan con go() o con el evento 'ir'. */
+const COLCHON=12;
+let salida=null,ignorarPop=0;
 const urlDe=r=>r?'#'+r:location.pathname+location.search;
 const esTelefono=()=>matchMedia('(pointer:coarse)').matches||matchMedia('(display-mode: standalone)').matches||document.referrer.startsWith('android-app://');
-// Pone la URL de la ruta en la entrada trampa: si estamos en la base (después de un Atrás), la trampa se vuelve a crear
-function marcar(ruta){try{if(sinTrampa){history.pushState({trampa:1},'',urlDe(ruta));sinTrampa=false}else history.replaceState({trampa:1},'',urlDe(ruta))}catch(e){}}
+const posicion=()=>Number.isInteger(history.state?.i)?history.state.i:0;
+// La entrada actual muestra la ruta actual (sin agregar entradas)
+function marcar(ruta){try{history.replaceState({i:posicion()},'',urlDe(ruta))}catch(e){}}
+// Rellena el colchón hasta COLCHON entradas por encima de la base (lo agregado con un toque no se lo salta Chrome)
+function rellenar(){
+  if(salida)return;   // esperando el segundo Atrás para salir: no se rellena
+  try{let p=posicion();const u=urlDe(cur?.ruta||'');while(p<COLCHON){p++;history.pushState({i:p},'',u)}}catch(e){}
+}
 // Lo que esté abierto encima de la pantalla se cierra primero (modal, dibujo, procedimiento, hoja de feedback)
 function cerrarCapa(){
   const modal=[...document.querySelectorAll('.modal-fondo')].pop();
@@ -107,32 +118,43 @@ function cerrarCapa(){
   const hoja=document.getElementById('hoja');if(hoja&&!cur.v.inmersiva){cerrarHoja();return true}
   return false;
 }
-// Un nivel hacia atrás (lo usan el botón Atrás del sistema y el ← de las migas). Devuelve 'salir' en la portada del teléfono.
-function atras(){
+// Un nivel hacia atrás (lo usan el botón Atrás del sistema y el ← de las migas)
+function atras({sistema=false}={}){
   if(cerrarCapa()){marcar(cur.ruta);return}
   // lección o práctica en curso: su ✕ pregunta "¿Salir de la lección?" (si no respondió nada, sale directo)
   const salir=cur.v.inmersiva&&!document.querySelector('.fin-sesion')&&document.querySelector('#vista [data-salir]');
   if(salir){marcar(cur.ruta);salir.click();return}
   const padre=padreDe(cur);
-  if(padre!==null){marcar(padre);go(padre);return}
+  if(padre!==null){go(padre);return}
   // portada de Aprender
-  if(!esTelefono()){marcar('');return}
+  marcar('');
+  if(!sistema||!esTelefono())return;
   aviso('Toca otra vez para salir',2000);
-  // se queda en la base: un segundo Atrás en 2 s sale de la app; si no, se vuelve a poner la trampa
-  clearTimeout(salida);salida=setTimeout(()=>{if(sinTrampa)marcar(cur.ruta)},2000);
-  return 'salir';
+  // baja hasta la base (sin entradas propias abajo): el siguiente Atrás cierra la app; si pasan 2 s, se rellena otra vez
+  const p=posicion();
+  if(p>0){ignorarPop++;try{history.go(-p)}catch(e){ignorarPop--}}
+  clearTimeout(salida);salida=setTimeout(()=>{salida=null;marcar(cur.ruta);rellenar()},2000);
 }
 window.addEventListener('popstate',e=>{
-  if(!e.state)return;                 // un <a href="#…"> agrega entradas sin estado: lo maneja hashchange
-  sinTrampa=!!e.state.base;           // bajamos a la base: hay que volver a poner la trampa
-  // la base guarda la URL con la que se abrió la app: se actualiza a la pantalla actual para que su hashchange no navegue
-  if(sinTrampa)try{history.replaceState({base:1},'',urlDe(cur.ruta))}catch(x){}
-  atras();
+  if(!e.state)return;                       // un <a href="#…"> agrega entradas sin estado: lo maneja hashchange
+  marcar(cur.ruta);                         // la entrada a la que se bajó muestra la pantalla actual (su hashchange no navega)
+  if(ignorarPop){ignorarPop--;return}       // la bajada a la base que hizo la propia app
+  if(salida){clearTimeout(salida);salida=null}
+  atras({sistema:true});
+  if(!salida)rellenar();                    // reponer lo consumido (si Chrome se lo salta, aún quedan entradas abajo)
 });
+// Rellenar con activación del usuario, al volver de segundo plano y al restaurarse desde la bfcache
+// (un toque mientras se espera el segundo Atrás de salida cancela la salida: la persona sigue usando la app)
+const cancelarSalida=()=>{if(salida){clearTimeout(salida);salida=null}};
+for(const ev of ['pointerdown','keydown'])document.addEventListener(ev,()=>{cancelarSalida();if(posicion()<COLCHON)rellenar()},{capture:true,passive:true});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')rellenar()});
+addEventListener('pageshow',e=>{if(e.persisted)rellenar()});
+// Navegación pedida por otros módulos sin tocar location.hash: document.dispatchEvent(new CustomEvent('ir',{detail:'ruta'}))
+document.addEventListener('ir',e=>go(String(e.detail||'')));
 
 function go(ruta){
   const nueva=resolver(ruta);
-  clearTimeout(salida);
+  if(salida){clearTimeout(salida);salida=null}
   cur?.v.alSalir?.();cerrarHoja();cerrarProcedimiento();
   cur=nueva;
   if(cur.seccion)visitar(cur.m.id,cur.seccion);
@@ -143,7 +165,8 @@ function go(ruta){
   pintar();pintarBarra();
   if(cur.ruta!==anterior){const v=$('#vista');v.classList.remove('entrando');void v.offsetWidth;v.classList.add('entrando');anterior=cur.ruta}
   document.title=cur.ruta?`${cur.v.titulo} · ${APP_NOMBRE}`:APP_NOMBRE;
-  marcar(cur.ruta);   // solo reemplaza la entrada actual (o repone la trampa): navegar nunca agrega entradas
+  marcar(cur.ruta);   // solo reemplaza la entrada actual: navegar nunca agrega entradas
+  rellenar();          // si se navegó justo después de un Atrás en la portada, el colchón vuelve
   window.scrollTo(0,0);
 }
 
@@ -179,9 +202,16 @@ setInterval(()=>{if(document.visibilityState==='visible'&&Date.now()-ultimaAccio
 // El service worker nuevo toma el control solo (autoUpdate); en vez de recargar de golpe, aparece "Hay una versión nueva · Actualizar".
 registerSW({
   immediate:true,
-  onNeedReload(){avisarVersionNueva()},
+  // Versión nueva ya activa: si la app está en segundo plano o en Aprender, se recarga sola (recarga controlada); si estás en
+  // una lección u otra pantalla, aparece «Actualizar» para no cortarte, y se recarga sola la próxima vez que vuelvas a la app.
+  onNeedReload(){
+    if(document.visibilityState==='hidden'||(cur?.tipo==='portada'&&!document.querySelector('.modal-fondo'))){location.reload();return}
+    avisarVersionNueva();
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!cur?.v.inmersiva)location.reload()});
+  },
   onRegisteredSW(url,reg){
     if(!reg)return;
+    guardarRegistroSW(reg);
     const buscar=()=>{if(navigator.onLine)reg.update().catch(()=>{})};
     setInterval(buscar,60*60*1000);
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')buscar()});
@@ -195,10 +225,12 @@ window.addEventListener('hashchange',()=>{if(recibirEnlaceMagico(location.hash))
 await Promise.race([cargarMias(),new Promise(r=>setTimeout(r,1500))]);
 window.addEventListener('mias',()=>{pintarNav();if(!cur?.v.inmersiva&&['portada','mias'].includes(cur?.tipo))pintar()});
 // Vuelta del enlace mágico del administrador (#access_token=…): se guarda la sesión y se abre el modo administrador
-if(recibirEnlaceMagico(location.hash))try{history.replaceState(null,'',location.pathname+location.search+'#propuestas/admin')}catch(e){location.hash='propuestas/admin'}
-// Historial: una entrada base y encima la trampa (ver atras()); también al entrar por un enlace directo o al recargar
-try{history.replaceState({base:1},'',location.href);history.pushState({trampa:1},'',location.href)}catch(e){}
+if(recibirEnlaceMagico(location.hash))try{history.replaceState({i:0},'',location.pathname+location.search+'#propuestas/admin')}catch(e){}
+// Historial: la entrada base (i: 0) y el colchón encima (ver atras()); también al entrar por un enlace directo o al recargar.
+// Al recargar, el navegador conserva las entradas: se sigue desde la posición en que estaba.
+try{if(!Number.isInteger(history.state?.i))history.replaceState({i:0},'',location.href)}catch(e){}
 go(rutaDelHash());
+rellenar();
 // Pantalla de bienvenida (splash) fuera en cuanto se pinta la app
 {const s=document.getElementById('splash');if(s){s.classList.add('fuera');setTimeout(()=>s.remove(),300)}}
 vigilarConexion();

@@ -64,7 +64,7 @@ ${ms.length?`<div class="lista-nav">${ms.map(tarjeta).join('')}</div>`:vacio({ic
 function activarImportarMateria(){
   const inp=document.getElementById('mp-importar');
   inp?.addEventListener('change',async()=>{const f=inp.files[0];inp.value='';if(!f)return;
-    try{const r=await importarMateria(await f.text());aviso(`📥 Importada: ${r.materia.nombre}`);location.hash='#mias/'+r.materia.id}catch(e){aviso(e.message,4000)}});
+    try{const r=await importarMateria(await f.text());aviso(`📥 Importada: ${r.materia.nombre}`);document.dispatchEvent(new CustomEvent('ir',{detail:'mias/'+r.materia.id}))}catch(e){aviso(e.message,4000)}});
 }
 
 /* ---------- asistente de 4 pasos ---------- */

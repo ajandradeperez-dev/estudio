@@ -179,7 +179,7 @@ ${retosDe(m.id,t.id).length?boton({texto:`🎯 Retos y escenarios (${retosDe(m.i
       if(t2.dataset.cerrado!==undefined){await confirmar({titulo:'🔒 Todavía no',texto:`${t2.dataset.cerrado}.`,si:'Entendido',no:'Cerrar'});return true}
       if(t2.dataset.bloqueado===undefined)return;
       const hs=t.lecciones,i=hs.findIndex(h=>h.id===t2.dataset.bloqueado),antes=hs[i-1];
-      if(await confirmar({titulo:'🔒 Todavía no',texto:`Practica antes «${antes.titulo}»: cada habilidad se apoya en la anterior.`,si:`Ir a ${antes.titulo}`,no:'Cerrar'}))location.hash=rutaLeccion(m,antes);
+      if(await confirmar({titulo:'🔒 Todavía no',texto:`Practica antes «${antes.titulo}»: cada habilidad se apoya en la anterior.`,si:`Ir a ${antes.titulo}`,no:'Cerrar'}))document.dispatchEvent(new CustomEvent('ir',{detail:rutaLeccion(m,antes)}));
       return true;
     }
   };

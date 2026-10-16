@@ -999,125 +999,78 @@
    }
   },
   "excel": {
-   "estado": "parcial",
+   "estado": "completo",
    "cobertura": {
-    "completas": 0,
+    "completas": 29,
     "total": 29,
-    "pct": 0
+    "pct": 100
    },
    "temas": {
     "interfaz": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 4,
      "total": 4,
-     "faltan": [
-      "1 habilidades por crear",
-      "3 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "formulas": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 3,
      "total": 3,
-     "faltan": [
-      "1 habilidades por crear",
-      "2 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "resumen": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 3,
      "total": 3,
-     "faltan": [
-      "3 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "logica": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 4,
      "total": 4,
-     "faltan": [
-      "4 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "condicionales": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 2,
      "total": 2,
-     "faltan": [
-      "2 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "busqueda": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 3,
      "total": 3,
-     "faltan": [
-      "3 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "texto-fechas": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 2,
      "total": 2,
-     "faltan": [
-      "2 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "organizar-datos": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 4,
      "total": 4,
-     "faltan": [
-      "1 habilidades por crear",
-      "3 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "dinamicas": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 1,
      "total": 1,
-     "faltan": [
-      "1 habilidades sin terminar",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "graficos": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 2,
      "total": 2,
-     "faltan": [
-      "1 habilidades por crear",
-      "1 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "atajos-teclado": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 1,
      "total": 1,
-     "faltan": [
-      "1 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "escenarios": {
      "estado": "herramientas",
@@ -1127,197 +1080,121 @@
     }
    },
    "habilidades": {
+    "hojas-libros": {
+     "estado": "completa",
+     "faltan": []
+    },
     "celdas": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "tipos-datos": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "formato-numeros": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "operadores": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "referencias": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "rangos-nombre": {
+     "estado": "completa",
+     "faltan": []
     },
     "suma-promedio": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "contar-max-min": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "redondear": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "si": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "y-o": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "si-anidado": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "si-error": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "contar-si": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "sumar-si": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "buscarv": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "buscarx": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "indice-coincidir": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "texto": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "fechas": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "tablas": {
+     "estado": "completa",
+     "faltan": []
     },
     "ordenar-filtrar": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "formato-condicional": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "validacion": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "tabla-dinamica": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "graficos": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "formato-graficos": {
+     "estado": "completa",
+     "faltan": []
     },
     "atajos": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     }
    }
   },

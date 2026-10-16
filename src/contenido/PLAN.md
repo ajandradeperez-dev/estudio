@@ -390,113 +390,113 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 
 📚 Para profundizar: Los simuladores son didácticos: la sintaxis real está en la documentación de cada fabricante
 
-## 🟡 💼 Curso · 📊 Excel `excel`
+## ✅ 💼 Curso · 📊 Excel `excel`
 
-**Cobertura del temario: 0 %** (0 de 29 habilidades ✅)
+**Cobertura del temario: 100 %** (29 de 29 habilidades ✅)
 
-### 🟡 Interfaz, hojas y datos `interfaz`
+### ✅ Interfaz, hojas y datos `interfaz`
 
-0/4 habilidades ✅ · falta: 1 habilidades por crear · 3 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+4/4 habilidades ✅
 
-- [ ] Administrar hojas y libros — MO-200 1.x – Administrar hojas y libros (importar, navegar, formatear, imprimir)
-- [x] 🟡 Celdas y rangos `celdas` — MO-200 2.1 – Manipular datos en celdas y rangos · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Tipos de datos `tipos-datos` — MO-200 2.1 – Datos en celdas · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Formato de números y fechas `formato-numeros` — MO-200 2.2 – Dar formato a celdas y rangos · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
+- [x] ✅ Administrar hojas y libros `hojas-libros` — MO-200 1.x – Administrar hojas y libros (importar, navegar, formatear, imprimir)
+- [x] ✅ Celdas y rangos `celdas` — MO-200 2.1 – Manipular datos en celdas y rangos
+- [x] ✅ Tipos de datos `tipos-datos` — MO-200 2.1 – Datos en celdas
+- [x] ✅ Formato de números y fechas `formato-numeros` — MO-200 2.2 – Dar formato a celdas y rangos
 
 📚 Para profundizar: Microsoft — Objetivos del examen MO-200 (Excel Associate) · Soporte de Microsoft — «Formatos de número disponibles en Excel»
 
-### 🟡 Fórmulas y referencias `formulas`
+### ✅ Fórmulas y referencias `formulas`
 
-0/3 habilidades ✅ · falta: 1 habilidades por crear · 2 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+3/3 habilidades ✅
 
-- [x] 🟡 Fórmulas y operadores `operadores` — MO-200 4.1 – Insertar referencias y fórmulas · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
-- [x] 🟡 Referencias relativas, absolutas y mixtas `referencias` — MO-200 4.1 – Referencias relativas, absolutas y mixtas · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
-- [ ] Rangos con nombre — MO-200 2.3 – Definir y referenciar rangos con nombre
+- [x] ✅ Fórmulas y operadores `operadores` — MO-200 4.1 – Insertar referencias y fórmulas
+- [x] ✅ Referencias relativas, absolutas y mixtas `referencias` — MO-200 4.1 – Referencias relativas, absolutas y mixtas
+- [x] ✅ Rangos con nombre `rangos-nombre` — MO-200 2.3 – Definir y referenciar rangos con nombre
 
 📚 Para profundizar: Soporte de Microsoft — «Información general sobre fórmulas» y «Cambiar entre referencias relativas, absolutas y mixtas»
 
-### 🟡 Funciones de resumen `resumen`
+### ✅ Funciones de resumen `resumen`
 
-0/3 habilidades ✅ · falta: 3 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+3/3 habilidades ✅
 
-- [x] 🟡 SUMA y PROMEDIO `suma-promedio` — MO-200 4.2 – Calcular y transformar datos (SUMA, PROMEDIO) · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
-- [x] 🟡 CONTAR, CONTARA, MAX y MIN `contar-max-min` — MO-200 4.2 – CONTAR, CONTARA, MAX, MIN · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
-- [x] 🟡 REDONDEAR `redondear` — MO-200 4.2 – Calcular datos · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
+- [x] ✅ SUMA y PROMEDIO `suma-promedio` — MO-200 4.2 – Calcular y transformar datos (SUMA, PROMEDIO)
+- [x] ✅ CONTAR, CONTARA, MAX y MIN `contar-max-min` — MO-200 4.2 – CONTAR, CONTARA, MAX, MIN
+- [x] ✅ REDONDEAR `redondear` — MO-200 4.2 – Calcular datos
 
 📚 Para profundizar: Soporte de Microsoft — «Función SUMA», «Función PROMEDIO», «Función CONTAR»
 
-### 🟡 Lógica `logica`
+### ✅ Lógica `logica`
 
-0/4 habilidades ✅ · falta: 4 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+4/4 habilidades ✅
 
-- [x] 🟡 Función SI `si` — MO-200 4.2 – Realizar operaciones condicionales con SI · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
-- [x] 🟡 Y, O `y-o` — MO-200 4.2 – Condiciones múltiples · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
-- [x] 🟡 SI anidado `si-anidado` — MO-200 4.2 – Condiciones por tramos · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
-- [x] 🟡 SI.ERROR `si-error` — MO-200 4.2 – Manejo de errores · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
+- [x] ✅ Función SI `si` — MO-200 4.2 – Realizar operaciones condicionales con SI
+- [x] ✅ Y, O `y-o` — MO-200 4.2 – Condiciones múltiples
+- [x] ✅ SI anidado `si-anidado` — MO-200 4.2 – Condiciones por tramos
+- [x] ✅ SI.ERROR `si-error` — MO-200 4.2 – Manejo de errores
 
 📚 Para profundizar: Soporte de Microsoft — «Función SI», «Funciones SI anidadas» y «Función SI.ERROR»
 
-### 🟡 Funciones condicionales `condicionales`
+### ✅ Funciones condicionales `condicionales`
 
-0/2 habilidades ✅ · falta: 2 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+2/2 habilidades ✅
 
-- [x] 🟡 CONTAR.SI y CONTAR.SI.CONJUNTO `contar-si` — MO-200 4.2 – CONTAR.SI · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
-- [x] 🟡 SUMAR.SI y PROMEDIO.SI `sumar-si` — MO-200 4.2 – SUMAR.SI y PROMEDIO.SI · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
+- [x] ✅ CONTAR.SI y CONTAR.SI.CONJUNTO `contar-si` — MO-200 4.2 – CONTAR.SI
+- [x] ✅ SUMAR.SI y PROMEDIO.SI `sumar-si` — MO-200 4.2 – SUMAR.SI y PROMEDIO.SI
 
 📚 Para profundizar: Soporte de Microsoft — «Función CONTAR.SI», «Función SUMAR.SI.CONJUNTO»
 
-### 🟡 Búsqueda `busqueda`
+### ✅ Búsqueda `busqueda`
 
-0/3 habilidades ✅ · falta: 3 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+3/3 habilidades ✅
 
-- [x] 🟡 BUSCARV `buscarv` — Soporte Microsoft – BUSCARV (más allá de MO-200) · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
-- [x] 🟡 BUSCARX `buscarx` — Soporte Microsoft – BUSCARX (Excel 365/2021) · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
-- [x] 🟡 INDICE + COINCIDIR `indice-coincidir` — Soporte Microsoft – INDICE y COINCIDIR · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
+- [x] ✅ BUSCARV `buscarv` — Soporte Microsoft – BUSCARV (más allá de MO-200)
+- [x] ✅ BUSCARX `buscarx` — Soporte Microsoft – BUSCARX (Excel 365/2021)
+- [x] ✅ INDICE + COINCIDIR `indice-coincidir` — Soporte Microsoft – INDICE y COINCIDIR
 
 📚 Para profundizar: Soporte de Microsoft — «Función BUSCARV», «Función BUSCARX», «Función INDICE» y «Función COINCIDIR»
 
-### 🟡 Texto y fechas `texto-fechas`
+### ✅ Texto y fechas `texto-fechas`
 
-0/2 habilidades ✅ · falta: 2 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+2/2 habilidades ✅
 
-- [x] 🟡 Funciones de texto `texto` — MO-200 4.3 – Dar formato y modificar texto · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
-- [x] 🟡 Funciones de fecha `fechas` — Soporte Microsoft – Funciones de fecha · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
+- [x] ✅ Funciones de texto `texto` — MO-200 4.3 – Dar formato y modificar texto
+- [x] ✅ Funciones de fecha `fechas` — Soporte Microsoft – Funciones de fecha
 
 📚 Para profundizar: Soporte de Microsoft — «Funciones de texto» y «Funciones de fecha y hora»
 
-### 🟡 Tablas, ordenar, filtrar y formato `organizar-datos`
+### ✅ Tablas, ordenar, filtrar y formato `organizar-datos`
 
-0/4 habilidades ✅ · falta: 1 habilidades por crear · 3 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+4/4 habilidades ✅
 
-- [ ] Tablas: crear, estilos y fila de totales — MO-200 3.1–3.2 – Crear y modificar tablas
-- [x] 🟡 Ordenar y filtrar `ordenar-filtrar` — MO-200 3.3 – Filtrar y ordenar datos de tablas · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Formato condicional `formato-condicional` — MO-200 2.4 – Formato condicional · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
-- [x] 🟡 Validación de datos `validacion` — Soporte Microsoft – Validación de datos · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
+- [x] ✅ Tablas: crear, estilos y fila de totales `tablas` — MO-200 3.1–3.2 – Crear y modificar tablas
+- [x] ✅ Ordenar y filtrar `ordenar-filtrar` — MO-200 3.3 – Filtrar y ordenar datos de tablas
+- [x] ✅ Formato condicional `formato-condicional` — MO-200 2.4 – Formato condicional
+- [x] ✅ Validación de datos `validacion` — Soporte Microsoft – Validación de datos
 
 📚 Para profundizar: Soporte de Microsoft — «Crear y dar formato a tablas», «Usar el formato condicional» y «Aplicar la validación de datos»
 
-### 🟡 Tablas dinámicas `dinamicas`
+### ✅ Tablas dinámicas `dinamicas`
 
-0/1 habilidades ✅ · falta: 1 habilidades sin terminar · simulacro de 10–15 preguntas
+1/1 habilidades ✅
 
-- [x] 🟡 Tablas dinámicas `tabla-dinamica` — Soporte Microsoft – Tablas dinámicas · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
+- [x] ✅ Tablas dinámicas `tabla-dinamica` — Soporte Microsoft – Tablas dinámicas
 
 📚 Para profundizar: Soporte de Microsoft — «Crear una tabla dinámica para analizar datos»
 
-### 🟡 Gráficos `graficos`
+### ✅ Gráficos `graficos`
 
-0/2 habilidades ✅ · falta: 1 habilidades por crear · 1 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+2/2 habilidades ✅
 
-- [x] 🟡 Gráficos: cuál elegir `graficos` — MO-200 5.1 – Crear gráficos · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Modificar y dar formato a gráficos — MO-200 5.2–5.3 – Modificar y dar formato a gráficos
+- [x] ✅ Gráficos: cuál elegir `graficos` — MO-200 5.1 – Crear gráficos
+- [x] ✅ Modificar y dar formato a gráficos `formato-graficos` — MO-200 5.2–5.3 – Modificar y dar formato a gráficos
 
 📚 Para profundizar: Soporte de Microsoft — «Tipos de gráficos disponibles en Office»
 
-### 🟡 Atajos de teclado `atajos-teclado`
+### ✅ Atajos de teclado `atajos-teclado`
 
-0/1 habilidades ✅ · falta: 1 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+1/1 habilidades ✅
 
-- [x] 🟡 Atajos de teclado `atajos` — Soporte Microsoft – Métodos abreviados de teclado · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
+- [x] ✅ Atajos de teclado `atajos` — Soporte Microsoft – Métodos abreviados de teclado
 
 📚 Para profundizar: Soporte de Microsoft — «Métodos abreviados de teclado de Excel»
 

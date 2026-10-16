@@ -7,7 +7,7 @@
 export default [
   {id:'interfaz',titulo:'Interfaz, hojas y datos',icono:'🧭',descripcion:'Hojas y libros, celdas y rangos, tipos de datos y formato de números y fechas.',
    referencias:['Microsoft — Objetivos del examen MO-200 (Excel Associate)','Soporte de Microsoft — «Formatos de número disponibles en Excel»'],nodos:[
-    {titulo:'Administrar hojas y libros',proximo:true,ref:'MO-200 1.x – Administrar hojas y libros (importar, navegar, formatear, imprimir)'},
+    {id:'hojas-libros',titulo:'Administrar hojas y libros',gen:'xl/hojas-libros',ref:'MO-200 1.x – Administrar hojas y libros (importar, navegar, formatear, imprimir)',obj:'referenciar otras hojas, fijar encabezados, elegir el formato del archivo y preparar la impresión.'},
     {id:'celdas',titulo:'Celdas y rangos',gen:'xl/celdas',herramienta:'hoja',ref:'MO-200 2.1 – Manipular datos en celdas y rangos',obj:'nombrar celdas, escribir rangos y contar sus celdas.'},
     {id:'tipos-datos',titulo:'Tipos de datos',gen:'xl/tipos-datos',ref:'MO-200 2.1 – Datos en celdas',obj:'distinguir números, textos, fechas, lógicos y fórmulas, y prever cómo los trata Excel.'},
     {id:'formato-numeros',titulo:'Formato de números y fechas',gen:'xl/formato',ref:'MO-200 2.2 – Dar formato a celdas y rangos',obj:'predecir cómo se ve un valor con formato de moneda, porcentaje, decimales o fecha.'}
@@ -16,7 +16,7 @@ export default [
    referencias:['Soporte de Microsoft — «Información general sobre fórmulas» y «Cambiar entre referencias relativas, absolutas y mixtas»'],nodos:[
     {id:'operadores',titulo:'Fórmulas y operadores',gen:'xl/operadores',herramienta:'hoja',ref:'MO-200 4.1 – Insertar referencias y fórmulas',obj:'escribir fórmulas con operadores respetando el orden de las operaciones.'},
     {id:'referencias',titulo:'Referencias relativas, absolutas y mixtas',gen:'xl/referencias',herramienta:'hoja',ref:'MO-200 4.1 – Referencias relativas, absolutas y mixtas',obj:'usar $ para que una fórmula funcione al copiarla.'},
-    {titulo:'Rangos con nombre',proximo:true,ref:'MO-200 2.3 – Definir y referenciar rangos con nombre'}
+    {id:'rangos-nombre',titulo:'Rangos con nombre',gen:'xl/nombres',ref:'MO-200 2.3 – Definir y referenciar rangos con nombre',obj:'crear y usar rangos con nombre para que las fórmulas se entiendan.'}
   ]},
   {id:'resumen',titulo:'Funciones de resumen',icono:'➕',descripcion:'SUMA, PROMEDIO, CONTAR, CONTARA, MAX, MIN y REDONDEAR.',
    referencias:['Soporte de Microsoft — «Función SUMA», «Función PROMEDIO», «Función CONTAR»'],nodos:[
@@ -49,7 +49,7 @@ export default [
   ]},
   {id:'organizar-datos',titulo:'Tablas, ordenar, filtrar y formato',icono:'🗂️',descripcion:'Tablas, ordenar y filtrar, formato condicional y validación de datos.',
    referencias:['Soporte de Microsoft — «Crear y dar formato a tablas», «Usar el formato condicional» y «Aplicar la validación de datos»'],nodos:[
-    {titulo:'Tablas: crear, estilos y fila de totales',proximo:true,ref:'MO-200 3.1–3.2 – Crear y modificar tablas'},
+    {id:'tablas',titulo:'Tablas: crear, estilos y fila de totales',gen:'xl/tablas',ref:'MO-200 3.1–3.2 – Crear y modificar tablas',obj:'convertir datos en tabla, usar la fila de totales y las referencias estructuradas.'},
     {id:'ordenar-filtrar',titulo:'Ordenar y filtrar',gen:'xl/ordenar-filtrar',herramienta:'organizar',ref:'MO-200 3.3 – Filtrar y ordenar datos de tablas',obj:'predecir el resultado de ordenar (incluso por varios niveles) y filtrar.'},
     {id:'formato-condicional',titulo:'Formato condicional',gen:'xl/formato-condicional',herramienta:'organizar',ref:'MO-200 2.4 – Formato condicional',obj:'escribir reglas de formato condicional, incluidas las de fórmula para filas completas.'},
     {id:'validacion',titulo:'Validación de datos',gen:'xl/validacion',herramienta:'organizar',ref:'Soporte Microsoft – Validación de datos',obj:'predecir qué valores acepta una regla de validación.'}
@@ -61,7 +61,7 @@ export default [
   {id:'graficos',titulo:'Gráficos',icono:'📈',descripcion:'Cuál elegir y por qué; crear, modificar y dar formato.',
    referencias:['Soporte de Microsoft — «Tipos de gráficos disponibles en Office»'],nodos:[
     {id:'graficos',titulo:'Gráficos: cuál elegir',gen:'xl/graficos',ref:'MO-200 5.1 – Crear gráficos',obj:'elegir el gráfico adecuado para cada pregunta y detectar gráficos engañosos.'},
-    {titulo:'Modificar y dar formato a gráficos',proximo:true,ref:'MO-200 5.2–5.3 – Modificar y dar formato a gráficos'}
+    {id:'formato-graficos',titulo:'Modificar y dar formato a gráficos',gen:'xl/formato-graficos',ref:'MO-200 5.2–5.3 – Modificar y dar formato a gráficos',obj:'ajustar título, ejes, etiquetas, series y eje secundario de un gráfico.'}
   ]},
   {id:'atajos-teclado',titulo:'Atajos de teclado',icono:'⌨️',descripcion:'Los atajos más útiles, como tarjetas de repaso.',
    referencias:['Soporte de Microsoft — «Métodos abreviados de teclado de Excel»'],nodos:[

@@ -8,6 +8,7 @@ import {crear,BANCOS} from './generadores/index.js';
 import {escenarioNegocio,escenarioCohete,escenarioPresa,escenarioCerro,escenarioFiesta} from './generadores/aplicaciones.js';
 import {escenarioFabrica} from './generadores/aplicaciones-lineal.js';
 import {escenarioApp} from './generadores/escenarios-mat.js';
+import {escenarioCotizacion,escenarioNomina,escenarioBoleta,escenarioRegiones,escenarioInventarioBusca,escenarioClientes,escenarioLibro,escenarioOrganizar,escenarioGraficoJunta,escenarioAtajos,escenarioAsistencia} from './generadores/excel-escenarios2.js';
 import {escenarioOficina,escenarioRedLenta,escenarioPyme,escenarioPlanIR} from './generadores/escenarios-ciber.js';
 import {escenarioPrimerDia,escenarioViaje,escenarioPhishing,escenarioPostmortem,escenarioEvaluacion} from './generadores/escenarios-en.js';
 import {escenarioReporteVentas,escenarioGastos,escenarioCalificaciones,escenarioInventario} from './generadores/excel-escenarios.js';
@@ -39,6 +40,9 @@ const EN_A2=['en/pasado-simple','en/presente-continuo','en/futuro','en/comparati
 const EN_B1=['en/presente-perfecto','en/pasado-continuo','en/condicionales','en/pasiva','en/modales','en/relativas','en/gerundio-infinitivo','en/phrasal-verbs','en/tecnologia','en/medio-ambiente','en/correos','en/historias','en/opinar','en/entrevista','en/lecturas-b1'];
 const EN_B2=['en/condicional-3','en/reported-speech','en/pasiva-avanzada','en/deduccion','en/wish','en/conectores','en/collocations','en/ti','en/presentaciones','en/debates','en/audios'];
 const EN_EXAMENES=['en/prueba-nivel','en/simulacro-a2','en/simulacro-b1','en/simulacro-b2'];
+const XL={interfaz:['xl/hojas-libros','xl/celdas','xl/tipos-datos','xl/formato'],formulas:['xl/operadores','xl/referencias','xl/nombres'],resumen:['xl/suma-promedio','xl/contar-max-min','xl/redondear'],
+  logica:['xl/si','xl/y-o','xl/si-anidado','xl/si-error'],condicionales:['xl/contar-si','xl/sumar-si'],busqueda:['xl/buscarv','xl/buscarx','xl/indice-coincidir'],'texto-fechas':['xl/texto','xl/fechas'],
+  'organizar-datos':['xl/tablas','xl/ordenar-filtrar','xl/formato-condicional','xl/validacion'],dinamicas:['xl/tabla-dinamica'],graficos:['xl/graficos','xl/formato-graficos'],'atajos-teclado':['xl/atajos']};
 const ALGEBRA=['alg/expresiones','alg/productos-notables','alg/factorizacion','alg/fracciones-algebraicas','alg/ecuacion-lineal','alg/cuadratica','alg/radicales-absoluto','alg/desigualdad','alg/desigualdad-no-lineal','alg/sistema-2x2','alg/sistema-3x3','alg/exponentes'];
 
 export const RETOS=[
@@ -116,6 +120,50 @@ export const RETOS=[
   {id:'xl-gastos',materia:'excel',tema:'escenarios',titulo:'Control de gastos personales',profundidad:'escenario',dificultad:3,desc:'Total, por categoría, alerta de presupuesto y % de renta: 4 fórmulas.',crear:escenarioGastos},
   {id:'xl-calificaciones',materia:'excel',tema:'escenarios',titulo:'Calificaciones de un grupo',profundidad:'escenario',dificultad:3,desc:'Promedios, estado, aprobados y mejor alumno: 4 fórmulas.',crear:escenarioCalificaciones},
   {id:'xl-inventario',materia:'excel',tema:'escenarios',titulo:'Inventario con alertas',profundidad:'escenario',dificultad:3,desc:'Alertas, cuánto pedir, cuántos pedir y existencias por categoría: 4 fórmulas.',crear:escenarioInventario},
+  {id:'xl-libro-reportes',materia:'excel',tema:'interfaz',titulo:'Arma el libro de reportes',profundidad:'escenario',dificultad:2,
+   desc:'Referencias entre hojas, paneles, impresión y formato del archivo: 4 pasos.',crear:escenarioLibro},
+  {id:'xl-cotizacion-iva',materia:'excel',tema:'formulas',titulo:'Cotización con IVA',profundidad:'escenario',dificultad:2,
+   desc:'Relativas, absoluta para la tasa y el total: 4 fórmulas.',crear:escenarioCotizacion},
+  {id:'xl-nomina',materia:'excel',tema:'resumen',titulo:'Resumen de nómina',profundidad:'escenario',dificultad:2,
+   desc:'SUMA, PROMEDIO redondeado, CONTARA y MAX: 4 fórmulas.',crear:escenarioNomina},
+  {id:'xl-boleta',materia:'excel',tema:'logica',titulo:'Boleta de calificaciones',profundidad:'escenario',dificultad:3,
+   desc:'PROMEDIO, SI, SI con Y y SI anidado: 4 fórmulas.',crear:escenarioBoleta},
+  {id:'xl-regiones',materia:'excel',tema:'condicionales',titulo:'Números de una región',profundidad:'escenario',dificultad:3,
+   desc:'CONTAR.SI, SUMAR.SI, CONTAR.SI.CONJUNTO y PROMEDIO.SI: 4 fórmulas.',crear:escenarioRegiones},
+  {id:'xl-consulta-inventario',materia:'excel',tema:'busqueda',titulo:'Hoja de consulta de inventario',profundidad:'escenario',dificultad:4,
+   desc:'BUSCARV, BUSCARX, INDICE + COINCIDIR y SI.ERROR: 4 fórmulas.',crear:escenarioInventarioBusca},
+  {id:'xl-clientes',materia:'excel',tema:'texto-fechas',titulo:'Limpia la base de clientes',profundidad:'escenario',dificultad:3,
+   desc:'Unir textos, IZQUIERDA, DERECHA y AÑO: 4 fórmulas.',crear:escenarioClientes},
+  {id:'xl-pedidos',materia:'excel',tema:'organizar-datos',titulo:'Deja lista la lista de pedidos',profundidad:'escenario',dificultad:3,
+   desc:'Tabla, orden por niveles, formato condicional y validación: 4 pasos.',crear:escenarioOrganizar},
+  {id:'xl-graficos-junta',materia:'excel',tema:'graficos',titulo:'Los gráficos de la junta',profundidad:'escenario',dificultad:2,
+   desc:'Líneas, columnas, eje secundario y un buen título: 4 pasos.',crear:escenarioGraficoJunta},
+  {id:'xl-reporte-rapido',materia:'excel',tema:'atajos-teclado',titulo:'Un reporte solo con el teclado',profundidad:'escenario',dificultad:1,
+   desc:'Copiar, autosuma, F4 y guardar: 4 pasos.',crear:escenarioAtajos},
+  {id:'xl-simulacro-interfaz',materia:'excel',tema:'interfaz',titulo:'Simulacro de Interfaz, hojas y datos',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(XL['interfaz'])},
+  {id:'xl-simulacro-formulas',materia:'excel',tema:'formulas',titulo:'Simulacro de Fórmulas y referencias',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(XL['formulas'])},
+  {id:'xl-simulacro-resumen',materia:'excel',tema:'resumen',titulo:'Simulacro de Funciones de resumen',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(XL['resumen'])},
+  {id:'xl-simulacro-logica',materia:'excel',tema:'logica',titulo:'Simulacro de Lógica',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(XL['logica'])},
+  {id:'xl-simulacro-condicionales',materia:'excel',tema:'condicionales',titulo:'Simulacro de Funciones condicionales',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(XL['condicionales'])},
+  {id:'xl-simulacro-busqueda',materia:'excel',tema:'busqueda',titulo:'Simulacro de Búsqueda',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(XL['busqueda'])},
+  {id:'xl-simulacro-texto-fechas',materia:'excel',tema:'texto-fechas',titulo:'Simulacro de Texto y fechas',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(XL['texto-fechas'])},
+  {id:'xl-simulacro-organizar-datos',materia:'excel',tema:'organizar-datos',titulo:'Simulacro de Tablas, ordenar, filtrar y formato',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(XL['organizar-datos'])},
+  {id:'xl-simulacro-dinamicas',materia:'excel',tema:'dinamicas',titulo:'Simulacro de Tablas dinámicas',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(XL['dinamicas'])},
+  {id:'xl-simulacro-graficos',materia:'excel',tema:'graficos',titulo:'Simulacro de Gráficos',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(XL['graficos'])},
+  {id:'xl-simulacro-atajos-teclado',materia:'excel',tema:'atajos-teclado',titulo:'Simulacro de Atajos de teclado',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(XL['atajos-teclado'])},
+  {id:'xl-asistencia',materia:'excel',tema:'escenarios',titulo:'Control de asistencia',profundidad:'escenario',dificultad:3,
+   desc:'Porcentaje, SI, CONTAR.SI y PROMEDIO sobre la asistencia del mes: 4 fórmulas.',crear:escenarioAsistencia},
   {id:'xl-simulacro',materia:'excel',tema:'escenarios',titulo:'Simulacro de Excel',profundidad:'escenario',dificultad:3,simulacro:true,desc:'12 fórmulas mezcladas de todo el curso.',crear:simulacro(EXCEL)},
   // ---------- Matemáticas · Aritmética y prealgebra ----------
   {id:'mat-compras',materia:'matematicas',tema:'prealgebra',titulo:'De compras: ofertas, recetas y cuentas',profundidad:'aplicacion',dificultad:2,

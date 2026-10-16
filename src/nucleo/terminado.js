@@ -6,7 +6,7 @@
      4 un ejemplo con huecos (sale de los mismos pasos)
      5 generador de 5 niveles con ≥ 3 plantillas distintas por nivel
      6 ≥ 3 errores típicos con feedback específico
-     7 ≥ 2 problemas de aplicación con contexto real (retos de aplicación o escenario que usan la habilidad)
+     7 ≥ 2 problemas de aplicación con contexto real (plantillas de aplicación del generador o retos que lo usan)
      8 explicación alternativa para «🤔 No entendí»
      9 tarjetas de repaso de los conceptos clave (tarjetas del generador, ≥ 3) que entran al repaso espaciado
     10 profundidades: básico y procedimiento en el generador, y aplicación/escenario en los retos
@@ -28,12 +28,12 @@ export function muestraGenerador(id){
   const g=GENERADORES[id];if(!g)return null;
   const niveles=[];
   for(let n=1;n<=5;n++){
-    const plantillas=new Set(),prof=new Set(),errores=new Set();let conPasos=0;
+    const plantillas=new Set(),prof=new Set(),errores=new Set(),apl=new Set();let conPasos=0;
     for(let i=0;i<MUESTRAS;i++){let p;try{p=crear(id,n,{semilla:i*7919+n*104729})}catch(e){continue}if(!p)continue;
-      if(p.plantilla)plantillas.add(p.plantilla);prof.add(p.profundidad);
+      if(p.plantilla)plantillas.add(p.plantilla);prof.add(p.profundidad);if(['aplicacion','escenario'].includes(p.profundidad))apl.add(p.plantilla||p.enunciado.slice(0,40));
       for(const e of p.errores||[])if(e.por)errores.add(e.por);
       if((p.pasos||[]).length>=2&&p.pasos.every(x=>typeof x==='string'||(x.que&&x.como&&x.porque)))conPasos++}
-    niveles.push({plantillas:plantillas.size,prof:[...prof],errores:[...errores],conPasos});
+    niveles.push({plantillas:plantillas.size,prof:[...prof],errores:[...errores],conPasos,apl:[...apl]});
   }
   return {g,niveles};
 }
@@ -58,13 +58,14 @@ export function revisarHabilidad(h,retosGen={}){
     hueco:!!(nv.length&&nv.some(x=>x.conPasos)),
     plantillas:nv.length===5&&nv.every(x=>x.plantillas>=3),
     errores:new Set(nv.flatMap(x=>x.errores)).size>=3,
-    aplicaciones:(retosGen[h.gen]?.size||0)>=2,
+    // problemas con contexto real: plantillas de aplicación del propio generador + retos que lo usan
+    aplicaciones:new Set(nv.flatMap(x=>x.apl)).size+(retosGen[h.gen]?.size||0)>=2,
     alternativa:!!(g?.alternativa||h.alternativa),
     tarjetas:(g?.tarjetas||h.tarjetas||[]).length>=3,
     profundidad:false
   };
   const prof=new Set(nv.flatMap(x=>x.prof));
-  ok.profundidad=prof.has('basico')&&[...prof].some(p=>p&&p!=='basico')&&ok.aplicaciones;
+  ok.profundidad=prof.has('basico')&&prof.has('procedimiento')&&ok.aplicaciones;
   const faltan=PUNTOS.filter(([k])=>!ok[k]).map(([,t])=>t);
   return {completa:!faltan.length,ok,faltan,retos:[...(retosGen[h.gen]||[])]};
 }

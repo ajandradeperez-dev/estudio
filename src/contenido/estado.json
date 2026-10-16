@@ -2,521 +2,408 @@
  "generado": "2026-10-16",
  "materias": {
   "matematicas": {
-   "estado": "parcial",
+   "estado": "completo",
    "cobertura": {
-    "completas": 0,
+    "completas": 88,
     "total": 88,
-    "pct": 0
+    "pct": 100
    },
    "temas": {
     "prealgebra": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 7,
      "total": 7,
-     "faltan": [
-      "2 habilidades por crear",
-      "5 habilidades sin terminar"
-     ]
+     "faltan": []
     },
     "algebra-basica": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 12,
      "total": 12,
-     "faltan": [
-      "2 habilidades por crear",
-      "10 habilidades sin terminar"
-     ]
+     "faltan": []
     },
     "precalculo": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 8,
      "total": 8,
-     "faltan": [
-      "6 habilidades por crear",
-      "2 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "trigonometria": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 8,
      "total": 8,
-     "faltan": [
-      "4 habilidades por crear",
-      "4 habilidades sin terminar"
-     ]
+     "faltan": []
     },
     "algebra-lineal": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 20,
      "total": 20,
-     "faltan": [
-      "6 habilidades por crear",
-      "14 habilidades sin terminar"
-     ]
+     "faltan": []
     },
     "calculo-diferencial": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 18,
      "total": 18,
-     "faltan": [
-      "5 habilidades por crear",
-      "13 habilidades sin terminar"
-     ]
+     "faltan": []
     },
     "calculo-integral": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 15,
      "total": 15,
-     "faltan": [
-      "6 habilidades por crear",
-      "9 habilidades sin terminar"
-     ]
+     "faltan": []
     }
    },
    "habilidades": {
     "fracciones": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "decimales": {
+     "estado": "completa",
+     "faltan": []
     },
     "porcentajes": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "razones-proporciones": {
+     "estado": "completa",
+     "faltan": []
     },
     "potencias-raices": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "orden-operaciones": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "notacion-cientifica": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "expresiones": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "productos-notables": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "factorizacion": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "fracciones-algebraicas": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "ecuaciones-lineales": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "ecuaciones-cuadraticas": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "radicales-valor-absoluto": {
+     "estado": "completa",
+     "faltan": []
     },
     "desigualdades": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "desigualdades-no-lineales": {
+     "estado": "completa",
+     "faltan": []
     },
     "sistemas-2x2": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "sistemas-3x3": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "exponentes": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "funciones": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "transformaciones": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "composicion-inversa": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "funciones-polinomiales": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "funciones-racionales": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "funciones-exponenciales": {
+     "estado": "completa",
+     "faltan": []
     },
     "logaritmos": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "modelado-funciones": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "radianes": {
+     "estado": "completa",
+     "faltan": []
     },
     "razones-trigonometricas": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "circulo-unitario": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "graficas-trigonometricas": {
+     "estado": "completa",
+     "faltan": []
     },
     "identidades-trigonometricas": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "suma-angulo-doble": {
+     "estado": "completa",
+     "faltan": []
     },
     "ecuaciones-trigonometricas": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "leyes-senos-cosenos": {
+     "estado": "completa",
+     "faltan": []
     },
     "gauss": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "gauss-jordan": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "matrices": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "inversa": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "determinantes": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "vectores": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "operaciones-producto-punto": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "producto-punto": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "angulo-vectores": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "producto-cruz": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "rectas-planos": {
+     "estado": "completa",
+     "faltan": []
     },
     "espacios-vectoriales": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "independencia-lineal": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "base-dimension": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "rango": {
+     "estado": "completa",
+     "faltan": []
     },
     "transformaciones-lineales": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "nucleo-imagen": {
+     "estado": "completa",
+     "faltan": []
     },
     "valores-propios": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "diagonalizacion": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "gram-schmidt": {
+     "estado": "completa",
+     "faltan": []
     },
     "limites": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "limites-infinito": {
+     "estado": "completa",
+     "faltan": []
     },
     "continuidad": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "definicion-derivada": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "derivada-polinomio": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "regla-producto": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "regla-cociente": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "regla-cadena": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "derivadas-trascendentes": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "derivacion-implicita": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "derivadas-inversas": {
+     "estado": "completa",
+     "faltan": []
     },
     "razon-cambio": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "linealizacion": {
+     "estado": "completa",
+     "faltan": []
     },
     "maximos-minimos": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "valor-medio": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "trazado-curvas": {
+     "estado": "completa",
+     "faltan": []
     },
     "optimizacion": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "lhopital": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "antiderivadas": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "sumas-riemann": {
+     "estado": "completa",
+     "faltan": []
     },
     "integral-definida": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "sustitucion": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "integracion-partes": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "integrales-trigonometricas": {
+     "estado": "completa",
+     "faltan": []
     },
     "sustitucion-trigonometrica": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "fracciones-parciales": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "integrales-impropias": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "area-curva": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "volumenes-revolucion": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "cascarones": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "longitud-arco": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "valor-promedio": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "aplicaciones-integral": {
+     "estado": "completa",
+     "faltan": []
     }
    }
   },
@@ -974,7 +861,6 @@
      "faltan": [
       "≥ 3 plantillas por nivel en los 5 niveles",
       "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
       "≥ 3 tarjetas de repaso",
       "básico, procedimiento y aplicación"
      ]

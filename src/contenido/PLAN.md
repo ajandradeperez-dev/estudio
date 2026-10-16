@@ -12,144 +12,144 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 - Tema ✅: todo ✅, sin pendientes, escenario integrador, simulacro de 10–15 preguntas, resumen (hoja del tema) y 1–3 referencias.
 - Materia ✅: todos sus temas ✅, examen final acumulativo y certificado interno (sin valor oficial).
 
-## 🟡 ➗ Matemáticas `matematicas`
+## ✅ ➗ Matemáticas `matematicas`
 
-**Cobertura del temario: 0 %** (0 de 88 habilidades ✅)
+**Cobertura del temario: 100 %** (88 de 88 habilidades ✅)
 
-### 🟡 Aritmética y prealgebra `prealgebra`
+### ✅ Aritmética y prealgebra `prealgebra`
 
-0/7 habilidades ✅ · falta: 2 habilidades por crear · 5 habilidades sin terminar
+7/7 habilidades ✅
 
-- [x] 🟡 Fracciones `fracciones` — Stewart Precálculo 1.1 – Números reales y fracciones · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Decimales y redondeo — Stewart Precálculo 1.1 – Números reales
-- [x] 🟡 Porcentajes `porcentajes` — Stewart Precálculo 1.1 – Aplicaciones con porcentajes · falta: ≥ 3 tarjetas de repaso
-- [ ] Razones y proporciones — Stewart Precálculo 1.1 – Razones y proporciones
-- [x] 🟡 Potencias y raíces `potencias-raices` — Stewart Precálculo 1.2 – Exponentes y radicales · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Orden de operaciones `orden-operaciones` — Stewart Precálculo 1.1 – Propiedades de los números reales · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Notación científica `notacion-cientifica` — Stewart Precálculo 1.2 – Notación científica · falta: ≥ 3 tarjetas de repaso
+- [x] ✅ Fracciones `fracciones` — Stewart Precálculo 1.1 – Números reales y fracciones
+- [x] ✅ Decimales y redondeo `decimales` — Stewart Precálculo 1.1 – Números reales
+- [x] ✅ Porcentajes `porcentajes` — Stewart Precálculo 1.1 – Aplicaciones con porcentajes
+- [x] ✅ Razones y proporciones `razones-proporciones` — Stewart Precálculo 1.1 – Razones y proporciones
+- [x] ✅ Potencias y raíces `potencias-raices` — Stewart Precálculo 1.2 – Exponentes y radicales
+- [x] ✅ Orden de operaciones `orden-operaciones` — Stewart Precálculo 1.1 – Propiedades de los números reales
+- [x] ✅ Notación científica `notacion-cientifica` — Stewart Precálculo 1.2 – Notación científica
 
 📚 Para profundizar: Stewart, Precálculo — cap. 1 «Fundamentos» (números reales, exponentes y radicales) · Khan Academy — Aritmética y prealgebra (gratis, en español)
 
-### 🟡 Álgebra `algebra-basica`
+### ✅ Álgebra `algebra-basica`
 
-0/12 habilidades ✅ · falta: 2 habilidades por crear · 10 habilidades sin terminar
+12/12 habilidades ✅
 
-- [x] 🟡 Términos semejantes y propiedad distributiva `expresiones` — Stewart Precálculo 1.3 – Expresiones algebraicas y polinomios · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Productos notables `productos-notables` — Stewart Precálculo 1.3 – Fórmulas de productos especiales · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Factorización `factorizacion` — Stewart Precálculo 1.3 – Factorización · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Fracciones algebraicas `fracciones-algebraicas` — Stewart Precálculo 1.4 – Expresiones racionales · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Ecuaciones lineales `ecuaciones-lineales` — Stewart Precálculo 1.5 – Ecuaciones lineales · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Ecuaciones cuadráticas `ecuaciones-cuadraticas` — Stewart Precálculo 1.5 – Ecuaciones cuadráticas y discriminante · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Ecuaciones con radicales y valor absoluto — Stewart Precálculo 1.5 – Otros tipos de ecuaciones
-- [x] 🟡 Desigualdades lineales `desigualdades` — Stewart Precálculo 1.8 – Desigualdades lineales · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Desigualdades cuadráticas y con valor absoluto — Stewart Precálculo 1.8 – Desigualdades no lineales y con valor absoluto
-- [x] 🟡 Sistemas de ecuaciones 2×2 `sistemas-2x2` — Stewart Precálculo 10.1 – Sistemas de dos ecuaciones · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Sistemas 3×3 `sistemas-3x3` — Stewart Precálculo 10.2 – Sistemas de ecuaciones con varias variables · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Leyes de exponentes `exponentes` — Stewart Precálculo 1.2 – Leyes de los exponentes · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
+- [x] ✅ Términos semejantes y propiedad distributiva `expresiones` — Stewart Precálculo 1.3 – Expresiones algebraicas y polinomios
+- [x] ✅ Productos notables `productos-notables` — Stewart Precálculo 1.3 – Fórmulas de productos especiales
+- [x] ✅ Factorización `factorizacion` — Stewart Precálculo 1.3 – Factorización
+- [x] ✅ Fracciones algebraicas `fracciones-algebraicas` — Stewart Precálculo 1.4 – Expresiones racionales
+- [x] ✅ Ecuaciones lineales `ecuaciones-lineales` — Stewart Precálculo 1.5 – Ecuaciones lineales
+- [x] ✅ Ecuaciones cuadráticas `ecuaciones-cuadraticas` — Stewart Precálculo 1.5 – Ecuaciones cuadráticas y discriminante
+- [x] ✅ Ecuaciones con radicales y valor absoluto `radicales-valor-absoluto` — Stewart Precálculo 1.5 – Otros tipos de ecuaciones
+- [x] ✅ Desigualdades lineales `desigualdades` — Stewart Precálculo 1.8 – Desigualdades lineales
+- [x] ✅ Desigualdades cuadráticas y con valor absoluto `desigualdades-no-lineales` — Stewart Precálculo 1.8 – Desigualdades no lineales y con valor absoluto
+- [x] ✅ Sistemas de ecuaciones 2×2 `sistemas-2x2` — Stewart Precálculo 10.1 – Sistemas de dos ecuaciones
+- [x] ✅ Sistemas 3×3 `sistemas-3x3` — Stewart Precálculo 10.2 – Sistemas de ecuaciones con varias variables
+- [x] ✅ Leyes de exponentes `exponentes` — Stewart Precálculo 1.2 – Leyes de los exponentes
 
 📚 Para profundizar: Stewart, Precálculo — cap. 1 «Fundamentos» (1.3 a 1.8: expresiones, ecuaciones y desigualdades) · Stewart, Precálculo — cap. 10 «Sistemas de ecuaciones»
 
-### 🟡 Funciones (precálculo) `precalculo`
+### ✅ Funciones (precálculo) `precalculo`
 
-0/8 habilidades ✅ · falta: 6 habilidades por crear · 2 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+8/8 habilidades ✅
 
-- [x] 🟡 Funciones: evaluar, dominio y rango `funciones` — Stewart Precálculo 2.1–2.2 – Funciones, dominio y gráficas · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Gráficas y transformaciones — Stewart Precálculo 2.6 – Transformaciones de funciones
-- [ ] Composición e inversa — Stewart Precálculo 2.7–2.8 – Combinación de funciones e inversas
-- [ ] Funciones polinomiales — Stewart Precálculo 3.1–3.4 – Funciones polinomiales y ceros
-- [ ] Funciones racionales y asíntotas — Stewart Precálculo 3.6 – Funciones racionales
-- [ ] Funciones exponenciales — Stewart Precálculo 4.1–4.2 – Funciones exponenciales
-- [x] 🟡 Logaritmos: propiedades y ecuaciones `logaritmos` — Stewart Precálculo 4.3–4.5 – Funciones logarítmicas, leyes y ecuaciones · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Modelado con funciones — Stewart Precálculo 4.6 – Modelado con funciones exponenciales y logarítmicas
+- [x] ✅ Funciones: evaluar, dominio y rango `funciones` — Stewart Precálculo 2.1–2.2 – Funciones, dominio y gráficas
+- [x] ✅ Gráficas y transformaciones `transformaciones` — Stewart Precálculo 2.6 – Transformaciones de funciones
+- [x] ✅ Composición e inversa `composicion-inversa` — Stewart Precálculo 2.7–2.8 – Combinación de funciones e inversas
+- [x] ✅ Funciones polinomiales `funciones-polinomiales` — Stewart Precálculo 3.1–3.4 – Funciones polinomiales y ceros
+- [x] ✅ Funciones racionales y asíntotas `funciones-racionales` — Stewart Precálculo 3.6 – Funciones racionales
+- [x] ✅ Funciones exponenciales `funciones-exponenciales` — Stewart Precálculo 4.1–4.2 – Funciones exponenciales
+- [x] ✅ Logaritmos: propiedades y ecuaciones `logaritmos` — Stewart Precálculo 4.3–4.5 – Funciones logarítmicas, leyes y ecuaciones
+- [x] ✅ Modelado con funciones `modelado-funciones` — Stewart Precálculo 4.6 – Modelado con funciones exponenciales y logarítmicas
 
 📚 Para profundizar: Stewart, Precálculo — cap. 2 «Funciones» · Stewart, Precálculo — cap. 3 «Funciones polinomiales y racionales» y cap. 4 «Funciones exponenciales y logarítmicas»
 
-### 🟡 Trigonometría `trigonometria`
+### ✅ Trigonometría `trigonometria`
 
-0/8 habilidades ✅ · falta: 4 habilidades por crear · 4 habilidades sin terminar
+8/8 habilidades ✅
 
-- [ ] Ángulos y radianes — Stewart Precálculo 6.1 – Medida de ángulos
-- [x] 🟡 Razones trigonométricas `razones-trigonometricas` — Stewart Precálculo 6.2 – Trigonometría de triángulos rectángulos · falta: ≥ 3 tarjetas de repaso
-- [x] 🟡 Círculo unitario `circulo-unitario` — Stewart Precálculo 5.1–5.2 – Circunferencia unitaria y funciones trigonométricas · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Gráficas de funciones trigonométricas — Stewart Precálculo 5.3–5.4 – Gráficas trigonométricas
-- [x] 🟡 Identidades fundamentales `identidades-trigonometricas` — Stewart Precálculo 7.1 – Identidades trigonométricas · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Suma de ángulos y ángulo doble — Stewart Precálculo 7.2–7.3 – Fórmulas de adición y de ángulo doble
-- [x] 🟡 Ecuaciones trigonométricas `ecuaciones-trigonometricas` — Stewart Precálculo 7.4–7.5 – Ecuaciones trigonométricas · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Ley de senos y ley de cosenos — Stewart Precálculo 6.5–6.6 – Leyes de senos y cosenos
+- [x] ✅ Ángulos y radianes `radianes` — Stewart Precálculo 6.1 – Medida de ángulos
+- [x] ✅ Razones trigonométricas `razones-trigonometricas` — Stewart Precálculo 6.2 – Trigonometría de triángulos rectángulos
+- [x] ✅ Círculo unitario `circulo-unitario` — Stewart Precálculo 5.1–5.2 – Circunferencia unitaria y funciones trigonométricas
+- [x] ✅ Gráficas de funciones trigonométricas `graficas-trigonometricas` — Stewart Precálculo 5.3–5.4 – Gráficas trigonométricas
+- [x] ✅ Identidades fundamentales `identidades-trigonometricas` — Stewart Precálculo 7.1 – Identidades trigonométricas
+- [x] ✅ Suma de ángulos y ángulo doble `suma-angulo-doble` — Stewart Precálculo 7.2–7.3 – Fórmulas de adición y de ángulo doble
+- [x] ✅ Ecuaciones trigonométricas `ecuaciones-trigonometricas` — Stewart Precálculo 7.4–7.5 – Ecuaciones trigonométricas
+- [x] ✅ Ley de senos y ley de cosenos `leyes-senos-cosenos` — Stewart Precálculo 6.5–6.6 – Leyes de senos y cosenos
 
 📚 Para profundizar: Stewart, Precálculo — caps. 5 y 6 «Funciones trigonométricas» · Stewart, Precálculo — cap. 7 «Trigonometría analítica»
 
-### 🟡 Álgebra lineal `algebra-lineal`
+### ✅ Álgebra lineal `algebra-lineal`
 
-0/20 habilidades ✅ · falta: 6 habilidades por crear · 14 habilidades sin terminar
+20/20 habilidades ✅
 
-- [x] 🟡 Sistemas por eliminación de Gauss `gauss` — Lay 1.1 – Sistemas de ecuaciones lineales · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Gauss-Jordan, forma escalonada y rango `gauss-jordan` — Lay 1.2 – Reducción por filas y formas escalonadas · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Matrices y sus operaciones `matrices` — Lay 2.1 – Operaciones con matrices · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Inversa de una matriz `inversa` — Lay 2.2 – La inversa de una matriz · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Determinantes y sus propiedades `determinantes` — Lay 3.1–3.2 – Determinantes y sus propiedades · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Vectores `vectores` — Grossman – Vectores en R² y R³; Lay 1.3 – Ecuaciones vectoriales · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Operaciones con vectores y producto punto `operaciones-producto-punto` — Lay 1.3 – Combinaciones de vectores · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Producto punto `producto-punto` — Lay 6.1 – Producto interno, longitud y ortogonalidad · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Ángulo entre vectores `angulo-vectores` — Grossman – Ángulo entre vectores; Lay 6.1 · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Producto cruz `producto-cruz` — Grossman – Producto cruz de dos vectores · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Rectas y planos en R³ — Grossman – Rectas y planos en el espacio
-- [x] 🟡 Espacios vectoriales y combinación lineal `espacios-vectoriales` — Lay 1.3 y 4.1 – Combinaciones lineales; espacios y subespacios vectoriales · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Independencia lineal `independencia-lineal` — Lay 1.7 – Independencia lineal · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Base y dimensión — Lay 4.3 y 4.5 – Bases y dimensión
-- [ ] Rango y teorema de la dimensión — Lay 4.6 – Rango
-- [x] 🟡 Transformaciones lineales y su matriz `transformaciones-lineales` — Lay 1.8–1.9 – Transformaciones lineales y su matriz · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Núcleo e imagen — Lay 4.2 – Espacios nulos y columna
-- [x] 🟡 Valores y vectores propios `valores-propios` — Lay 5.1–5.2 – Vectores propios y ecuación característica · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Diagonalización — Lay 5.3 – Diagonalización
-- [ ] Ortogonalidad y Gram-Schmidt — Lay 6.2 y 6.4 – Conjuntos ortogonales y proceso de Gram-Schmidt
+- [x] ✅ Sistemas por eliminación de Gauss `gauss` — Lay 1.1 – Sistemas de ecuaciones lineales
+- [x] ✅ Gauss-Jordan, forma escalonada y rango `gauss-jordan` — Lay 1.2 – Reducción por filas y formas escalonadas
+- [x] ✅ Matrices y sus operaciones `matrices` — Lay 2.1 – Operaciones con matrices
+- [x] ✅ Inversa de una matriz `inversa` — Lay 2.2 – La inversa de una matriz
+- [x] ✅ Determinantes y sus propiedades `determinantes` — Lay 3.1–3.2 – Determinantes y sus propiedades
+- [x] ✅ Vectores `vectores` — Grossman – Vectores en R² y R³; Lay 1.3 – Ecuaciones vectoriales
+- [x] ✅ Operaciones con vectores y producto punto `operaciones-producto-punto` — Lay 1.3 – Combinaciones de vectores
+- [x] ✅ Producto punto `producto-punto` — Lay 6.1 – Producto interno, longitud y ortogonalidad
+- [x] ✅ Ángulo entre vectores `angulo-vectores` — Grossman – Ángulo entre vectores; Lay 6.1
+- [x] ✅ Producto cruz `producto-cruz` — Grossman – Producto cruz de dos vectores
+- [x] ✅ Rectas y planos en R³ `rectas-planos` — Grossman – Rectas y planos en el espacio
+- [x] ✅ Espacios vectoriales y combinación lineal `espacios-vectoriales` — Lay 1.3 y 4.1 – Combinaciones lineales; espacios y subespacios vectoriales
+- [x] ✅ Independencia lineal `independencia-lineal` — Lay 1.7 – Independencia lineal
+- [x] ✅ Base y dimensión `base-dimension` — Lay 4.3 y 4.5 – Bases y dimensión
+- [x] ✅ Rango y teorema de la dimensión `rango` — Lay 4.6 – Rango
+- [x] ✅ Transformaciones lineales y su matriz `transformaciones-lineales` — Lay 1.8–1.9 – Transformaciones lineales y su matriz
+- [x] ✅ Núcleo e imagen `nucleo-imagen` — Lay 4.2 – Espacios nulos y columna
+- [x] ✅ Valores y vectores propios `valores-propios` — Lay 5.1–5.2 – Vectores propios y ecuación característica
+- [x] ✅ Diagonalización `diagonalizacion` — Lay 5.3 – Diagonalización
+- [x] ✅ Ortogonalidad y Gram-Schmidt `gram-schmidt` — Lay 6.2 y 6.4 – Conjuntos ortogonales y proceso de Gram-Schmidt
 
 📚 Para profundizar: Lay, Álgebra lineal y sus aplicaciones — caps. 1 a 6 · Grossman, Álgebra lineal — vectores en R² y R³, producto cruz, rectas y planos
 
-### 🟡 Cálculo diferencial `calculo-diferencial`
+### ✅ Cálculo diferencial `calculo-diferencial`
 
-0/18 habilidades ✅ · falta: 5 habilidades por crear · 13 habilidades sin terminar
+18/18 habilidades ✅
 
-- [x] 🟡 Límites `limites` — Stewart 2.2–2.3 – Límites y leyes de los límites · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Límites al infinito y trigonométricos especiales — Stewart 2.6 y 3.3 – Límites al infinito; límite de sen x / x
-- [x] 🟡 Continuidad `continuidad` — Stewart 2.5 – Continuidad · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Definición de derivada `definicion-derivada` — Stewart 2.7–2.8 – Derivadas y razones de cambio · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Regla de la potencia `derivada-polinomio` — Stewart 3.1 – Derivadas de polinomios y exponenciales · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Regla del producto `regla-producto` — Stewart 3.2 – Reglas del producto y el cociente · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Regla del cociente `regla-cociente` — Stewart 3.2 – Reglas del producto y el cociente · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Regla de la cadena `regla-cadena` — Stewart 3.4 – Regla de la cadena · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Derivadas trigonométricas, exponenciales y logarítmicas `derivadas-trascendentes` — Stewart 3.3 y 3.6 – Derivadas trigonométricas y logarítmicas · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Derivación implícita `derivacion-implicita` — Stewart 3.5 – Derivación implícita · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Derivadas de funciones inversas y derivación logarítmica — Stewart 3.5–3.6 – Inversas trigonométricas y derivación logarítmica
-- [x] 🟡 Razones relacionadas `razon-cambio` — Stewart 3.9 – Razones relacionadas · falta: ≥ 3 tarjetas de repaso
-- [ ] Linealización y diferenciales — Stewart 3.10 – Aproximaciones lineales y diferenciales
-- [x] 🟡 Valores extremos `maximos-minimos` — Stewart 4.1 – Valores máximos y mínimos · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Teorema del Valor Medio — Stewart 4.2 – Teorema del valor medio
-- [ ] Crecimiento, concavidad y trazado de curvas — Stewart 4.3 y 4.5 – Derivadas y forma de una gráfica; trazado de curvas
-- [x] 🟡 Optimización `optimizacion` — Stewart 4.7 – Problemas de optimización · falta: ≥ 3 tarjetas de repaso
-- [x] 🟡 Regla de L’Hôpital `lhopital` — Stewart 4.4 – Formas indeterminadas y regla de L’Hôpital · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
+- [x] ✅ Límites `limites` — Stewart 2.2–2.3 – Límites y leyes de los límites
+- [x] ✅ Límites al infinito y trigonométricos especiales `limites-infinito` — Stewart 2.6 y 3.3 – Límites al infinito; límite de sen x / x
+- [x] ✅ Continuidad `continuidad` — Stewart 2.5 – Continuidad
+- [x] ✅ Definición de derivada `definicion-derivada` — Stewart 2.7–2.8 – Derivadas y razones de cambio
+- [x] ✅ Regla de la potencia `derivada-polinomio` — Stewart 3.1 – Derivadas de polinomios y exponenciales
+- [x] ✅ Regla del producto `regla-producto` — Stewart 3.2 – Reglas del producto y el cociente
+- [x] ✅ Regla del cociente `regla-cociente` — Stewart 3.2 – Reglas del producto y el cociente
+- [x] ✅ Regla de la cadena `regla-cadena` — Stewart 3.4 – Regla de la cadena
+- [x] ✅ Derivadas trigonométricas, exponenciales y logarítmicas `derivadas-trascendentes` — Stewart 3.3 y 3.6 – Derivadas trigonométricas y logarítmicas
+- [x] ✅ Derivación implícita `derivacion-implicita` — Stewart 3.5 – Derivación implícita
+- [x] ✅ Derivadas de funciones inversas y derivación logarítmica `derivadas-inversas` — Stewart 3.5–3.6 – Inversas trigonométricas y derivación logarítmica
+- [x] ✅ Razones relacionadas `razon-cambio` — Stewart 3.9 – Razones relacionadas
+- [x] ✅ Linealización y diferenciales `linealizacion` — Stewart 3.10 – Aproximaciones lineales y diferenciales
+- [x] ✅ Valores extremos `maximos-minimos` — Stewart 4.1 – Valores máximos y mínimos
+- [x] ✅ Teorema del Valor Medio `valor-medio` — Stewart 4.2 – Teorema del valor medio
+- [x] ✅ Crecimiento, concavidad y trazado de curvas `trazado-curvas` — Stewart 4.3 y 4.5 – Derivadas y forma de una gráfica; trazado de curvas
+- [x] ✅ Optimización `optimizacion` — Stewart 4.7 – Problemas de optimización
+- [x] ✅ Regla de L’Hôpital `lhopital` — Stewart 4.4 – Formas indeterminadas y regla de L’Hôpital
 
 📚 Para profundizar: Stewart, Cálculo de una variable — cap. 2 «Límites y derivadas» · Stewart, Cálculo de una variable — caps. 3 y 4 «Reglas de derivación» y «Aplicaciones de la derivada»
 
-### 🟡 Cálculo integral `calculo-integral`
+### ✅ Cálculo integral `calculo-integral`
 
-0/15 habilidades ✅ · falta: 6 habilidades por crear · 9 habilidades sin terminar
+15/15 habilidades ✅
 
-- [x] 🟡 Antiderivadas básicas `antiderivadas` — Stewart 4.9 y 5.4 – Antiderivadas e integrales indefinidas · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Sumas de Riemann — Stewart 5.1 – Áreas y distancias
-- [x] 🟡 Integral definida y Teorema Fundamental `integral-definida` — Stewart 5.2–5.3 – Integral definida y Teorema Fundamental del Cálculo · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Integración por sustitución `sustitucion` — Stewart 5.5 – Regla de sustitución · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Integración por partes `integracion-partes` — Stewart 7.1 – Integración por partes · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Integrales trigonométricas — Stewart 7.2 – Integrales trigonométricas
-- [x] 🟡 Sustitución trigonométrica `sustitucion-trigonometrica` — Stewart 7.3 – Sustitución trigonométrica · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Fracciones parciales `fracciones-parciales` — Stewart 7.4 – Fracciones parciales · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Integrales impropias `integrales-impropias` — Stewart 7.8 – Integrales impropias · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Área bajo la curva y entre curvas `area-curva` — Stewart 6.1 – Áreas entre curvas · falta: ≥ 3 tarjetas de repaso
-- [x] 🟡 Volúmenes: discos y arandelas `volumenes-revolucion` — Stewart 6.2 – Volúmenes · falta: ≥ 3 tarjetas de repaso
-- [ ] Volúmenes por cascarones — Stewart 6.3 – Volúmenes mediante cascarones cilíndricos
-- [ ] Longitud de arco — Stewart 8.1 – Longitud de arco
-- [ ] Valor promedio de una función — Stewart 6.5 – Valor promedio de una función
-- [ ] Aplicaciones: trabajo, física y economía — Stewart 6.4 y 8.4 – Trabajo; aplicaciones a la economía
+- [x] ✅ Antiderivadas básicas `antiderivadas` — Stewart 4.9 y 5.4 – Antiderivadas e integrales indefinidas
+- [x] ✅ Sumas de Riemann `sumas-riemann` — Stewart 5.1 – Áreas y distancias
+- [x] ✅ Integral definida y Teorema Fundamental `integral-definida` — Stewart 5.2–5.3 – Integral definida y Teorema Fundamental del Cálculo
+- [x] ✅ Integración por sustitución `sustitucion` — Stewart 5.5 – Regla de sustitución
+- [x] ✅ Integración por partes `integracion-partes` — Stewart 7.1 – Integración por partes
+- [x] ✅ Integrales trigonométricas `integrales-trigonometricas` — Stewart 7.2 – Integrales trigonométricas
+- [x] ✅ Sustitución trigonométrica `sustitucion-trigonometrica` — Stewart 7.3 – Sustitución trigonométrica
+- [x] ✅ Fracciones parciales `fracciones-parciales` — Stewart 7.4 – Fracciones parciales
+- [x] ✅ Integrales impropias `integrales-impropias` — Stewart 7.8 – Integrales impropias
+- [x] ✅ Área bajo la curva y entre curvas `area-curva` — Stewart 6.1 – Áreas entre curvas
+- [x] ✅ Volúmenes: discos y arandelas `volumenes-revolucion` — Stewart 6.2 – Volúmenes
+- [x] ✅ Volúmenes por cascarones `cascarones` — Stewart 6.3 – Volúmenes mediante cascarones cilíndricos
+- [x] ✅ Longitud de arco `longitud-arco` — Stewart 8.1 – Longitud de arco
+- [x] ✅ Valor promedio de una función `valor-promedio` — Stewart 6.5 – Valor promedio de una función
+- [x] ✅ Aplicaciones: trabajo, física y economía `aplicaciones-integral` — Stewart 6.4 y 8.4 – Trabajo; aplicaciones a la economía
 
 📚 Para profundizar: Stewart, Cálculo de una variable — cap. 5 «Integrales» y cap. 7 «Técnicas de integración» · Stewart, Cálculo de una variable — caps. 6 y 8 «Aplicaciones de la integral»
 
@@ -364,7 +364,7 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 - [ ] Hardening — Security+ 4.1 – Técnicas de endurecimiento
 - [ ] Registros y SIEM — Security+ 4.4 – Monitoreo y SIEM
 - [ ] IDS/IPS — Security+ 4.5 – IDS/IPS
-- [x] 🟡 Lectura de logs y detección de ataques `logs` — Security+ 4.9 – Fuentes de datos para investigar · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
+- [x] 🟡 Lectura de logs y detección de ataques `logs` — Security+ 4.9 – Fuentes de datos para investigar · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
 - [x] 🟡 Respuesta a incidentes (NIST) `incidentes` — Security+ 4.8 · NIST SP 800-61 – Respuesta a incidentes · falta: explicación (idea, analogía y regla), 2 ejemplos resueltos (básico y tipo examen), ejemplo con huecos, ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, explicación alternativa, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
 - [ ] Forense básico (concepto) — Security+ 4.8 – Forense digital
 - [ ] Copias de seguridad — Security+ 3.4 – Resiliencia y respaldos

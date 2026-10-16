@@ -7,6 +7,7 @@
 import {crear,BANCOS} from './generadores/index.js';
 import {escenarioNegocio,escenarioCohete,escenarioPresa,escenarioCerro,escenarioFiesta} from './generadores/aplicaciones.js';
 import {escenarioFabrica} from './generadores/aplicaciones-lineal.js';
+import {escenarioApp} from './generadores/escenarios-mat.js';
 import {escenarioReporteVentas,escenarioGastos,escenarioCalificaciones,escenarioInventario} from './generadores/excel-escenarios.js';
 
 const con=(contexto,p)=>p&&{...p,enunciado:`<p class="contexto">${contexto}</p>${p.enunciado}`};
@@ -18,14 +19,15 @@ const delBanco=(id,n)=>rng=>{const l=BANCOS[id]?.()||[];return rng.barajar(l).sl
 const aplicacion=(id,niveles)=>()=>niveles.map(n=>crear(id,n)).filter(Boolean);
 // Simulacro de un tema: n preguntas mezcladas de sus generadores, de nivel 2 a 4, sin repetir habilidad seguida
 const simulacro=(gens,n=12)=>rng=>{const orden=rng.barajar(gens);return Array.from({length:n},(_,i)=>{const p=crear(orden[i%orden.length],2+(i%3));return p&&{...p,etiqueta:'📝 Simulacro'}}).filter(Boolean)};
-const LINEAL=['al/vector-magnitud','al/vector-operaciones','al/producto-punto','al/angulo','al/producto-cruz','al/matriz-producto','al/gauss','al/gauss-jordan','al/determinante','al/inversa','al/combinacion-lineal','al/independencia','al/transformaciones','al/valores-propios'];
-const DIFERENCIAL=['cd/limites','cd/continuidad','cd/definicion','cd/derivada-polinomio','cd/producto','cd/cociente','cd/cadena','cd/trascendentes','cd/implicita','cd/maximos','cd/optimizacion','cd/razon-cambio','cd/lhopital'];
-const INTEGRAL=['ci/antiderivada','ci/definida','ci/sustitucion','ci/partes','ci/fracciones-parciales','ci/sustitucion-trig','ci/area','ci/volumenes','ci/impropias'];
-const TRIGO=['tri/razones','tri/circulo','tri/identidades','tri/ecuaciones'];
-const PREALGEBRA=['pre/fracciones','pre/porcentajes','pre/potencias','pre/operaciones','pre/cientifica'];
+const LINEAL=['al/gauss','al/gauss-jordan','al/matriz-producto','al/inversa','al/determinante','al/vector-magnitud','al/vector-operaciones','al/producto-punto','al/angulo','al/producto-cruz','al/rectas-planos','al/combinacion-lineal','al/independencia','al/base-dimension','al/rango','al/transformaciones','al/nucleo-imagen','al/valores-propios','al/diagonalizacion','al/gram-schmidt'];
+const DIFERENCIAL=['cd/limites','cd/limites-infinito','cd/continuidad','cd/definicion','cd/derivada-polinomio','cd/producto','cd/cociente','cd/cadena','cd/trascendentes','cd/implicita','cd/inversas-log','cd/razon-cambio','cd/linealizacion','cd/maximos','cd/valor-medio','cd/trazado-curvas','cd/optimizacion','cd/lhopital'];
+const INTEGRAL=['ci/antiderivada','ci/riemann','ci/definida','ci/sustitucion','ci/partes','ci/trigonometricas','ci/sustitucion-trig','ci/fracciones-parciales','ci/impropias','ci/area','ci/volumenes','ci/cascarones','ci/longitud-arco','ci/valor-promedio','ci/aplicaciones'];
+const TRIGO=['tri/radianes','tri/razones','tri/circulo','tri/graficas','tri/identidades','tri/suma-doble','tri/ecuaciones','tri/leyes'];
+const PREALGEBRA=['pre/fracciones','pre/decimales','pre/porcentajes','pre/razones','pre/potencias','pre/operaciones','pre/cientifica'];
 const REDES=['red/osi','red/ipv4','red/bases','red/subred','red/mascara','red/prefijo-hosts','red/vlsm','red/ipv6','red/puertos','red/dns','red/dhcp','red/arp'];
 const EXCEL=['xl/operadores','xl/referencias','xl/suma-promedio','xl/contar-max-min','xl/redondear','xl/si','xl/y-o','xl/si-anidado','xl/si-error','xl/contar-si','xl/sumar-si','xl/buscarv','xl/buscarx','xl/indice-coincidir','xl/texto','xl/fechas','xl/formato-condicional','xl/tabla-dinamica'];
-const ALGEBRA=['alg/expresiones','alg/ecuacion-lineal','alg/desigualdad','alg/sistema-2x2','alg/sistema-3x3','alg/productos-notables','alg/factorizacion','alg/fracciones-algebraicas','alg/cuadratica','alg/exponentes','alg/logaritmos','alg/funciones'];
+const PRECALCULO=['alg/funciones','fun/transformaciones','fun/composicion-inversa','fun/polinomiales','fun/racionales','fun/exponenciales','alg/logaritmos','fun/modelado'];
+const ALGEBRA=['alg/expresiones','alg/productos-notables','alg/factorizacion','alg/fracciones-algebraicas','alg/ecuacion-lineal','alg/cuadratica','alg/radicales-absoluto','alg/desigualdad','alg/desigualdad-no-lineal','alg/sistema-2x2','alg/sistema-3x3','alg/exponentes'];
 
 export const RETOS=[
   // ---------- Ciberseguridad ----------
@@ -96,6 +98,13 @@ export const RETOS=[
    desc:'Pizzas, refrescos, descuento y cuánto pone cada quien: 4 preguntas.',crear:escenarioFiesta},
   {id:'mat-simulacro-prealgebra',materia:'matematicas',tema:'prealgebra',titulo:'Simulacro de Aritmética y prealgebra',profundidad:'escenario',dificultad:2,simulacro:true,
    desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(PREALGEBRA)},
+  // ---------- Matemáticas · Precálculo ----------
+  {id:'mat-modelos',materia:'matematicas',tema:'precalculo',titulo:'Modelos del mundo real',profundidad:'aplicacion',dificultad:3,
+   desc:'Ajusta funciones lineales, cuadráticas y exponenciales a datos reales.',crear:aplicacion('fun/modelado',[3,4,5])},
+  {id:'mat-app',materia:'matematicas',tema:'precalculo',titulo:'Tu app de suscripción',profundidad:'escenario',dificultad:3,
+   desc:'Crecimiento exponencial, equilibrio, composición y logaritmos: un caso en 4 preguntas.',crear:escenarioApp},
+  {id:'mat-simulacro-precalculo',materia:'matematicas',tema:'precalculo',titulo:'Simulacro de Precálculo',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema, como un examen.',crear:simulacro(PRECALCULO)},
   // ---------- Matemáticas · Trigonometría ----------
   {id:'mat-alturas',materia:'matematicas',tema:'trigonometria',titulo:'Edificios, rampas y escaleras',profundidad:'aplicacion',dificultad:2,
    desc:'Alturas y distancias con seno, coseno y tangente.',crear:aplicacion('apl/triangulos',[1,2,3])},

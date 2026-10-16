@@ -408,55 +408,36 @@
    }
   },
   "ingles": {
-   "estado": "parcial",
+   "estado": "completo",
    "cobertura": {
-    "completas": 0,
+    "completas": 66,
     "total": 66,
-    "pct": 0
+    "pct": 100
    },
    "temas": {
     "a1": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 19,
      "total": 19,
-     "faltan": [
-      "11 habilidades por crear",
-      "8 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "a2": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 17,
      "total": 17,
-     "faltan": [
-      "11 habilidades por crear",
-      "6 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "b1": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 15,
      "total": 15,
-     "faltan": [
-      "14 habilidades por crear",
-      "1 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "b2": {
-     "estado": "proximo",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 11,
      "total": 11,
-     "faltan": [
-      "11 habilidades por crear",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "hablar-escuchar": {
      "estado": "herramientas",
@@ -467,178 +448,276 @@
      ]
     },
     "examenes": {
-     "estado": "proximo",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 4,
      "total": 4,
-     "faltan": [
-      "4 habilidades por crear",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     }
    },
    "habilidades": {
+    "saludos": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "numeros-fechas-hora": {
+     "estado": "completa",
+     "faltan": []
+    },
     "verbo-to-be": {
-     "estado": "parcial",
-     "faltan": [
-      "explicación (idea, analogía y regla)",
-      "2 ejemplos resueltos (básico y tipo examen)",
-      "ejemplo con huecos",
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "explicación alternativa",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "presente-simple": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "articulos": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "plurales": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "posesivos": {
+     "estado": "completa",
+     "faltan": []
     },
     "there-is-there-are": {
-     "estado": "parcial",
-     "faltan": [
-      "explicación (idea, analogía y regla)",
-      "2 ejemplos resueltos (básico y tipo examen)",
-      "ejemplo con huecos",
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "explicación alternativa",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "can": {
-     "estado": "parcial",
-     "faltan": [
-      "explicación (idea, analogía y regla)",
-      "2 ejemplos resueltos (básico y tipo examen)",
-      "ejemplo con huecos",
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "explicación alternativa",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "preposiciones": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "imperativos": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "familia": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "rutinas": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "casa": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "comida-compras": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "ciudad": {
+     "estado": "completa",
+     "faltan": []
     },
     "chunks": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "lecturas-a1": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "escritura-a1": {
+     "estado": "completa",
+     "faltan": []
     },
     "pasado-simple": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "presente-continuo": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "futuro-going-to-will": {
-     "estado": "parcial",
-     "faltan": [
-      "explicación (idea, analogía y regla)",
-      "2 ejemplos resueltos (básico y tipo examen)",
-      "ejemplo con huecos",
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "explicación alternativa",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "comparativos": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "contables": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "adverbios-frecuencia": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "should": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "viajes": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "salud": {
+     "estado": "completa",
+     "faltan": []
     },
     "vocabulario-trabajo": {
-     "estado": "parcial",
-     "faltan": [
-      "explicación (idea, analogía y regla)",
-      "2 ejemplos resueltos (básico y tipo examen)",
-      "ejemplo con huecos",
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "explicación alternativa",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "clima": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "experiencias": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "pronunciacion-a2": {
+     "estado": "completa",
+     "faltan": []
     },
     "orden-palabras": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "traducir": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "lecturas-a2": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "escritura-a2": {
+     "estado": "completa",
+     "faltan": []
     },
     "presente-perfecto": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "pasado-continuo": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "condicionales": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "voz-pasiva": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "modales": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "relativas": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "gerundio-infinitivo": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "phrasal-verbs": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "estudios-trabajo-tecnologia": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "medio-ambiente": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "correos": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "contar-historias": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "opinar": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "entrevista": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "lecturas-b1": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "condicional-3": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "reported-speech": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "pasiva-avanzada": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "deduccion": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "wish": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "conectores": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "collocations": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "ingles-ti": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "presentaciones": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "debates": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "audios-naturales": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "prueba-nivel": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "simulacro-a2": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "simulacro-b1": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "simulacro-b2": {
+     "estado": "completa",
+     "faltan": []
     }
    }
   },

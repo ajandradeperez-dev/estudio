@@ -54,6 +54,8 @@ export default defineConfig({
     workbox:{
       // Todo lo de la app queda en caché para funcionar sin internet (incluidas las fuentes de KaTeX en woff2)
       globPatterns:['**/*.{js,css,html,svg,png,webmanifest,woff2}'],
+      // Los generadores de ejercicios van en un chunk grande (~2 MB y creciendo): sin esto no se precachean y no hay modo sin conexión
+      maximumFileSizeToCacheInBytes:6*1024*1024,
       cleanupOutdatedCaches:true,
       // sw-paginas.js: el HTML va "red primero" (la versión nueva carga a la primera; sin conexión, la guardada). Va antes que las
       // rutas de Workbox. sw-recordatorio.js: recordatorio diario con la app cerrada (Periodic Background Sync y clic en la notificación)

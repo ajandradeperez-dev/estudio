@@ -153,97 +153,97 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 
 📚 Para profundizar: Stewart, Cálculo de una variable — cap. 5 «Integrales» y cap. 7 «Técnicas de integración» · Stewart, Cálculo de una variable — caps. 6 y 8 «Aplicaciones de la integral»
 
-## 🟡 🇺🇸 Inglés (MCER A1→B2, método de Nation) `ingles`
+## ✅ 🇺🇸 Inglés (MCER A1→B2, método de Nation) `ingles`
 
-**Cobertura del temario: 0 %** (0 de 66 habilidades ✅)
+**Cobertura del temario: 100 %** (66 de 66 habilidades ✅)
 
-### 🟡 A1 · Primeros pasos `a1`
+### ✅ A1 · Primeros pasos `a1`
 
-0/19 habilidades ✅ · falta: 11 habilidades por crear · 8 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+19/19 habilidades ✅
 
-- [ ] Presentarse y saludar — MCER A1 – Presentarse y dar datos personales
-- [ ] Números, fechas y hora — MCER A1 – Números, la hora y las fechas
-- [x] 🟡 Verbo to be `verbo-to-be` — MCER A1 · Murphy EGU – Verbo to be · falta: explicación (idea, analogía y regla), 2 ejemplos resueltos (básico y tipo examen), ejemplo con huecos, ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, explicación alternativa, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Presente simple `presente-simple` — MCER A1 · Murphy EGU – Present simple · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Artículos: a, an, the `articulos` — MCER A1 · Murphy EGU – a/an y the · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Plurales `plurales` — MCER A1 · Murphy EGU – Plurales · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Posesivos: my, your, ’s — MCER A1 · Murphy EGU – Posesivos y ’s
-- [x] 🟡 There is / there are `there-is-there-are` — MCER A1 · Murphy EGU – There is / there are · falta: explicación (idea, analogía y regla), 2 ejemplos resueltos (básico y tipo examen), ejemplo con huecos, ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, explicación alternativa, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Can y can’t `can` — MCER A1 · Murphy EGU – Can / can’t · falta: explicación (idea, analogía y regla), 2 ejemplos resueltos (básico y tipo examen), ejemplo con huecos, ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, explicación alternativa, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Preposiciones de lugar y tiempo `preposiciones` — MCER A1 · Murphy EGU – at/on/in (tiempo y lugar) · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Imperativos e instrucciones — MCER A1 · Murphy EGU – Imperativos
-- [ ] Familia y personas — Cambridge A1 – Vocabulario: familia
-- [ ] Rutinas diarias — Cambridge A1 – Vocabulario: rutina diaria
-- [ ] La casa — Cambridge A1 – Vocabulario: casa y muebles
-- [ ] Comida y compras — Cambridge A1 – Vocabulario: comida, tiendas y precios
-- [ ] La ciudad — Cambridge A1 – Vocabulario: lugares de la ciudad
-- [x] 🟡 Frases hechas (chunks) `chunks` — Nation – Frases hechas de alta frecuencia (A1) · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Lecturas graduadas A1 — MCER A1 – Comprensión de lectura
-- [ ] Escritura guiada A1: mensajes cortos — MCER A1 – Expresión escrita: notas y mensajes
+- [x] ✅ Presentarse y saludar `saludos` — MCER A1 – Presentarse y dar datos personales
+- [x] ✅ Números, fechas y hora `numeros-fechas-hora` — MCER A1 – Números, la hora y las fechas
+- [x] ✅ Verbo to be `verbo-to-be` — MCER A1 · Murphy EGU – Verbo to be
+- [x] ✅ Presente simple `presente-simple` — MCER A1 · Murphy EGU – Present simple
+- [x] ✅ Artículos: a, an, the `articulos` — MCER A1 · Murphy EGU – a/an y the
+- [x] ✅ Plurales `plurales` — MCER A1 · Murphy EGU – Plurales
+- [x] ✅ Posesivos: my, your, ’s `posesivos` — MCER A1 · Murphy EGU – Posesivos y ’s
+- [x] ✅ There is / there are `there-is-there-are` — MCER A1 · Murphy EGU – There is / there are
+- [x] ✅ Can y can’t `can` — MCER A1 · Murphy EGU – Can / can’t
+- [x] ✅ Preposiciones de lugar y tiempo `preposiciones` — MCER A1 · Murphy EGU – at/on/in (tiempo y lugar)
+- [x] ✅ Imperativos e instrucciones `imperativos` — MCER A1 · Murphy EGU – Imperativos
+- [x] ✅ Familia y personas `familia` — Cambridge A1 – Vocabulario: familia
+- [x] ✅ Rutinas diarias `rutinas` — Cambridge A1 – Vocabulario: rutina diaria
+- [x] ✅ La casa `casa` — Cambridge A1 – Vocabulario: casa y muebles
+- [x] ✅ Comida y compras `comida-compras` — Cambridge A1 – Vocabulario: comida, tiendas y precios
+- [x] ✅ La ciudad `ciudad` — Cambridge A1 – Vocabulario: lugares de la ciudad
+- [x] ✅ Frases hechas (chunks) `chunks` — Nation – Frases hechas de alta frecuencia (A1)
+- [x] ✅ Lecturas graduadas A1 `lecturas-a1` — MCER A1 – Comprensión de lectura
+- [x] ✅ Escritura guiada A1: mensajes cortos `escritura-a1` — MCER A1 – Expresión escrita: notas y mensajes
 
 📚 Para profundizar: Murphy, «Essential Grammar in Use» (Cambridge) — unidades de to be, present simple, a/an/the, there is y can · Cambridge English — A1 Movers / Pre A1 Starters: listas de vocabulario
 
-### 🟡 A2 · Contar y planear `a2`
+### ✅ A2 · Contar y planear `a2`
 
-0/17 habilidades ✅ · falta: 11 habilidades por crear · 6 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+17/17 habilidades ✅
 
-- [x] 🟡 Pasado simple `pasado-simple` — Cambridge A2 Key · Murphy EGU – Past simple (regular e irregular) · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Presente continuo `presente-continuo` — Cambridge A2 Key · Murphy EGU – Present continuous · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Futuro: going to y will `futuro-going-to-will` — Cambridge A2 Key · Murphy EGU – Going to y will · falta: explicación (idea, analogía y regla), 2 ejemplos resueltos (básico y tipo examen), ejemplo con huecos, ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, explicación alternativa, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Comparativos y superlativos — Cambridge A2 Key · Murphy EGU – Comparativos y superlativos
-- [ ] Contables e incontables — Cambridge A2 Key · Murphy EGU – Countable/uncountable, some/any, much/many
-- [ ] Adverbios de frecuencia — Cambridge A2 Key · Murphy EGU – always, usually, never
-- [ ] Should para consejos — Cambridge A2 Key · Murphy EGU – should
-- [ ] Viajes y direcciones — Cambridge A2 Key – Vocabulario: viajes, transporte y direcciones
-- [ ] Salud — Cambridge A2 Key – Vocabulario: salud y cuerpo
-- [x] 🟡 Vocabulario de trabajo y falsos amigos `vocabulario-trabajo` — Cambridge A2 Key – Vocabulario: trabajo · falta: explicación (idea, analogía y regla), 2 ejemplos resueltos (básico y tipo examen), ejemplo con huecos, ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, explicación alternativa, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] El clima — Cambridge A2 Key – Vocabulario: clima
-- [ ] Experiencias — Cambridge A2 Key – Hablar de experiencias
-- [ ] Pronunciación: -ed, -s y TH — MCER A2 – Pronunciación
-- [x] 🟡 Orden de las palabras `orden-palabras` — Cambridge A2 Key · Murphy EGU – Orden de la oración · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Traducir frases cortas `traducir` — MCER A2 – Mediación: frases cotidianas · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Lecturas graduadas A2 — Cambridge A2 Key – Reading
-- [ ] Escritura guiada A2: correos cortos — Cambridge A2 Key – Writing (correo de 25 palabras o más)
+- [x] ✅ Pasado simple `pasado-simple` — Cambridge A2 Key · Murphy EGU – Past simple (regular e irregular)
+- [x] ✅ Presente continuo `presente-continuo` — Cambridge A2 Key · Murphy EGU – Present continuous
+- [x] ✅ Futuro: going to y will `futuro-going-to-will` — Cambridge A2 Key · Murphy EGU – Going to y will
+- [x] ✅ Comparativos y superlativos `comparativos` — Cambridge A2 Key · Murphy EGU – Comparativos y superlativos
+- [x] ✅ Contables e incontables `contables` — Cambridge A2 Key · Murphy EGU – Countable/uncountable, some/any, much/many
+- [x] ✅ Adverbios de frecuencia `adverbios-frecuencia` — Cambridge A2 Key · Murphy EGU – always, usually, never
+- [x] ✅ Should para consejos `should` — Cambridge A2 Key · Murphy EGU – should
+- [x] ✅ Viajes y direcciones `viajes` — Cambridge A2 Key – Vocabulario: viajes, transporte y direcciones
+- [x] ✅ Salud `salud` — Cambridge A2 Key – Vocabulario: salud y cuerpo
+- [x] ✅ Vocabulario de trabajo y falsos amigos `vocabulario-trabajo` — Cambridge A2 Key – Vocabulario: trabajo
+- [x] ✅ El clima `clima` — Cambridge A2 Key – Vocabulario: clima
+- [x] ✅ Experiencias `experiencias` — Cambridge A2 Key – Hablar de experiencias
+- [x] ✅ Pronunciación: -ed, -s y TH `pronunciacion-a2` — MCER A2 – Pronunciación
+- [x] ✅ Orden de las palabras `orden-palabras` — Cambridge A2 Key · Murphy EGU – Orden de la oración
+- [x] ✅ Traducir frases cortas `traducir` — MCER A2 – Mediación: frases cotidianas
+- [x] ✅ Lecturas graduadas A2 `lecturas-a2` — Cambridge A2 Key – Reading
+- [x] ✅ Escritura guiada A2: correos cortos `escritura-a2` — Cambridge A2 Key – Writing (correo de 25 palabras o más)
 
 📚 Para profundizar: Murphy, «Essential Grammar in Use» — unidades de past simple, present continuous, going to/will y comparativos · Cambridge English — A2 Key: lista de vocabulario y formato del examen
 
-### 🟡 B1 · Opinar y resolver `b1`
+### ✅ B1 · Opinar y resolver `b1`
 
-0/15 habilidades ✅ · falta: 14 habilidades por crear · 1 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+15/15 habilidades ✅
 
-- [x] 🟡 Present perfect vs past simple `presente-perfecto` — Cambridge B1 Preliminary · Murphy EGU – Present perfect · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Pasado continuo — Cambridge B1 Preliminary · Murphy EGU – Past continuous
-- [ ] Condicionales 0, 1 y 2 — Cambridge B1 Preliminary · Murphy EGU – If clauses
-- [ ] Voz pasiva básica — Cambridge B1 Preliminary · Murphy EGU – Passive
-- [ ] Modales: must, have to, might — Cambridge B1 Preliminary · Murphy EGU – Modales de obligación y posibilidad
-- [ ] Oraciones relativas — Cambridge B1 Preliminary · Murphy EGU – Relative clauses
-- [ ] Gerundio vs infinitivo — Cambridge B1 Preliminary · Murphy EGU – Verb + -ing / to
-- [ ] Phrasal verbs frecuentes — Cambridge B1 Preliminary – Phrasal verbs
-- [ ] Estudios, trabajo y tecnología — Cambridge B1 Preliminary – Vocabulario: educación, trabajo y tecnología
-- [ ] Medio ambiente — Cambridge B1 Preliminary – Vocabulario: medio ambiente
-- [ ] Correos formales e informales — Cambridge B1 Preliminary – Writing: email
-- [ ] Contar historias — Cambridge B1 Preliminary – Writing: story
-- [ ] Opinar y argumentar — MCER B1 – Expresar y justificar opiniones
-- [ ] Entrevista de trabajo — MCER B1 – Entrevistas
-- [ ] Lecturas graduadas B1 — Cambridge B1 Preliminary – Reading
+- [x] ✅ Present perfect vs past simple `presente-perfecto` — Cambridge B1 Preliminary · Murphy EGU – Present perfect
+- [x] ✅ Pasado continuo `pasado-continuo` — Cambridge B1 Preliminary · Murphy EGU – Past continuous
+- [x] ✅ Condicionales 0, 1 y 2 `condicionales` — Cambridge B1 Preliminary · Murphy EGU – If clauses
+- [x] ✅ Voz pasiva básica `voz-pasiva` — Cambridge B1 Preliminary · Murphy EGU – Passive
+- [x] ✅ Modales: must, have to, might `modales` — Cambridge B1 Preliminary · Murphy EGU – Modales de obligación y posibilidad
+- [x] ✅ Oraciones relativas `relativas` — Cambridge B1 Preliminary · Murphy EGU – Relative clauses
+- [x] ✅ Gerundio vs infinitivo `gerundio-infinitivo` — Cambridge B1 Preliminary · Murphy EGU – Verb + -ing / to
+- [x] ✅ Phrasal verbs frecuentes `phrasal-verbs` — Cambridge B1 Preliminary – Phrasal verbs
+- [x] ✅ Estudios, trabajo y tecnología `estudios-trabajo-tecnologia` — Cambridge B1 Preliminary – Vocabulario: educación, trabajo y tecnología
+- [x] ✅ Medio ambiente `medio-ambiente` — Cambridge B1 Preliminary – Vocabulario: medio ambiente
+- [x] ✅ Correos formales e informales `correos` — Cambridge B1 Preliminary – Writing: email
+- [x] ✅ Contar historias `contar-historias` — Cambridge B1 Preliminary – Writing: story
+- [x] ✅ Opinar y argumentar `opinar` — MCER B1 – Expresar y justificar opiniones
+- [x] ✅ Entrevista de trabajo `entrevista` — MCER B1 – Entrevistas
+- [x] ✅ Lecturas graduadas B1 `lecturas-b1` — Cambridge B1 Preliminary – Reading
 
 📚 Para profundizar: Murphy, «English Grammar in Use» (Cambridge) — unidades de present perfect, condicionales, pasiva y modales · Cambridge English — B1 Preliminary: formato del examen y lista de vocabulario
 
-### ⚪ B2 · Inglés profesional `b2`
+### ✅ B2 · Inglés profesional `b2`
 
-0/11 habilidades ✅ · falta: 11 habilidades por crear · escenario integrador · simulacro de 10–15 preguntas
+11/11 habilidades ✅
 
-- [ ] Condicional 3 y mixtos — Cambridge B2 First · Murphy EGU – Third and mixed conditionals
-- [ ] Reported speech — Cambridge B2 First · Murphy EGU – Reported speech
-- [ ] Pasiva avanzada — Cambridge B2 First · Murphy EGU – Passive (have something done, it is said that)
-- [ ] Modales de deducción — Cambridge B2 First · Murphy EGU – must/might/can’t have
-- [ ] Wish e if only — Cambridge B2 First · Murphy EGU – Wish
-- [ ] Conectores — Cambridge B2 First – Linking words
-- [ ] Collocations — Cambridge B2 First – Collocations
-- [ ] Inglés técnico de TI y ciberseguridad — MCER B2 – Inglés profesional (TI)
-- [ ] Presentaciones — MCER B2 – Exposición oral
-- [ ] Debates — MCER B2 – Interacción: debatir
-- [ ] Comprensión de audios naturales — Cambridge B2 First – Listening
+- [x] ✅ Condicional 3 y mixtos `condicional-3` — Cambridge B2 First · Murphy EGU – Third and mixed conditionals
+- [x] ✅ Reported speech `reported-speech` — Cambridge B2 First · Murphy EGU – Reported speech
+- [x] ✅ Pasiva avanzada `pasiva-avanzada` — Cambridge B2 First · Murphy EGU – Passive (have something done, it is said that)
+- [x] ✅ Modales de deducción `deduccion` — Cambridge B2 First · Murphy EGU – must/might/can’t have
+- [x] ✅ Wish e if only `wish` — Cambridge B2 First · Murphy EGU – Wish
+- [x] ✅ Conectores `conectores` — Cambridge B2 First – Linking words
+- [x] ✅ Collocations `collocations` — Cambridge B2 First – Collocations
+- [x] ✅ Inglés técnico de TI y ciberseguridad `ingles-ti` — MCER B2 – Inglés profesional (TI)
+- [x] ✅ Presentaciones `presentaciones` — MCER B2 – Exposición oral
+- [x] ✅ Debates `debates` — MCER B2 – Interacción: debatir
+- [x] ✅ Comprensión de audios naturales `audios-naturales` — Cambridge B2 First – Listening
 
 📚 Para profundizar: Murphy, «English Grammar in Use» — unidades de reported speech, condicional 3, wish y modales de deducción · Cambridge English — B2 First: formato del examen
 
@@ -262,14 +262,14 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 
 📚 Para profundizar: Paul Nation, «What Should Every EFL Teacher Know?» — las cuatro vertientes
 
-### ⚪ Prueba de nivel y simulacros `examenes`
+### ✅ Prueba de nivel y simulacros `examenes`
 
-0/4 habilidades ✅ · falta: 4 habilidades por crear · escenario integrador · simulacro de 10–15 preguntas
+4/4 habilidades ✅
 
-- [ ] Prueba de nivel A1–B2 — MCER – Descriptores de nivel A1 a B2
-- [ ] Simulacro estilo A2 Key — Cambridge A2 Key – Formato (sin copiar exámenes reales)
-- [ ] Simulacro estilo B1 Preliminary — Cambridge B1 Preliminary – Formato (sin copiar exámenes reales)
-- [ ] Simulacro estilo B2 First — Cambridge B2 First – Formato (sin copiar exámenes reales)
+- [x] ✅ Prueba de nivel A1–B2 `prueba-nivel` — MCER – Descriptores de nivel A1 a B2
+- [x] ✅ Simulacro estilo A2 Key `simulacro-a2` — Cambridge A2 Key – Formato (sin copiar exámenes reales)
+- [x] ✅ Simulacro estilo B1 Preliminary `simulacro-b1` — Cambridge B1 Preliminary – Formato (sin copiar exámenes reales)
+- [x] ✅ Simulacro estilo B2 First `simulacro-b2` — Cambridge B2 First – Formato (sin copiar exámenes reales)
 
 📚 Para profundizar: Cambridge English — descripción oficial de A2 Key, B1 Preliminary y B2 First
 

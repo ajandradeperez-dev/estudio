@@ -8,6 +8,7 @@ import {crear,BANCOS} from './generadores/index.js';
 import {escenarioNegocio,escenarioCohete,escenarioPresa,escenarioCerro,escenarioFiesta} from './generadores/aplicaciones.js';
 import {escenarioFabrica} from './generadores/aplicaciones-lineal.js';
 import {escenarioApp} from './generadores/escenarios-mat.js';
+import {escenarioPrimerDia,escenarioViaje,escenarioPhishing,escenarioPostmortem,escenarioEvaluacion} from './generadores/escenarios-en.js';
 import {escenarioReporteVentas,escenarioGastos,escenarioCalificaciones,escenarioInventario} from './generadores/excel-escenarios.js';
 
 const con=(contexto,p)=>p&&{...p,enunciado:`<p class="contexto">${contexto}</p>${p.enunciado}`};
@@ -27,6 +28,11 @@ const PREALGEBRA=['pre/fracciones','pre/decimales','pre/porcentajes','pre/razone
 const REDES=['red/osi','red/ipv4','red/bases','red/subred','red/mascara','red/prefijo-hosts','red/vlsm','red/ipv6','red/puertos','red/dns','red/dhcp','red/arp'];
 const EXCEL=['xl/operadores','xl/referencias','xl/suma-promedio','xl/contar-max-min','xl/redondear','xl/si','xl/y-o','xl/si-anidado','xl/si-error','xl/contar-si','xl/sumar-si','xl/buscarv','xl/buscarx','xl/indice-coincidir','xl/texto','xl/fechas','xl/formato-condicional','xl/tabla-dinamica'];
 const PRECALCULO=['alg/funciones','fun/transformaciones','fun/composicion-inversa','fun/polinomiales','fun/racionales','fun/exponenciales','alg/logaritmos','fun/modelado'];
+const EN_A1=['en/saludos','en/numeros','en/to-be','en/presente-simple','en/articulos','en/plurales','en/posesivos','en/there-is','en/can','en/preposiciones','en/imperativos','en/familia','en/rutinas','en/casa','en/comida','en/ciudad','en/chunks','en/lecturas-a1','en/escritura-a1'];
+const EN_A2=['en/pasado-simple','en/presente-continuo','en/futuro','en/comparativos','en/contables','en/frecuencia','en/should','en/viajes','en/salud','en/trabajo','en/clima','en/experiencias','en/pronunciacion-a2','en/ordenar','en/traducir','en/lecturas-a2','en/escritura-a2'];
+const EN_B1=['en/presente-perfecto','en/pasado-continuo','en/condicionales','en/pasiva','en/modales','en/relativas','en/gerundio-infinitivo','en/phrasal-verbs','en/tecnologia','en/medio-ambiente','en/correos','en/historias','en/opinar','en/entrevista','en/lecturas-b1'];
+const EN_B2=['en/condicional-3','en/reported-speech','en/pasiva-avanzada','en/deduccion','en/wish','en/conectores','en/collocations','en/ti','en/presentaciones','en/debates','en/audios'];
+const EN_EXAMENES=['en/prueba-nivel','en/simulacro-a2','en/simulacro-b1','en/simulacro-b2'];
 const ALGEBRA=['alg/expresiones','alg/productos-notables','alg/factorizacion','alg/fracciones-algebraicas','alg/ecuacion-lineal','alg/cuadratica','alg/radicales-absoluto','alg/desigualdad','alg/desigualdad-no-lineal','alg/sistema-2x2','alg/sistema-3x3','alg/exponentes'];
 
 export const RETOS=[
@@ -162,6 +168,31 @@ export const RETOS=[
    desc:'Entrada, salida y agua acumulada en 3 preguntas.',crear:escenarioPresa},
   {id:'mat-simulacro-integral',materia:'matematicas',tema:'calculo-integral',titulo:'Simulacro de Cálculo integral',profundidad:'escenario',dificultad:3,simulacro:true,
    desc:'12 preguntas mezcladas de todo el tema, como un examen.',crear:simulacro(INTEGRAL)},
+  // ---------- Inglés · A1 ----------
+  {id:'en-primer-dia',materia:'ingles',tema:'a1',titulo:'Tu primer día en la oficina',profundidad:'escenario',dificultad:2,
+   desc:'Presentarte, preguntar dónde están las cosas, pedir en la cafetería y despedirte: 4 pasos.',crear:escenarioPrimerDia},
+  {id:'en-simulacro-a1',materia:'ingles',tema:'a1',titulo:'Simulacro A1',profundidad:'escenario',dificultad:2,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el nivel A1, como un examen.',crear:simulacro(EN_A1)},
+  // ---------- Inglés · A2 ----------
+  {id:'en-viaje',materia:'ingles',tema:'a2',titulo:'Viaje de trabajo',profundidad:'escenario',dificultad:3,
+   desc:'Vuelo retrasado, aviso al cliente, hotel y contar cómo te fue: 4 pasos.',crear:escenarioViaje},
+  {id:'en-simulacro-a2',materia:'ingles',tema:'a2',titulo:'Simulacro A2',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el nivel A2, como un examen.',crear:simulacro(EN_A2)},
+  // ---------- Inglés · B1 ----------
+  {id:'en-phishing',materia:'ingles',tema:'b1',titulo:'Aviso de phishing en tu empresa',profundidad:'escenario',dificultad:4,
+   desc:'Reporte en pasiva, una regla, un condicional y el cierre de un correo formal: 4 pasos.',crear:escenarioPhishing},
+  {id:'en-simulacro-b1',materia:'ingles',tema:'b1',titulo:'Simulacro B1',profundidad:'escenario',dificultad:4,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el nivel B1, como un examen.',crear:simulacro(EN_B1)},
+  // ---------- Inglés · B2 ----------
+  {id:'en-postmortem',materia:'ingles',tema:'b2',titulo:'Presenta la revisión de un incidente',profundidad:'escenario',dificultad:5,
+   desc:'Apertura, reported speech, tercer condicional y conectores en una presentación: 4 pasos.',crear:escenarioPostmortem},
+  {id:'en-simulacro-b2',materia:'ingles',tema:'b2',titulo:'Simulacro B2',profundidad:'escenario',dificultad:5,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el nivel B2, como un examen.',crear:simulacro(EN_B2)},
+  // ---------- Inglés · Prueba de nivel y simulacros ----------
+  {id:'en-evaluacion',materia:'ingles',tema:'examenes',titulo:'Evaluación de inglés en tu trabajo',profundidad:'escenario',dificultad:4,
+   desc:'Una tarea de cada nivel, de A2 a B2: correo, opinión, transformación y deducción.',crear:escenarioEvaluacion},
+  {id:'en-simulacro-examenes',materia:'ingles',tema:'examenes',titulo:'Simulacro general A1–B2',profundidad:'escenario',dificultad:4,simulacro:true,
+   desc:'12 preguntas de todos los niveles mezcladas, como un examen (no oficial).',crear:simulacro(EN_EXAMENES)},
   // ---------- Inglés: los jefes de cada unidad son escenarios (una tarea real en inglés) ----------
   ...[['presentarte','Presentarte en una reunión'],['rutina-trabajo','Contar tu rutina de trabajo'],['pedir-comprar','Pedir y comprar'],['ciudad-viajes','Moverte en otra ciudad'],
     ['contar-pasado','Contar lo que pasó'],['trabajo-ti','Una conversación de trabajo en TI']].map(([u,t],i)=>

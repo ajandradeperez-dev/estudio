@@ -3,6 +3,7 @@
           'notas/tema/<materia>/<tema>' (resumen automático del tema: reglas de la app + lo que marcaste en tus notas)
    Los datos viven en IndexedDB (cuaderno/db.js) y se cargan de forma asíncrona: la vista se pinta con lo que hay y
    se vuelve a pintar al terminar de cargar (evento 'repintar'). Todo texto del usuario pasa por esc() o por render(). */
+import {GENERADORES} from './generadores/index.js';
 import {esc} from '../utilidades.js';
 import {materias,materia as buscarMateria,tema as buscarTema,leccion,rutaLeccion,analizar} from './materias.js';
 import {progreso} from './progreso.js';
@@ -316,7 +317,8 @@ function vistaTema(mid,tid){
   const m=buscarMateria(mid),t=m&&buscarTema(m,tid);let notas=null;
   const textoResumen=()=>{const p=progreso(),hs=(t.nodos||[]).map(x=>x.id&&leccion(m,x.id)).filter(Boolean);
     const partes=[`# Resumen: ${t.titulo}`];
-    for(const h of hs){partes.push(`## ${h.titulo}`);for(const r of reglasDe(h))partes.push(`- ${r}`);const r=p.notas[`${m.id}/${h.id}`];if(r)partes.push(`> Mi resumen: ${r.texto}`)}
+    for(const h of hs){partes.push(`## ${h.titulo}`);if(h.obj)partes.push(`*Al terminar puedes ${h.obj}*`);for(const r of reglasDe(h))partes.push(`- ${r}`);
+      for(const [q,r] of (GENERADORES[h.gen]?.tarjetas||h.tarjetas||[]))partes.push(`- **${q}** ${r}`);const r=p.notas[`${m.id}/${h.id}`];if(r)partes.push(`> Mi resumen: ${r.texto}`)}
     const mios=(notas||[]).flatMap(n=>marcado(n.cuerpo));
     if(mios.length){partes.push('## Lo que marqué en mis notas');for(const [k,x] of mios)partes.push(k==='t'?`${TARJETA} ${x}`:`- ${k==='h'?`**${x}**`:x}`)}
     return partes.join('\n')};
@@ -326,7 +328,7 @@ function vistaTema(mid,tid){
     vista(){
       if(!t)return vacio({icono:'📚',titulo:'Ese tema no existe',boton:'<button class="btn" data-go="notas">Ver mis notas</button>'});
       return `<div class="nota-editor nota-imprimir"><div class="nota-cab"><button type="button" class="btn-icono" data-go="notas" aria-label="Volver a mis notas">←</button><span class="nota">Resumen automático</span><span></span></div>
-<h1>📚 ${t.icono||''} ${t.titulo}</h1><p class="intro">Las reglas de cada habilidad, tus resúmenes y lo que marcaste en tus notas de este tema (negritas, resaltados, títulos y tarjetas).</p>
+<h1>📚 ${t.icono||''} ${t.titulo}</h1><p class="intro">Hoja del tema: el objetivo, las reglas y los conceptos clave de cada habilidad, tus resúmenes y lo que marcaste en tus notas de este tema (negritas, resaltados, títulos y tarjetas).</p>
 ${notas===null?'<p class="cargando">Leyendo tus notas</p>':`<article class="nota-render">${render(textoResumen(),opcTex)}</article>
 <div class="row hoja-acciones nota-compartir"><button type="button" class="btn ghost btn-chico" id="res-guardar">🗒️ Guardar como nota</button><button type="button" class="btn ghost btn-chico" id="nota-pdf">🖨️ PDF</button></div>`}</div>`;
     },

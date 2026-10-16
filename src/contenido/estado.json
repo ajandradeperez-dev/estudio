@@ -1,0 +1,1508 @@
+{
+ "generado": "2026-10-16",
+ "materias": {
+  "matematicas": {
+   "estado": "parcial",
+   "cobertura": {
+    "completas": 0,
+    "total": 88,
+    "pct": 0
+   },
+   "temas": {
+    "prealgebra": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 7,
+     "faltan": [
+      "2 habilidades por crear",
+      "5 habilidades sin terminar"
+     ]
+    },
+    "algebra-basica": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 12,
+     "faltan": [
+      "2 habilidades por crear",
+      "10 habilidades sin terminar"
+     ]
+    },
+    "precalculo": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 8,
+     "faltan": [
+      "6 habilidades por crear",
+      "2 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "trigonometria": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 8,
+     "faltan": [
+      "4 habilidades por crear",
+      "4 habilidades sin terminar"
+     ]
+    },
+    "algebra-lineal": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 20,
+     "faltan": [
+      "6 habilidades por crear",
+      "14 habilidades sin terminar"
+     ]
+    },
+    "calculo-diferencial": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 18,
+     "faltan": [
+      "5 habilidades por crear",
+      "13 habilidades sin terminar"
+     ]
+    },
+    "calculo-integral": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 15,
+     "faltan": [
+      "6 habilidades por crear",
+      "9 habilidades sin terminar"
+     ]
+    }
+   },
+   "habilidades": {
+    "fracciones": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "porcentajes": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "potencias-raices": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "orden-operaciones": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "notacion-cientifica": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "expresiones": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "productos-notables": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "factorizacion": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "fracciones-algebraicas": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "ecuaciones-lineales": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "ecuaciones-cuadraticas": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "desigualdades": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "sistemas-2x2": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "sistemas-3x3": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "exponentes": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "funciones": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "logaritmos": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "razones-trigonometricas": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "circulo-unitario": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "identidades-trigonometricas": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "ecuaciones-trigonometricas": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "gauss": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "gauss-jordan": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "matrices": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "inversa": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "determinantes": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "vectores": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "operaciones-producto-punto": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "producto-punto": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "angulo-vectores": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "producto-cruz": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "espacios-vectoriales": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "independencia-lineal": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "transformaciones-lineales": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "valores-propios": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "limites": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "continuidad": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "definicion-derivada": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "derivada-polinomio": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "regla-producto": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "regla-cociente": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "regla-cadena": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "derivadas-trascendentes": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "derivacion-implicita": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "razon-cambio": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "maximos-minimos": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "optimizacion": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "lhopital": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "antiderivadas": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "integral-definida": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "sustitucion": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "integracion-partes": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "sustitucion-trigonometrica": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "fracciones-parciales": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "integrales-impropias": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "area-curva": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "volumenes-revolucion": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 tarjetas de repaso"
+     ]
+    }
+   }
+  },
+  "ingles": {
+   "estado": "parcial",
+   "cobertura": {
+    "completas": 0,
+    "total": 66,
+    "pct": 0
+   },
+   "temas": {
+    "a1": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 19,
+     "faltan": [
+      "11 habilidades por crear",
+      "8 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "a2": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 17,
+     "faltan": [
+      "11 habilidades por crear",
+      "6 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "b1": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 15,
+     "faltan": [
+      "14 habilidades por crear",
+      "1 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "b2": {
+     "estado": "proximo",
+     "completas": 0,
+     "total": 11,
+     "faltan": [
+      "11 habilidades por crear",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "hablar-escuchar": {
+     "estado": "herramientas",
+     "completas": 0,
+     "total": 0,
+     "faltan": [
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "examenes": {
+     "estado": "proximo",
+     "completas": 0,
+     "total": 4,
+     "faltan": [
+      "4 habilidades por crear",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    }
+   },
+   "habilidades": {
+    "verbo-to-be": {
+     "estado": "parcial",
+     "faltan": [
+      "explicación (idea, analogía y regla)",
+      "2 ejemplos resueltos (básico y tipo examen)",
+      "ejemplo con huecos",
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "explicación alternativa",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "presente-simple": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "articulos": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "plurales": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "there-is-there-are": {
+     "estado": "parcial",
+     "faltan": [
+      "explicación (idea, analogía y regla)",
+      "2 ejemplos resueltos (básico y tipo examen)",
+      "ejemplo con huecos",
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "explicación alternativa",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "can": {
+     "estado": "parcial",
+     "faltan": [
+      "explicación (idea, analogía y regla)",
+      "2 ejemplos resueltos (básico y tipo examen)",
+      "ejemplo con huecos",
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "explicación alternativa",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "preposiciones": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "chunks": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "pasado-simple": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "presente-continuo": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "futuro-going-to-will": {
+     "estado": "parcial",
+     "faltan": [
+      "explicación (idea, analogía y regla)",
+      "2 ejemplos resueltos (básico y tipo examen)",
+      "ejemplo con huecos",
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "explicación alternativa",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "vocabulario-trabajo": {
+     "estado": "parcial",
+     "faltan": [
+      "explicación (idea, analogía y regla)",
+      "2 ejemplos resueltos (básico y tipo examen)",
+      "ejemplo con huecos",
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "explicación alternativa",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "orden-palabras": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "traducir": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "presente-perfecto": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    }
+   }
+  },
+  "ciberseguridad": {
+   "estado": "parcial",
+   "cobertura": {
+    "completas": 0,
+    "total": 55,
+    "pct": 0
+   },
+   "temas": {
+    "redes-y-protocolos": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 15,
+     "faltan": [
+      "3 habilidades por crear",
+      "12 habilidades sin terminar"
+     ]
+    },
+    "conmutacion": {
+     "estado": "proximo",
+     "completas": 0,
+     "total": 7,
+     "faltan": [
+      "7 habilidades por crear",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "operacion-redes": {
+     "estado": "proximo",
+     "completas": 0,
+     "total": 3,
+     "faltan": [
+      "3 habilidades por crear",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "firewalls": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 8,
+     "faltan": [
+      "5 habilidades por crear",
+      "3 habilidades sin terminar",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "vpn-cripto": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 6,
+     "faltan": [
+      "4 habilidades por crear",
+      "2 habilidades sin terminar",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "defensa": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 16,
+     "faltan": [
+      "13 habilidades por crear",
+      "3 habilidades sin terminar",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "herramientas": {
+     "estado": "herramientas",
+     "completas": 0,
+     "total": 0,
+     "faltan": [
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    }
+   },
+   "habilidades": {
+    "osi-tcpip": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "ipv4-clases": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "binario-hex": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "subredes-cidr": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "mascaras": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "prefijo-hosts": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "vlsm": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "ipv6": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "puertos-y-servicios": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "dns": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "dhcp": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "arp": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "politicas-firewall": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "nat": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "marcas": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "cripto": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "vpn-fases": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "logs": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "incidentes": {
+     "estado": "parcial",
+     "faltan": [
+      "explicación (idea, analogía y regla)",
+      "2 ejemplos resueltos (básico y tipo examen)",
+      "ejemplo con huecos",
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "explicación alternativa",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "repaso-seguridad": {
+     "estado": "parcial",
+     "faltan": [
+      "explicación (idea, analogía y regla)",
+      "2 ejemplos resueltos (básico y tipo examen)",
+      "ejemplo con huecos",
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "explicación alternativa",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    }
+   }
+  },
+  "excel": {
+   "estado": "parcial",
+   "cobertura": {
+    "completas": 0,
+    "total": 29,
+    "pct": 0
+   },
+   "temas": {
+    "interfaz": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 4,
+     "faltan": [
+      "1 habilidades por crear",
+      "3 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "formulas": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 3,
+     "faltan": [
+      "1 habilidades por crear",
+      "2 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "resumen": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 3,
+     "faltan": [
+      "3 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "logica": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 4,
+     "faltan": [
+      "4 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "condicionales": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 2,
+     "faltan": [
+      "2 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "busqueda": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 3,
+     "faltan": [
+      "3 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "texto-fechas": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 2,
+     "faltan": [
+      "2 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "organizar-datos": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 4,
+     "faltan": [
+      "1 habilidades por crear",
+      "3 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "dinamicas": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 1,
+     "faltan": [
+      "1 habilidades sin terminar",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "graficos": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 2,
+     "faltan": [
+      "1 habilidades por crear",
+      "1 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "atajos-teclado": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 1,
+     "faltan": [
+      "1 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "escenarios": {
+     "estado": "herramientas",
+     "completas": 0,
+     "total": 0,
+     "faltan": []
+    }
+   },
+   "habilidades": {
+    "celdas": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "tipos-datos": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "formato-numeros": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "operadores": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "referencias": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "suma-promedio": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "contar-max-min": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "redondear": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "si": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "y-o": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "si-anidado": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "si-error": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "contar-si": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "sumar-si": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "buscarv": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "buscarx": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "indice-coincidir": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "texto": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "fechas": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "ordenar-filtrar": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "formato-condicional": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "validacion": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "tabla-dinamica": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 tarjetas de repaso"
+     ]
+    },
+    "graficos": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "atajos": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    }
+   }
+  },
+  "ciencia-datos": {
+   "estado": "parcial",
+   "cobertura": {
+    "completas": 0,
+    "total": 44,
+    "pct": 0
+   },
+   "temas": {
+    "estadistica": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 8,
+     "faltan": [
+      "4 habilidades por crear",
+      "4 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "probabilidad": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 9,
+     "faltan": [
+      "7 habilidades por crear",
+      "2 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "inferencia": {
+     "estado": "proximo",
+     "completas": 0,
+     "total": 7,
+     "faltan": [
+      "7 habilidades por crear",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "python-pandas": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 11,
+     "faltan": [
+      "8 habilidades por crear",
+      "3 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    },
+    "machine-learning": {
+     "estado": "parcial",
+     "completas": 0,
+     "total": 9,
+     "faltan": [
+      "8 habilidades por crear",
+      "1 habilidades sin terminar",
+      "escenario integrador",
+      "simulacro de 10–15 preguntas"
+     ]
+    }
+   },
+   "habilidades": {
+    "tipos-de-variables": {
+     "estado": "parcial",
+     "faltan": [
+      "explicación (idea, analogía y regla)",
+      "2 ejemplos resueltos (básico y tipo examen)",
+      "ejemplo con huecos",
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "explicación alternativa",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "tendencia-central": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "dispersion": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "percentiles": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "probabilidad-basica": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "probabilidad-compuesta": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "pandas-basico": {
+     "estado": "parcial",
+     "faltan": [
+      "explicación (idea, analogía y regla)",
+      "2 ejemplos resueltos (básico y tipo examen)",
+      "ejemplo con huecos",
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "explicación alternativa",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "pandas-salida": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 3 errores típicos",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "leer-grafica": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    },
+    "ml-metricas": {
+     "estado": "parcial",
+     "faltan": [
+      "≥ 3 plantillas por nivel en los 5 niveles",
+      "≥ 2 problemas de aplicación",
+      "≥ 3 tarjetas de repaso",
+      "básico, procedimiento y aplicación"
+     ]
+    }
+   }
+  }
+ }
+}

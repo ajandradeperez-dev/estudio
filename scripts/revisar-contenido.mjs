@@ -1,6 +1,6 @@
 // Revisa que las lecciones cumplan el método de aprendizaje (ver CLAUDE.md). Uso: npm run revisar
 // Sale con código 1 si alguna regla no se cumple.
-import {readdirSync,existsSync,readFileSync} from 'node:fs';
+import {readdirSync,existsSync,readFileSync,writeFileSync} from 'node:fs';
 import {join,dirname} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {coincide} from '../src/nucleo/comparar.js';
@@ -18,7 +18,7 @@ for(const id of readdirSync(dirAreas).sort()){
   const a=(await import(pathToFileURL(f).href)).default;areas[id]=[];
   for(const k of ['nombre','icono','descripcion'])if(!a[k])mal(`área ${id}`,`falta ${k}`);
 }
-const IDS_RESERVADOS=['l','ubicacion','repaso','progreso','notas','inicio','logros','perfil','cofre','jefe','retos'];
+const IDS_RESERVADOS=['l','ubicacion','repaso','progreso','notas','inicio','logros','perfil','cofre','jefe','retos','examen-final','certificado'];
 globalThis.localStorage??={getItem:()=>null,setItem(){},removeItem(){}};
 const {GENERADORES,BANCOS}=await import(pathToFileURL(join(raiz,'..','nucleo','generadores','index.js')).href);
 const unidadesIngles=new Set((await import(pathToFileURL(join(raiz,'ingles','hablar','unidades.js')).href)).UNIDADES.map(u=>u.id));
@@ -383,24 +383,14 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
   if(sinPlantillas.size)avisos.push(`generadores de Matemáticas con menos de 3 plantillas por nivel: ${[...sinPlantillas].join(', ')}`);
   console.log(`generadores: ${Object.keys(GENERADORES).length} · ${total} ejercicios generados y verificados · ${Object.keys(BANCOS).length} bancos`);
 }
-// Plan de contenido (src/contenido/PLAN.md, la fuente de verdad), retos y estado de cada tema (✅ completo / 🟡 parcial / ⚪ próximo)
+// Definición de terminado (nucleo/terminado.js): estado de cada habilidad, tema y materia → src/contenido/estado.json (lo lee
+// la app) y src/contenido/PLAN.md (el árbol con referencias, estado y cobertura; se genera aquí). Falla si una habilidad
+// marcada completa:true en temas.js no cumple los 10 puntos, y valida los retos.
 {
   const imp=r=>import(pathToFileURL(join(raiz,'..',...r.split('/'))).href);
-  const {RETOS}=await imp('nucleo/retos.js'),{revisarHabilidad}=await imp('nucleo/contenido.js'),{crearRng}=await imp('nucleo/rng.js');
+  const {RETOS}=await imp('nucleo/retos.js'),{crearRng}=await imp('nucleo/rng.js'),T=await imp('nucleo/terminado.js');
   const {PROFUNDIDADES}=await imp('nucleo/generadores/profundidad.js');
-  const fPlan=join(raiz,'..','contenido','PLAN.md');
-  // PLAN.md → {materia: [{id, nodos:['id' | 'titulo' | '🔧ir']}]}
-  const plan={};let pm=null,pt=null;
-  if(!existsSync(fPlan))mal('PLAN.md','falta src/contenido/PLAN.md');
-  else for(const linea of readFileSync(fPlan,'utf8').split(/\r?\n/)){
-    let x;
-    if((x=linea.match(/^## .*`([a-z0-9-]+)`/))){pm=plan[x[1]]=[];pt=null}
-    else if((x=linea.match(/^### .*`([a-z0-9-]+)`\s*$/))&&pm){pt={id:x[1],nodos:[]};pm.push(pt)}
-    else if(pt&&(x=linea.match(/^- \[x\] .*`([a-z0-9-]+)`\s*$/)))pt.nodos.push(x[1]);
-    else if(pt&&(x=linea.match(/^- \[ \] (.+?)\s*$/)))pt.nodos.push(x[1]);
-    else if(pt&&(x=linea.match(/^- 🔧 .*→ `([^`]+)`\s*$/)))pt.nodos.push('🔧'+x[1]);
-  }
-  const estados={completo:0,parcial:0,proximo:0},idsRetos=new Set();let nRetos=0;
+  const idsRetos=new Set();let nRetos=0;
   for(const r of RETOS){
     const dr=`reto ${r.id}`;
     if(idsRetos.has(r.id))mal(dr,'id repetido');idsRetos.add(r.id);
@@ -413,34 +403,63 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
       if(malas.length){mal(dr,'genera preguntas sin regla o cuya respuesta no pasa su verificar');break}
       nRetos+=l.length}
   }
-  for(const materia of readdirSync(raiz).sort()){
+  const retosGen=T.retosPorGenerador(RETOS);
+  const NOMBRES={ciberseguridad:'💼 Curso · 🛡️ Ciberseguridad',excel:'💼 Curso · 📊 Excel',ingles:'🇺🇸 Inglés (MCER A1→B2, método de Nation)',matematicas:'➗ Matemáticas',['ciencia-datos']:'📊 Ciencia de datos'};
+  const ORDEN=['matematicas','ingles','ciberseguridad','excel','ciencia-datos'];
+  const estado={generado:new Date().toISOString().slice(0,10),materias:{}};
+  const bt='`';
+  let plan=['# Plan de contenido','','Árbol completo del contenido (temarios de referencia en la Parte 2 del estándar). **Se genera con `npm run revisar`** a partir de cada',
+    '`src/materias/<materia>/temas.js` y de la «Definición de terminado» (`src/nucleo/terminado.js`); no lo edites a mano.','',
+    'Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáticas, Ciencia de datos, Lectura) · 💼 Cursos (Ciberseguridad, Excel y los que ganen en 🗳️ Propuestas).','',
+    '- `- [x] ✅ Título `id` — referencia` → habilidad completa (cumple los 10 puntos) · `🟡` → existe pero le falta algo (se indica qué).',
+    '- `- [ ] Título — referencia` → pendiente (en la app: ⚪ Próximamente). `- 🔧 Título → ruta` → herramienta.',
+    '- Habilidad ✅: objetivo y referencia, explicación (idea, analogía, regla), 2 ejemplos resueltos (básico y tipo examen), ejemplo con huecos,',
+    '  generador de 5 niveles con ≥ 3 plantillas por nivel, ≥ 3 errores típicos, ≥ 2 aplicaciones, explicación alternativa, ≥ 3 tarjetas y profundidades.',
+    '- Tema ✅: todo ✅, sin pendientes, escenario integrador, simulacro de 10–15 preguntas, resumen (hoja del tema) y 1–3 referencias.',
+    '- Materia ✅: todos sus temas ✅, examen final acumulativo y certificado interno (sin valor oficial).',''];
+  const resumen=[];
+  for(const materia of ORDEN){
     const fTemas=join(raiz,materia,'temas.js');if(!existsSync(fTemas))continue;
-    const defs=(await import(pathToFileURL(fTemas).href)).default,enPlan=plan[materia];
-    if(!enPlan){mal('PLAN.md',`falta la materia ${materia}`);continue}
-    if(defs.map(t=>t.id).join(',')!==enPlan.map(t=>t.id).join(','))mal(`PLAN.md ${materia}`,`los temas no coinciden con temas.js (${enPlan.map(t=>t.id).join(', ')} ≠ ${defs.map(t=>t.id).join(', ')}): vuelve a generar el árbol`);
-    const dirTemas=join(raiz,materia,'temas');
+    const defs=(await import(pathToFileURL(fTemas).href)).default,dirTemas=join(raiz,materia,'temas');
+    const em={estado:'parcial',cobertura:{completas:0,total:0,pct:0},temas:{},habilidades:{}};
+    const lineasM=[];
     for(const t of defs){
-      const pt=enPlan.find(x=>x.id===t.id),nodos=t.nodos.map(n=>n.ir?'🔧'+n.ir:n.proximo?n.titulo:n.id);
-      if(pt&&nodos.join('|')!==pt.nodos.join('|'))mal(`PLAN.md ${materia}/${t.id}`,'los nodos no coinciden con temas.js (mismo orden; [x] id para lo que existe y [ ] título para lo pendiente)');
-      // habilidades del tema = nodo + su lección escrita (si tiene)
       const dir=join(dirTemas,t.id),archivos=existsSync(dir)?readdirSync(dir).filter(f=>f.endsWith('.js')):[];
-      const habs=[];
-      for(const n of t.nodos.filter(n=>!n.ir&&!n.proximo)){
+      const habs=[];const lineasT=[];
+      for(const n of t.nodos){
+        if(n.ir){lineasT.push(`- 🔧 ${n.titulo} → ${bt}${n.ir}${bt}`);continue}
+        if(n.proximo){lineasT.push(`- [ ] ${n.titulo}${n.ref?` — ${n.ref}`:''}`);continue}
         const f=archivos.find(f=>f.replace(/^\d+-/,'').replace(/\.js$/,'')===n.id),l=f?(await import(pathToFileURL(join(dir,f)).href)).default:{};
         for(const ej of (l.rondas||[]).flat())if(ej.profundidad&&!PROFUNDIDADES.includes(ej.profundidad))mal(`${materia}/${n.id}`,`profundidad inválida: ${ej.profundidad}`);
-        habs.push({...l,...n,titulo:n.titulo||l.titulo});
+        const h={...l,...n,titulo:n.titulo||l.titulo||n.id};
+        if(!n.ref)mal(`${materia}/${n.id}`,'falta ref (referencia al temario) en temas.js');
+        const r=T.revisarHabilidad(h,retosGen);habs.push(r);
+        if(n.completa&&!r.completa)mal(`${materia}/${n.id}`,`está marcada como completa pero le falta: ${r.faltan.join(', ')}`);
+        em.habilidades[n.id]={estado:r.completa?'completa':'parcial',faltan:r.faltan};
+        lineasT.push(`- [x] ${r.completa?'✅':'🟡'} ${h.titulo} ${bt}${n.id}${bt}${n.ref?` — ${n.ref}`:''}${r.completa?'':` · falta: ${r.faltan.join(', ')}`}`);
       }
-      const retos=RETOS.filter(r=>r.materia===materia&&r.tema===t.id),prox=t.nodos.filter(n=>n.proximo).length;
-      const rev=habs.map(h=>({h,...revisarHabilidad(h)})),completas=rev.filter(x=>x.completa).length;
-      const estado=!habs.length?'proximo':!prox&&completas===habs.length&&retos.length?'completo':'parcial';
-      estados[estado]++;
-      if(estado==='parcial'){const falta=[...(retos.length?[]:['retos de aplicación o escenario']),...(prox?[`${prox} habilidades próximamente`]:[]),...rev.filter(x=>!x.completa).map(x=>`${x.h.id}: ${x.faltan.join(', ')}`)];
-        avisos.push(`${materia}/${t.id} 🟡 falta: ${falta.join(' · ')}`)}
+      const retosT=RETOS.filter(r=>r.materia===materia&&r.tema===t.id),sim=retosT.find(r=>r.simulacro);
+      let nSim=0;if(sim?.crear)try{nSim=sim.crear(crearRng(5)).filter(Boolean).length}catch(e){}
+      const rt=T.revisarTema(t,habs,retosT,nSim);
+      em.temas[t.id]={estado:rt.estado,completas:rt.completas,total:rt.total,faltan:rt.faltan};
+      if(rt.estado!=='herramientas'){em.cobertura.completas+=rt.completas;em.cobertura.total+=rt.total}
+      const ic={completo:'✅',parcial:'🟡',proximo:'⚪',herramientas:'🔧'}[rt.estado];
+      lineasM.push('',`### ${ic} ${t.titulo} ${bt}${t.id}${bt}`,'',`${rt.completas}/${rt.total} habilidades ✅${rt.faltan.length?` · falta: ${rt.faltan.join(' · ')}`:''}`,'',...lineasT);
+      if(t.referencias?.length)lineasM.push('',`📚 Para profundizar: ${t.referencias.join(' · ')}`);
     }
+    const c=em.cobertura;c.pct=c.total?Math.round(c.completas/c.total*100):0;
+    const temasEval=Object.values(em.temas).filter(x=>x.estado!=='herramientas');
+    em.estado=temasEval.length&&temasEval.every(x=>x.estado==='completo')?'completo':c.completas?'parcial':'parcial';
+    estado.materias[materia]=em;
+    plan.push(`## ${em.estado==='completo'?'✅':'🟡'} ${NOMBRES[materia]||materia} ${bt}${materia}${bt}`,'',`**Cobertura del temario: ${c.pct} %** (${c.completas} de ${c.total} habilidades ✅)`,...lineasM,'');
+    resumen.push(`${materia} ${c.pct}% (${c.completas}/${c.total})`);
   }
+  plan.push('## 📚 Lectura `lectura` (⚪ Próximamente)','','Agregar libros, avance por capítulos, citas, notas y repaso de ideas clave. Modelo de datos documentado en src/materias/lectura/materia.js y en CLAUDE.md.','');
   for(const r of RETOS){const defs=existsSync(join(raiz,r.materia,'temas.js'))?(await import(pathToFileURL(join(raiz,r.materia,'temas.js')).href)).default:[];
     if(!defs.some(t=>t.id===r.tema))mal(`reto ${r.id}`,`el tema ${r.materia}/${r.tema} no existe`)}
-  console.log(`plan: PLAN.md coincide con temas.js · temas ✅ ${estados.completo} · 🟡 ${estados.parcial} · ⚪ ${estados.proximo} · ${RETOS.length} retos (${nRetos} preguntas verificadas)`);
+  writeFileSync(join(raiz,'..','contenido','estado.json'),JSON.stringify(estado,null,1)+'\n');
+  writeFileSync(join(raiz,'..','contenido','PLAN.md'),plan.join('\n'));
+  console.log(`terminado: cobertura ${resumen.join(' · ')} · ${RETOS.length} retos (${nRetos} preguntas verificadas) → estado.json y PLAN.md`);
 }
 // Mis materias: esquema, lector de temarios, emparejamiento, plan (nunca un tema después de su examen) y bancos generados (fixtures, sin API)
 {

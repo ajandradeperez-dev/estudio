@@ -410,3 +410,13 @@ body{padding-top:var(--franja,0px)}
 
 /* Diagnóstico del botón Atrás (Acerca de) */
 .diag-texto{white-space:pre-wrap;word-break:break-all;font-size:12px;max-height:50vh;overflow:auto}
+
+/* Cobertura, estado del tema y certificado interno */
+.cobertura{margin-top:12px}
+.tema-estado{margin:12px 0}
+.certificado{border:3px double var(--area,var(--primary));border-radius:var(--r3);padding:var(--s6) var(--s4);text-align:center;background:var(--surface)}
+.certificado h1{margin:8px 0;font-size:28px}
+.certificado h2{margin:8px 0}
+.cert-k{text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:var(--muted);font-size:13px}
+.cert-puntaje{font-size:22px;font-weight:800;color:var(--area,var(--primary))}
+.cert-aviso{margin-top:16px}

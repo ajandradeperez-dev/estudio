@@ -18,6 +18,7 @@ import {vistaPropuestas,recibirEnlaceMagico,sincronizarPropuestas} from './nucle
 import {cargarMias} from './nucleo/mias/datos.js';
 import {vistaUbicacion} from './nucleo/ubicacion.js';
 import {vistaRetos} from './nucleo/vista-retos.js';
+import {vistaExamenFinal,vistaCertificado} from './nucleo/examen.js';
 import {aplicarTema} from './nucleo/ajustes.js';
 import {cerrarHoja,intro,boton,aviso} from './nucleo/ui.js';
 import {cerrarProcedimiento} from './nucleo/procedimiento.js';
@@ -46,6 +47,8 @@ function resolver(ruta){
   if(x.tipo==='leccion')return {...x,v:vistaHabilidad(m,x.l),ultimo:true};
   if(x.tipo==='cofre'){const v=vistaCofre(m,x.t,x.k);return v?{...x,v}:{...x,tipo:'tema',ruta:rutaTema(m,x.t),v:vistaTema(m,x.t)}}
   if(x.tipo==='jefe')return {...x,v:vistaJefe(m,x.t)};
+  if(x.tipo==='examen-final')return {...x,v:vistaExamenFinal(m)};
+  if(x.tipo==='certificado')return {...x,v:vistaCertificado(m)};
   if(x.tipo==='ubicacion')return {...x,v:vistaUbicacion(m)};
   if(x.tipo==='retos')return {...x,v:vistaRetos(m,x.t)};
   if(x.tipo==='seccion'){

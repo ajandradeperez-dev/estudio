@@ -17,6 +17,7 @@ import {preguntaHabilidad} from './practica.js';
 import {coincide} from './comparar.js';
 import {reto} from './retos.js';
 import {crearRng} from './rng.js';
+import {GENERADORES} from './generadores/index.js';
 
 const ordenar=(a,b)=>(a.orden??99)-(b.orden??99)||a.nombre.localeCompare(b.nombre);
 export const areas=Object.entries(import.meta.glob('../areas/*/area.js',{eager:true}))
@@ -75,6 +76,8 @@ export function analizar(ruta){
   if(x==='l'&&leccion(m,y)){const l=leccion(m,y);return {...base,tipo:'leccion',ruta:rutaLeccion(m,l),l,t:tema(m,l.tema)}}
   if(x==='retos'&&!m.secciones?.retos)return {...base,tipo:'retos',ruta:`${rutaMateria(m)}/retos`,t:null};
   if(x==='ubicacion'&&m.lecciones?.length)return {...base,tipo:'ubicacion',ruta:`${rutaMateria(m)}/ubicacion`};
+  if(x==='examen-final'&&m.temas)return {...base,tipo:'examen-final',ruta:`${rutaMateria(m)}/examen-final`};
+  if(x==='certificado'&&m.temas)return {...base,tipo:'certificado',ruta:`${rutaMateria(m)}/certificado`};
   const t=x&&tema(m,x);
   if(t){
     if(y==='cofre'&&+z>0)return {...base,tipo:'cofre',ruta:`${rutaTema(m,t)}/cofre/${+z}`,t,k:+z};
@@ -108,7 +111,8 @@ export function padreDe(x){
   if(x.tipo==='tema')return rm;
   if(x.tipo==='leccion')return x.t?rutaTema(m,x.t):rm;
   if(['cofre','jefe'].includes(x.tipo)||(x.tipo==='retos'&&x.t))return rutaTema(m,x.t);
-  if(x.tipo==='retos'||x.tipo==='ubicacion')return rm;
+  if(['retos','ubicacion','examen-final'].includes(x.tipo))return rm;
+  if(x.tipo==='certificado')return `${rm}/examen-final`;
   if(x.tipo==='seccion'){
     const resto=x.resto||[],raiz=`${rm}/${x.seccion}`;
     if(!resto.length)return rm;
@@ -145,6 +149,12 @@ export function ejercicioPorRef(ref){
     const nivel=resto[0]==='g'?+resto[2]||1:nivelDe(datosHabilidad(progreso(),m.id,h.id)?.rating||1);
     const p=preguntaHabilidad(m,h,{nivel,retirados:{has:k=>basicoRetirado(k)}});
     return p?{materia:m,titulo:h.titulo,pregunta:{...p,ref,habilidad:h.id}}:null;
+  }
+  // Tarjeta de un concepto clave de una habilidad ('<materia>/k/<habilidad>/<i>'): pregunta → respuesta (tarjetas del generador)
+  if(resto[0]==='k'){
+    const h=leccion(m,resto[1]),tj=(h&&(GENERADORES[h.gen]?.tarjetas||h.tarjetas))||[],c=tj[+resto[2]];if(!c)return null;
+    const [q,a]=c;
+    return {materia:m,titulo:`🃏 ${h.titulo}`,pregunta:{enunciado:q,respuesta:a,verificar:e=>tarjetaBien(e,a),regla:`Concepto clave de «${h.titulo}».`,ref,tarjeta:true}};
   }
   // Reto marcado con ⭐ ('<materia>/r/<reto>'): cada vez sale una pregunta nueva del reto
   if(resto[0]==='r'){

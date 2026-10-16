@@ -12,7 +12,8 @@ import {estadosTema,cofresTema,cofreAbierto,jefeAbierto,jefeVencido} from './cam
 import {nivelDe,estadoDominio,ULTIMAS} from './metodo.js';
 import {recomendar} from './recomendador.js';
 import {repartoUbicacion} from './metodo.js';
-import {estadoTema,ESTADO} from './contenido.js';
+import {estadoTema,ESTADO,cobertura,textoCobertura,estadoMateria} from './contenido.js';
+import {resultadoFinal,APROBAR} from './examen.js';
 import {retosDe} from './retos.js';
 
 const secciones=m=>Object.entries(m.secciones||{});
@@ -49,6 +50,8 @@ function niveles(c){
   if(c.tipo==='leccion'){if(c.t)n.push({ruta:rutaTema(m,c.t),txt:`${c.t.icono} ${c.t.titulo}`});return {n,actual:c.l.titulo}}
   if(c.tipo==='cofre'||c.tipo==='jefe'){n.push({ruta:rutaTema(m,c.t),txt:`${c.t.icono} ${c.t.titulo}`});return {n,actual:c.tipo==='cofre'?'🎁 Cofre':'🏆 Jefe'}}
   if(c.tipo==='ubicacion')return {n,actual:'Examen de ubicación'};
+  if(c.tipo==='examen-final')return {n,actual:'🎓 Examen final'};
+  if(c.tipo==='certificado'){n.push({ruta:`${rutaMateria(m)}/examen-final`,txt:'🎓 Examen final'});return {n,actual:'🏅 Certificado'}}
   if(c.tipo==='retos'){if(c.t)n.push({ruta:rutaTema(m,c.t),txt:`${c.t.icono} ${c.t.titulo}`});return {n,actual:'🎯 Retos'}}
   // Sección: el título solo si es su portada; dentro, la sección pone sus propias migas
   const s=m.secciones[c.seccion];
@@ -137,12 +140,33 @@ ${retosDe(m.id).length?boton({texto:`🎯 Retos y escenarios (${retosDe(m.id).le
       return `<div class="area-${tono}">${cabecera({icono:m.icono||m.sigla,titulo:m.nombre,desc:m.descripcion})}
 ${r.ruta?htmlSiguiente(r):''}
 ${m.destacado?`<button class="destacado" data-go="${m.destacado.ruta}"><span class="destacado-titulo">${m.destacado.titulo}</span><span class="nota">${m.destacado.desc}</span></button>`:''}
-<div class="card">${htmlNivel(d.xp)}</div>
+<div class="card">${htmlNivel(d.xp)}${m.temas?htmlCobertura(m):''}</div>
 ${temas}
+${m.temas?htmlExamenFinal(m):''}
 ${ls.length?`<details class="como-se-usa" style="margin-top:16px"><summary>🧭 ¿Ya sabes algo? Examen de ubicación</summary><p class="nota">${u?`Último: ${u.aciertos} de ${u.total} aciertos · ${u.dominadas.length} lecciones marcadas como dominadas.`:`${k} preguntas para saltar lo que ya sabes.`}</p>${boton({texto:u?'Repetir examen':'Hacer el examen',go:`${rutaMateria(m)}/ubicacion`,clase:'ghost'})}</details>`:''}
 ${m.temas?'':grupos.map(g=>`<h2>${g||'Herramientas'}</h2><div class="lista-nav">${ss.filter(([,s])=>s.grupo===g).map(([k,s])=>tarjetaNav({go:`${rutaMateria(m)}/${k}`,icono:d.visitadas.includes(k)?'✅':'🔧',titulo:s.titulo,desc:s.desc})).join('')}</div>`).join('')}</div>`;
     }
   };
+}
+
+/* ---------- cobertura, estado del tema, para profundizar y examen final ---------- */
+function htmlCobertura(m){
+  const c=cobertura(m.id),e=ESTADO[estadoMateria(m.id).estado]||ESTADO.parcial;
+  return `<div class="cobertura">${barra(c.completas,c.total)}<p class="nota" style="margin:6px 0 0">${e.icono} ${textoCobertura(c)}</p></div>`;
+}
+function htmlEstadoTema(m,t){
+  const e=estadoTema(m,t),est=ESTADO[e.estado]||ESTADO.parcial;
+  if(e.estado==='herramientas')return '';
+  return `<div class="card tema-estado"><p style="margin:0"><b>${est.icono} ${est.texto}</b> · Cobertura del tema: ${e.total?Math.round(e.completas/e.total*100):0} % (${e.completas} de ${e.total} habilidades ✅)</p>
+${e.faltan?.length?`<details class="como-se-usa"><summary>¿Qué falta para ✅?</summary><ul class="nota">${e.faltan.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></details>`:''}
+<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">${boton({texto:'📄 Hoja del tema',go:`notas/tema/${m.id}/${t.id}`,clase:'ghost'})}</div>
+${t.referencias?.length?`<details class="como-se-usa"><summary>📚 Para profundizar</summary><ul class="nota">${t.referencias.map(r=>`<li>${esc(r)}</li>`).join('')}</ul></details>`:''}</div>`;
+}
+function htmlExamenFinal(m){
+  const r=resultadoFinal(m.id);
+  return `<h2>🎓 Examen final y certificado</h2><div class="card"><p class="nota" style="margin-top:0">Examen acumulativo de toda la materia, con tiempo y sin pistas. Con ${Math.round(APROBAR*100)} % o más obtienes un certificado interno (sin valor oficial).</p>
+${r?`<p style="margin:0 0 8px">Tu mejor resultado: <b>${Math.round(r.pct*100)} %</b> · ${r.fecha}</p>`:''}
+<div class="row" style="gap:8px;flex-wrap:wrap">${boton({texto:r?'🎓 Presentar otra vez':'🎓 Examen final',go:`${rutaMateria(m)}/examen-final`,clase:'area'})}${r&&r.pct>=APROBAR?boton({texto:'🏅 Certificado',go:`${rutaMateria(m)}/certificado`,clase:'ghost'}):''}</div></div>`;
 }
 
 /* ---------- camino de un tema: nodos circulares en zigzag ---------- */
@@ -171,7 +195,8 @@ export function vistaTema(m,t){
       };
       const n=t.lecciones.length;
       return `<div class="area-${tono}">${cabecera({icono:t.icono,titulo:t.titulo,desc:t.descripcion})}
-${n?`${barra(c.hechas,c.total)}<p class="nota" style="margin-top:6px">${c.hechas}/${c.total} dominadas · ${ESTADO[estadoTema(m,t).estado].icono} ${ESTADO[estadoTema(m,t).estado].texto}</p>`:''}
+${n?`${barra(c.hechas,c.total)}<p class="nota" style="margin-top:6px">${c.hechas}/${c.total} dominadas</p>`:''}
+${htmlEstadoTema(m,t)}
 ${retosDe(m.id,t.id).length?boton({texto:`🎯 Retos y escenarios (${retosDe(m.id,t.id).length})`,go:`${rutaTema(m,t)}/retos`,clase:'ghost ancho'}):''}
 <ol class="camino">${t.nodos.map(nodo).join('')}</ol></div>`;
     },

@@ -10,6 +10,8 @@ import {usuario} from './usuario.js';
 import {instalada,puedeInstalar,instalar,esIOS,invitar,mostrarQR,activarRecordatorio,soporteNotificaciones} from './app.js';
 import {APK_URL,APP_NOMBRE} from '../config.js';
 import {esc} from '../utilidades.js';
+import {cobertura,textoCobertura,estadoMateria,ESTADO} from './contenido.js';
+import {resultadoFinal} from './examen.js';
 const fila=({go,id,href,icono,titulo,desc})=>`${href?`<a class="tarjeta-nav" href="${href}" rel="noopener"`:`<button class="tarjeta-nav"${go!==undefined?` data-go="${go}"`:''}${id?` id="${id}"`:''}`}><span class="icono" aria-hidden="true">${icono}</span><span class="texto"><span class="titulo">${titulo}</span><span class="desc">${desc}</span></span>${href?'</a>':'</button>'}`;
 
 const est=(v,k)=>`<div class="estadistica"><b>${v}</b><span>${k}</span></div>`;
@@ -52,7 +54,7 @@ export const perfil={
 <h2>Por materia</h2>
 ${materias.filter(m=>!m.proximo).map(m=>{const d=datosMateria(p,m.id);
   return `<div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${m.icono||''} ${m.nombre}</h3>${boton({texto:'Abrir',go:rutaMateria(m),clase:'ghost btn-chico'})}</div>
-<div style="margin-top:10px">${htmlNivel(d.xp)}</div>${htmlRetirados(p,m)}</div>`}).join('')}
+<div style="margin-top:10px">${htmlNivel(d.xp)}</div>${m.temas?(c=>`<div style="margin-top:10px">${barra(c.completas,c.total)}<p class="nota" style="margin:6px 0 0">${(ESTADO[estadoMateria(m.id).estado]||ESTADO.parcial).icono} ${textoCobertura(c)}${resultadoFinal(m.id)?` · examen final: ${Math.round(resultadoFinal(m.id).pct*100)} %`:''}</p></div>`)(cobertura(m.id)):''}${htmlRetirados(p,m)}</div>`}).join('')}
 
 <h2>Ajustes</h2>
 <div class="card">

@@ -1,34 +1,20 @@
-/* Estado del contenido de cada tema según src/contenido/PLAN.md (la fuente de verdad; temas.js la sigue):
-   ✅ completo · 🟡 parcial · ⚪ próximamente. Sin DOM: también lo usa npm run revisar.
-   Habilidad completa: mini explicación + ejemplo resuelto + ejemplo con huecos (salen de los pasos de su generador o de su lección)
-   y ejercicios de al menos dos profundidades: básico y procedimiento (o de nivel superior).
-   Tema completo: todas sus habilidades completas, ningún nodo "Próximamente" y al menos 1 reto de aplicación o escenario (retos.js). */
-import {crear,GENERADORES,BANCOS} from './generadores/index.js';
-import {retosDe} from './retos.js';
+/* Estado del contenido para la app: lo calcula npm run revisar con la «Definición de terminado» (nucleo/terminado.js) y lo
+   deja en src/contenido/estado.json, para no tener que generar cientos de ejercicios al abrir una pantalla.
+   ✅ completo · 🟡 en construcción · ⚪ próximamente · 🔧 solo herramientas. Cobertura del temario = habilidades ✅ / total del plan. */
+import ESTADOS from '../contenido/estado.json';
 
-const cacheProf=new Map();
-// Profundidades que aparecen en una habilidad (muestreo del generador en sus 5 niveles + lección + banco)
-export function profundidadesDe(h){
-  if(cacheProf.has(h)) return cacheProf.get(h);
-  const s=new Set();
-  if(h.gen&&GENERADORES[h.gen])for(let n=1;n<=5;n++)for(let i=0;i<4;i++){try{s.add(crear(h.gen,n,{semilla:i*131+n}).profundidad)}catch(e){}}
-  for(const ej of (h.rondas||[]).flat())s.add(ej.profundidad||h.profundidad||'basico');
-  if(h.banco&&BANCOS[h.banco])s.add(h.banco==='ciber/incidentes'?'escenario':'basico');
-  cacheProf.set(h,s);return s;
-}
-export function revisarHabilidad(h){
-  const g=h.gen&&GENERADORES[h.gen],p=profundidadesDe(h),faltan=[];
-  if(!(h.explicacion?.length||g?.explicacion))faltan.push('mini explicación');
-  if(!(g||h.ejemplos?.length))faltan.push('ejemplo resuelto');
-  if(!g)faltan.push('ejemplo con huecos (necesita un generador con pasos)');
-  if(!p.has('basico'))faltan.push('ejercicios básicos');
-  if(![...p].some(x=>x!=='basico'))faltan.push('ejercicios de procedimiento');
-  return {completa:!faltan.length,faltan,profundidades:[...p]};
-}
+export const ESTADO={completo:{icono:'✅',texto:'Completo'},parcial:{icono:'🟡',texto:'En construcción'},proximo:{icono:'⚪',texto:'Próximamente'},herramientas:{icono:'🔧',texto:'Herramientas'}};
+const vacio={estado:'parcial',cobertura:{completas:0,total:0,pct:0},temas:{},habilidades:{}};
+export const estadoMateria=mid=>ESTADOS.materias?.[mid]||vacio;
+// Estado de un tema: {estado, completas, total, faltan}
 export function estadoTema(m,t){
-  const habs=(t.lecciones||[]),proximos=(t.nodos||[]).filter(n=>n.proximo).length,retos=retosDe(m.id,t.id);
-  const revisadas=habs.map(h=>({h,...revisarHabilidad(h)})),completas=revisadas.filter(x=>x.completa).length;
-  const estado=!habs.length?'proximo':!proximos&&completas===habs.length&&retos.some(r=>['aplicacion','escenario'].includes(r.profundidad))?'completo':'parcial';
-  return {estado,habilidades:habs.length,completas,proximos,retos:retos.length,revisadas};
+  const e=estadoMateria(m.id).temas[t.id];
+  if(e)return e;
+  const habs=t.lecciones?.length||0,prox=(t.nodos||[]).filter(n=>n.proximo).length;
+  return {estado:!habs&&!prox?'herramientas':!habs?'proximo':'parcial',completas:0,total:habs+prox,faltan:[]};
 }
-export const ESTADO={completo:{icono:'✅',texto:'Completo'},parcial:{icono:'🟡',texto:'En construcción'},proximo:{icono:'⚪',texto:'Próximamente'}};
+// Estado de una habilidad: {estado:'completa'|'parcial', faltan}
+export const estadoHabilidad=(mid,hid)=>estadoMateria(mid).habilidades[hid]||{estado:'parcial',faltan:[]};
+export const cobertura=mid=>estadoMateria(mid).cobertura;
+// "Cobertura del temario: X %" con su barra
+export const textoCobertura=c=>`Cobertura del temario: ${c.pct} % (${c.completas} de ${c.total} habilidades ✅)`;

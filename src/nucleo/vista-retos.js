@@ -6,6 +6,7 @@ import {progreso,registrarEjercicio,alternarEstrella} from './progreso.js';
 import {retosDe,reto as retoDe} from './retos.js';
 import {NOMBRE_PROFUNDIDAD} from './generadores/profundidad.js';
 import {cabecera,puntos,chip,vacio,boton,aviso} from './ui.js';
+import {sesionExamen} from './examen.js';
 import {crearSesion} from './sesion.js';
 import {htmlCierre} from './cierre.js';
 import {crearRng} from './rng.js';
@@ -23,6 +24,8 @@ export function vistaRetos(m,t=null){
   function empezar(r){
     const preguntas=r.crear(crearRng()).filter(Boolean),ref=`${m.id}/r/${r.id}`;
     if(!preguntas.length){aviso('Este reto no tiene preguntas por ahora.');return false}
+    // Simulacro de examen: con tiempo, sin pistas, sin feedback hasta el final, calificación y revisión de cada error
+    if(r.simulacro){ses=sesionExamen({titulo:r.titulo,m,salir,preguntas,ref});ses.alEntrar?.();return true}
     ses=crearSesion({
       titulo:r.titulo,tono:tonoDe(m),salir,materia:m.id,
       total:()=>preguntas.length,

@@ -7,7 +7,7 @@
    - Dominio: ≥80 % de las últimas 10 respuestas sin pista y práctica en 2 días distintos. Al dominarla: resumen para Mis notas.
    También: cofres (repaso intercalado de 3 habilidades) y jefe del tema (mezcla cronometrada). */
 import {$,esc} from '../utilidades.js';
-import {progreso,datosMateria,datosHabilidad,registrarEjercicio,registrarRespuesta,cerrarSesionHabilidad,guardarNota,abrirCofre,guardarJefe,sumarXP,basicoRetirado,registrarBasico,pedirRefuerzo,tomarRefuerzo,retiradosDe,reactivarBasicos} from './progreso.js';
+import {progreso,datosMateria,datosHabilidad,registrarEjercicio,registrarRespuesta,cerrarSesionHabilidad,guardarNota,abrirCofre,guardarJefe,sumarXP,basicoRetirado,registrarBasico,pedirRefuerzo,tomarRefuerzo,retiradosDe,reactivarBasicos,programarRepaso} from './progreso.js';
 import {SESION,ULTIMAS,DIAS_DOMINIO,DOMINIO,estadoDominio,nivelDe,frases} from './metodo.js';
 import {boton,chip,puntos,cabecera,barra,aviso} from './ui.js';
 import {agregarAlTema,bloqueExplicacion,crearNota} from './cuaderno/notas.js';
@@ -113,7 +113,9 @@ function sesionHabilidad(m,h,{salir,volver,alTerminar}){
     },
     fin(st){
       const cont=st.historial.filter(x=>x.p.cuenta);
-      if(!res)res=cerrarSesionHabilidad(m.id,h.id,{ok:cont.filter(x=>x.r.correcto&&!x.r.pista).length,total:cont.length});
+      if(!res){res=cerrarSesionHabilidad(m.id,h.id,{ok:cont.filter(x=>x.r.correcto&&!x.r.pista).length,total:cont.length});
+        // tarjetas de los conceptos clave de la habilidad: entran al repaso espaciado desde la primera práctica (ref '<materia>/k/<habilidad>/<i>')
+        const tj=generadorDe(h)?.tarjetas||h.tarjetas||[];if(tj.length&&cont.length)programarRepaso(tj.map((_,i)=>`${m.id}/k/${h.id}/${i}`))}
       alTerminar?.(res);
       const nota=progreso().notas[`${m.id}/${h.id}`];
       const reglas=[...new Set(st.historial.filter(x=>!x.r.correcto&&x.p.regla).map(x=>x.p.regla))];

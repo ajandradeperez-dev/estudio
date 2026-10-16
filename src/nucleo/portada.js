@@ -20,6 +20,13 @@ const secciones=m=>Object.entries(m.secciones||{});
 const dominada=(d,l)=>!!d.lecciones[l.id]?.dominada;
 const conteo=(d,ls)=>({hechas:ls.filter(l=>dominada(d,l)).length,total:ls.length});
 const tonoDe=a=>a.tono||a.id;
+// Tiempo estimado para dominar lo que falta: ~20 min por habilidad nueva (2–3 sesiones de 8) y ~10 si ya se empezó
+const minutosHab=(d,l)=>{const h=d.lecciones[l.id];return h?.dominada?0:h?.intentos?10:20};
+const minutosTema=(d,t)=>t.lecciones.reduce((s,l)=>s+minutosHab(d,l),0);
+const textoMin=m=>m<60?`${m} min`:`${Math.floor(m/60)} h${m%60?` ${m%60} min`:''}`;
+// Tema en curso: el primero con habilidades sin dominar; el que sigue después de uno dado
+const temaEnCurso=(m,d)=>(m.temas||[]).find(t=>t.lecciones.length&&t.lecciones.some(l=>!dominada(d,l)));
+const temaSiguiente=(m,d,t)=>{const ts=(m.temas||[]).filter(x=>x.lecciones.length),i=ts.indexOf(t);return ts.slice(i+1).find(x=>x.lecciones.some(l=>!dominada(d,l)))||ts.find(x=>x!==t&&x.lecciones.some(l=>!dominada(d,l)))};
 
 export function htmlNivel(xp){
   const n=nivel(xp);
@@ -134,13 +141,13 @@ export function vistaMateria(m){
       const temas=m.temas?`<h2>Temas</h2><div class="lista-nav">${m.temas.map(t=>{const c=conteo(d,t.lecciones),prox=!t.lecciones.length;
         const clase=prox&&!t.nodos.some(n=>n.ir)?'proximo':'',e=ESTADO[estadoTema(m,t).estado];
         return tarjetaNav({go:rutaTema(m,t),icono:t.icono,titulo:t.titulo,desc:t.descripcion,clase,
-          pie:prox?(t.nodos.some(n=>n.ir)?`<span class="nota">${t.nodos.filter(n=>n.ir).length} herramientas</span>`:chip(`${e.icono} ${e.texto}`)):`${barra(c.hechas,c.total)}<span class="nota">${e.icono} ${e.texto} · ${c.hechas}/${c.total} habilidades${t.proximas.length?` · ${t.proximas.length} pronto`:''}</span>`})}).join('')}</div>
+          pie:prox?(t.nodos.some(n=>n.ir)?`<span class="nota">${t.nodos.filter(n=>n.ir).length} herramientas</span>`:chip(`${e.icono} ${e.texto}`)):`${barra(c.hechas,c.total)}<span class="nota">${e.icono} ${e.texto} · ${c.hechas}/${c.total} habilidades${t.proximas.length?` · ${t.proximas.length} pronto`:''}${c.hechas<c.total?` · ≈ ${textoMin(minutosTema(d,t))}`:' · ✔ terminado'}</span>`})}).join('')}</div>
 ${retosDe(m.id).length?boton({texto:`🎯 Retos y escenarios (${retosDe(m.id).length})`,go:`${rutaMateria(m)}/retos`,clase:'ghost ancho'}):''}`
         :ls.length?`<h2>Lecciones</h2><div class="lista-nav">${ls.map((l,i)=>tarjetaNav({go:rutaLeccion(m,l),icono:dominada(d,l)?'✅':i+1,titulo:l.titulo,desc:l.resumen})).join('')}</div>`:'';
       return `<div class="area-${tono}">${cabecera({icono:m.icono||m.sigla,titulo:m.nombre,desc:m.descripcion})}
 ${r.ruta?htmlSiguiente(r):''}
 ${m.destacado?`<button class="destacado" data-go="${m.destacado.ruta}"><span class="destacado-titulo">${m.destacado.titulo}</span><span class="nota">${m.destacado.desc}</span></button>`:''}
-<div class="card">${htmlNivel(d.xp)}${m.temas?htmlCobertura(m):''}</div>
+<div class="card">${htmlNivel(d.xp)}${m.temas?htmlCobertura(m)+htmlPlan(m,d):''}</div>
 ${temas}
 ${m.temas?htmlExamenFinal(m):''}
 ${ls.length?`<details class="como-se-usa" style="margin-top:16px"><summary>🧭 ¿Ya sabes algo? Examen de ubicación</summary><p class="nota">${u?`Último: ${u.aciertos} de ${u.total} aciertos · ${u.dominadas.length} lecciones marcadas como dominadas.`:`${k} preguntas para saltar lo que ya sabes.`}</p>${boton({texto:u?'Repetir examen':'Hacer el examen',go:`${rutaMateria(m)}/ubicacion`,clase:'ghost'})}</details>`:''}
@@ -150,6 +157,23 @@ ${m.temas?'':grupos.map(g=>`<h2>${g||'Herramientas'}</h2><div class="lista-nav">
 }
 
 /* ---------- cobertura, estado del tema, para profundizar y examen final ---------- */
+// 🧭 Tu plan: cuánto falta (habilidades y tiempo estimado) y el tema en curso; el siguiente paso concreto es «Lo siguiente para ti»
+function htmlPlan(m,d){
+  const hs=(m.temas||[]).flatMap(t=>t.lecciones),faltan=hs.filter(l=>!dominada(d,l)),t=temaEnCurso(m,d);
+  if(!hs.length)return '';
+  if(!faltan.length)return `<p class="plan-linea">🧭 <b>Tu plan:</b> dominaste las ${hs.length} habilidades. Te queda el examen final.</p>`;
+  const min=faltan.reduce((s,l)=>s+minutosHab(d,l),0);
+  return `<p class="plan-linea">🧭 <b>Tu plan:</b> te faltan ${faltan.length} de ${hs.length} habilidades · ≈ ${textoMin(min)} (unas ${Math.max(1,Math.round(min/8))} sesiones de 8 min).</p>
+${t?`<p class="plan-linea">Tema en curso: ${boton({texto:`${t.icono||'📘'} ${t.titulo} · ≈ ${textoMin(minutosTema(d,t))}`,go:rutaTema(m,t),clase:'ghost'})}</p>`:''}`;
+}
+// Al terminar un tema: resumen, simulacro y qué sigue
+function htmlTemaTerminado(m,t,d){
+  const sig=temaSiguiente(m,d,t),sim=retosDe(m.id,t.id).some(r=>r.simulacro);
+  return `<div class="card tema-terminado"><p style="margin:0"><b>🎉 ¡Terminaste «${esc(t.titulo)}»!</b></p>
+<p class="nota">Repasa el resumen, ponte a prueba con el simulacro y sigue con lo próximo. Lo que dominaste seguirá en Repasar para no olvidarlo.</p>
+<div class="row" style="gap:8px;flex-wrap:wrap">${boton({texto:'📄 Resumen del tema',go:`notas/tema/${m.id}/${t.id}`,clase:'ghost'})}${sim?boton({texto:'📝 Simulacro',go:`${rutaTema(m,t)}/retos`,clase:'ghost'}):''}
+${sig?boton({texto:`➡️ Sigue: ${sig.titulo}`,go:rutaTema(m,sig),clase:'area'}):boton({texto:'🎓 Examen final',go:`${rutaMateria(m)}/examen-final`,clase:'area'})}</div></div>`;
+}
 function htmlCobertura(m){
   const c=cobertura(m.id),e=ESTADO[estadoMateria(m.id).estado]||ESTADO.parcial;
   return `<div class="cobertura">${barra(c.completas,c.total)}<p class="nota" style="margin:6px 0 0">${e.icono} ${textoCobertura(c)}</p></div>`;
@@ -196,6 +220,7 @@ export function vistaTema(m,t){
       const n=t.lecciones.length;
       return `<div class="area-${tono}">${cabecera({icono:t.icono,titulo:t.titulo,desc:t.descripcion})}
 ${n?`${barra(c.hechas,c.total)}<p class="nota" style="margin-top:6px">${c.hechas}/${c.total} dominadas</p>`:''}
+${n&&c.hechas===c.total?htmlTemaTerminado(m,t,d):''}
 ${htmlEstadoTema(m,t)}
 ${retosDe(m.id,t.id).length?boton({texto:`🎯 Retos y escenarios (${retosDe(m.id,t.id).length})`,go:`${rutaTema(m,t)}/retos`,clase:'ghost ancho'}):''}
 <ol class="camino">${t.nodos.map(nodo).join('')}</ol></div>`;

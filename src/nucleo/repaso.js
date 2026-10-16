@@ -1,4 +1,4 @@
-/* "Repasar": repetición espaciada (ver progreso.js) con práctica intercalada:
+/* "Repasar": repetición espaciada (ver progreso.js) con práctica intercalada y lo débil primero:
    la cola alterna materias y, dentro de cada materia, lecciones o habilidades, en vez de agrupar todo lo de un mismo tema. */
 import {progreso,pendientes,registrarEjercicio,responderRepaso,quitarRepaso,registrarRespuesta,hoy,basicoRetirado,registrarBasico,pedirRefuerzo} from './progreso.js';
 import {profundidadLeccion,claveBasicoLeccion} from './practica.js';
@@ -37,7 +37,9 @@ export function colaRepaso(){
       if(!x.ej&&!x.pregunta){quitarRepaso(x.ref);return false}
       if(x.ej&&x.habilidad&&profundidadDe(x)==='basico'&&basicoRetirado(claveBasicoLeccion(x.ref))){quitarRepaso(x.ref);return false}
       return true});
-  l.sort((a,b)=>(PRIORIDAD[profundidadDe(a)]??1)-(PRIORIDAD[profundidadDe(b)]??1));
+  // Lo débil primero: más fallos en ese ejercicio y menor rating de su habilidad; después, la profundidad
+  const p=progreso(),debil=x=>{const r=p.repaso[x.ref]||{},hab=x.habilidad?.id||x.pregunta?.habilidad,h=hab&&x.materia?p.materias[x.materia.id]?.lecciones?.[hab]:null;return (r.fallos||0)*2+(h?5-(h.rating||1):0)};
+  l.sort((a,b)=>debil(b)-debil(a)||(PRIORIDAD[profundidadDe(a)]??1)-(PRIORIDAD[profundidadDe(b)]??1));
   return mezclar(l);
 }
 

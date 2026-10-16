@@ -420,3 +420,9 @@ body{padding-top:var(--franja,0px)}
 .cert-k{text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:var(--muted);font-size:13px}
 .cert-puntaje{font-size:22px;font-weight:800;color:var(--area,var(--primary))}
 .cert-aviso{margin-top:16px}
+
+/* 🧭 Tu plan (materia) y 🎉 tema terminado */
+.plan-linea{margin:10px 0 0;line-height:1.45}
+.plan-linea .btn{margin-top:6px;max-width:100%;white-space:normal;text-align:left}
+.tema-terminado{border:2px solid var(--area,var(--primary));background:var(--area-soft,var(--primary-soft))}
+.tema-terminado .row .btn{white-space:normal}

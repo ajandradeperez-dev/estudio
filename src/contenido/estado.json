@@ -722,71 +722,48 @@
    }
   },
   "ciberseguridad": {
-   "estado": "parcial",
+   "estado": "completo",
    "cobertura": {
-    "completas": 0,
+    "completas": 55,
     "total": 55,
-    "pct": 0
+    "pct": 100
    },
    "temas": {
     "redes-y-protocolos": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 15,
      "total": 15,
-     "faltan": [
-      "3 habilidades por crear",
-      "12 habilidades sin terminar"
-     ]
+     "faltan": []
     },
     "conmutacion": {
-     "estado": "proximo",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 7,
      "total": 7,
-     "faltan": [
-      "7 habilidades por crear",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "operacion-redes": {
-     "estado": "proximo",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 3,
      "total": 3,
-     "faltan": [
-      "3 habilidades por crear",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "firewalls": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 8,
      "total": 8,
-     "faltan": [
-      "5 habilidades por crear",
-      "3 habilidades sin terminar",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "vpn-cripto": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 6,
      "total": 6,
-     "faltan": [
-      "4 habilidades por crear",
-      "2 habilidades sin terminar",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "defensa": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 16,
      "total": 16,
-     "faltan": [
-      "13 habilidades por crear",
-      "3 habilidades sin terminar",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "herramientas": {
      "estado": "herramientas",
@@ -800,177 +777,224 @@
    },
    "habilidades": {
     "osi-tcpip": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "cableado": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "ethernet-mac": {
+     "estado": "completa",
+     "faltan": []
     },
     "ipv4-clases": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "binario-hex": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "subredes-cidr": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "mascaras": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "prefijo-hosts": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "vlsm": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "ipv6": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "puertos-y-servicios": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "dns": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "dhcp": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "nat-pat": {
+     "estado": "completa",
+     "faltan": []
     },
     "arp": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 tarjetas de repaso"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "switches": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "vlan-trunks": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "stp": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "enrutamiento-estatico": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "rutas-defecto": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "ospf": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "wifi": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "servicios-red": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "monitoreo": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "troubleshooting": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "tipos-firewall": {
+     "estado": "completa",
+     "faltan": []
     },
     "politicas-firewall": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "objetos": {
+     "estado": "completa",
+     "faltan": []
     },
     "nat": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "zonas": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "vpn-firewall": {
+     "estado": "completa",
+     "faltan": []
     },
     "marcas": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "auditoria-reglas": {
+     "estado": "completa",
+     "faltan": []
     },
     "cripto": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "pki": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "tls": {
+     "estado": "completa",
+     "faltan": []
     },
     "vpn-fases": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "ssl-vpn": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "troubleshooting-tuneles": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "cia-aaa": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "amenazas": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "ingenieria-social": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "arquitectura": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "identidades": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "parches": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "hardening": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "siem": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "ids-ips": {
+     "estado": "completa",
+     "faltan": []
     },
     "logs": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "incidentes": {
-     "estado": "parcial",
-     "faltan": [
-      "explicación (idea, analogía y regla)",
-      "2 ejemplos resueltos (básico y tipo examen)",
-      "ejemplo con huecos",
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "explicación alternativa",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "forense": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "respaldos": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "riesgo": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "concienciacion": {
+     "estado": "completa",
+     "faltan": []
     },
     "repaso-seguridad": {
-     "estado": "parcial",
-     "faltan": [
-      "explicación (idea, analogía y regla)",
-      "2 ejemplos resueltos (básico y tipo examen)",
-      "ejemplo con huecos",
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "explicación alternativa",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     }
    }
   },

@@ -8,6 +8,7 @@ import {crear,BANCOS} from './generadores/index.js';
 import {escenarioNegocio,escenarioCohete,escenarioPresa,escenarioCerro,escenarioFiesta} from './generadores/aplicaciones.js';
 import {escenarioFabrica} from './generadores/aplicaciones-lineal.js';
 import {escenarioApp} from './generadores/escenarios-mat.js';
+import {escenarioOficina,escenarioRedLenta,escenarioPyme,escenarioPlanIR} from './generadores/escenarios-ciber.js';
 import {escenarioPrimerDia,escenarioViaje,escenarioPhishing,escenarioPostmortem,escenarioEvaluacion} from './generadores/escenarios-en.js';
 import {escenarioReporteVentas,escenarioGastos,escenarioCalificaciones,escenarioInventario} from './generadores/excel-escenarios.js';
 
@@ -25,7 +26,12 @@ const DIFERENCIAL=['cd/limites','cd/limites-infinito','cd/continuidad','cd/defin
 const INTEGRAL=['ci/antiderivada','ci/riemann','ci/definida','ci/sustitucion','ci/partes','ci/trigonometricas','ci/sustitucion-trig','ci/fracciones-parciales','ci/impropias','ci/area','ci/volumenes','ci/cascarones','ci/longitud-arco','ci/valor-promedio','ci/aplicaciones'];
 const TRIGO=['tri/radianes','tri/razones','tri/circulo','tri/graficas','tri/identidades','tri/suma-doble','tri/ecuaciones','tri/leyes'];
 const PREALGEBRA=['pre/fracciones','pre/decimales','pre/porcentajes','pre/razones','pre/potencias','pre/operaciones','pre/cientifica'];
-const REDES=['red/osi','red/ipv4','red/bases','red/subred','red/mascara','red/prefijo-hosts','red/vlsm','red/ipv6','red/puertos','red/dns','red/dhcp','red/arp'];
+const REDES=['red/osi','red/cableado','red/ethernet','red/ipv4','red/bases','red/subred','red/mascara','red/prefijo-hosts','red/vlsm','red/ipv6','red/puertos','red/dns','red/dhcp','red/nat-pat','red/arp'];
+const CONMUTACION=['sw/switches','sw/vlan','sw/stp','sw/estatico','sw/defecto','sw/ospf','sw/wifi'];
+const OPERACION=['op/servicios','op/monitoreo','op/troubleshooting'];
+const FIREWALLS=['fw/tipos','fw/reglas','fw/objetos','fw/nat','fw/zonas','fw/vpn','fw/marcas','fw/auditoria'];
+const VPN_CRIPTO=['vpn/cripto','vpn/pki','vpn/tls','vpn/fases','vpn/ssl','vpn/tuneles'];
+const DEFENSA=['def/cia','def/amenazas','def/social','def/arquitectura','def/iam','def/parches','def/hardening','def/siem','def/ids','def/logs','def/incidentes','def/forense','def/respaldos','def/riesgo','def/concienciacion'];
 const EXCEL=['xl/operadores','xl/referencias','xl/suma-promedio','xl/contar-max-min','xl/redondear','xl/si','xl/y-o','xl/si-anidado','xl/si-error','xl/contar-si','xl/sumar-si','xl/buscarv','xl/buscarx','xl/indice-coincidir','xl/texto','xl/fechas','xl/formato-condicional','xl/tabla-dinamica'];
 const PRECALCULO=['alg/funciones','fun/transformaciones','fun/composicion-inversa','fun/polinomiales','fun/racionales','fun/exponenciales','alg/logaritmos','fun/modelado'];
 const EN_A1=['en/saludos','en/numeros','en/to-be','en/presente-simple','en/articulos','en/plurales','en/posesivos','en/there-is','en/can','en/preposiciones','en/imperativos','en/familia','en/rutinas','en/casa','en/comida','en/ciudad','en/chunks','en/lecturas-a1','en/escritura-a1'];
@@ -53,6 +59,24 @@ export const RETOS=[
      ...delGenerador('red/dns',[3],'Ya tiene IP, pero los nombres no resuelven bien.')(rng)]},
   {id:'ciber-simulacro-redes',materia:'ciberseguridad',tema:'redes-y-protocolos',titulo:'Simulacro de Fundamentos de redes',profundidad:'escenario',dificultad:3,simulacro:true,
    desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(REDES)},
+  {id:'ciber-pyme',materia:'ciberseguridad',tema:'redes-y-protocolos',titulo:'Diseña la red de una pyme',profundidad:'escenario',dificultad:3,
+   desc:'Tamaño de la red, PAT, DMZ y Wi-Fi de invitados: 4 pasos.',crear:escenarioPyme},
+  {id:'ciber-plan-ir',materia:'ciberseguridad',tema:'defensa',titulo:'Arma el plan de respuesta a incidentes',profundidad:'escenario',dificultad:3,
+   desc:'Preparación, contención, comunicación y lecciones aprendidas: 4 pasos.',crear:escenarioPlanIR},
+  {id:'ciber-oficina-nueva',materia:'ciberseguridad',tema:'conmutacion',titulo:'Monta la red de una oficina nueva',profundidad:'escenario',dificultad:3,
+   desc:'Puertos de acceso, trunk 802.1Q, STP y la ruta por defecto: 4 pasos.',crear:escenarioOficina},
+  {id:'ciber-simulacro-conmutacion',materia:'ciberseguridad',tema:'conmutacion',titulo:'Simulacro de Conmutación y enrutamiento',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(CONMUTACION)},
+  {id:'ciber-red-lenta',materia:'ciberseguridad',tema:'operacion-redes',titulo:'«La red está lenta»',profundidad:'escenario',dificultad:3,
+   desc:'Metodología, NetFlow, línea base y la primera acción defensiva: 4 pasos.',crear:escenarioRedLenta},
+  {id:'ciber-simulacro-operacion',materia:'ciberseguridad',tema:'operacion-redes',titulo:'Simulacro de Operación de redes',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(OPERACION)},
+  {id:'ciber-simulacro-firewalls',materia:'ciberseguridad',tema:'firewalls',titulo:'Simulacro de Firewalls',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(FIREWALLS)},
+  {id:'ciber-simulacro-vpn',materia:'ciberseguridad',tema:'vpn-cripto',titulo:'Simulacro de Criptografía y VPN',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(VPN_CRIPTO)},
+  {id:'ciber-simulacro-defensa',materia:'ciberseguridad',tema:'defensa',titulo:'Simulacro de Security+',profundidad:'escenario',dificultad:4,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema, como un examen (no oficial).',crear:simulacro(DEFENSA)},
   {id:'ciber-auditar-politica',materia:'ciberseguridad',tema:'firewalls',titulo:'Auditar una política de firewall',profundidad:'aplicacion',dificultad:3,
    desc:'Para cada paquete, decide qué regla se aplica: primera coincidencia y deny implícito.',
    crear:delGenerador('fw/reglas',[4,5,5],'Auditoría: el equipo de seguridad te pide comprobar qué hace la política con el tráfico real de hoy.')},

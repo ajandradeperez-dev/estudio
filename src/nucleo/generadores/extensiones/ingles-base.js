@@ -42,10 +42,11 @@ export function bancoEn(def){
 export function mejorar(id,viejo,def){
   const t=PROFUNDIDAD[id]||{},pl=armar(def),{plantillas:_,niveles,...resto}=def;
   return {...viejo,...resto,titulo:resto.titulo||viejo.titulo,explicacion:resto.explicacion||viejo.explicacion,alternativa:resto.alternativa||viejo.alternativa,
-    item:t.item,profundidad:(n,p)=>p.profundidad,
+    item:t.item||viejo.item,profundidad:(n,p)=>p.profundidad,
     generar(n,rng){
       const k=rng.elegir(niveles[n]);
-      if(k==='orig'){const q=viejo.generar(n,rng);return {...q,profundidad:t.nivel?t.nivel(n,q):'procedimiento',plantilla:t.item?'orig':(t.plantilla?.(q,n)||`n${n}`)}}
+      if(k==='orig'){const q=viejo.generar(n,rng);const vp=typeof viejo.profundidad==='function'?viejo.profundidad(n,q):viejo.profundidad;
+        return {...q,profundidad:t.nivel?t.nivel(n,q):(q.profundidad||vp||'procedimiento'),plantilla:(t.item||viejo.item)?'orig':(t.plantilla?.(q,n)||viejo.plantilla?.(q,n)||q.plantilla||`n${n}`)}}
       const q=pl[k].f(n,rng);return {...q,regla:q.regla||def.regla,pista:q.pista||def.pista,plantilla:k,profundidad:pl[k].prof};
     }};
 }

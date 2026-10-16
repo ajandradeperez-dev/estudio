@@ -62,5 +62,65 @@ wids: deauth flood ssid="Empresa" ap=AP-Piso2 frames=12,400/min
 wifi: 9 clientes se desconectaron de AP-Piso2 y se asociaron a bssid=02:1a:2b:3c:4d:5e`,
   q:'¿Qué está pasando?',o:['Un punto de acceso falso (evil twin) que imita la red de la empresa','Un vecino que tiene un router de la misma marca','Interferencia de un horno de microondas'],a:0,
   d:'¿Qué defensa aplicas?',do:['Contener el AP falso con WIPS, usar WPA3-Enterprise con 802.1X y avisar a los usuarios','Cambiar el nombre del SSID todos los días','Pedir a los usuarios que se conecten a la red con mejor señal'],da:0,
-  ex:'El atacante desconecta a los usuarios (deauth) y les ofrece una copia abierta del SSID para espiar su tráfico. Con 802.1X el equipo verifica el certificado del servidor y no se une a la red falsa; el WIPS la detecta y contiene.'}
+  ex:'El atacante desconecta a los usuarios (deauth) y les ofrece una copia abierta del SSID para espiar su tráfico. Con 802.1X el equipo verifica el certificado del servidor y no se une a la red falsa; el WIPS la detecta y contiene.'},
+ {t:'Una cuenta de servicio crea administradores de madrugada',log:`win-dc01: EventID=4720 user_created=soporte2 by=svc_backup time=02:41
+win-dc01: EventID=4732 member_added=soporte2 group="Domain Admins" by=svc_backup time=02:42
+win-dc01: EventID=4624 logon user=soporte2 src=10.0.20.57 type=RemoteInteractive time=02:47`,
+  q:'¿Qué está pasando?',o:['Una cuenta comprometida está creando persistencia con privilegios altos','El respaldo nocturno funcionando normal','Un usuario que olvidó su contraseña'],a:0,
+  d:'¿Qué haces primero?',do:['Deshabilitar svc_backup y soporte2, revocar sesiones, aislar 10.0.20.57 y revisar qué más hicieron','Esperar al lunes para preguntarle al equipo de respaldos','Agregar más cuentas al grupo de administradores para comparar'],da:0,
+  ex:'Una cuenta de servicio no debería crear usuarios ni meterlos a Domain Admins. Es una señal clásica de persistencia: primero se contiene (deshabilitar cuentas y aislar el equipo) y luego se investiga con los registros.'},
+ {t:'Decenas de avisos de doble factor que nadie pidió',log:`idp: mfa_push user=jlopez result=denied count=1 time=23:58
+idp: mfa_push user=jlopez result=denied count=27 window=6min src_ip=198.51.100.23
+idp: mfa_push user=jlopez result=approved time=00:05 src_ip=198.51.100.23`,
+  q:'¿Qué está pasando?',o:['Fatiga de MFA: el atacante ya tiene la contraseña y bombardea avisos hasta que alguien acepta','Una falla del servidor de correo','El usuario está viajando'],a:0,
+  d:'¿Qué haces?',do:['Revocar las sesiones, cambiar la contraseña, revisar lo que hizo la sesión y pasar a MFA con número de verificación o llaves FIDO2','Pedir al usuario que acepte todos los avisos para que paren','Desactivar el MFA de esa cuenta'],da:0,
+  ex:'Si llegan avisos de MFA que no pediste, alguien tiene tu contraseña. Aceptar uno le abre la puerta. La defensa: nunca aceptar, reportar, y usar MFA resistente a la fatiga (número de verificación o llaves físicas).'},
+ {t:'Un almacenamiento en la nube abierto a todo internet',log:`cloud-audit: bucket=respaldos-clientes acl=public-read objects=18,442 changed_by=dev_temp time=2026-10-02
+cloud-access: GET /respaldos-clientes/clientes_2025.csv src_ip=203.0.113.150 user=anonymous
+cloud-access: GET /respaldos-clientes/clientes_2024.csv src_ip=203.0.113.150 user=anonymous`,
+  q:'¿Qué pasó?',o:['Una mala configuración dejó público el almacenamiento y alguien descargó datos de clientes','El proveedor de nube fue hackeado','Una copia de seguridad normal'],a:0,
+  d:'¿Qué haces?',do:['Quitar el acceso público, conservar los registros, revisar qué se descargó, avisar al área legal y aplicar políticas que impidan buckets públicos','Borrar los registros para que no se sepa','Cambiar el nombre del bucket y no decir nada'],da:0,
+  ex:'En la nube, la configuración es responsabilidad del cliente (modelo de responsabilidad compartida). Contener (quitar lo público), medir el alcance con los registros y cumplir con los avisos legales; después, controles que impidan repetirlo.'},
+ {t:'Una memoria USB encontrada en el estacionamiento',log:`edr: device_connected type=USB_mass_storage label="NOMINA_2026" host=PC-RH-04 user=acastro
+edr: process_start "NOMINA_2026.pdf.exe" parent=explorer.exe host=PC-RH-04
+edr: outbound_connection host=PC-RH-04 dst=192.0.2.200:443 proc="NOMINA_2026.pdf.exe" verdict=malicious`,
+  q:'¿Qué está pasando?',o:['Malware entregado en una USB «olvidada» (cebo) que el usuario abrió','Un documento de nómina normal','Una actualización del sistema'],a:0,
+  d:'¿Qué haces?',do:['Aislar PC-RH-04 con el EDR, bloquear el destino, analizar el malware y bloquear el uso de USB no autorizadas; capacitar sobre cebos','Pasar la USB a otro equipo para ver si funciona','Formatear la PC sin revisar nada'],da:0,
+  ex:'El «.pdf.exe» es un ejecutable disfrazado. Las USB tiradas a propósito son una técnica de ingeniería social. Se contiene el equipo, se bloquean USB no autorizadas y se enseña a entregar a TI cualquier dispositivo encontrado.'},
+ {t:'Un proveedor «cambia» su cuenta bancaria',log:`mail: from="Facturación Proveedor" <facturas@proveedor-pagos.example> reply-to=<cobranza@pagos-rapidos.example>
+mail: subject="URGENTE: nueva cuenta para el pago de hoy" attach=carta_banco.pdf spf=fail dmarc=fail
+erp: solicitud cambio_cuenta proveedor=ACME monto=$184,500 solicitado_por=correo`,
+  q:'¿Qué es?',o:['Fraude de correo empresarial (BEC) para desviar un pago','Un cambio de banco legítimo','Spam sin importancia'],a:0,
+  d:'¿Qué haces?',do:['No pagar, confirmar por teléfono con el proveedor a su número conocido, reportar el correo y exigir doble aprobación para cambios de cuenta','Pagar rápido porque dice urgente','Responder al mismo correo para confirmar'],da:0,
+  ex:'Urgencia, un reply-to distinto y SPF/DMARC fallidos son señales de BEC. Nunca se confirma por el mismo correo: se llama al número que ya tenías. Los cambios de cuenta deben pasar por doble aprobación.'},
+ {t:'Servidores al 100 % de CPU hablando con un puerto raro',log:`monitor: host=srv-app02 cpu=100% sostenido 6h proceso="kworkerds"
+fw: srcip=10.0.30.12 dstip=203.0.113.88 dstport=3333 app="Unknown-TCP" bytes_out=bajo duracion=6h
+edr: file_created /tmp/.x/kworkerds hash=sospechoso origen=vulnerabilidad web sin parche`,
+  q:'¿Qué está pasando?',o:['Criptominería maliciosa instalada a través de una vulnerabilidad sin parche','Un respaldo grande','El servidor procesando ventas de fin de mes'],a:0,
+  d:'¿Qué haces?',do:['Aislar el servidor, eliminar el proceso y su persistencia, parchar la vulnerabilidad y bloquear el destino; revisar otros servidores','Comprar un servidor más potente','Ignorarlo porque no roba datos'],da:0,
+  ex:'Un proceso con nombre que imita al sistema, CPU al máximo y conexión constante a un puerto de minería son señales de criptominería. Aunque «solo» use recursos, entró por una vulnerabilidad: el atacante podría hacer más. Contener, erradicar y parchar.'},
+ {t:'Una PC se conecta a muchas otras por 445 y 3389',log:`netflow: src=10.0.10.45 dst=10.0.10.0/24 dstport=445 conexiones=212 en 4 min
+netflow: src=10.0.10.45 dst=10.0.40.0/24 dstport=3389 conexiones=58 en 4 min
+win: EventID=4625 logon_failed src=10.0.10.45 cuentas_distintas=37`,
+  q:'¿Qué está pasando?',o:['Movimiento lateral desde un equipo comprometido','Un usuario imprimiendo','Sincronización normal de archivos'],a:0,
+  d:'¿Qué haces?',do:['Aislar 10.0.10.45, revisar qué credenciales usó, restablecerlas y limitar SMB/RDP entre segmentos','Abrir más puertos para que termine rápido','Reiniciar todos los servidores'],da:0,
+  ex:'Una sola PC probando cientos de equipos por SMB y RDP con muchas cuentas distintas es movimiento lateral. La segmentación y el mínimo privilegio lo frenan; aislar el equipo es la primera acción.'},
+ {t:'«Su conexión no es privada» en el portal de clientes',log:`monitor-tls: host=portal.empresa.example cert_expiry=2026-10-14T23:59:59Z estado=EXPIRED
+web: errores_tls=4,812 en 2 h motivo="certificate has expired"
+cambios: ningún cambio registrado en las últimas 72 h`,
+  q:'¿Qué está pasando?',o:['El certificado TLS venció; no hay señales de ataque','Un ataque on-path robando sesiones','El servidor fue hackeado'],a:0,
+  d:'¿Qué haces?',do:['Renovar e instalar el certificado con su cadena completa, verificar y activar alertas y renovación automática','Pedir a los clientes que acepten la advertencia','Apagar el portal para siempre'],da:0,
+  ex:'No todo incidente es un ataque: aquí el certificado venció a medianoche y nadie cambió nada. Pedir que acepten la advertencia los acostumbra a ignorar alertas reales. La lección es monitorear vencimientos y automatizar la renovación.'},
+ {t:'Un empleado que renunció copia miles de archivos',log:`dlp: user=rmartinez action=upload dst="almacenamiento-personal.example" files=3,904 size=6.2GB
+dlp: user=rmartinez action=copy dst=USB_E: files=1,210 label="Confidencial"
+rrhh: rmartinez fecha_salida=2026-10-16 (aviso de renuncia 2026-10-01)`,
+  q:'¿Qué está pasando?',o:['Posible fuga de información por una amenaza interna','Un respaldo autorizado','Una actualización del antivirus'],a:0,
+  d:'¿Qué haces?',do:['Bloquear las cargas y el USB, conservar la evidencia, coordinar con RR. HH. y legal, y revisar sus accesos','Borrar los registros del DLP','Dar más permisos al empleado para que termine'],da:0,
+  ex:'Copiar miles de archivos confidenciales justo antes de irse es una señal de amenaza interna. El DLP ayuda a detectarlo. Se contiene, se conserva la evidencia y se actúa con RR. HH. y legal, sin acusar antes de investigar.'},
+ {t:'El fabricante avisa de una vulnerabilidad crítica en tu VPN',log:`aviso-fabricante: CVSS=9.8 producto=VPN-SSL versiones<7.4.3 explotacion_activa=SI
+vpn: version=7.2.1 expuesta_a_internet=SI
+vpn: login user=cuenta_inexistente status=success src=198.51.100.61 time=03:22  (no existe en el directorio)`,
+  q:'¿Qué está pasando?',o:['Una vulnerabilidad crítica de la VPN probablemente ya fue explotada','Un usuario nuevo conectándose','Un falso positivo del aviso'],a:0,
+  d:'¿Qué haces?',do:['Aplicar el parche o la mitigación del fabricante de emergencia, cortar sesiones, revisar indicadores de compromiso y rotar credenciales','Esperar a la ventana de mantenimiento del próximo mes','Desactivar los registros de la VPN'],da:0,
+  ex:'CVSS 9.8, explotación activa y un equipo expuesto exigen un cambio de emergencia. Un login exitoso de una cuenta que no existe indica que ya pudieron entrar: además de parchar, hay que buscar qué hicieron (indicadores de compromiso) y rotar credenciales.'}
 ];

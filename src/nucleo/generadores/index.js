@@ -31,6 +31,10 @@ import inglesA1b from './ingles-a1b.js';
 import inglesA2 from './ingles-a2.js';
 import inglesB1 from './ingles-b1.js';
 import inglesB2 from './ingles-b2.js';
+import ciberRedes from './ciber-redes.js';
+import ciberFwVpn from './ciber-fw-vpn.js';
+import ciberDefensa from './ciber-defensa.js';
+import ciberMejoras,{extCiber} from './ciber-mejoras.js';
 import {armarExamenes} from './examenes-en.js';
 import inglesMejoras from './ingles-mejoras.js';
 import excel2 from './excel2.js';
@@ -46,9 +50,9 @@ import ingles from './ingles.js';
 import {bancos} from './bancos.js';
 import {clasificar} from './profundidad.js';
 
-export const GENERADORES={...matematicas,...algebraBasica,...algebraTemas,...algebraTemas2,...aplicaciones,...algebraVariantes,...algebraLineal2,...aplicacionesLineal,...algebraLineal,...calculo,...redes,...redes2,...seguridad,...datos,...ingles,...calculoDif,...calculoInt,...trigonometria,...prealgebra,...excel,...excel2,...matNuevos1,...matNuevos2,...matNuevos3,...inglesA1,...inglesA1b,...inglesA2,...inglesB1,...inglesB2,...inglesMejoras,...algebraLinealVariantes,...calculoDifVariantes,...calculoIntVariantes};
+export const GENERADORES={...matematicas,...algebraBasica,...algebraTemas,...algebraTemas2,...aplicaciones,...algebraVariantes,...algebraLineal2,...aplicacionesLineal,...algebraLineal,...calculo,...redes,...redes2,...seguridad,...datos,...ingles,...calculoDif,...calculoInt,...trigonometria,...prealgebra,...excel,...excel2,...matNuevos1,...matNuevos2,...matNuevos3,...inglesA1,...inglesA1b,...inglesA2,...inglesB1,...inglesB2,...ciberRedes,...ciberFwVpn,...ciberDefensa,...inglesMejoras,...ciberMejoras,...algebraLinealVariantes,...calculoDifVariantes,...calculoIntVariantes};
 // Extensiones (tarjetas y problemas de aplicación con contexto) sobre los generadores ya registrados: ver extender.js
-for(const ext of [extMatematicas])for(const [id,e] of Object.entries(ext))if(GENERADORES[id])GENERADORES[id]=extender(GENERADORES[id],e);
+for(const ext of [extMatematicas,extCiber])for(const [id,e] of Object.entries(ext))if(GENERADORES[id])GENERADORES[id]=extender(GENERADORES[id],e);
 // Prueba de nivel y simulacros de Inglés: mezclan generadores ya registrados
 Object.assign(GENERADORES,armarExamenes(GENERADORES));
 export const BANCOS=bancos;

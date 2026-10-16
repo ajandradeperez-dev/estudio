@@ -273,104 +273,104 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 
 📚 Para profundizar: Cambridge English — descripción oficial de A2 Key, B1 Preliminary y B2 First
 
-## 🟡 💼 Curso · 🛡️ Ciberseguridad `ciberseguridad`
+## ✅ 💼 Curso · 🛡️ Ciberseguridad `ciberseguridad`
 
-**Cobertura del temario: 0 %** (0 de 55 habilidades ✅)
+**Cobertura del temario: 100 %** (55 de 55 habilidades ✅)
 
-### 🟡 Fundamentos de redes `redes-y-protocolos`
+### ✅ Fundamentos de redes `redes-y-protocolos`
 
-0/15 habilidades ✅ · falta: 3 habilidades por crear · 12 habilidades sin terminar
+15/15 habilidades ✅
 
-- [x] 🟡 Modelos OSI y TCP/IP `osi-tcpip` — Network+ 1.1 – Modelo OSI · falta: ≥ 3 tarjetas de repaso
-- [ ] Cableado y medios (concepto) — Network+ 1.5 – Medios de transmisión y tipos de cable
-- [ ] Ethernet y direcciones MAC — Network+ 1.x · CCNA 1 – Ethernet
-- [x] 🟡 Direcciones IP y clases `ipv4-clases` — Network+ 1.7 – Direccionamiento IPv4 · falta: ≥ 3 tarjetas de repaso
-- [x] 🟡 Binario, decimal y hexadecimal `binario-hex` — CCNA 1 – Sistemas numéricos · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Subredes CIDR `subredes-cidr` — Network+ 1.7 – Subredes y CIDR · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Máscara de subred /24 a /30 `mascaras` — Network+ 1.7 – Máscaras de subred · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Prefijo para N hosts `prefijo-hosts` — Network+ 1.7 – Diseño de subredes · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 tarjetas de repaso
-- [x] 🟡 VLSM `vlsm` — Network+ 1.7 · CCNA 1 – VLSM · falta: ≥ 3 tarjetas de repaso
-- [x] 🟡 IPv6 básico `ipv6` — Network+ 1.7 – Direccionamiento IPv6 · falta: ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Puertos y servicios `puertos-y-servicios` — Network+ 1.4 – Puertos y protocolos comunes · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 DNS `dns` — Network+ 1.6 – Servicios de red: DNS · falta: ≥ 3 tarjetas de repaso
-- [x] 🟡 DHCP `dhcp` — Network+ 1.6 – Servicios de red: DHCP · falta: ≥ 3 tarjetas de repaso
-- [ ] NAT y PAT — Network+ 1.7 – NAT/PAT
-- [x] 🟡 ARP `arp` — Network+ 1.x · CCNA 1 – ARP · falta: ≥ 3 tarjetas de repaso
+- [x] ✅ Modelos OSI y TCP/IP `osi-tcpip` — Network+ 1.1 – Modelo OSI
+- [x] ✅ Cableado y medios (concepto) `cableado` — Network+ 1.5 – Medios de transmisión y tipos de cable
+- [x] ✅ Ethernet y direcciones MAC `ethernet-mac` — Network+ 1.x · CCNA 1 – Ethernet
+- [x] ✅ Direcciones IP y clases `ipv4-clases` — Network+ 1.7 – Direccionamiento IPv4
+- [x] ✅ Binario, decimal y hexadecimal `binario-hex` — CCNA 1 – Sistemas numéricos
+- [x] ✅ Subredes CIDR `subredes-cidr` — Network+ 1.7 – Subredes y CIDR
+- [x] ✅ Máscara de subred /24 a /30 `mascaras` — Network+ 1.7 – Máscaras de subred
+- [x] ✅ Prefijo para N hosts `prefijo-hosts` — Network+ 1.7 – Diseño de subredes
+- [x] ✅ VLSM `vlsm` — Network+ 1.7 · CCNA 1 – VLSM
+- [x] ✅ IPv6 básico `ipv6` — Network+ 1.7 – Direccionamiento IPv6
+- [x] ✅ Puertos y servicios `puertos-y-servicios` — Network+ 1.4 – Puertos y protocolos comunes
+- [x] ✅ DNS `dns` — Network+ 1.6 – Servicios de red: DNS
+- [x] ✅ DHCP `dhcp` — Network+ 1.6 – Servicios de red: DHCP
+- [x] ✅ NAT y PAT `nat-pat` — Network+ 1.7 – NAT/PAT
+- [x] ✅ ARP `arp` — Network+ 1.x · CCNA 1 – ARP
 
 📚 Para profundizar: CompTIA Network+ N10-009 — dominio 1 «Conceptos de redes» · Cisco Networking Academy, CCNA 1 «Introducción a las redes»
 
-### ⚪ Conmutación y enrutamiento `conmutacion`
+### ✅ Conmutación y enrutamiento `conmutacion`
 
-0/7 habilidades ✅ · falta: 7 habilidades por crear · escenario integrador · simulacro de 10–15 preguntas
+7/7 habilidades ✅
 
-- [ ] Switches, MAC y tablas — Network+ 2.x · CCNA 2 – Conmutación
-- [ ] VLAN y trunks — Network+ 2.x · CCNA 2 – VLAN y 802.1Q
-- [ ] STP (concepto) — CCNA 2 – Spanning Tree Protocol
-- [ ] Enrutamiento estático — Network+ 2.x · CCNA 2 – Rutas estáticas
-- [ ] Rutas por defecto — CCNA 2 – Ruta por defecto
-- [ ] OSPF (concepto) — CCNA 3 – OSPF de área única
-- [ ] Wi-Fi: estándares y seguridad WPA2/WPA3 — Network+ 2.x · CCNA 2 – WLAN
+- [x] ✅ Switches, MAC y tablas `switches` — Network+ 2.x · CCNA 2 – Conmutación
+- [x] ✅ VLAN y trunks `vlan-trunks` — Network+ 2.x · CCNA 2 – VLAN y 802.1Q
+- [x] ✅ STP (concepto) `stp` — CCNA 2 – Spanning Tree Protocol
+- [x] ✅ Enrutamiento estático `enrutamiento-estatico` — Network+ 2.x · CCNA 2 – Rutas estáticas
+- [x] ✅ Rutas por defecto `rutas-defecto` — CCNA 2 – Ruta por defecto
+- [x] ✅ OSPF (concepto) `ospf` — CCNA 3 – OSPF de área única
+- [x] ✅ Wi-Fi: estándares y seguridad WPA2/WPA3 `wifi` — Network+ 2.x · CCNA 2 – WLAN
 
 📚 Para profundizar: Cisco Networking Academy, CCNA 2 «Conmutación, enrutamiento y redes inalámbricas» · CompTIA Network+ N10-009 — dominio 2 «Implementación de redes»
 
-### ⚪ Operación y troubleshooting de redes `operacion-redes`
+### ✅ Operación y troubleshooting de redes `operacion-redes`
 
-0/3 habilidades ✅ · falta: 3 habilidades por crear · escenario integrador · simulacro de 10–15 preguntas
+3/3 habilidades ✅
 
-- [ ] Servicios de red: NTP, SNMP y syslog — Network+ 3.x – Servicios y monitoreo
-- [ ] Monitoreo: SNMP, syslog y NetFlow — Network+ 3.x – Monitoreo de red
-- [ ] Troubleshooting metodológico — Network+ 5.1 – Metodología de resolución de problemas
+- [x] ✅ Servicios de red: NTP, SNMP y syslog `servicios-red` — Network+ 3.x – Servicios y monitoreo
+- [x] ✅ Monitoreo: SNMP, syslog y NetFlow `monitoreo` — Network+ 3.x – Monitoreo de red
+- [x] ✅ Troubleshooting metodológico `troubleshooting` — Network+ 5.1 – Metodología de resolución de problemas
 
 📚 Para profundizar: CompTIA Network+ N10-009 — dominios 3 «Operaciones» y 5 «Troubleshooting»
 
-### 🟡 Firewalls `firewalls`
+### ✅ Firewalls `firewalls`
 
-0/8 habilidades ✅ · falta: 5 habilidades por crear · 3 habilidades sin terminar · simulacro de 10–15 preguntas
+8/8 habilidades ✅
 
-- [ ] Stateless, stateful y NGFW — Security+ 3.x – Tipos de firewall
-- [x] 🟡 Políticas de firewall `politicas-firewall` — Security+ 3.x / 4.x – Reglas de firewall y orden de evaluación · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Objetos y servicios — FortiOS / PAN-OS – Objetos de dirección y servicio (concepto general)
-- [x] 🟡 NAT/PAT en el firewall `nat` — Network+ 1.7 · FortiOS – NAT y VIP · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Zonas — PAN-OS / FortiOS – Zonas e interfaces (concepto general)
-- [ ] VPN en el firewall — FortiOS – IPsec VPN (concepto general)
-- [x] 🟡 FortiGate, Palo Alto, Cisco ASA y pfSense `marcas` — Documentación oficial de cada fabricante – equivalencias de conceptos · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Buenas prácticas y auditoría de reglas — Security+ 4.x – Endurecimiento y revisión de reglas
+- [x] ✅ Stateless, stateful y NGFW `tipos-firewall` — Security+ 3.x – Tipos de firewall
+- [x] ✅ Políticas de firewall `politicas-firewall` — Security+ 3.x / 4.x – Reglas de firewall y orden de evaluación
+- [x] ✅ Objetos y servicios `objetos` — FortiOS / PAN-OS – Objetos de dirección y servicio (concepto general)
+- [x] ✅ NAT/PAT en el firewall `nat` — Network+ 1.7 · FortiOS – NAT y VIP
+- [x] ✅ Zonas `zonas` — PAN-OS / FortiOS – Zonas e interfaces (concepto general)
+- [x] ✅ VPN en el firewall `vpn-firewall` — FortiOS – IPsec VPN (concepto general)
+- [x] ✅ FortiGate, Palo Alto, Cisco ASA y pfSense `marcas` — Documentación oficial de cada fabricante – equivalencias de conceptos
+- [x] ✅ Buenas prácticas y auditoría de reglas `auditoria-reglas` — Security+ 4.x – Endurecimiento y revisión de reglas
 
 📚 Para profundizar: Documentación oficial: FortiOS Administration Guide, PAN-OS Administrator’s Guide, Cisco Secure Firewall ASA, pfSense Documentation · CompTIA Security+ SY0-701 — 3.x «Arquitectura segura»
 
-### 🟡 Criptografía y VPN `vpn-cripto`
+### ✅ Criptografía y VPN `vpn-cripto`
 
-0/6 habilidades ✅ · falta: 4 habilidades por crear · 2 habilidades sin terminar · simulacro de 10–15 preguntas
+6/6 habilidades ✅
 
-- [x] 🟡 Simétrica, asimétrica, hash y firmas `cripto` — Security+ 1.4 – Criptografía · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Certificados y PKI — Security+ 1.4 – Certificados y PKI
-- [ ] TLS — Security+ 1.4 / 3.x – TLS
-- [x] 🟡 IPsec: fases 1 y 2 `vpn-fases` — Security+ 3.x · RFC 7296 – IPsec e IKE · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] SSL VPN — Security+ 3.x – Acceso remoto
-- [ ] Troubleshooting de túneles — FortiOS – Diagnóstico de VPN (concepto general)
+- [x] ✅ Simétrica, asimétrica, hash y firmas `cripto` — Security+ 1.4 – Criptografía
+- [x] ✅ Certificados y PKI `pki` — Security+ 1.4 – Certificados y PKI
+- [x] ✅ TLS `tls` — Security+ 1.4 / 3.x – TLS
+- [x] ✅ IPsec: fases 1 y 2 `vpn-fases` — Security+ 3.x · RFC 7296 – IPsec e IKE
+- [x] ✅ SSL VPN `ssl-vpn` — Security+ 3.x – Acceso remoto
+- [x] ✅ Troubleshooting de túneles `troubleshooting-tuneles` — FortiOS – Diagnóstico de VPN (concepto general)
 
 📚 Para profundizar: CompTIA Security+ SY0-701 — 1.4 «Soluciones criptográficas» · RFC 7296 (IKEv2) y RFC 8446 (TLS 1.3), como referencia
 
-### 🟡 Security+: seguridad defensiva `defensa`
+### ✅ Security+: seguridad defensiva `defensa`
 
-0/16 habilidades ✅ · falta: 13 habilidades por crear · 3 habilidades sin terminar · simulacro de 10–15 preguntas
+16/16 habilidades ✅
 
-- [ ] CIA, AAA y tipos de controles — Security+ 1.1–1.2 – Conceptos generales de seguridad
-- [ ] Amenazas y vulnerabilidades (reconocer y mitigar) — Security+ 2.x – Amenazas, vulnerabilidades y mitigaciones
-- [ ] Ingeniería social y phishing — Security+ 2.2 – Vectores de amenaza
-- [ ] Arquitectura segura — Security+ 3.x – Arquitectura de seguridad
-- [ ] Identidades, accesos y MFA — Security+ 4.6 – Gestión de identidades y accesos
-- [ ] Gestión de parches — Security+ 4.3 – Gestión de vulnerabilidades
-- [ ] Hardening — Security+ 4.1 – Técnicas de endurecimiento
-- [ ] Registros y SIEM — Security+ 4.4 – Monitoreo y SIEM
-- [ ] IDS/IPS — Security+ 4.5 – IDS/IPS
-- [x] 🟡 Lectura de logs y detección de ataques `logs` — Security+ 4.9 – Fuentes de datos para investigar · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Respuesta a incidentes (NIST) `incidentes` — Security+ 4.8 · NIST SP 800-61 – Respuesta a incidentes · falta: explicación (idea, analogía y regla), 2 ejemplos resueltos (básico y tipo examen), ejemplo con huecos, ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, explicación alternativa, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Forense básico (concepto) — Security+ 4.8 – Forense digital
-- [ ] Copias de seguridad — Security+ 3.4 – Resiliencia y respaldos
-- [ ] Riesgo, políticas y cumplimiento — Security+ 5.x – Gestión del programa de seguridad
-- [ ] Concienciación — Security+ 5.6 – Concienciación en seguridad
-- [x] 🟡 Preguntas de seguridad `repaso-seguridad` — Security+ – Repaso general · falta: explicación (idea, analogía y regla), 2 ejemplos resueltos (básico y tipo examen), ejemplo con huecos, ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, explicación alternativa, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
+- [x] ✅ CIA, AAA y tipos de controles `cia-aaa` — Security+ 1.1–1.2 – Conceptos generales de seguridad
+- [x] ✅ Amenazas y vulnerabilidades (reconocer y mitigar) `amenazas` — Security+ 2.x – Amenazas, vulnerabilidades y mitigaciones
+- [x] ✅ Ingeniería social y phishing `ingenieria-social` — Security+ 2.2 – Vectores de amenaza
+- [x] ✅ Arquitectura segura `arquitectura` — Security+ 3.x – Arquitectura de seguridad
+- [x] ✅ Identidades, accesos y MFA `identidades` — Security+ 4.6 – Gestión de identidades y accesos
+- [x] ✅ Gestión de parches `parches` — Security+ 4.3 – Gestión de vulnerabilidades
+- [x] ✅ Hardening `hardening` — Security+ 4.1 – Técnicas de endurecimiento
+- [x] ✅ Registros y SIEM `siem` — Security+ 4.4 – Monitoreo y SIEM
+- [x] ✅ IDS/IPS `ids-ips` — Security+ 4.5 – IDS/IPS
+- [x] ✅ Lectura de logs y detección de ataques `logs` — Security+ 4.9 – Fuentes de datos para investigar
+- [x] ✅ Respuesta a incidentes (NIST) `incidentes` — Security+ 4.8 · NIST SP 800-61 – Respuesta a incidentes
+- [x] ✅ Forense básico (concepto) `forense` — Security+ 4.8 – Forense digital
+- [x] ✅ Copias de seguridad `respaldos` — Security+ 3.4 – Resiliencia y respaldos
+- [x] ✅ Riesgo, políticas y cumplimiento `riesgo` — Security+ 5.x – Gestión del programa de seguridad
+- [x] ✅ Concienciación `concienciacion` — Security+ 5.6 – Concienciación en seguridad
+- [x] ✅ Preguntas de seguridad `repaso-seguridad` — Security+ – Repaso general
 
 📚 Para profundizar: CompTIA Security+ SY0-701 — los 5 dominios · NIST SP 800-61 «Computer Security Incident Handling Guide»
 

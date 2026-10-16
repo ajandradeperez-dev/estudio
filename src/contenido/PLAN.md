@@ -510,86 +510,86 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 
 📚 Para profundizar: Microsoft — Objetivos del examen MO-200 (tareas tipo examen)
 
-## 🟡 📊 Ciencia de datos `ciencia-datos`
+## ✅ 📊 Ciencia de datos `ciencia-datos`
 
-**Cobertura del temario: 0 %** (0 de 44 habilidades ✅)
+**Cobertura del temario: 100 %** (44 de 44 habilidades ✅)
 
-### 🟡 Datos y estadística descriptiva `estadistica`
+### ✅ Datos y estadística descriptiva `estadistica`
 
-0/8 habilidades ✅ · falta: 4 habilidades por crear · 4 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+8/8 habilidades ✅
 
-- [x] 🟡 Tipos de variables `tipos-de-variables` — OpenIntro 1.2 – Datos: tipos de variables · falta: explicación (idea, analogía y regla), 2 ejemplos resueltos (básico y tipo examen), ejemplo con huecos, ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, explicación alternativa, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Muestreo y sesgos — OpenIntro 1.3 – Muestreo: principios y estrategias
-- [ ] Tablas de frecuencia — OpenIntro 2.2 – Datos categóricos: tablas de contingencia
-- [x] 🟡 Media, mediana y moda `tendencia-central` — OpenIntro 2.1 – Media y mediana · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Rango, varianza y desviación estándar `dispersion` — OpenIntro 2.1 – Varianza y desviación estándar · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 Percentiles y boxplot `percentiles` — OpenIntro 2.1 – Boxplots, cuartiles y mediana · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Histogramas y forma de la distribución — OpenIntro 2.1 – Histogramas y forma
-- [ ] Correlación — OpenIntro 8.1 – Correlación (r)
+- [x] ✅ Tipos de variables `tipos-de-variables` — OpenIntro 1.2 – Datos: tipos de variables
+- [x] ✅ Muestreo y sesgos `muestreo` — OpenIntro 1.3 – Muestreo: principios y estrategias
+- [x] ✅ Tablas de frecuencia `tablas-frecuencia` — OpenIntro 2.2 – Datos categóricos: tablas de contingencia
+- [x] ✅ Media, mediana y moda `tendencia-central` — OpenIntro 2.1 – Media y mediana
+- [x] ✅ Rango, varianza y desviación estándar `dispersion` — OpenIntro 2.1 – Varianza y desviación estándar
+- [x] ✅ Percentiles y boxplot `percentiles` — OpenIntro 2.1 – Boxplots, cuartiles y mediana
+- [x] ✅ Histogramas y forma de la distribución `histogramas` — OpenIntro 2.1 – Histogramas y forma
+- [x] ✅ Correlación `correlacion` — OpenIntro 8.1 – Correlación (r)
 
 📚 Para profundizar: OpenIntro Statistics — cap. 1 «Introducción a los datos» y cap. 2 «Resumir datos»
 
-### 🟡 Probabilidad `probabilidad`
+### ✅ Probabilidad `probabilidad`
 
-0/9 habilidades ✅ · falta: 7 habilidades por crear · 2 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+9/9 habilidades ✅
 
-- [x] 🟡 Reglas de probabilidad `probabilidad-basica` — OpenIntro 3.1 – Definición de probabilidad · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Conteo: permutaciones y combinaciones — OpenIntro 3.4 (y apéndice) – Conteo
-- [x] 🟡 Condicional e independencia `probabilidad-compuesta` — OpenIntro 3.2 – Probabilidad condicional · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Teorema de Bayes — OpenIntro 3.2 – Teorema de Bayes
-- [ ] Variables aleatorias, esperanza y varianza — OpenIntro 3.4 – Variables aleatorias
-- [ ] Distribución binomial — OpenIntro 4.3 – Distribución binomial
-- [ ] Distribución de Poisson — OpenIntro 4.5 – Distribución de Poisson
-- [ ] Distribución normal — OpenIntro 4.1 – Distribución normal
-- [ ] Teorema del límite central — OpenIntro 5.1 – Estimaciones puntuales y variabilidad muestral
+- [x] ✅ Reglas de probabilidad `probabilidad-basica` — OpenIntro 3.1 – Definición de probabilidad
+- [x] ✅ Conteo: permutaciones y combinaciones `conteo` — OpenIntro 3.4 (y apéndice) – Conteo
+- [x] ✅ Condicional e independencia `probabilidad-compuesta` — OpenIntro 3.2 – Probabilidad condicional
+- [x] ✅ Teorema de Bayes `bayes` — OpenIntro 3.2 – Teorema de Bayes
+- [x] ✅ Variables aleatorias, esperanza y varianza `variables-aleatorias` — OpenIntro 3.4 – Variables aleatorias
+- [x] ✅ Distribución binomial `binomial` — OpenIntro 4.3 – Distribución binomial
+- [x] ✅ Distribución de Poisson `poisson` — OpenIntro 4.5 – Distribución de Poisson
+- [x] ✅ Distribución normal `normal` — OpenIntro 4.1 – Distribución normal
+- [x] ✅ Teorema del límite central `limite-central` — OpenIntro 5.1 – Estimaciones puntuales y variabilidad muestral
 
 📚 Para profundizar: OpenIntro Statistics — cap. 3 «Probabilidad» y cap. 4 «Distribuciones de variables aleatorias»
 
-### ⚪ Inferencia `inferencia`
+### ✅ Inferencia `inferencia`
 
-0/7 habilidades ✅ · falta: 7 habilidades por crear · escenario integrador · simulacro de 10–15 preguntas
+7/7 habilidades ✅
 
-- [ ] Distribución muestral — OpenIntro 5.1 – Variabilidad muestral
-- [ ] Intervalos de confianza (media y proporción) — OpenIntro 5.2 y 7.1 – Intervalos de confianza
-- [ ] Pruebas de hipótesis (z, t y proporción) — OpenIntro 5.3 y 7.1 – Pruebas de hipótesis
-- [ ] Valor p y errores tipo I y II — OpenIntro 5.3 – Decisiones y errores
-- [ ] Chi-cuadrada — OpenIntro 6.3–6.4 – Pruebas chi-cuadrada
-- [ ] Regresión lineal simple — OpenIntro 8.2–8.4 – Regresión lineal
-- [ ] Regresión múltiple: interpretación — OpenIntro 9.1 – Regresión múltiple
+- [x] ✅ Distribución muestral `distribucion-muestral` — OpenIntro 5.1 – Variabilidad muestral
+- [x] ✅ Intervalos de confianza (media y proporción) `intervalos-confianza` — OpenIntro 5.2 y 7.1 – Intervalos de confianza
+- [x] ✅ Pruebas de hipótesis (z, t y proporción) `pruebas-hipotesis` — OpenIntro 5.3 y 7.1 – Pruebas de hipótesis
+- [x] ✅ Valor p y errores tipo I y II `valor-p` — OpenIntro 5.3 – Decisiones y errores
+- [x] ✅ Chi-cuadrada `chi-cuadrada` — OpenIntro 6.3–6.4 – Pruebas chi-cuadrada
+- [x] ✅ Regresión lineal simple `regresion-simple` — OpenIntro 8.2–8.4 – Regresión lineal
+- [x] ✅ Regresión múltiple: interpretación `regresion-multiple` — OpenIntro 9.1 – Regresión múltiple
 
 📚 Para profundizar: OpenIntro Statistics — caps. 5 a 9 (fundamentos de inferencia, proporciones, medias y regresión)
 
-### 🟡 Python para datos `python-pandas`
+### ✅ Python para datos `python-pandas`
 
-0/11 habilidades ✅ · falta: 8 habilidades por crear · 3 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+11/11 habilidades ✅
 
-- [ ] Tipos y variables — McKinney cap. 2 – Python básico
-- [ ] Listas y diccionarios — McKinney cap. 3 – Estructuras de datos
-- [ ] Condicionales y ciclos — McKinney cap. 2 – Control de flujo
-- [ ] Funciones — McKinney cap. 3 – Funciones
-- [x] 🟡 Primeros pasos con pandas `pandas-basico` — McKinney cap. 5 · pandas – Leer y seleccionar datos · falta: explicación (idea, analogía y regla), 2 ejemplos resueltos (básico y tipo examen), ejemplo con huecos, ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, explicación alternativa, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [x] 🟡 ¿Qué imprime este código? `pandas-salida` — McKinney cap. 5 · pandas – Operaciones básicas · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 3 errores típicos, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Filtrar y ordenar con pandas — pandas – Indexing and selecting data; sort_values
-- [ ] Agrupar y unir con pandas — McKinney cap. 8 y 10 · pandas – merge y groupby
-- [ ] Valores faltantes y limpieza — McKinney cap. 7 · pandas – Working with missing data
-- [x] 🟡 Leer una gráfica de barras `leer-grafica` — McKinney cap. 9 – Graficar y visualizar · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Qué gráfica usar — McKinney cap. 9 – Tipos de gráficas
+- [x] ✅ Tipos y variables `python-tipos` — McKinney cap. 2 – Python básico
+- [x] ✅ Listas y diccionarios `listas-diccionarios` — McKinney cap. 3 – Estructuras de datos
+- [x] ✅ Condicionales y ciclos `condicionales-ciclos` — McKinney cap. 2 – Control de flujo
+- [x] ✅ Funciones `funciones-python` — McKinney cap. 3 – Funciones
+- [x] ✅ Primeros pasos con pandas `pandas-basico` — McKinney cap. 5 · pandas – Leer y seleccionar datos
+- [x] ✅ ¿Qué imprime este código? `pandas-salida` — McKinney cap. 5 · pandas – Operaciones básicas
+- [x] ✅ Filtrar y ordenar con pandas `pandas-filtrar` — pandas – Indexing and selecting data; sort_values
+- [x] ✅ Agrupar y unir con pandas `pandas-agrupar` — McKinney cap. 8 y 10 · pandas – merge y groupby
+- [x] ✅ Valores faltantes y limpieza `pandas-limpieza` — McKinney cap. 7 · pandas – Working with missing data
+- [x] ✅ Leer una gráfica de barras `leer-grafica` — McKinney cap. 9 – Graficar y visualizar
+- [x] ✅ Qué gráfica usar `que-grafica` — McKinney cap. 9 – Tipos de gráficas
 
 📚 Para profundizar: McKinney, «Python for Data Analysis» — caps. 2–3 (Python básico) y 5–10 (pandas) · Guía de usuario de pandas (pandas.pydata.org)
 
-### 🟡 Machine learning básico `machine-learning`
+### ✅ Machine learning básico `machine-learning`
 
-0/9 habilidades ✅ · falta: 8 habilidades por crear · 1 habilidades sin terminar · escenario integrador · simulacro de 10–15 preguntas
+9/9 habilidades ✅
 
-- [ ] Qué es y tipos de aprendizaje — ISLR 2.1 – ¿Qué es el aprendizaje estadístico?
-- [ ] Entrenamiento, prueba y validación cruzada — ISLR 5.1 – Validación cruzada
-- [ ] Regresión lineal (modelo) — ISLR 3 – Regresión lineal
-- [ ] Regresión logística — ISLR 4.3 – Regresión logística
-- [ ] k vecinos más cercanos (k-NN) — ISLR 2.2 – k-NN
-- [ ] Árboles de decisión — ISLR 8.1 – Árboles de decisión
-- [x] 🟡 Métricas: exactitud, precisión, recall y F1 `ml-metricas` — scikit-learn – Model evaluation; ISLR 4.4 · falta: ≥ 3 plantillas por nivel en los 5 niveles, ≥ 2 problemas de aplicación, ≥ 3 tarjetas de repaso, básico, procedimiento y aplicación
-- [ ] Sobreajuste y regularización — ISLR 2.2 y 6.2 – Compromiso sesgo-varianza y regularización
-- [ ] Ética y sesgos en modelos — Concepto general – Sesgos en datos y modelos
+- [x] ✅ Qué es y tipos de aprendizaje `tipos-aprendizaje` — ISLR 2.1 – ¿Qué es el aprendizaje estadístico?
+- [x] ✅ Entrenamiento, prueba y validación cruzada `validacion` — ISLR 5.1 – Validación cruzada
+- [x] ✅ Regresión lineal (modelo) `regresion-ml` — ISLR 3 – Regresión lineal
+- [x] ✅ Regresión logística `regresion-logistica` — ISLR 4.3 – Regresión logística
+- [x] ✅ k vecinos más cercanos (k-NN) `knn` — ISLR 2.2 – k-NN
+- [x] ✅ Árboles de decisión `arboles` — ISLR 8.1 – Árboles de decisión
+- [x] ✅ Métricas: exactitud, precisión, recall y F1 `ml-metricas` — scikit-learn – Model evaluation; ISLR 4.4
+- [x] ✅ Sobreajuste y regularización `sobreajuste` — ISLR 2.2 y 6.2 – Compromiso sesgo-varianza y regularización
+- [x] ✅ Ética y sesgos en modelos `etica-ml` — Concepto general – Sesgos en datos y modelos
 
 📚 Para profundizar: James et al., «An Introduction to Statistical Learning» — caps. 2 a 5 y 8 · Documentación de scikit-learn — guía de usuario (model evaluation)
 

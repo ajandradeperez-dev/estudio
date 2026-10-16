@@ -1199,174 +1199,220 @@
    }
   },
   "ciencia-datos": {
-   "estado": "parcial",
+   "estado": "completo",
    "cobertura": {
-    "completas": 0,
+    "completas": 44,
     "total": 44,
-    "pct": 0
+    "pct": 100
    },
    "temas": {
     "estadistica": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 8,
      "total": 8,
-     "faltan": [
-      "4 habilidades por crear",
-      "4 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "probabilidad": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 9,
      "total": 9,
-     "faltan": [
-      "7 habilidades por crear",
-      "2 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "inferencia": {
-     "estado": "proximo",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 7,
      "total": 7,
-     "faltan": [
-      "7 habilidades por crear",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "python-pandas": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 11,
      "total": 11,
-     "faltan": [
-      "8 habilidades por crear",
-      "3 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     },
     "machine-learning": {
-     "estado": "parcial",
-     "completas": 0,
+     "estado": "completo",
+     "completas": 9,
      "total": 9,
-     "faltan": [
-      "8 habilidades por crear",
-      "1 habilidades sin terminar",
-      "escenario integrador",
-      "simulacro de 10–15 preguntas"
-     ]
+     "faltan": []
     }
    },
    "habilidades": {
     "tipos-de-variables": {
-     "estado": "parcial",
-     "faltan": [
-      "explicación (idea, analogía y regla)",
-      "2 ejemplos resueltos (básico y tipo examen)",
-      "ejemplo con huecos",
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "explicación alternativa",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "muestreo": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "tablas-frecuencia": {
+     "estado": "completa",
+     "faltan": []
     },
     "tendencia-central": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "dispersion": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "percentiles": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "histogramas": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "correlacion": {
+     "estado": "completa",
+     "faltan": []
     },
     "probabilidad-basica": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "conteo": {
+     "estado": "completa",
+     "faltan": []
     },
     "probabilidad-compuesta": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "bayes": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "variables-aleatorias": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "binomial": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "poisson": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "normal": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "limite-central": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "distribucion-muestral": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "intervalos-confianza": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "pruebas-hipotesis": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "valor-p": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "chi-cuadrada": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "regresion-simple": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "regresion-multiple": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "python-tipos": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "listas-diccionarios": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "condicionales-ciclos": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "funciones-python": {
+     "estado": "completa",
+     "faltan": []
     },
     "pandas-basico": {
-     "estado": "parcial",
-     "faltan": [
-      "explicación (idea, analogía y regla)",
-      "2 ejemplos resueltos (básico y tipo examen)",
-      "ejemplo con huecos",
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "explicación alternativa",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
     },
     "pandas-salida": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 3 errores típicos",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "pandas-filtrar": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "pandas-agrupar": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "pandas-limpieza": {
+     "estado": "completa",
+     "faltan": []
     },
     "leer-grafica": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "que-grafica": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "tipos-aprendizaje": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "validacion": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "regresion-ml": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "regresion-logistica": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "knn": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "arboles": {
+     "estado": "completa",
+     "faltan": []
     },
     "ml-metricas": {
-     "estado": "parcial",
-     "faltan": [
-      "≥ 3 plantillas por nivel en los 5 niveles",
-      "≥ 2 problemas de aplicación",
-      "≥ 3 tarjetas de repaso",
-      "básico, procedimiento y aplicación"
-     ]
+     "estado": "completa",
+     "faltan": []
+    },
+    "sobreajuste": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "etica-ml": {
+     "estado": "completa",
+     "faltan": []
     }
    }
   }

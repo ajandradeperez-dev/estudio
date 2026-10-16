@@ -197,8 +197,8 @@ const metricas={
         paso('Elige la fórmula',{exactitud:'Exactitud = (VP + VN) / total',precision:'Precisión = VP / (VP + FP)',recall:'Recall = VP / (VP + FN)',f1:'F1 = 2·P·R / (P + R)'}[tipo],{exactitud:'De todos los casos, cuántos acertó.',precision:'De lo que marcó positivo, cuánto era de verdad.',recall:'De los positivos reales, cuántos encontró.',f1:'Equilibra precisión y recall.'}[tipo],tipo==='f1'?{}:{ojo:'Precisión mira la columna de lo predicho; recall, la fila de lo real.'}),
         ...(tipo==='f1'?[paso('Calcula P y R',`P = ${VP}/(${VP}+${FP}) = ${r2(P)} · R = ${VP}/(${VP}+${FN}) = ${r2(Rc)}`,'F1 necesita las dos.')]:[]),
         final('Sustituye y calcula',{exactitud:`(${VP} + ${VN}) / ${tot}`,precision:`${VP} / (${VP} + ${FP})`,recall:`${VP} / (${VP} + ${FN})`,f1:`2·${r2(P)}·${r2(Rc)} / (${r2(P)} + ${r2(Rc)})`}[tipo]+` = <b>${r2(val)}</b>`,'Redondea a 2 decimales.',String(r2(val)))],
-      errores:[...(tipo==='precision'?[{valor:String(r2(Rc)),si:e=>Math.abs(num(e)-Rc)<=0.006&&Math.abs(P-Rc)>0.01,por:'Ese es el recall: la precisión divide entre lo que el modelo marcó positivo (VP + FP).'}]:[]),
-        ...(tipo==='recall'?[{valor:String(r2(P)),si:e=>Math.abs(num(e)-P)<=0.006&&Math.abs(P-Rc)>0.01,por:'Esa es la precisión: el recall divide entre los positivos reales (VP + FN).'}]:[]),
+      errores:[...(tipo==='precision'&&Math.abs(P-Rc)>0.01?[{valor:String(r2(Rc)),si:e=>Math.abs(num(e)-Rc)<=0.006&&Math.abs(P-Rc)>0.01,por:'Ese es el recall: la precisión divide entre lo que el modelo marcó positivo (VP + FP).'}]:[]),
+        ...(tipo==='recall'&&Math.abs(P-Rc)>0.01?[{valor:String(r2(P)),si:e=>Math.abs(num(e)-P)<=0.006&&Math.abs(P-Rc)>0.01,por:'Esa es la precisión: el recall divide entre los positivos reales (VP + FN).'}]:[]),
         {si:e=>Math.abs(num(e)/100-val)<=0.006&&!/%/.test(e),por:'Si lo escribes como porcentaje, agrega %; si no, usa el decimal (0.xx).'}],
       regla:R,pista:'Ubica VP, FP, FN y VN en la tabla.'};
   }

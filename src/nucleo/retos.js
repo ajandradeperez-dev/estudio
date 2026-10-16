@@ -9,6 +9,7 @@ import {escenarioNegocio,escenarioCohete,escenarioPresa,escenarioCerro,escenario
 import {escenarioFabrica} from './generadores/aplicaciones-lineal.js';
 import {escenarioApp} from './generadores/escenarios-mat.js';
 import {escenarioCotizacion,escenarioNomina,escenarioBoleta,escenarioRegiones,escenarioInventarioBusca,escenarioClientes,escenarioLibro,escenarioOrganizar,escenarioGraficoJunta,escenarioAtajos,escenarioAsistencia} from './generadores/excel-escenarios2.js';
+import {escenarioEntregas,escenarioCalidad,escenarioAB,escenarioPandas,escenarioChurn} from './generadores/escenarios-datos.js';
 import {escenarioOficina,escenarioRedLenta,escenarioPyme,escenarioPlanIR} from './generadores/escenarios-ciber.js';
 import {escenarioPrimerDia,escenarioViaje,escenarioPhishing,escenarioPostmortem,escenarioEvaluacion} from './generadores/escenarios-en.js';
 import {escenarioReporteVentas,escenarioGastos,escenarioCalificaciones,escenarioInventario} from './generadores/excel-escenarios.js';
@@ -43,6 +44,11 @@ const EN_EXAMENES=['en/prueba-nivel','en/simulacro-a2','en/simulacro-b1','en/sim
 const XL={interfaz:['xl/hojas-libros','xl/celdas','xl/tipos-datos','xl/formato'],formulas:['xl/operadores','xl/referencias','xl/nombres'],resumen:['xl/suma-promedio','xl/contar-max-min','xl/redondear'],
   logica:['xl/si','xl/y-o','xl/si-anidado','xl/si-error'],condicionales:['xl/contar-si','xl/sumar-si'],busqueda:['xl/buscarv','xl/buscarx','xl/indice-coincidir'],'texto-fechas':['xl/texto','xl/fechas'],
   'organizar-datos':['xl/tablas','xl/ordenar-filtrar','xl/formato-condicional','xl/validacion'],dinamicas:['xl/tabla-dinamica'],graficos:['xl/graficos','xl/formato-graficos'],'atajos-teclado':['xl/atajos']};
+const CD={estadistica:['est/variables','est/muestreo','est/frecuencias','est/tendencia','est/dispersion','est/percentil','est/histogramas','est/correlacion'],
+  probabilidad:['prob/basica','prob/conteo','prob/compuesta','prob/bayes','prob/va','prob/binomial','prob/poisson','prob/normal','prob/tlc'],
+  inferencia:['inf/muestral','inf/ic','inf/hipotesis','inf/valor-p','inf/chi','inf/regresion','inf/multiple'],
+  'python-pandas':['py/tipos','py/listas','py/control','py/funciones','py/pandas-basico','py/pandas','py/filtrar','py/agrupar','py/faltantes','viz/barras','viz/que-grafica'],
+  'machine-learning':['ml/tipos','ml/validacion','ml/regresion','ml/logistica','ml/knn','ml/arboles','ml/metricas','ml/sobreajuste','ml/etica']};
 const ALGEBRA=['alg/expresiones','alg/productos-notables','alg/factorizacion','alg/fracciones-algebraicas','alg/ecuacion-lineal','alg/cuadratica','alg/radicales-absoluto','alg/desigualdad','alg/desigualdad-no-lineal','alg/sistema-2x2','alg/sistema-3x3','alg/exponentes'];
 
 export const RETOS=[
@@ -240,6 +246,27 @@ export const RETOS=[
    desc:'Entrada, salida y agua acumulada en 3 preguntas.',crear:escenarioPresa},
   {id:'mat-simulacro-integral',materia:'matematicas',tema:'calculo-integral',titulo:'Simulacro de Cálculo integral',profundidad:'escenario',dificultad:3,simulacro:true,
    desc:'12 preguntas mezcladas de todo el tema, como un examen.',crear:simulacro(INTEGRAL)},
+  // ---------- Ciencia de datos ----------
+  {id:'cd-entregas',materia:'ciencia-datos',tema:'estadistica',titulo:'Tiempos de entrega',profundidad:'escenario',dificultad:2,
+   desc:'Media, mediana, desviación estándar y un atípico: 4 pasos.',crear:escenarioEntregas},
+  {id:'cd-simulacro-estadistica',materia:'ciencia-datos',tema:'estadistica',titulo:'Simulacro de Estadística descriptiva',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(CD['estadistica'])},
+  {id:'cd-calidad',materia:'ciencia-datos',tema:'probabilidad',titulo:'Control de calidad',profundidad:'escenario',dificultad:3,
+   desc:'Binomial, «al menos uno» y Bayes con un sensor: 4 pasos.',crear:escenarioCalidad},
+  {id:'cd-simulacro-probabilidad',materia:'ciencia-datos',tema:'probabilidad',titulo:'Simulacro de Probabilidad',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(CD['probabilidad'])},
+  {id:'cd-ab',materia:'ciencia-datos',tema:'inferencia',titulo:'Prueba A/B de un botón',profundidad:'escenario',dificultad:4,
+   desc:'Error estándar, intervalo, z y decisión: 4 pasos.',crear:escenarioAB},
+  {id:'cd-simulacro-inferencia',materia:'ciencia-datos',tema:'inferencia',titulo:'Simulacro de Inferencia',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(CD['inferencia'])},
+  {id:'cd-limpia-ventas',materia:'ciencia-datos',tema:'python-pandas',titulo:'Limpia y resume un archivo',profundidad:'escenario',dificultad:3,
+   desc:'read_csv, faltantes, groupby y orden: 4 pasos.',crear:escenarioPandas},
+  {id:'cd-simulacro-python-pandas',materia:'ciencia-datos',tema:'python-pandas',titulo:'Simulacro de Python para datos',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(CD['python-pandas'])},
+  {id:'cd-proyecto-churn',materia:'ciencia-datos',tema:'machine-learning',titulo:'Proyecto: ¿qué clientes se van?',profundidad:'escenario',dificultad:4,
+   desc:'Tipo de problema, prueba, recall y la métrica correcta: 4 pasos.',crear:escenarioChurn},
+  {id:'cd-simulacro-machine-learning',materia:'ciencia-datos',tema:'machine-learning',titulo:'Simulacro de Machine learning básico',profundidad:'escenario',dificultad:3,simulacro:true,
+   desc:'12 preguntas mezcladas de todo el tema.',crear:simulacro(CD['machine-learning'])},
   // ---------- Inglés · A1 ----------
   {id:'en-primer-dia',materia:'ingles',tema:'a1',titulo:'Tu primer día en la oficina',profundidad:'escenario',dificultad:2,
    desc:'Presentarte, preguntar dónde están las cosas, pedir en la cafetería y despedirte: 4 pasos.',crear:escenarioPrimerDia},

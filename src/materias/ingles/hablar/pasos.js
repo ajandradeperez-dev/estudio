@@ -28,7 +28,7 @@ export function vistaEscucha(u){
     ses=crearSesion({
       titulo:`Escucha: ${e.titulo}`,tono:'estudio',salir:`${RAIZ}/u/${u.id}`,sinPistas:true,materia:'ingles',
       total:()=>n,
-      siguiente:st=>st.i<n?{...deBanco(e.preguntas[st.i]),oir:soporte.hablar?e.texto:'',k:st.i}:null,
+      siguiente:st=>st.i<n?{...deBanco(e.preguntas[st.i]),materia:'ingles',oir:soporte.hablar?e.texto:'',k:st.i}:null,
       responder(p,r){
         if(!r.correcto)fallos.push(p.regla);
         registrarEjercicio({materia:'ingles',ref:`ingles/e/${u.id}/${p.k}`,correcto:r.correcto});

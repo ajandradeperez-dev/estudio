@@ -29,7 +29,7 @@ export function deBanco(ej,extra={}){
   if(ej.tipo==='opcion')return {...base,tipo:'opcion',enunciado:ej.pregunta,opciones:ej.opciones,correcta:ej.correcta,porque:ej.porque,respuesta:ej.opciones[ej.correcta],explicacion:ej.explicacion,intro:true};
   if(ej.tipo==='hablar')return {...ej,...base,tipo:'hablar',enunciado:ej.pregunta,respuesta:ej.modelo||ej.frase};
   // completar: cualquiera de las respuestas aceptadas; los errores típicos explican por qué
-  return {...base,tipo:'escribir',enunciado:ej.pregunta,respuesta:esc(ej.respuestas[0]),
+  return {...base,tipo:'escribir',enunciado:ej.pregunta,respuesta:esc(ej.respuestas[0]),aceptadas:ej.respuestas,
     verificar:e=>coincide(e,ej.respuestas),
     errores:Object.entries(ej.errores||{}).map(([valor,por])=>({valor,por,si:e=>coincide(e,[valor])}))};
 }

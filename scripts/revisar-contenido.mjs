@@ -3,7 +3,7 @@
 import {readdirSync,existsSync,readFileSync,writeFileSync} from 'node:fs';
 import {join,dirname} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
-import {coincide} from '../src/nucleo/comparar.js';
+import {coincide,casiIgual} from '../src/nucleo/comparar.js';
 import {MIN_PRODUCCION,MAX_PALABRAS,UBICACION_MIN,UBICACION_MAX,esProduccion,repartoUbicacion,preguntasUbicacion,palabras} from '../src/nucleo/metodo.js';
 
 const raiz=join(dirname(fileURLToPath(import.meta.url)),'..','src','materias');
@@ -516,7 +516,17 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
   if(F.deHtml('<b>x</b> \\(\\cambio{\\dfrac{1}{2}}\\)')!=='**x** $\\dfrac{1}{2}$')mal(e,'convierte mal un paso a texto de nota');
   console.log('cuaderno: el formato de las notas es seguro y lee las tarjetas');
 }
+// Errores de dedo: se aceptan en palabras en español (nomonal → nominal) pero nunca cambian el sentido
+{
+  const si=[['nomonal','nominal'],['Telent','Telnet'],['clasificacoin','clasificacion'],['simetrco','simetrico'],['deteccion y analissi','deteccion y analisis']];
+  const no=[['ordinal','nominal'],['asimetrico','simetrico'],['mayor','menor'],['IPS','IDS'],['13','12'],['=SUMA(A1)','=SUMA(A2)'],['ascendente','descendente'],['mediana','media']];
+  for(const [e,r] of si)if(casiIgual(e,[r])!==r)mal('errores de dedo','«'+e+'» debería aceptarse como «'+r+'»');
+  for(const [e,r] of no)if(casiIgual(e,[r])!==null)mal('errores de dedo','«'+e+'» no debe aceptarse como «'+r+'»');
+  if(casiIgual('nominal',['ordinal'],['nominal'])!==null)mal('errores de dedo','un error típico nunca se acepta');
+  console.log('errores de dedo: se aceptan en palabras en español y nunca cuando cambian el sentido o son un error típico');
+}
 avisos.forEach(a=>console.log('aviso  '+a));
 errores.forEach(e=>console.log('ERROR  '+e));
 console.log(errores.length?`\n${errores.length} errores`:'\nTodo cumple el método de aprendizaje.');
 process.exit(errores.length?1:0);
+

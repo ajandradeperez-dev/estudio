@@ -24,6 +24,7 @@ import {agregarAlTema,bloqueProcedimiento,bloqueError} from './cuaderno/notas.js
 import {htmlPaso,normalPaso,textoPlano,abrirProcedimiento,cerrarProcedimiento} from './procedimiento.js';
 import {vibrar} from './ajustes.js';
 import {conFormulas} from './formula.js';
+import {casiIgual} from './comparar.js';
 import {htmlHoja,activarHoja,insertarRef,previa,olvidarRef} from './excel/hoja.js';
 
 const mezclar=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
@@ -40,6 +41,8 @@ const enunciado=p=>`<div class="pregunta">${conFormulas(p.enunciado||'')}</div>$
 const teclado=p=>p.teclado&&TECLADOS[p.teclado]?`<div class="teclado" aria-label="Símbolos">${TECLADOS[p.teclado].map(k=>`<button type="button" class="tecla" data-tecla="${esc(k)}">${esc(k)}</button>`).join('')}</div>`:'';
 const casillaFoco={el:null};
 
+// Tolerancia a errores de dedo: solo respuestas en español hechas de palabras (no inglés, fórmulas de Excel, matrices ni voz)
+const toleraDedo=p=>p.tolera!==false&&p.lang!=='en'&&p.materia!=='ingles'&&p.teclado!=='xl'&&!p.forma&&(p.tipo||'escribir')==='escribir';
 /* ---------- actividades ---------- */
 // html(p, e): pantalla · listo(e): ¿se puede comprobar? · leer(e): la entrada · comprobar(p, entrada, e): {correcto, porque}
 export const ACT={
@@ -54,9 +57,12 @@ export const ACT={
     leer(){const c=[...document.querySelectorAll('#vista .celda')];return c.length?c.map(x=>x.value.trim()):$('#ses-resp').value.trim()},
     bloquear(){document.querySelectorAll('#ses-resp,#vista .celda').forEach(x=>x.readOnly=true)},
     comprobar(p,entrada){
-      const correcto=!!p.verificar(entrada);
+      let correcto=!!p.verificar(entrada);
       const err=correcto?null:(p.errores||[]).find(x=>{try{return x.si(entrada)}catch(e){return false}});
-      return {correcto,porque:err?.por};
+      // Error de dedo en una respuesta en español (nomonal → nominal): cuenta como correcta y se muestra cómo se escribe
+      let ortografia=null;
+      if(!correcto&&!err&&typeof entrada==='string'&&toleraDedo(p)){const ok=casiIgual(entrada,p.aceptadas||[p.respuesta],(p.errores||[]).map(x=>x.valor));if(ok!=null&&p.verificar(String(ok))){correcto=true;ortografia=String(ok)}}
+      return {correcto,porque:err?.por,ortografia};
     }
   },
   opcion:{
@@ -226,6 +232,7 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
     if(r.evalHabla)lineas.push(htmlFraseEvaluada(r.evalHabla));
     if(r.correcto){
       if(p.tipo==='hablar'&&p.modelo&&!p.frase)lineas.push(`<p class="hoja-linea">Otra forma natural: <span lang="en">${esc(p.modelo)}</span></p>`);
+      if(r.ortografia)lineas.push(`<p class="hoja-linea">✍️ Ojo con la ortografía: se escribe «${esc(r.ortografia)}».</p>`);
       if(r.pista)lineas.push('<p class="hoja-linea">Correcto, pero con pista: no cuenta para dominar.</p>');
       if(p.explicacion)lineas.push(`<p class="hoja-linea">${conFormulas(p.explicacion)}</p>`);
     }else{

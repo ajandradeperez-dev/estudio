@@ -18,7 +18,7 @@ export function vistaUbicacion(m){
     ses=crearSesion({
       titulo:`Ubicación · ${m.nombre}`,tono,salir:rutaMateria(m),rendirse:true,sinPistas:true,
       total:()=>preguntas.length,
-      siguiente:st=>{const x=preguntas[st.i];return x?{...deBanco(x.ej),leccion:x.leccion.id}:null},
+      siguiente:st=>{const x=preguntas[st.i];return x?{...deBanco(x.ej),leccion:x.leccion.id,materia:m.id}:null},
       responder(p,r){
         resultados[p.leccion][1]++;if(r.correcto)resultados[p.leccion][0]++;
         // Lo que no sabes todavía no va al repaso: lo aprenderás en la lección

@@ -19,7 +19,7 @@ export const I=(q,a,e=[],f,x)=>({q,a:[].concat(a),e,f,x});
 export function txt({enunciado,acepta,pasos,errores=[],regla,pista,frase,es=false,clave}){
   acepta=[].concat(acepta);
   const errs=errores.filter(([v])=>!igualTexto(v,acepta)).map(([v,por])=>({valor:v,si:e=>igualTexto(e,[v]),por}));
-  return {enunciado,respuesta:acepta[0],verificar:e=>igualTexto(e,acepta),
+  return {enunciado,respuesta:acepta[0],aceptadas:acepta,tolera:es,verificar:e=>igualTexto(e,acepta),
     pasos:[...pasos.slice(0,-1),{...pasos.at(-1),res:acepta[0]}],errores:errs,regla,pista,clave,
     ...(es?{}:{lang:'en',frase:frase||acepta[0]}),
     comprobar:()=>igualTexto(acepta[0],acepta)&&errs.every(x=>!igualTexto(x.valor,acepta))};

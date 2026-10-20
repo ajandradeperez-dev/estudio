@@ -9,6 +9,7 @@ import {conVariantes} from './algebra-variantes.js';
 import {celdasIguales,vecAl,comoVector,comoMatriz,det2,det3} from './algebra-lineal.js';
 import {cruz,punto,mulMV,mulMM,gaussJordan} from './algebra-lineal2.js';
 import orig from './algebra-lineal.js';
+import {pasosGauss} from './gauss-pasos.js';
 
 const norma=v=>Math.hypot(...v);
 // Compara números calculados (sin pasar por el lector de texto, que no entiende 1e-16)
@@ -181,11 +182,15 @@ const inversa=conVariantes(orig['al/inversa'],{
 
 /* ---------- Gauss ---------- */
 const ecs=(A,b,v)=>A.map((f,i)=>`${lineal(f.map((x,j)=>[x,v[j]]))} = ${b[i]}`);
-const gaussRes=(A,X,nota)=>{const d=A.length,v=['x','y','z'].slice(0,d),b=A.map(f=>punto(f,X)),{ops}=gaussJordan(A.map((f,i)=>[...f,b[i]]));
-  return {...comoVector(X),enunciado:`Resuelve por Gauss (escribe ${v.join(', ')}):\\[\\begin{cases}${ecs(A,b,v).join(' \\\\ ')}\\end{cases}\\]`,pasos:[paso('Matriz aumentada y operaciones',`\\(${ops.slice(0,4).join(',\\ ')||'\\text{ya está escalonada}'}\\)`,nota||'Ceros debajo de cada pivote.'),final('Despeja de abajo hacia arriba',`\\(${v.map((l,i)=>`${l} = ${c(X[i])}`).join(',\\ ')}\\)`,'Sustitución hacia atrás.',X.join(', '))],
-    errores:[{si:e=>Array.isArray(e)&&celdasIguales([...e].reverse(),X)&&X.join()!==[...X].reverse().join(),por:`En orden: ${v.join(', ')}.`},{si:e=>Array.isArray(e)&&celdasIguales(e,X.map(x=>-x))&&X.some(Boolean),por:'Revisa los signos.'}],comprobar:()=>A.every((f,i)=>punto(f,X)===b[i])}};
+// Pasos reales de Gauss con los números del ejercicio (gauss-pasos.js) y su escalera de pistas
+const gaussRes=(A,X,nota)=>{const d=A.length,v=['x','y','z'].slice(0,d),b=A.map(f=>punto(f,X)),g=pasosGauss(A.map((f,i)=>[...f,b[i]]),X);
+  return {...comoVector(X),enunciado:`Resuelve por Gauss (escribe ${v.join(', ')}):\\[\\begin{cases}${ecs(A,b,v).join(' \\\\ ')}\\end{cases}\\]`,pasos:g.pasos,
+    escalera:[nota?`${nota} ${g.idea}`:g.idea,g.primero],
+    errores:[{si:e=>Array.isArray(e)&&celdasIguales([...e].reverse(),X)&&X.join()!==[...X].reverse().join(),por:`Escribiste los valores en otro orden: van ${v.join(', ')}.`},{si:e=>Array.isArray(e)&&celdasIguales(e,X.map(x=>-x))&&X.some(Boolean),por:'Todos los signos quedaron al revés: revisa la resta al eliminar (menos por menos da más).'}],comprobar:()=>A.every((f,i)=>punto(f,X)===b[i])}};
 const inv=A=>(A.length===2?det2(A):det3(A))!==0;
-const gauss=conVariantes(orig['al/gauss'],{
+// Cada nivel: sus plantillas y una «general» con los números de la original (todas con los pasos de gauss-pasos.js)
+const general=n=>rng=>{const d=n<=2?2:3,R=n<=3?4:6,X=vecAl(rng,d,n<=3?5:8);let A;do A=Array.from({length:d},()=>vecAl(rng,d,R));while(!inv(A)||!A[0][0]);return gaussRes(A,X)};
+const gauss0=conVariantes(orig['al/gauss'],{
   1:{'triangular-2x2':rng=>{const A=[[rng.noCero(-3,3),rng.entero(-4,4)],[0,rng.noCero(-3,3)]];return gaussRes(A,vecAl(rng,2,5),'Ya está escalonada: despeja y y sustituye.')},
      'pivote-uno':rng=>{let A;do A=[[1,rng.entero(-3,3)],[rng.entero(-4,4),rng.noCero(-3,3)]];while(!inv(A));return gaussRes(A,vecAl(rng,2,5))}},
   2:{'intercambio-2x2':rng=>{let A;do A=[[0,rng.noCero(-3,3)],[rng.noCero(-3,3),rng.entero(-3,3)]];while(!inv(A));return gaussRes(A,vecAl(rng,2,6),'Primero intercambia las filas: la primera no tiene x.')},
@@ -197,7 +202,10 @@ const gauss=conVariantes(orig['al/gauss'],{
   5:{'grandes':rng=>{let A;do A=Array.from({length:3},()=>vecAl(rng,3,7));while(!inv(A)||!A[0][0]);return gaussRes(A,vecAl(rng,3,8))},
      'aumentada':rng=>{let A;do A=Array.from({length:3},()=>vecAl(rng,3,4));while(!inv(A)||!A[0][0]);const X=vecAl(rng,3,6),b=A.map(f=>punto(f,X)),p=gaussRes(A,X);
       return {...p,enunciado:`Resuelve el sistema cuya matriz aumentada es \\(\\left(\\begin{array}{ccc|c}${A.map((f,i)=>[...f,b[i]].join(' & ')).join(' \\\\ ')}\\end{array}\\right)\\) (escribe x, y, z).`}}}
-},(p)=>{const m=p.enunciado.match(/\\begin\{cases\}([\s\S]*?)\\end\{cases\}/);if(!m)return false;const X=p.celdas.map(num),vals={x:X[0],y:X[1],z:X[2]};return m[1].split('\\\\').every(eq=>{const [i,d]=eq.split('=');try{return casi(compilar(i)(vals),compilar(d)({}))}catch(e){return false}})},{regla:'Gauss: con operaciones entre filas se deja la matriz escalonada; luego se despeja de abajo hacia arriba.',pista:'Usa la fila 1 para hacer cero la x de las demás.',teclado:'mat'});
+},(p)=>{const m=p.enunciado.match(/\\begin\{cases\}([\s\S]*?)\\end\{cases\}/);if(!m)return false;const X=p.celdas.map(num),vals={x:X[0],y:X[1],z:X[2]};return m[1].split('\\\\').every(eq=>{const [i,d]=eq.split('=');try{return casi(compilar(i)(vals),compilar(d)({}))}catch(e){return false}})},{regla:'Gauss: con operaciones entre filas se deja la matriz escalonada; luego se despeja de abajo hacia arriba.',pista:'Queremos que una ecuación se quede con una sola letra para despejarla fácil.',teclado:'mat'});
+const gauss={...gauss0,generar(n,rng){
+  if(rng.prob(1/3))return {...gauss0.generar(n,rng),...general(n)(rng),plantilla:'general'};
+  let p;do p=gauss0.generar(n,rng);while(p.plantilla==='clasica');return p}};
 
 export default {'al/vector-magnitud':magnitud,'al/vector-operaciones':operaciones,'al/producto-punto':productoPunto,'al/angulo':angulo,
   'al/matriz-producto':matrizProducto,'al/determinante':determinante,'al/inversa':inversa,'al/gauss':gauss};

@@ -12,6 +12,11 @@
      sinPistas?               → oculta el botón de pista
      crono?                   → segundos (jefe): al acabarse, termina
      ia?(st)                  → promesa con una pregunta nueva generada por IA (botón ✨)
+     gemelo?(p)               → un ejercicio gemelo de p (si no, se genera con su generador: generadores/index.js → gemelo)
+     minileccion?()           → abre la mini-lección de la habilidad (se ofrece tras usar 2 veces «No sé cómo empezar»)
+     saltar?(st)              → «Ya lo sé, ir a practicar» en las pantallas de la mini-lección (p.saltable)
+   Ayuda para principiantes (pistas.js): «💡 Pista» en escalera (1 idea, 2 primer paso con los números, 3 solución completa
+   y «Ahora tú» con un gemelo); «🤷 No sé cómo empezar» muestra la solución y luego un gemelo, sin contar como fallo.
    Pregunta (ver tipos en ACT): {tipo, enunciado, respuesta, verificar?, errores?:[{si(entrada), por, valor?}], regla?, pista?, pasos?, …}
    r = {correcto, pista, rendido, entrada, ms, porque} */
 import {$,esc} from '../utilidades.js';
@@ -26,6 +31,29 @@ import {vibrar} from './ajustes.js';
 import {conFormulas} from './formula.js';
 import {casiIgual} from './comparar.js';
 import {htmlHoja,activarHoja,insertarRef,previa,olvidarRef} from './excel/hoja.js';
+import {escalera} from './pistas.js';
+import {gemelo as gemeloGen} from './generadores/index.js';
+
+// ¿Se puede responder escribiendo o eligiendo? (las de solo lectura no llevan pistas ni «No sé cómo empezar»)
+const respondible=p=>p&&!['ejemplo','teoria','porque'].includes(p.tipo);
+// Resultados intermedios de cada paso (lo resaltado con \cambio{} o <mark>), para decir en qué paso se desvió una respuesta
+const resultadosPaso=x=>[...String(x?.como||'').matchAll(/\\cambio\{([^{}]*)\}|<mark[^>]*>([^<]*)<\/mark>/g)].map(m=>(m[1]??m[2]).trim()).filter(Boolean);
+// En qué paso se desvió (o qué error genérico parece): texto para la hoja roja
+export function desvio(p,entrada,err){
+  const pasos=(p.pasos||[]).map(normalPaso);
+  if(err?.paso!==undefined&&pasos[err.paso])return `Te desviaste en el paso ${err.paso+1}: «${pasos[err.paso].que||''}».`;
+  if(typeof entrada==='string'&&entrada.trim()){
+    const e=entrada.trim().replace(/\s+/g,' ').toLowerCase();
+    for(let i=0;i<pasos.length-1;i++)if(resultadosPaso(pasos[i]).some(x=>textoPlano(x).replace(/\s+/g,' ').toLowerCase()===e))
+      return `Tu respuesta es el resultado del paso ${i+1} («${pasos[i].que||''}»): ibas bien, te faltó seguir desde ahí.`;
+    // signo cambiado
+    const neg=entrada.replace(/(^|=\s*)([−-])?(\d)/,(m,a,sg,d)=>a+(sg?'':'-')+d);
+    try{if(!err&&neg!==entrada&&p.verificar?.(neg))return 'Parece que cambiaste el signo: el número está bien, pero el signo no.'}catch(x){}
+  }
+  if(Array.isArray(entrada)&&entrada.length>1&&!err){try{if(p.verificar?.([...entrada].reverse()))return 'Parece que intercambiaste los valores: el orden importa.'}catch(x){}}
+  if(!err&&pasos.length>=2)return `Revisa tu primer paso. En la solución, el paso 1${pasos[0].que?` («${pasos[0].que}»)`:''} queda así: ${pasos[0].como||''}`;
+  return '';
+}
 
 const mezclar=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
 const ELOGIOS=['¡Bien!','¡Excelente!','¡Correcto!','¡Muy bien!','¡Así se hace!'];
@@ -51,7 +79,7 @@ export const ACT={
       const previos=p.pasosPrevios?.length?`<ol class="pasos-proc">${p.pasosPrevios.map((x,i)=>htmlPaso(x,i,{acciones:false})).join('')}<li class="paso-proc hueco"><p class="paso-que">${conFormulas(p.hueco||'¿Cuál es el resultado?')}</p></li></ol>`:'';
       const campo=p.forma?`<div class="matriz" style="grid-template-columns:repeat(${p.forma.cols},auto)" role="group" aria-label="${p.forma.filas>1?'Matriz':'Vector'}">${Array.from({length:p.forma.filas*p.forma.cols},(_,k)=>`<input class="celda" data-k="${k}" inputmode="text" autocomplete="off" aria-label="Fila ${Math.floor(k/p.forma.cols)+1}, columna ${k%p.forma.cols+1}">`).join('')}</div>`
         :`<input class="respuesta-libre" id="ses-resp" autocomplete="off" autocapitalize="off" spellcheck="false"${p.lang?` lang="${p.lang}"`:''} placeholder="${p.teclado==='xl'?'=fórmula (toca las celdas)':'Tu respuesta'}" aria-label="${p.teclado==='xl'?'Barra de fórmulas':'Tu respuesta'}">${p.teclado==='xl'?'<p class="nota xl-ayuda">Toca una celda para escribir su referencia; toca otra enseguida para hacer un rango (B2:B9).</p>':''}`;
-      return `${etiqueta(previos?'🧩':'✍️',previos?'Completa el último paso':p.etiqueta||'Escribe la respuesta')}${enunciado(p)}${previos}${campo}${teclado(p)}`;
+      return `${etiqueta(previos?'🧩':'✍️',previos?(p.desvanecido?`Te damos ${p.pasosPrevios.length} de ${p.pasos.length} pasos: haz el resto`:'Completa el último paso'):p.etiqueta||'Escribe la respuesta')}${enunciado(p)}${previos}${campo}${teclado(p)}`;
     },
     listo:()=>{const c=document.querySelectorAll('#vista .celda');return c.length?[...c].every(x=>x.value.trim()):!!$('#ses-resp')?.value.trim()},
     leer(){const c=[...document.querySelectorAll('#vista .celda')];return c.length?c.map(x=>x.value.trim()):$('#ses-resp').value.trim()},
@@ -62,7 +90,7 @@ export const ACT={
       // Error de dedo en una respuesta en español (nomonal → nominal): cuenta como correcta y se muestra cómo se escribe
       let ortografia=null;
       if(!correcto&&!err&&typeof entrada==='string'&&toleraDedo(p)){const ok=casiIgual(entrada,p.aceptadas||[p.respuesta],(p.errores||[]).map(x=>x.valor));if(ok!=null&&p.verificar(String(ok))){correcto=true;ortografia=String(ok)}}
-      return {correcto,porque:err?.por,ortografia};
+      return {correcto,porque:err?.por,ortografia,error:err||null};
     }
   },
   opcion:{
@@ -176,16 +204,25 @@ ${v<n?`<p class="nota">¿Cuál es el paso ${v+1}? Piénsalo y míralo.</p><butto
 export function crearSesion(cfg){
   let st;
   // id: identifica la sesión (un básico se retira al acertarlo en 2 sesiones distintas)
-  const nuevo=()=>({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),i:0,ok:0,xp:0,historial:[],fase:'pregunta',actual:null,e:{},pista:false,t0:Date.now(),fin0:cfg.crono?Date.now()+cfg.crono*1000:0,cargandoIA:false});
+  const nuevo=()=>({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),i:0,ok:0,xp:0,historial:[],fase:'pregunta',actual:null,e:{},pista:0,nose:false,noseSeguidos:0,colaGemelo:null,t0:Date.now(),fin0:cfg.crono?Date.now()+cfg.crono*1000:0,cargandoIA:false});
   const act=()=>ACT[st.actual?.tipo]||ACT.escribir;
   let reloj;
   const terminar=()=>{st.fase='fin';cerrarHoja();clearInterval(reloj);sonar.fin()};
   function avanzar(){
     cerrarHoja();
-    st.actual=cfg.siguiente(st);st.e={};st.pista=false;st.t0=Date.now();
+    st.actual=st.colaGemelo||cfg.siguiente(st);st.colaGemelo=null;st.e={};st.pista=0;st.nose=false;st.t0=Date.now();
     if(!st.actual)terminar();else st.fase='pregunta';
   }
 
+  // Gemelo de una pregunta: misma estructura, otros datos; conserva cómo cuenta (ref, habilidad, materia…)
+  function gemeloDe(p){
+    if(cfg.gemelo)return cfg.gemelo(p);
+    if(!p?.gen)return null;
+    const q=gemeloGen(p);if(!q)return null;
+    return {...p,...q,tipo:q.tipo||'escribir',pasosPrevios:undefined,hueco:undefined,desvanecido:false,intro:false,etapa:undefined,saltable:false,
+      opciones:q.opciones,correcta:q.correcta,afirmacion:undefined,etiqueta:'🔁 Ahora tú: uno parecido'};
+  }
+  const conPistas=p=>!cfg.sinPistas&&!cfg.sinFeedback&&respondible(p);
   function cabecera(){
     const total=Math.max(st.i+(st.fase==='fin'?0:1),cfg.total?.(st)||0);
     const crono=cfg.crono?`<span class="cronometro" id="ses-crono" aria-live="off">${tiempoRestante()}</span>`:'';
@@ -196,7 +233,9 @@ export function crearSesion(cfg){
   function pie(){
     const p=st.actual,a=act();
     if(a.lectura)return `<footer class="sesion-pie"><button class="btn ancho" id="ses-continuar">Continuar</button></footer>`;
-    const pista=p.pista&&!cfg.sinPistas&&!st.pista?`<button type="button" class="btn ghost" id="ses-pista" aria-label="Ver pista" title="Ver pista">💡</button>`:'';
+    if(st.nose)return `<footer class="sesion-pie">${p.saltable?'':`<button class="btn ancho" id="ses-ahora-tu">${gemeloDe(p)?'Ahora tú: uno parecido':'Siguiente'}</button>`}</footer>`;
+    const esc3=conPistas(p)&&escalera(p),max=esc3?3:p.pista?1:0;
+    const pista=max&&conPistas(p)&&st.pista<max?`<button type="button" class="btn ghost" id="ses-pista" aria-label="Ver pista ${st.pista+1} de ${max}" title="Pista">💡${max>1?` ${st.pista+1}/${max}`:''}</button>`:'';
     const ia=cfg.ia&&st.i>0?`<button type="button" class="btn ghost" id="ses-ia" aria-label="Pregunta nueva con IA" title="Pregunta nueva con IA"${st.cargandoIA?' disabled':''}>✨</button>`:'';
     const nose=cfg.rendirse?`<button type="button" class="btn ghost" id="ses-nose">No lo sé</button>`:'';
     const sinBoton=p.tipo==='emparejar'||(p.tipo==='hablar'&&soporte.escuchar&&!st.e.escribir);
@@ -207,7 +246,30 @@ export function crearSesion(cfg){
     if(st.fase==='fin')return `<div class="sesion ${cfg.tono?`area-${cfg.tono}`:''}">${cabecera()}<div class="sesion-cuerpo"><div class="fin-sesion">${cfg.fin(st)}</div></div></div>`;
     const p=st.actual;
     return `<div class="sesion ${cfg.tono?`area-${cfg.tono}`:''}">${cabecera()}<div class="sesion-cuerpo" id="ses-cuerpo">${act().html(p,st.e)}
-${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="nota">Con pista no cuenta para dominar.</span></p>`:''}</div>${pie()}</div>`;
+${htmlAyuda(p)}</div>${pie()}</div>`;
+  }
+
+  // Pistas (1 idea, 2 primer paso, 3 solución + «Ahora tú»), «No sé cómo empezar» y «Ya lo sé» de la mini-lección
+  function htmlAyuda(p){
+    const out=[];
+    if(p.saltable&&cfg.saltar)out.push(`<div class="row centro" style="margin-top:12px"><button type="button" class="btn ghost btn-chico" id="ses-saltar">Ya lo sé, ir a practicar</button></div>`);
+    if(!conPistas(p))return out.join('');
+    const e=escalera(p);
+    const pasosHtml=pasos=>`<ol class="pasos-proc">${pasos.map((x,i)=>htmlPaso(x,i,{acciones:false})).join('')}</ol><p class="hoja-linea"><b>Respuesta:</b> ${conFormulas(String(p.respuesta??''))}</p>`;
+    if(st.nose&&e){
+      out.push(`<div class="ayuda-caja"><p class="etiqueta-actividad">📖 Así se resuelve, paso a paso</p>${pasosHtml(e.pasos)}
+<p class="nota">No pasa nada: esto cuenta como visto, no como error. Ahora intenta uno parecido tú solo.</p>
+${st.noseSeguidos>=2&&cfg.minileccion?`<p class="hoja-linea">¿Lo vemos desde el principio? La mini-lección explica la idea con un ejemplo.</p><button type="button" class="btn ghost ancho" id="ses-minilec">📘 Ver la mini-lección</button>`:''}</div>`);
+      return out.join('');
+    }
+    if(st.pista&&e){
+      const niveles=[`<p class="pista"><b>💡 Idea:</b> ${conFormulas(e.idea)}</p>`];
+      if(st.pista>=2&&e.primero)niveles.push(`<div class="pista">${conFormulas(e.primero)}</div>`);
+      if(st.pista>=3)niveles.push(`<div class="ayuda-caja"><p class="etiqueta-actividad">📖 Solución completa</p>${pasosHtml(e.pasos)}${gemeloDe(p)?`<button type="button" class="btn ancho" id="ses-ahora-tu">Ahora tú: uno parecido</button>`:''}</div>`);
+      out.push(niveles.join(''),`<p class="nota">Con pista cuenta como práctica. Para dominarlo, resuelve el gemelo sin ayuda.</p>`);
+    }else if(st.pista&&p.pista)out.push(`<p class="pista">💡 ${conFormulas(p.pista)} <span class="nota">Con pista cuenta como práctica; para dominarlo, resuélvelo sin ayuda.</span></p>`);
+    if(!st.pista&&e&&(p.tipo||'escribir')!=='vf')out.push(`<div class="row centro" style="margin-top:8px"><button type="button" class="btn ghost btn-chico" id="ses-nosecomo">🤷 No sé cómo empezar</button></div>`);
+    return out.join('');
   }
 
   // "📝 Guardar en mis notas": a la nota del tema de la habilidad (ver cuaderno/notas.js)
@@ -219,9 +281,9 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
     if(st.fase!=='pregunta')return;
     const p=st.actual,ms=Date.now()-st.t0;
     st.fase='respondida';
-    Object.assign(r,{pista:st.pista,entrada,ms});
+    Object.assign(r,{pista:st.pista>0,entrada,ms});st.noseSeguidos=0;
     act().bloquear?.();act().marcar?.(p,st.e);
-    document.querySelectorAll('#ses-comprobar,#ses-pista,#ses-nose,#ses-ia').forEach(b=>b.disabled=true);
+    document.querySelectorAll('#ses-comprobar,#ses-pista,#ses-nose,#ses-ia,#ses-nosecomo').forEach(b=>b.disabled=true);
     st.historial.push({p,r});st.i++;
     if(r.correcto&&!r.pista)st.ok++;
     const extra=cfg.responder?.(p,r,st)||{};st.xp+=extra.xp||0;
@@ -233,19 +295,23 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
     if(r.correcto){
       if(p.tipo==='hablar'&&p.modelo&&!p.frase)lineas.push(`<p class="hoja-linea">Otra forma natural: <span lang="en">${esc(p.modelo)}</span></p>`);
       if(r.ortografia)lineas.push(`<p class="hoja-linea">✍️ Ojo con la ortografía: se escribe «${esc(r.ortografia)}».</p>`);
-      if(r.pista)lineas.push('<p class="hoja-linea">Correcto, pero con pista: no cuenta para dominar.</p>');
+      if(r.pista)lineas.push('<p class="hoja-linea">¡Bien! Con pista cuenta como práctica. Para dominarlo, resuelve el gemelo sin ayuda.</p>');
       if(p.explicacion)lineas.push(`<p class="hoja-linea">${conFormulas(p.explicacion)}</p>`);
     }else{
       const sol=p.tipo==='opcion'||p.tipo==='porque'?p.opciones[p.correcta]:p.tipo==='hablar'?esc(p.modelo||p.frase):p.respuesta;
       if(sol!==undefined&&!['vf','error','emparejar'].includes(p.tipo))lineas.push(`<p class="hoja-linea"><b>Respuesta correcta:</b> <span${p.lang||p.tipo==='hablar'?' lang="en"':''}>${conFormulas(String(sol))}</span></p>`);
       if(typeof entrada==='string'&&entrada&&!r.rendido)lineas.push(`<p class="hoja-linea"><b>Tu respuesta:</b> «${esc(entrada)}»</p>`);
       if(r.porque)lineas.push(`<p class="hoja-linea"><b>${p.tipo==='opcion'||p.errores?.length?'Error típico':'Por qué'}:</b> ${conFormulas(r.porque)}</p>`);
+      const dv=!r.rendido&&(p.tipo||'escribir')==='escribir'?desvio(p,entrada,r.error):'';
+      if(dv)lineas.push(`<p class="hoja-linea"><b>Dónde se desvió:</b> ${conFormulas(dv)}</p>`);
       if(p.tipo==='error'&&p.porqueMal)lineas.push(`<p class="hoja-linea">${conFormulas(p.porqueMal)}</p>`);
       if(p.explicacion&&p.tipo!=='error')lineas.push(`<p class="hoja-linea">${conFormulas(p.explicacion)}</p>`);
       if(p.regla)lineas.push(`<p class="hoja-linea"><b>Regla:</b> ${conFormulas(p.regla)}</p>`);
     }
     // Procedimiento paso a paso y "No entendí" (explicación alternativa + el siguiente ejercicio más fácil)
-    const botones=[p.pasos?.length&&p.tipo!=='error'?'<button type="button" class="btn ghost btn-chico" id="hoja-proc">📖 Ver procedimiento</button>':'',
+    const gem=!r.correcto&&!cfg.sinFeedback&&respondible(p)?gemeloDe(p):null;
+    const botones=[p.pasos?.length&&p.tipo!=='error'?`<button type="button" class="btn ghost btn-chico" id="hoja-proc">📖 ${r.correcto?'Ver procedimiento':'Ver solución paso a paso'}</button>`:'',
+      gem?'<button type="button" class="btn ghost btn-chico" id="hoja-gemelo">🔁 Intentar un gemelo</button>':'',
       !r.correcto&&(p.alternativa||p.regla)?'<button type="button" class="btn ghost btn-chico" id="hoja-noentendi">🤔 No entendí</button>':'',
       dondeDe(p).materia&&(!r.correcto||p.pasos?.length||p.frase)?'<button type="button" class="btn ghost btn-chico" id="hoja-nota">📝 Guardar en mis notas</button>':'',
       p.generado?'<button type="button" class="btn ghost btn-chico" id="hoja-reportar">⚠️ Reportar error</button>':''].filter(Boolean);
@@ -253,6 +319,7 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
     if(botones.length)lineas.push(`<div class="row hoja-acciones">${botones.join('')}</div>`);
     const pieXp=[extra.xp?`<span class="hoja-xp">+${extra.xp} XP</span>`:'',extra.nota||''].filter(Boolean).join(' · ');
     if(pieXp)lineas.push(`<p class="hoja-linea nota">${pieXp}</p>`);
+    st.gemeloHoja=gem;
     abrirHoja({bien:r.correcto,titulo:r.correcto?ELOGIOS[st.i%ELOGIOS.length]:r.rendido?'Esta era la respuesta':'No es correcto',cuerpo:lineas.join(''),boton:'Continuar'});
   }
 
@@ -296,6 +363,9 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
         cerrarHoja();clearInterval(reloj);ir(cfg.salir);return true;
       }
       if(t.id==='hoja-seguir'||t.id==='ses-continuar'){avanzar();repintar();window.scrollTo(0,0);return true}
+      if(t.id==='hoja-gemelo'&&st.gemeloHoja){st.colaGemelo=st.gemeloHoja;st.gemeloHoja=null;avanzar();repintar();window.scrollTo(0,0);return true}
+      if(t.id==='ses-saltar'&&cfg.saltar){cfg.saltar(st);avanzar();repintar();window.scrollTo(0,0);return true}
+      if(t.id==='ses-minilec'&&cfg.minileccion){cfg.minileccion();return true}
       const ult=st.historial.at(-1);
       if(t.id==='hoja-proc'&&ult){abrirProcedimiento(ult.p,{revelar:true,guardar:guardarPasos(ult.p),idioma:ult.p.lang==='en'?'en-US':'es'});return true}
       // ejercicio generado con IA con un error: lo marca la materia propia (mias/vistas.js) y sale del repaso
@@ -315,9 +385,12 @@ ${st.pista&&p.pista?`<p class="pista">💡 ${conFormulas(p.pista)} <span class="
           inp.value=inp.value.slice(0,ini)+k+inp.value.slice(inp.selectionEnd??ini);inp.focus();inp.setSelectionRange?.(ini+k.length,ini+k.length);inp.dispatchEvent(new Event('input'))}
         return true;
       }
-      if(t.id==='ses-pista'){st.pista=true;repintar();return true}
+      if(t.id==='ses-pista'){st.pista++;repintar();if(st.pista>=2)document.querySelector('#ses-cuerpo .pista:last-of-type,#ses-cuerpo .ayuda-caja')?.scrollIntoView({block:'nearest'});return true}
+      // «No sé cómo empezar»: la solución completa y luego un gemelo; no es un fallo (no se registra respuesta)
+      if(t.id==='ses-nosecomo'){st.nose=true;st.noseSeguidos++;cfg.visto?.(p);repintar();document.querySelector('#ses-cuerpo .ayuda-caja')?.scrollIntoView({block:'start'});return true}
+      if(t.id==='ses-ahora-tu'){const g=gemeloDe(p);if(g){st.actual=g;st.e={};st.pista=0;st.nose=false;st.t0=Date.now()}else{st.nose=false;avanzar()}repintar();window.scrollTo(0,0);return true}
       if(t.id==='ses-ia'&&cfg.ia){st.cargandoIA=true;repintar();
-        try{const q=await cfg.ia(st);if(q){st.actual=q;st.e={};st.pista=false;st.t0=Date.now()}}catch(e){}
+        try{const q=await cfg.ia(st);if(q){st.actual=q;st.e={};st.pista=0;st.nose=false;st.t0=Date.now()}}catch(e){}
         st.cargandoIA=false;repintar();return true}
       if(t.id==='ses-nose'){resolver({correcto:false,rendido:true},'',repintar);return true}
       if(a.clic){const r=await a.clic(t,p,st.e,()=>{const y=window.scrollY;repintar();window.scrollTo(0,y)},(res,entrada)=>resolver(res,entrada,repintar));

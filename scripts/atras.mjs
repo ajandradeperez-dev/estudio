@@ -61,7 +61,7 @@ for (const [nombre, op] of [['teléfono', {viewport: {width: 360, height: 800}, 
   const leccion = hash(p);
   check(/\/l\//.test(leccion), `entra a la lección: ${leccion}`);
   check(await p.evaluate(() => history.length) - largo0 === 5, `una entrada por cada navegación (portada + 4 pantallas): ${await p.evaluate(() => history.length) - largo0}`);
-  await toque(p, '#hab-empezar'); await p.waitForTimeout(300);
+  await toque(p, '#hab-empezar, #mini-saltar'); await p.waitForTimeout(300);
   check(await responder(p), 'la hoja de feedback ofrece «Ver procedimiento»');
   await toque(p, '#hoja-proc'); await p.waitForTimeout(300);
   check(await estado(p) === 'proc', 'procedimiento abierto (nivel 6)');
@@ -82,7 +82,7 @@ for (const [nombre, op] of [['teléfono', {viewport: {width: 360, height: 800}, 
   await toque(p, '#vista .tarjeta-nav >> text=Álgebra lineal'); await p.waitForTimeout(200);
   await toque(p, '#vista [data-go*="/l/"]'); await p.waitForTimeout(250);
   const largoLeccion = await p.evaluate(() => history.length);
-  await toque(p, '#hab-empezar'); await p.waitForTimeout(300);
+  await toque(p, '#hab-empezar, #mini-saltar'); await p.waitForTimeout(300);
   for (let q = 0; q < 3; q++) await responder(p, {hastaProc: false, veces: 6});
   await p.waitForTimeout(300);
   const largoPractica = await p.evaluate(() => history.length);

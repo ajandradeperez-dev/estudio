@@ -274,3 +274,8 @@ button{font:inherit}
 .bits .host{color:var(--muted)}
 .bits tr:last-child td{border-top:2px solid var(--line-2)}
 .bits .punto-ip{color:var(--muted);padding:0 1px}
+/* Ayuda para principiantes: solución dentro de la pregunta («No sé cómo empezar», pista 3) y mini-lección */
+.ayuda-caja{margin:var(--s3) 0 0;padding:var(--s3);border-radius:var(--r2);background:var(--surface);border:2px solid var(--line);min-width:0;overflow-wrap:anywhere}
+.ayuda-caja .pasos-proc{margin:var(--s2) 0}
+.mini-leccion h2{margin:var(--s2) 0}
+.mini-leccion .campo{display:block;margin:var(--s3) 0}

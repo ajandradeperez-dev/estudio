@@ -11,6 +11,8 @@ const raiz=join(dirname(fileURLToPath(import.meta.url)),'..'),PUERTO=4799,BASE=`
 const {chromium}=await import('playwright-core');
 const candidatos=[process.env.NAVEGADOR,'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe','C:/Program Files/Google/Chrome/Application/chrome.exe',
   '/usr/bin/google-chrome','/usr/bin/chromium','/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'].filter(Boolean);
+// Pistas en escalera: la del nivel 2 de cada generador debe usar los números (o datos) de su ejercicio (npm run principiante)
+try{execSync('node scripts/principiante.mjs',{cwd:raiz,stdio:'pipe'})}catch(e){console.log(String(e.stdout||'')+'\nFALLO: hay habilidades sin pistas con datos, mini-lección o gemelo (npm run principiante --detalle).');process.exit(1)}
 if(!process.argv.includes('--sin-build'))execSync('npm run build',{cwd:raiz,stdio:'ignore'});
 const servidor=spawn(`npx vite preview --port ${PUERTO} --strictPort`,{cwd:raiz,shell:true,stdio:'ignore'});
 const apagar=()=>{try{process.platform==='win32'?execSync(`taskkill /PID ${servidor.pid} /T /F`,{stdio:'ignore'}):servidor.kill()}catch(e){}};

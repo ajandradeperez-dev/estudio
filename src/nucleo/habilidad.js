@@ -1,5 +1,7 @@
 /* Práctica de una habilidad (nodo del camino) con el método de METODO.md:
-   - Habilidad nueva: explicación corta → ejemplo resuelto → ejemplo con hueco → ejercicios solos (desvanecimiento).
+   - Habilidad nueva: mini-lección (1 la idea, 2 un ejemplo resuelto, 3 un ejemplo a medias) y luego ejemplos que se
+     desvanecen: la app da casi todos los pasos y tú haces el resto; cada acierto quita un paso dado, hasta resolverlo solo.
+     Siempre empieza en el nivel 1. «Ya lo sé, ir a practicar» se salta la mini-lección y los ejemplos.
    - Recuperación: casi todo es producir la respuesta; la opción múltiple solo introduce.
    - Dificultad adaptativa (rating 1–5): tras un error, el siguiente es más fácil y del mismo tipo.
    - Rotan las actividades (escribir, verdadero/falso con justificación, encontrar el error) y una vez por sesión se pide
@@ -15,7 +17,7 @@ import {crearSesion} from './sesion.js';
 import {htmlCierre} from './cierre.js';
 import {crearRng} from './rng.js';
 import {fuentes,generadorDe,preguntaHabilidad,ejerciciosDe,preguntaDeBasico,profundidadLeccion,claveBasicoLeccion} from './practica.js';
-import {crear} from './generadores/index.js';
+import {crear,gemelo} from './generadores/index.js';
 import {deBanco} from './ejercicios.js';
 import {comoEjemplo,comoHueco,comoOpcion,comoPorque,variar} from './actividades.js';
 import {tema as temaDe,areaDe,rutaMateria,rutaTema,rutaLeccion} from './materias.js';
@@ -23,6 +25,11 @@ import {cofresTema} from './camino.js';
 import {conFormulas} from './formula.js';
 import {preguntaIA,iaDisponible,explicarIA} from './ia-preguntas.js';
 import {retosDe} from './retos.js';
+import {htmlPaso,normalPaso} from './procedimiento.js';
+
+// Mini-lección pedida desde la práctica (tras usar 2 veces «No sé cómo empezar»): '<materia>/<habilidad>'
+const pedirMini=new Set();
+const MAX_DESVANECIDOS=4;
 
 const tonoDe=m=>{const a=areaDe(m);return m.tono||a.tono||a.id};
 export const teoriaLeccion=l=>`${(l.explicacion||[]).map(p=>`<p class="lec-p">${conFormulas(p)}</p>`).join('')}
@@ -53,7 +60,7 @@ export function registrarProfundidad(p,r,st,materia,habilidad){
 }
 
 /* ---------- la sesión de una habilidad ---------- */
-function sesionHabilidad(m,h,{salir,volver,alTerminar}){
+function sesionHabilidad(m,h,{salir,volver,alTerminar,conMini=false}){
   const d0=datosHabilidad(progreso(),m.id,h.id),nueva=!d0||!(d0.sesiones||d0.ult?.length),fs=fuentes(h),gen=fs.includes('gen');
   const rng=crearRng(),vistos=new Set(),nivel=()=>nivelDe(datosHabilidad(progreso(),m.id,h.id)?.rating||1);
   // Lección: la ronda que toca, en orden (la opción múltiple va primero, para introducir)
@@ -62,7 +69,9 @@ function sesionHabilidad(m,h,{salir,volver,alTerminar}){
   const ronda=h.rondas?.length?ejerciciosDe(m,h).filter(x=>h.rondas[(d0?.intentos||0)%h.rondas.length].includes(x.ej))
     .filter(x=>!(profundidadLeccion(h,x.ej)==='basico'&&basicoRetirado(claveBasicoLeccion(x.ref)))):[];
   // m.ejemplosResueltos (Matemáticas: 2) ejemplos resueltos antes del ejemplo con hueco
-  let previos=nueva&&gen?[...Array(m.ejemplosResueltos||1).fill('ejemplo'),'hueco']:[],k=0,porqueHecho=false,ind=0,okInd=0,res=null;
+  // Sin la mini-lección (ya la saltó o no aplica): los ejemplos de siempre. Con ella: ejemplos que se desvanecen
+  let previos=nueva&&gen&&!conMini?[...Array(m.ejemplosResueltos||1).fill('ejemplo'),'hueco']:[],k=0,porqueHecho=false,ind=0,okInd=0,res=null;
+  let quitados=nueva&&gen&&conMini?0:null,desvanecidos=0;
   const total=()=>previos.length+SESION+(porqueHecho?1:0);
   const cola=[];
   // refuerzo: tras fallar un ejercicio de nivel superior de esta habilidad, vuelve una vez un básico retirado
@@ -72,6 +81,14 @@ function sesionHabilidad(m,h,{salir,volver,alTerminar}){
     const ult=st.historial.at(-1);
     // autoexplicación: tras el 3.er acierto, una vez
     if(!porqueHecho&&ult?.r.correcto&&ult.p.cuenta&&okInd>=3){porqueHecho=true;const q=comoPorque(ult.p,otrasReglas(m,h),rng);if(q)return q}
+    // ejemplo que se desvanece: n−1−quitados pasos dados; cada acierto sin pista quita uno
+    if(quitados!==null&&desvanecidos<MAX_DESVANECIDOS){
+      const p=crear(h.gen,1,{vistos}),n=p?.pasos?.length||0,dados=n-1-quitados;
+      if(p&&n>=2&&dados>=1&&(p.tipo||'escribir')==='escribir'){desvanecidos++;
+        return {...p,tipo:'escribir',pasosPrevios:p.pasos.slice(0,dados),desvanecido:true,hueco:dados===n-1?'¿Cuál es el resultado?':`Sigue tú desde el paso ${dados+1} hasta la respuesta`,
+          habilidad:h.id,materia:m.id,ref:`${m.id}/g/${h.id}/1`,cuenta:false,etapa:'desvanecido'}}
+      quitados=null;
+    }
     if(previos.length){
       const tipo=previos.shift(),p=crear(h.gen,1,{vistos});
       const q=tipo==='ejemplo'?comoEjemplo(p):comoHueco(p);
@@ -97,9 +114,13 @@ function sesionHabilidad(m,h,{salir,volver,alTerminar}){
     nivel:()=>nivel(),
     siguiente,
     explicarIA:iaDisponible()?(p,entrada)=>explicarIA(m,h,p,entrada):null,
+    // gemelo de la misma habilidad: cuenta igual que la pregunta original
+    gemelo:p=>{if(!p?.gen)return null;const q=gemelo(p);return q&&{...q,habilidad:h.id,materia:m.id,ref:p.ref||`${m.id}/g/${h.id}/${q.nivel}`,cuenta:p.cuenta,basico:p.basico,profundidad:q.profundidad,etiqueta:'🔁 Ahora tú: uno parecido'}},
+    minileccion:()=>{pedirMini.add(`${m.id}/${h.id}`);document.dispatchEvent(new CustomEvent('ir',{detail:rutaLeccion(m,h)}))},
     ia:iaDisponible()&&gen?async()=>{const q=await preguntaIA(m,h,nivel());return q?{...q,cuenta:true,habilidad:h.id,materia:m.id}:null}:null,
     responder(p,r,st){
       if(p.noCuenta)return {};
+      if(p.etapa==='desvanecido'&&quitados!==null&&r.correcto&&!r.pista)quitados++;
       const bien=r.correcto&&!r.pista,xp=r.correcto?(r.pista?5:10):0;
       if(p.cuenta)registrarProfundidad(p,r,st,m.id,h.id);
       if(p.cuenta){if(bien)okInd++;
@@ -137,15 +158,38 @@ ${htmlCierre({xp:st.xp+(res.extra||0),aprendido:reglas.length?reglas:[h.resumen]
 export function vistaHabilidad(m,h){
   const t=temaDe(m,h.tema),salir=t?rutaTema(m,t):'',tono=tonoDe(m),g=generadorDe(h);
   let ses=null;
-  const empezar=()=>{ses=sesionHabilidad(m,h,{salir:rutaLeccion(m,h),volver:salir});ses.alEntrar()};
+  let mini=null,conMini=false;   // mini-lección: {paso:1–3, ej, medias, hecho}
+  const empezar=()=>{ses=sesionHabilidad(m,h,{salir:rutaLeccion(m,h),volver:salir,conMini});ses.alEntrar()};
+  const nuevaH=()=>{const d=datosHabilidad(progreso(),m.id,h.id);return !d||!(d.sesiones||d.ult?.length)};
+  const verMini=()=>{const k=`${m.id}/${h.id}`;if(pedirMini.has(k)||(nuevaH()&&!mini?.fin)){pedirMini.delete(k);if(!mini)mini={paso:1}}};
+  function htmlMini(){
+    const explicacion=h.explicacion?.length?teoriaLeccion(h):g?.explicacion?`<p class="lec-p">${conFormulas(g.explicacion)}</p>`:'';
+    const pasosH=ps=>`<ol class="pasos-proc">${ps.map(normalPaso).map((x,i)=>htmlPaso(x,i,{acciones:false})).join('')}</ol>`;
+    let cuerpo='';
+    if(mini.paso===1)cuerpo=`<h2>La idea</h2>${explicacion||`<p class="lec-p">${h.resumen||''}</p>`}${g?.alternativa?`<details class="nota-datos"><summary>🤔 Dicho de otra forma</summary><p>${conFormulas(g.alternativa)}</p></details>`:''}`;
+    if(mini.paso===2){mini.ej??=g?crear(h.gen,1):null;const e=mini.ej;
+      cuerpo=e?`<h2>Un ejemplo resuelto</h2><div class="pregunta">${conFormulas(e.enunciado)}</div>${e.diagrama?`<div class="diagrama-caja">${e.diagrama}</div>`:''}${pasosH(e.pasos||[])}<p class="hoja-linea"><b>Respuesta:</b> ${conFormulas(String(e.respuesta))}</p>${e.regla?`<p class="nota">${conFormulas(e.regla)}</p>`:''}`
+        :`<h2>Ejemplos</h2><ul class="ejemplos">${(h.ejemplos||[]).map(([t,nt])=>`<li><span>${conFormulas(t)}</span>${nt?`<span class="nota">${nt}</span>`:''}</li>`).join('')}</ul>`}
+    if(mini.paso===3){mini.medias??=crear(h.gen,1,{evitar:q=>q.enunciado===mini.ej?.enunciado});const e=mini.medias,ps=e.pasos||[];
+      cuerpo=`<h2>Ahora tú: completa el último paso</h2><div class="pregunta">${conFormulas(e.enunciado)}</div>${pasosH(ps.slice(0,-1))}
+<label class="campo">Paso ${ps.length}: ${conFormulas(normalPaso(ps.at(-1)||{}).que||'¿cuál es el resultado?')}<input id="mini-resp" class="respuesta-libre" autocomplete="off" autocapitalize="off" spellcheck="false"${e.lang?` lang="${e.lang}"`:''} placeholder="${e.forma?'Separa los valores con comas':'Tu respuesta'}"${mini.ok!==undefined?' readonly':''}></label>
+${mini.ok===undefined?'<button type="button" class="btn ancho" id="mini-comprobar">Comprobar</button>'
+  :`<p class="hoja-linea">${mini.ok?'✅ ¡Correcto! Ya viste cómo se hace: ahora a practicar.':`La respuesta era <b>${conFormulas(String(e.respuesta))}</b>. ${e.regla?conFormulas(e.regla):''}`}</p>`}`;}
+    const ultimo=g?3:2;
+    return `<div class="card mini-leccion"><p class="etiqueta-actividad">📘 Mini-lección · ${mini.paso} de ${ultimo}</p>${cuerpo}
+<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:12px">${mini.paso<ultimo?boton({texto:'Siguiente',id:'mini-siguiente',clase:'area'}):(mini.paso===3&&mini.ok===undefined?'':boton({texto:'Empezar a practicar',id:'mini-practicar',clase:'area'}))}
+${mini.paso<ultimo||mini.ok===undefined?boton({texto:'Ya lo sé, ir a practicar',id:'mini-saltar',clase:'ghost'}):''}</div></div>`;
+  }
   return {
     titulo:h.titulo,
     get inmersiva(){return !!ses},
-    alEntrar(){ses=null},
+    alEntrar(){ses=null;mini=null},
     alSalir(){ses?.alSalir?.()},
     vista(){
       if(ses)return ses.vista();
+      verMini();
       const d=datosHabilidad(progreso(),m.id,h.id),e=estadoDominio(d||{}),nueva=!d||!(d.sesiones||d.ult?.length),nota=progreso().notas[`${m.id}/${h.id}`];
+      if(mini&&!mini.fin)return `<div class="area-${tono}"><p class="etiqueta-actividad">${t?`${t.icono} ${t.titulo}`:m.nombre}</p><h1>${h.titulo}</h1>${h.resumen?`<p class="lead">${h.resumen}</p>`:''}${htmlMini()}</div>`;
       // Todo lo de esta habilidad era básico y ya está retirado: no hay nada nuevo que practicar aquí
       const todoRetirado=!fuentes(h).includes('gen')&&!fuentes(h).includes('banco')&&retiradosDe(m.id,h.id).length>0
         &&!preguntaHabilidad(m,h,{nivel:5,retirados:{has:k=>basicoRetirado(k)}});
@@ -166,6 +210,11 @@ ${h.herramienta&&m.secciones?.[h.herramienta]?`<div style="margin-top:12px">${bo
     alMostrar(){ses?.alMostrar()},
     async alClic(t2,ir,repintar){
       if(t2.id==='hab-empezar'||t2.id==='hab-otra'){empezar();repintar();window.scrollTo(0,0);return true}
+      if(t2.id==='mini-siguiente'&&mini){mini.paso++;repintar();window.scrollTo(0,0);return true}
+      if(t2.id==='mini-comprobar'&&mini?.medias){const v=$('#mini-resp')?.value.trim()||'';if(!v)return true;const e=mini.medias;
+        try{mini.ok=!!e.verificar(e.forma?v.replace(/^[([]|[)\]]$/g,'').split(/\s*[,;]\s*/):v)}catch(x){mini.ok=false}repintar();return true}
+      // terminar o saltar la mini-lección: empieza la práctica (con ejemplos que se desvanecen solo si la terminó)
+      if(t2.id==='mini-practicar'||t2.id==='mini-saltar'){conMini=t2.id==='mini-practicar';mini={fin:true};empezar();repintar();window.scrollTo(0,0);return true}
       if(t2.id==='lec-guardar-nota'){guardarResumen(m.id,h.id);return true}
       if(t2.id==='hab-reactivar'){reactivarBasicos(m.id,[h.id]);aviso('🔁 Lo básico vuelve a salir en la práctica.');repintar();return true}
       if(t2.id==='hab-nota-exp'){t2.disabled=true;const g=generadorDe(h),html=h.explicacion?.length?h.explicacion.join('<br>'):g?.explicacion||'';

@@ -63,11 +63,11 @@ export const BANCOS=bancos;
 
 // Una pregunta nueva del generador al nivel pedido; con vistos (Set de claves) no se repite en la sesión;
 // evitar(p) → true para descartarla (p. ej. un básico ya retirado): se prueba otra, hasta 30 veces
-export function crear(id,nivel=1,{semilla,vistos,evitar}={}){
+export function crear(id,nivel=1,{semilla,vistos,evitar,intentos=30}={}){
   const g=GENERADORES[id];if(!g)return null;
   const n=Math.min(5,Math.max(1,Math.round(nivel)));
   let p,s;
-  for(let k=0;k<30;k++){
+  for(let k=0;k<intentos;k++){
     s=semilla!==undefined&&k===0?semilla:(Math.random()*2**32)>>>0;
     p=g.generar(n,crearRng(s));
     p.clave=p.clave||p.enunciado;
@@ -78,4 +78,15 @@ export function crear(id,nivel=1,{semilla,vistos,evitar}={}){
   // Un error típico cuyo valor resulta correcto en este ejercicio (p. ej. 180° − 90° = 90°) se descarta
   if((p.tipo||'escribir')==='escribir'&&!p.forma&&p.errores){const vistos=new Set();p.errores=p.errores.filter(e=>{if(e.valor===undefined)return true;if(vistos.has(e.valor))return false;vistos.add(e.valor);try{return !p.verificar(e.valor)}catch(x){return true}})}
   return {tipo:'escribir',alternativa:g.alternativa,...p,gen:id,nivel:n,semilla:s};
+}
+
+// Ejercicio gemelo («Ahora tú», «No sé cómo empezar»): misma habilidad y nivel, la misma plantilla y otros datos; si la
+// plantilla no da otro distinto (p. ej. una identidad fija), otro ejercicio del mismo nivel
+export function gemelo(p){
+  if(!p?.gen)return null;
+  const igual=q=>(q.clave||q.enunciado)===(p.clave||p.enunciado);
+  const q=crear(p.gen,p.nivel||1,{intentos:200,evitar:q=>igual(q)||(p.plantilla&&q.plantilla!==p.plantilla)});
+  if(q&&!igual(q)&&(!p.plantilla||q.plantilla===p.plantilla))return q;
+  const r=crear(p.gen,p.nivel||1,{intentos:60,evitar:igual});
+  return r&&!igual(r)?r:null;
 }

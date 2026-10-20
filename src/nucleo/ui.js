@@ -48,7 +48,31 @@ export function confirmar({titulo,texto='',si='Sí',no='Cancelar',peligro=false,
   });
 }
 
+// Menú de acciones en un diálogo de la app: resuelve con el valor elegido o null (Cancelar, fondo, Escape o Atrás)
+export function menuAcciones({titulo,opciones}){
+  return new Promise(res=>{
+    const f=document.createElement('div');f.className='modal-fondo';
+    f.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-t"><h2 id="modal-t">${titulo}</h2>
+<div class="pila">${opciones.map(([v,t,c=''])=>`<button class="btn ghost ancho ${c}" data-r="${v}">${t}</button>`).join('')}<button class="btn ghost ancho" data-r="0">Cancelar</button></div></div>`;
+    const cerrar=v=>{f.remove();document.removeEventListener('keydown',tecla,true);res(v)};
+    const tecla=e=>{if(e.key==='Escape'){e.stopPropagation();cerrar(null)}};
+    f.addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(b)cerrar(b.dataset.r==='0'?null:b.dataset.r);else if(e.target===f)cerrar(null)});
+    document.addEventListener('keydown',tecla,true);
+    document.body.appendChild(f);f.querySelector('[data-r]').focus();
+  });
+}
+
 /* ---------- aviso breve (toast) ---------- */
+// Aviso con una acción (p. ej. «Nota borrada · Deshacer»): se queda ms milisegundos; la acción lo cierra
+export function avisoAccion(texto,accion,alTocar,ms=8000){
+  document.getElementById('aviso')?.remove();
+  const a=document.createElement('div');a.id='aviso';a.className='aviso aviso-accion';a.setAttribute('role','status');
+  a.innerHTML=`<span></span><button type="button" class="aviso-btn">${accion}</button>`;a.firstChild.textContent=texto;
+  let hecho=false;const cerrar=()=>{a.classList.remove('visible');setTimeout(()=>a.remove(),300)};
+  a.querySelector('button').addEventListener('click',e=>{e.stopPropagation();if(hecho)return;hecho=true;cerrar();alTocar()});
+  document.body.appendChild(a);requestAnimationFrame(()=>a.classList.add('visible'));
+  setTimeout(()=>{if(!hecho)cerrar()},ms);
+}
 export function aviso(texto,ms=2600){
   document.getElementById('aviso')?.remove();
   const a=document.createElement('div');a.id='aviso';a.className='aviso';a.setAttribute('role','status');a.textContent=texto;

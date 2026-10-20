@@ -337,6 +337,7 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 10`; los formatos 
 - **v8** (cuaderno): `tarjetas` `{[id]: {q, a, nota, titulo, materia, fecha}}`, las líneas `🃏 pregunta | respuesta` de las notas; se repasan con la ref `<materia|notas>/t/<id>` (`ejercicioPorRef`).
 - **Notas** (resúmenes): `{'<materia>/<lección>': {texto, fecha}}`. Se conservan en el progreso y se copian al cuaderno como notas con `origen:'resumen:<clave>'` (si la nota no se tocó, se actualiza al cambiar el resumen; borrarla en el cuaderno borra el resumen). "Reiniciar todo el progreso" conserva notas y tarjetas, porque son texto escrito por el usuario.
 - **Cuaderno** (IndexedDB `ciberlab-notas`, no en `localStorage`): notas `{id, titulo, cuerpo, materia, tema, etiquetas, fijada, creada, editada}` y archivos `{id, nota, blob…}` (fotos JPEG ≤1600 px, dibujos PNG). El formato del cuerpo (negrita, fórmulas `$…$`, casillas, `![](img:<id>)`…) está en `cuaderno/formato.js`. Si cambias la estructura, sube `VERSION` en `db.js` y migra en `onupgradeneeded`. El respaldo `.json` (Perfil y Notas) incluye progreso, ajustes, notas e imágenes, nunca `ciberlab-ia`.
+- **Borrar notas**: 🗑️ en la cabecera de cada nota, «⋯ → 🗑️ Borrar» en cada nota de la lista y «☑️ Seleccionar» (contador «N seleccionadas» y Borrar) para varias. Siempre con el diálogo propio `confirmar()` (Atrás o Cancelar no borran) y luego «🗑️ Nota borrada · Deshacer» durante 8 s (`avisoAccion` en `ui.js`). `borrarNotas(lista)` (`cuaderno/notas.js`) borra de IndexedDB sus fotos y dibujos salvo los que use otra nota, sus tarjetas y repasos, el resumen del que salió y convierte en texto los enlaces `[…](#notas/n/<id>)` desde otras notas; devuelve una copia completa que `restaurarNotas` vuelve a poner tal cual (mismas fechas). `npm run cuaderno` lo prueba.
 - En Ciberseguridad, los casos del laboratorio y los escenarios de VPN se guardan por posición: agrégalos al final de sus listas en `datos/`.
 - Todo acceso a `localStorage` va en `try/catch` para que la app funcione aunque esté bloqueado.
 - El progreso depende del origen (`localhost:5173` y `localhost:4173` tienen progresos distintos). Por eso los puertos están fijos con `strictPort`: si el 5173 está ocupado, Vite falla en vez de abrir otro puerto con el progreso vacío.
@@ -509,6 +510,7 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | **Las 5 materias quedan ✅ con la Definición de terminado (282/282 habilidades).** | ✅ |
 | Errores de dedo: `casiIgual` (nomonal → nominal) en respuestas en español | ✅ terminado |
 | Parte 4 · Experiencia: «🧭 Tu plan» en la materia (habilidades que faltan, tiempo estimado ~20 min por habilidad nueva y ~10 si ya se empezó, tema en curso), tiempo por tema en la lista, tarjeta «🎉 ¡Terminaste el tema!» con resumen, simulacro y el tema que sigue (o el examen final), y Repasar con lo débil primero (más fallos y menor rating) sin perder el intercalado | ✅ terminado |
+| Cuaderno · borrar notas (🗑️ en la nota, «⋯» y «☑️ Seleccionar» en la lista, confirmación propia, Deshacer 8 s, fotos y enlaces limpios; `go()` espera el regreso de una capa antes de navegar) | ✅ terminado |
 | P3b · Inglés: metas extra por nivel | ⏳ siguiente |
 | 4 · Inglés: completar A1 y A2, luego B1 | reemplazado por P3 y P6 |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | reemplazado por P3 y P6 |
@@ -536,6 +538,7 @@ npm run dev       # servidor de desarrollo: http://localhost:5173 (puerto fijo)
 npm run build     # genera dist/
 npm run preview   # sirve dist/ en http://localhost:4173 (puerto fijo)
 npm run revisar   # método, jerarquía, contenido de habla, migración del progreso, los 50 generadores y Mis materias (esquema, plan, fixtures) (~10 s)
+npm run cuaderno  # borrar notas: una, varias, deshacer, fotos fuera de IndexedDB (la compartida se queda) y Atrás cancela (--capturas <dir> [--oscuro])
 npm run atras     # botón Atrás nivel por nivel (6 niveles y 7 Atrás, enlace directo, recarga, otras ramas) en teléfono y escritorio
 npm run calidad   # 360 y 412 px, claro y oscuro: textos encimados, scroll horizontal y toques < 44 px en Aprender, Logros, Perfil, Notas y cada materia y tema (compila y levanta su propio preview; necesita Chrome o Edge)
 ```

@@ -373,6 +373,16 @@ export function borrarTarjetasDe(nota){
   cambiar(p=>{for(const [id,t] of Object.entries(p.tarjetas))if(t.nota===nota){delete p.tarjetas[id];delete p.repaso[refTarjeta(t.materia,id)]}});
 }
 
+// Copia de lo que una nota tiene en el progreso (tarjetas, sus repasos y el resumen del que salió) para poder deshacer su borrado
+export function instantaneaNota(nota,clave=null){
+  const p=progreso(),tarjetas={},repaso={};
+  for(const [id,t] of Object.entries(p.tarjetas))if(t.nota===nota){tarjetas[id]=t;const r=refTarjeta(t.materia,id);if(p.repaso[r])repaso[r]=p.repaso[r]}
+  return JSON.parse(JSON.stringify({tarjetas,repaso,clave,resumen:clave?p.notas[clave]??null:null}));
+}
+export function restaurarInstantaneaNota(s){
+  cambiar(p=>{Object.assign(p.tarjetas,s.tarjetas);Object.assign(p.repaso,s.repaso);if(s.clave&&s.resumen)p.notas[s.clave]=s.resumen});
+}
+
 /* ---------- secciones y "continuar" ---------- */
 export function visitar(materia,seccion){
   const p=progreso();

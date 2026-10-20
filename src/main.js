@@ -104,7 +104,7 @@ function pintarNav(){
      siguiente Atrás ya no tiene entradas de la app y cierra (en la laptop, sale de la página).
    Estado de cada entrada: {app:1, i (posición), ruta, inm? (práctica), capa? (id), desde? (posición de la pantalla debajo)}.
    Diagnóstico: los últimos 30 eventos se guardan (nucleo/diagnostico.js) y se ven en Acerca de (3 toques en la versión). */
-let enPop=false,ignorarPop=0,traversando=false,capaN=0,pintadaRuta=null,pintadaInm=false;
+let colaIr=null,enPop=false,ignorarPop=0,traversando=false,capaN=0,pintadaRuta=null,pintadaInm=false;
 const urlDe=r=>r?'#'+r:location.pathname+location.search;
 const est=()=>history.state&&history.state.app?history.state:null;
 const pos=()=>est()?.i??0;
@@ -154,7 +154,7 @@ new MutationObserver(cambios=>{
 
 window.addEventListener('popstate',e=>{
   registrar('popstate',{ruta:e.state?.ruta,nota:ignorarPop?'propio':''});
-  if(ignorarPop){ignorarPop--;traversando=false;return}
+  if(ignorarPop){ignorarPop--;traversando=false;if(colaIr){const r=colaIr;colaIr=null;go(r)}return}
   const s=e.state&&e.state.app?e.state:null;
   enPop=true;
   try{
@@ -176,6 +176,9 @@ document.addEventListener('ir',e=>{const d=e.detail;typeof d==='object'&&d?go(St
 /* modo: 'push' (la persona navegó: una entrada nueva, síncrona dentro de su toque) · 'replace' (automático) · 'pop' (Atrás:
    solo pinta). Volver a la misma ruta saliendo de una práctica o capa regresa a su entrada en vez de agregar otra. */
 function go(ruta,{modo='push'}={}){
+  // un regreso propio en camino (p. ej. al cerrar un diálogo con su botón): se navega cuando termine, si no el
+  // history.back() llegaría después del push y devolvería a la pantalla de antes
+  if(modo==='push'&&traversando){colaIr=ruta;registrar('nav',{ruta,nota:'en cola'});return}
   const nueva=resolver(ruta),e=est();
   registrar('nav',{ruta:nueva.ruta,nota:modo});
   if(modo==='push'&&cur){

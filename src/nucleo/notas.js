@@ -7,14 +7,14 @@ import {GENERADORES} from './generadores/index.js';
 import {esc} from '../utilidades.js';
 import {materias,materia as buscarMateria,tema as buscarTema,leccion,rutaLeccion,analizar} from './materias.js';
 import {progreso} from './progreso.js';
-import {vacio,confirmar,aviso,chip} from './ui.js';
+import {vacio,confirmar,aviso,avisoAccion,menuAcciones,chip} from './ui.js';
 import {tex,conFormulas} from './formula.js';
 import {soporte,escuchar} from './voz.js';
 import {crear} from './generadores/index.js';
 import {generadorDe} from './practica.js';
 import {todasLasNotas,leerNota,leerArchivo,enMemoria} from './cuaderno/db.js';
 import {render,alternarCasilla,tarjetasDe,imagenesDe,plano,normal,TARJETA} from './cuaderno/formato.js';
-import {cuadernoDe,fechaCorta,guardar,crearNota,borrarNotaCompleta,sincronizarResumenes} from './cuaderno/notas.js';
+import {cuadernoDe,fechaCorta,guardar,crearNota,borrarNotas,restaurarNotas,sincronizarResumenes} from './cuaderno/notas.js';
 import {comprimirFoto,guardarImagen,abrirDibujo} from './cuaderno/medios.js';
 import {descargarRespaldo,leerRespaldo,aplicarRespaldo,descargar} from './cuaderno/respaldo.js';
 import {misMaterias,recargarMias} from './mias/datos.js';
@@ -60,6 +60,26 @@ function cargar(){
   if(!cargando)cargando=(async()=>{try{await sincronizarResumenes()}catch(e){}cache=await todasLasNotas().catch(()=>[]);cargando=null;repintar()})();
   return cargando;
 }
+let seleccion=null,escuchaCambio=false; // modo «Seleccionar» de la lista: Set de ids, o null
+const nombreNotas=k=>k===1?'1 nota':`${k} notas`;
+/* Borra una o varias notas tras confirmar en un diálogo propio (Atrás o Cancelar no borran) y ofrece «Deshacer» 8 s,
+   que la restaura completa: texto, fechas, fotos, tarjetas, repasos y enlaces. Devuelve true si se borró. */
+async function borrarConConfirmar(lista,alTerminar){
+  if(!lista.length)return false;
+  const una=lista.length===1,fotos=lista.reduce((s,n)=>s+imagenesDe(n.cuerpo||'').length,0),tj=lista.reduce((s,n)=>s+tarjetasDe(n.cuerpo||'').length,0);
+  const extra=[fotos?`${fotos} ${fotos===1?'imagen':'imágenes'}`:'',tj?`${tj} ${tj===1?'tarjeta':'tarjetas'} de Repasar`:''].filter(Boolean).join(' y ');
+  const ok=await confirmar({titulo:una?'¿Borrar esta nota?':`¿Borrar ${nombreNotas(lista.length)}?`,
+    texto:`${una?`«${esc(lista[0].titulo||'Sin título')}»`:'Las notas elegidas'}${extra?` con sus ${extra}`:''} se ${una?'borra':'borran'} de este teléfono. Podrás deshacerlo unos segundos.`,si:'🗑️ Borrar',peligro:true});
+  if(!ok)return false;
+  const copia=await borrarNotas(lista);
+  if(cache){const ids=new Set(lista.map(n=>n.id));cache=cache.filter(n=>!ids.has(n.id))}
+  alTerminar?.();
+  avisoAccion(una?'🗑️ Nota borrada':`🗑️ ${nombreNotas(lista.length)} borradas`,'Deshacer',async()=>{
+    await restaurarNotas(copia);cache=null;aviso(una?'↩️ Nota restaurada':`↩️ ${nombreNotas(lista.length)} restauradas`);
+    document.dispatchEvent(new CustomEvent('notas-cambio'));
+  });
+  return true;
+}
 const ordenar=l=>[...l].sort((a,b)=>(b.fijada-a.fijada)||(b.editada-a.editada));
 function filtrar(l){
   const q=normal(buscar.trim());
@@ -71,10 +91,12 @@ function resumenTexto(n,q){
   if(!q)return t.slice(0,110);
   const i=normal(t).indexOf(normal(q));return (i>40?'…':'')+t.slice(Math.max(0,i-40),i+90);
 }
-const item=n=>{const c=cuadernoDe(n),nt=tarjetasDe(n.cuerpo).length;
-  return `<button class="nota-item" data-go="notas/n/${esc(n.id)}"><span class="nota-item-cab"><b>${n.fijada?'📌 ':''}${esc(n.titulo||'Sin título')}</b><span class="nota">${fechaCorta(n.editada)}</span></span>
+const item=n=>{const c=cuadernoDe(n),nt=tarjetasDe(n.cuerpo).length,sel=seleccion?.has(n.id);
+  const dentro=`<span class="nota-item-cab"><b>${seleccion?`<span aria-hidden="true">${sel?'☑️':'⬜'}</span> `:''}${n.fijada?'📌 ':''}${esc(n.titulo||'Sin título')}</b><span class="nota">${fechaCorta(n.editada)}</span></span>
 <span class="nota-item-txt">${esc(resumenTexto(n,buscar))||'<i>Vacía</i>'}</span>
-<span class="nota-item-pie">${chip(esc(c.nombre))}${nt?chip(`🃏 ${nt}`):''}${imagenesDe(n.cuerpo).length?chip('🖼️'):''}${(n.etiquetas||[]).slice(0,3).map(e=>chip('#'+esc(e))).join('')}</span></button>`};
+<span class="nota-item-pie">${chip(esc(c.nombre))}${nt?chip(`🃏 ${nt}`):''}${imagenesDe(n.cuerpo).length?chip('🖼️'):''}${(n.etiquetas||[]).slice(0,3).map(e=>chip('#'+esc(e))).join('')}</span>`;
+  if(seleccion)return `<button type="button" class="nota-item${sel?' elegida':''}" data-sel="${esc(n.id)}" aria-pressed="${!!sel}">${dentro}</button>`;
+  return `<div class="nota-fila"><button class="nota-item" data-go="notas/n/${esc(n.id)}">${dentro}</button><button type="button" class="nota-menu" data-menu="${esc(n.id)}" aria-label="Más opciones de «${esc(n.titulo||'Sin título')}»">⋯</button></div>`};
 function htmlLista(){
   if(!cache)return '<p class="cargando">Cargando tus notas</p>';
   const l=ordenar(filtrar(cache));
@@ -94,22 +116,37 @@ function vistaLista(){
     return [['todas','Todas'],['fijadas','📌 Fijadas'],['tarjetas','🃏 Con tarjetas'],...etiquetas.map(e=>['#'+e,'#'+esc(e)])]};
   return {
     titulo:'Notas',
-    alEntrar(){cache=null;cargar()},
+    alEntrar(){cache=null;seleccion=null;cargar()},
     vista:()=>`<div class="row" style="justify-content:space-between;align-items:center"><h1 style="margin:0">📝 Notas</h1><span class="row"><button type="button" class="btn ghost btn-chico" data-go="notas/foto">📸 Foto a nota</button><button type="button" class="btn btn-chico" id="nota-nueva">＋ Nueva</button></span></div>
 ${enMemoria?'<p class="aviso-linea">⚠️ Este navegador no deja guardar notas: se perderán al cerrar la app (¿modo privado?).</p>':''}
 <label class="buscar"><span class="oculto-visual">Buscar en tus notas</span><input type="search" id="notas-buscar" placeholder="🔎 Buscar en tus notas" value="${esc(buscar)}" autocomplete="off"></label>
 <div class="filtros" role="group" aria-label="Filtrar">${filtros().map(([v,t])=>`<button type="button" class="chip-filtro" data-filtro="${esc(v)}" aria-pressed="${filtro===v}">${t}</button>`).join('')}</div>
 <div class="ajuste" style="border:0;padding:4px 0"><span class="nota">Ordenar</span><span class="segmentos" role="group">${[['recientes','Recientes'],['cuaderno','Por cuaderno']].map(([v,t])=>`<button type="button" data-orden="${v}" aria-pressed="${orden===v}">${t}</button>`).join('')}</span></div>
+${cache?.length?(seleccion?`<div class="nota-seleccion" role="region" aria-label="Seleccionar notas"><span id="notas-contador" class="nota" aria-live="polite"><b>${seleccion.size===1?'1 seleccionada':`${seleccion.size} seleccionadas`}</b></span>
+<span class="row"><button type="button" class="btn ghost btn-chico" id="sel-todas">Todas</button><button type="button" class="btn ghost btn-chico" id="sel-cancelar">Cancelar</button><button type="button" class="btn peligro btn-chico" id="sel-borrar"${seleccion.size?'':' disabled'}>🗑️ Borrar</button></span></div>`
+:`<div class="row" style="justify-content:flex-end"><button type="button" class="btn ghost btn-chico" id="sel-empezar">☑️ Seleccionar</button></div>`):''}
 <div id="notas-lista">${htmlLista()}</div>
 <h2>💾 Respaldo</h2>${htmlRespaldo()}`,
     alMostrar(){
       const b=document.getElementById('notas-buscar');
       b?.addEventListener('input',()=>{buscar=b.value;document.getElementById('notas-lista').innerHTML=htmlLista()});
       activarImportar(()=>{cargar()});
+      if(!escuchaCambio){escuchaCambio=true;document.addEventListener('notas-cambio',()=>{if(document.getElementById('notas-lista')){cache=null;cargar()}})}
     },
     async alClic(t,ir,repintar){
       if(t.dataset.filtro){filtro=t.dataset.filtro;repintar();return true}
       if(t.dataset.orden){orden=t.dataset.orden;repintar();return true}
+      if(t.id==='sel-empezar'){seleccion=new Set();repintar();return true}
+      if(t.id==='sel-cancelar'){seleccion=null;repintar();return true}
+      if(t.id==='sel-todas'){const vis=ordenar(filtrar(cache||[]));seleccion=vis.every(n=>seleccion.has(n.id))?new Set():new Set(vis.map(n=>n.id));repintar();return true}
+      if(t.dataset.sel){const id=t.dataset.sel;seleccion.has(id)?seleccion.delete(id):seleccion.add(id);repintar();return true}
+      if(t.id==='sel-borrar'){const l=(cache||[]).filter(n=>seleccion.has(n.id));await borrarConConfirmar(l,()=>{seleccion=null});repintar();return true}
+      if(t.dataset.menu){const n=(cache||[]).find(x=>x.id===t.dataset.menu);if(!n)return true;
+        const r=await menuAcciones({titulo:esc(n.titulo||'Sin título'),opciones:[['abrir','✏️ Abrir'],['fijar',n.fijada?'📌 Desfijar':'📍 Fijar arriba'],['borrar','🗑️ Borrar','peligro-texto']]});
+        if(r==='abrir')ir(`notas/n/${n.id}`);
+        else if(r==='fijar'){Object.assign(n,await guardar({...n,fijada:!n.fijada},{tocada:false}));repintar()}
+        else if(r==='borrar'){await borrarConConfirmar([n]);repintar()}
+        return true}
       if(t.id==='nota-nueva'){
         // el cuaderno sale de dónde estabas estudiando (lo último que abriste)
         const u=progreso().ultimo,x=u?analizar(u.ruta):{};
@@ -219,7 +256,7 @@ function vistaEditor(id){
       const c=cuadernoDe(n),nt=tarjetasDe(n.cuerpo).length;
       const pestanas=`<div class="segmentos nota-modos" role="tablist">${[['editar','✏️ Escribir'],['ver','👁️ Ver'],['repasar','🧠 Repasar']].map(([v,t])=>`<button type="button" role="tab" data-modo="${v}" aria-selected="${modo===v}" aria-pressed="${modo===v}">${t}</button>`).join('')}</div>`;
       const cab=`<div class="nota-cab"><button type="button" class="btn-icono" data-go="notas" aria-label="Volver a mis notas">←</button><span id="nota-estado" class="nota" aria-live="polite">${estado}</span>
-<button type="button" class="btn-icono" id="nota-fijar" aria-pressed="${!!n.fijada}" aria-label="${n.fijada?'Desfijar':'Fijar arriba'}">${n.fijada?'📌':'📍'}</button></div>
+<span class="row" style="gap:4px;flex-wrap:nowrap"><button type="button" class="btn-icono" id="nota-borrar" aria-label="Borrar nota" title="Borrar">🗑️</button><button type="button" class="btn-icono" id="nota-fijar" aria-pressed="${!!n.fijada}" aria-label="${n.fijada?'Desfijar':'Fijar arriba'}">${n.fijada?'📌':'📍'}</button></span></div>
 <input id="nota-titulo" class="nota-titulo" placeholder="Título" value="${esc(n.titulo)}" aria-label="Título de la nota" autocomplete="off">
 <p class="nota" style="margin:0 0 8px">${esc(c.nombre)}${nt?` · 🃏 ${nt} ${nt===1?'tarjeta':'tarjetas'} en Repasar`:''}</p>${pestanas}`;
       if(modo==='editar')return `<div class="nota-editor">${cab}
@@ -241,7 +278,7 @@ ${modo==='repasar'?'<p class="intro">Las palabras en negrita están tapadas: int
 <article class="nota-render">${html||'<p class="nota">La nota está vacía.</p>'}</article>
 ${modo==='repasar'?'<button type="button" class="btn ghost ancho" id="nota-destapar">Destapar todo</button>':`<div class="row hoja-acciones nota-compartir">
 <button type="button" class="btn ghost btn-chico" id="nota-compartir">📤 Compartir</button><button type="button" class="btn ghost btn-chico" id="nota-pdf">🖨️ PDF</button>
-<button type="button" class="btn ghost btn-chico" id="nota-md">⬇️ Markdown</button><button type="button" class="btn ghost btn-chico peligro-texto" id="nota-borrar">🗑️ Borrar</button></div>`}</div>`;
+<button type="button" class="btn ghost btn-chico" id="nota-md">⬇️ Markdown</button><button type="button" class="btn ghost btn-chico peligro-texto" id="nota-borrar2">🗑️ Borrar</button></div>`}</div>`;
     },
     alMostrar(){
       if(!n)return;
@@ -287,9 +324,9 @@ ${modo==='repasar'?'<button type="button" class="btn ghost ancho" id="nota-desta
         const fin=()=>{document.body.classList.remove('imprimiendo');removeEventListener('afterprint',fin)};addEventListener('afterprint',fin);
         setTimeout(()=>{window.print();setTimeout(fin,1000)},100);return true}
       if(b.id==='nota-md'){const t=await textoMarkdown();descargar(new Blob([t],{type:'text/markdown'}),`${(n.titulo||'nota').replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,60)||'nota'}.md`);return true}
-      if(b.id==='nota-borrar'){
-        if(await confirmar({titulo:'¿Borrar esta nota?',texto:`«${esc(n.titulo||'Sin título')}» y sus imágenes${tarjetasDe(n.cuerpo).length?' y tarjetas':''} se borran de este teléfono.`,si:'Borrar',peligro:true})){
-          clearTimeout(timer);pendiente=false;await borrarNotaCompleta(n);aviso('🗑️ Nota borrada');ir('notas')}
+      if(b.id==='nota-borrar'||b.id==='nota-borrar2'){
+        leerCampos();clearTimeout(timer);if(pendiente){pendiente=false;n=await guardar(n)}
+        if(await borrarConConfirmar([n]))ir('notas');
         return true;
       }
     }

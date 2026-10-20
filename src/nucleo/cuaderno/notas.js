@@ -1,8 +1,8 @@
 /* Datos del cuaderno: crear, guardar y borrar notas; cuaderno (área → materia → tema) de cada una; copia de los resúmenes
    viejos de "Mis notas" (progreso.notas, que se conservan tal cual) y "📝 Guardar en mis notas" desde el estudio. */
-import {todasLasNotas,leerNota,guardarNota,borrarNotaDb,borrarArchivo,pedirPersistencia,nuevoId} from './db.js';
+import {todasLasNotas,leerNota,guardarNota,borrarNotaDb,borrarArchivo,todosLosArchivos,guardarArchivo,pedirPersistencia,nuevoId} from './db.js';
 import {tarjetasDe,imagenesDe,deHtml} from './formato.js';
-import {progreso,sincronizarTarjetas,borrarTarjetasDe,borrarNota,hoy} from '../progreso.js';
+import {progreso,sincronizarTarjetas,borrarTarjetasDe,borrarNota,hoy,instantaneaNota,restaurarInstantaneaNota} from '../progreso.js';
 import {materia as buscarMateria,leccion,tema as buscarTema,areaDe,rutaLeccion,rutaLeccionId} from '../materias.js';
 import {miMateria,buscarTema as temaPropio} from '../mias/datos.js';
 
@@ -28,11 +28,37 @@ export async function crearNota({materia=null,tema=null,titulo='',cuerpo='',etiq
   const ahora=Date.now();
   return guardar({id:id||nuevoId(),titulo,cuerpo,materia,tema,etiquetas,fijada:false,creada:ahora,editada:ahora},{tocada:false});
 }
-export async function borrarNotaCompleta(n){
-  for(const img of imagenesDe(n.cuerpo))await borrarArchivo(img).catch(()=>{});
-  await borrarNotaDb(n.id);borrarTarjetasDe(n.id);
-  if(n.origen?.startsWith('resumen:'))borrarNota(n.origen.slice(8)); // si no, volvería a copiarse
+/* Borrar notas (una o varias) por completo, con la posibilidad de deshacer:
+   - sus fotos y dibujos (archivos con nota = su id o que aparecen en su texto), salvo los que use otra nota;
+   - sus tarjetas y sus repasos, y el resumen del que salió (origen 'resumen:…', si no, volvería a copiarse);
+   - los enlaces a ellas desde otras notas ([texto](#notas/n/<id>) queda como texto).
+   Las notas de un tema, de «🎓 Mis materias» o de «📸 Foto a nota» se encuentran por sus campos materia/tema o por sus
+   archivos, así que al borrarlas no queda ninguna referencia. Devuelve una copia completa para restaurarNotas(). */
+// Los ids de nota solo tienen letras, números, - y _ (nuevoId y los de resumen/tema), así que van tal cual en la expresión
+const enlaceA=id=>new RegExp('\\[([^\\]]*)\\]\\(#notas/n/'+String(id).replace(/[^\w-]/g,'')+'\\)','g');
+export async function borrarNotas(lista){
+  const ids=new Set(lista.map(n=>n.id)),todas=await todasLasNotas(),restantes=todas.filter(n=>!ids.has(n.id));
+  const usadas=new Set(restantes.flatMap(n=>imagenesDe(n.cuerpo||''))),enTexto=new Set(lista.flatMap(n=>imagenesDe(n.cuerpo||'')));
+  const archivos=(await todosLosArchivos().catch(()=>[])).filter(a=>(ids.has(a.nota)||enTexto.has(a.id))&&!usadas.has(a.id));
+  const copia={notas:lista.map(n=>JSON.parse(JSON.stringify(n))),archivos,progreso:[],otras:[]};
+  for(const n of lista){const clave=n.origen?.startsWith('resumen:')?n.origen.slice(8):null;copia.progreso.push(instantaneaNota(n.id,clave))}
+  for(const a of archivos)await borrarArchivo(a.id).catch(()=>{});
+  for(const n of lista){
+    await borrarNotaDb(n.id);borrarTarjetasDe(n.id);
+    if(n.origen?.startsWith('resumen:'))borrarNota(n.origen.slice(8));
+  }
+  for(const o of restantes){let c=o.cuerpo||'';for(const id of ids)c=c.replace(enlaceA(id),'$1');
+    if(c!==o.cuerpo){copia.otras.push(JSON.parse(JSON.stringify(o)));await guardarNota({...o,cuerpo:c})}}
+  return copia;
 }
+// Deshacer: vuelve todo como estaba (notas con su fecha, fotos, tarjetas, repasos, resumen y enlaces)
+export async function restaurarNotas(copia){
+  for(const a of copia.archivos)await guardarArchivo(a);
+  for(const n of copia.notas)await guardarNota(n);
+  for(const o of copia.otras)await guardarNota(o);
+  for(const s of copia.progreso)restaurarInstantaneaNota(s);
+}
+export const borrarNotaCompleta=n=>borrarNotas([n]);
 
 /* Los resúmenes de "Mis notas" (progreso.notas) aparecen como notas del cuaderno. Se conservan en el progreso
    (la página de cada habilidad los muestra); si el resumen cambia y la nota no se tocó, la nota se actualiza. */

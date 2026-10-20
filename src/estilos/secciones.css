@@ -160,6 +160,8 @@ tr.hit td{background:var(--success-soft)}
 .campo input:focus,.campo select:focus,.buscar input:focus,.modal input:focus{outline:none;border-color:var(--primary)}
 .aviso{position:fixed;left:50%;bottom:calc(var(--nav-alto) + 16px + env(safe-area-inset-bottom) + var(--teclado,0px));z-index:80;transform:translate(-50%,20px);opacity:0;max-width:calc(100vw - 32px);padding:10px 16px;border-radius:var(--r2);background:var(--ink);color:var(--bg);font-weight:800;font-size:15px;box-shadow:var(--sombra);transition:opacity .2s,transform .2s;pointer-events:none}
 .aviso.visible{opacity:1;transform:translate(-50%,0)}
+.aviso-accion{display:flex;align-items:center;gap:12px;pointer-events:auto;width:max-content}
+.aviso-btn{min-height:44px;padding:0 12px;border:0;border-radius:var(--r1,8px);background:transparent;color:inherit;font:inherit;font-weight:900;text-decoration:underline;cursor:pointer}
 body.sesion-activa .aviso{bottom:calc(96px + env(safe-area-inset-bottom))}
 .aviso-linea{padding:var(--s2) var(--s3);border-radius:var(--r2);background:var(--warn-soft)}
 .peligro-texto{color:var(--error)!important}
@@ -426,3 +428,12 @@ body{padding-top:var(--franja,0px)}
 .plan-linea .btn{margin-top:6px;max-width:100%;white-space:normal;text-align:left}
 .tema-terminado{border:2px solid var(--area,var(--primary));background:var(--area-soft,var(--primary-soft))}
 .tema-terminado .row .btn{white-space:normal}
+/* Cuaderno: menú ⋯ de cada nota y modo «Seleccionar» */
+.nota-fila{display:flex;gap:var(--s2);align-items:stretch;min-width:0}
+.nota-fila .nota-item{flex:1}
+.nota-menu{flex:0 0 44px;min-height:44px;border-radius:var(--r2);background:var(--surface);border:2px solid var(--line);color:var(--ink);font-size:22px;font-weight:900;cursor:pointer}
+.nota-menu:hover{border-color:var(--line-2)}
+.nota-menu:focus-visible{outline:3px solid var(--primary)}
+.nota-item.elegida{border-color:var(--primary);background:var(--primary-soft,var(--surface))}
+.nota-seleccion{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center;justify-content:space-between;padding:var(--s2) var(--s3);margin-bottom:var(--s2);border-radius:var(--r2);background:var(--surface);border:2px solid var(--line);box-shadow:var(--sombra)}
+.nota-seleccion .row{flex-wrap:wrap;gap:var(--s2)}

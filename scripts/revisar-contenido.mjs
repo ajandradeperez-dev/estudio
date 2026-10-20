@@ -246,7 +246,7 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   let archivos=[];try{archivos=execSync('git ls-files',{cwd:join(raiz,'..','..'),encoding:'utf8'}).split('\n').filter(Boolean)}catch(e){}
   const {readFileSync:leer}=await import('node:fs');
   for(const f of archivos){if(/\.(png|jpg|webp|ico|woff2?)$/.test(f))continue;let t='';try{t=leer(join(raiz,'..','..',f),'utf8')}catch(e){continue}
-    if(/service_role['"]?\s*[:=]\s*['"]eyJ|sk-ant-[a-z0-9]{10}|AIza[0-9A-Za-z_-]{30}|sb_secret_[A-Za-z0-9]{10}|-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(t))mal(f,'parece contener una clave privada: no la subas al repositorio')}
+    if(/service_role['"]?\s*[:=]\s*['"]eyJ|sk-ant-[a-z0-9]{10}|AIza[0-9A-Za-z_-]{30}|AQ\.[0-9A-Za-z_-]{30}|sb_secret_[A-Za-z0-9]{10}|-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(t))mal(f,'parece contener una clave privada: no la subas al repositorio')}
 }
 // IA: la capa común (nucleo/ia.js) arma bien las peticiones de Gemini y de Claude (texto, imágenes y JSON por esquema),
 // lee sus respuestas y da mensajes amables (429, clave inválida, respuesta cortada); con respuestas simuladas, sin red real
@@ -276,6 +276,21 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   if(ult.cuerpo.contents.map(c=>c.role).join()!=='user,model,user')mal(e,'Gemini: los turnos del asistente no van como model');
   for(const [st,cu,codigo] of [[429,{error:{status:'RESOURCE_EXHAUSTED',message:'quota'}},'429'],[400,{error:{status:'INVALID_ARGUMENT',message:'API key not valid. Please pass a valid API key.'}},'401'],[200,{candidates:[{finishReason:'MAX_TOKENS',content:{parts:[{text:'{"ex'}]}}]},'cortada']]){
     resp=()=>[st,cu];try{await IA.pedir({mensajes:[{role:'user',content:'x'}],esquemaJSON:esquema});mal(e,`Gemini: no falla con ${codigo}`)}catch(x){if(x.codigo!==codigo||!x.message)mal(e,`Gemini: error ${codigo} mal reportado (${x.codigo})`)}}
+  // Claves «AQ.» (formato nuevo de Google): se aceptan y van igual en x-goog-api-key (claves falsas)
+  for(const [p,v,ok] of [['gemini','AIzaFALSA',true],['gemini','AQ.FALSA',true],['gemini','sk-ant-FALSA',false],['gemini','AQFALSA',false],['claude','sk-ant-FALSA',true],['claude','AQ.FALSA',false]])
+    if(IA.pareceClave(p,v)!==ok)mal(e,`pareceClave(${p}, ${v.slice(0,4)}…) debería ser ${ok}`);
+  IA.guardarAjustes({proveedor:'gemini',clave:'AQ.FALSA'});
+  resp=()=>[200,{candidates:[{finishReason:'STOP',content:{parts:[{text:'ok'}]}}]}];
+  await IA.pedir({mensajes:[{role:'user',content:'x'}]});
+  if(ult.op.headers['x-goog-api-key']!=='AQ.FALSA'||ult.op.headers.authorization)mal(e,'Gemini: la clave AQ. no va en x-goog-api-key');
+  // «Probar»: clave inválida (401/403), límite (429) y sin conexión, cada uno con su mensaje
+  const {mensajePrueba}=await import(pathToFileURL(join(raiz,'..','nucleo','ia-ajustes.js')).href).catch(()=>({}));
+  const casos=[[401,{error:{status:'UNAUTHENTICATED',message:'x',details:[{reason:'ACCESS_TOKEN_TYPE_UNSUPPORTED'}]}},/^Clave inválida/],[403,{error:{status:'PERMISSION_DENIED',message:'x'}},/^Clave inválida/],[429,{error:{status:'RESOURCE_EXHAUSTED',message:'x'}},/^Límite agotado.*gratuito/]];
+  for(const [st,cu,re] of casos){resp=()=>[st,cu];try{await IA.probarClave();mal(e,`Probar: no falla con ${st}`)}catch(x){if(st===401&&!/tipo de clave/.test(x.message))mal(e,'Gemini: ACCESS_TOKEN_TYPE_UNSUPPORTED no se explica');if(mensajePrueba&&!re.test(mensajePrueba(x,'Gemini')))mal(e,`Probar: mensaje de ${st} poco claro: ${mensajePrueba(x,'Gemini')}`)}}
+  {const f0=globalThis.fetch;globalThis.fetch=async()=>{throw new TypeError('Failed to fetch')};
+   try{await IA.probarClave();mal(e,'Probar: no falla sin conexión')}catch(x){if(mensajePrueba&&!/^Sin conexión/.test(mensajePrueba(x,'Gemini')))mal(e,`Probar: sin conexión mal reportado: ${x.codigo}`)}
+   globalThis.fetch=f0}
+  if(!mensajePrueba)mal(e,'no se pudo cargar mensajePrueba de ia-ajustes.js');
   // Claude
   IA.guardarAjustes({proveedor:'claude',clave:'sk-ant-PRUEBA',modelo:'claude-haiku-5-5'});
   resp=()=>[200,{stop_reason:'end_turn',content:[{type:'text',text:'{"explicacion":"Hi"}'}],usage:{input_tokens:7,output_tokens:3}}];
@@ -289,7 +304,7 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   IA.guardarAjustes({proveedor:'gemini',clave:''});try{await IA.pedir({mensajes:[{role:'user',content:'x'}]});mal(e,'sin clave no avisa')}catch(x){if(x.codigo!=='sin-clave')mal(e,'sin clave: error equivocado')}
   if(IA.costoUSD('texto',1e6,1e6)!==0)mal(e,'Gemini gratis no debería mostrar costo');
   globalThis.localStorage=antes.ls;globalThis.fetch=antes.f;
-  console.log('ia: Gemini y Claude con texto, imágenes y JSON, turnos, tokens, 429, clave inválida, respuesta cortada y clave vieja (respuestas simuladas)');
+  console.log('ia: Gemini y Claude con texto, imágenes y JSON, turnos, tokens, 429, clave inválida, respuesta cortada, clave vieja, claves AQ. y mensajes de «Probar» (respuestas y claves simuladas)');
 }
 // Migración: un progreso v5 (con la materia 'algebra') llega a la versión actual sin perder nada
 {

@@ -14,11 +14,14 @@
 
 const CLAVE='ciberlab-ia';
 export const PROVEEDORES={
-  gemini:{nombre:'Gemini',nota:'Gratis con tu cuenta de Google (recomendado)',prefijo:'AIza',ejemplo:'AIza…',
+  gemini:{nombre:'Gemini',nota:'Gratis con tu cuenta de Google (recomendado)',prefijos:['AIza','AQ.'],ejemplo:'AIza… o AQ.…',
     texto:'gemini-3.8-flash',vision:'gemini-3.8-flash',url:'https://generativelanguage.googleapis.com/v1beta/models'},
-  claude:{nombre:'Claude',nota:'De pago (Anthropic)',prefijo:'sk-ant-',ejemplo:'sk-ant-…',
+  claude:{nombre:'Claude',nota:'De pago (Anthropic)',prefijos:['sk-ant-'],ejemplo:'sk-ant-…',
     texto:'claude-haiku-5-5',vision:'claude-sonnet-5-5',url:'https://api.anthropic.com/v1/messages'}
 };
+// Google entrega claves de Gemini con el formato clásico «AIza…» y con el nuevo «AQ.…»; las dos van igual en x-goog-api-key
+export const pareceClave=(p,v)=>PROVEEDORES[p].prefijos.some(x=>String(v||'').startsWith(x));
+export const textoPrefijos=p=>PROVEEDORES[p].prefijos.join(' o ');
 export const MODELOS_CLAUDE=[
   {id:'claude-haiku-5-5',nombre:'Claude Haiku 5.5',nota:'Rápido y muy económico (recomendado)'},
   {id:'claude-sonnet-5-5',nombre:'Claude Sonnet 5.5',nota:'Más natural, cuesta ~20 veces más'}
@@ -60,7 +63,7 @@ const ERR={
   offline:()=>new ErrorIA('offline','Sin internet: la IA necesita conexión. Todo lo demás de la app funciona sin internet.'),
   red:p=>new ErrorIA('red',`No se pudo conectar con ${PROVEEDORES[p].nombre}. Revisa tu conexión e intenta de nuevo.`),
   limite:p=>new ErrorIA('429',p==='gemini'?'Llegaste al límite de uso gratuito de Gemini por ahora. Espera un minuto (o hasta mañana si fue el límite del día) y vuelve a intentarlo.':'Llegaste al límite de uso por minuto. Espera un momento y vuelve a intentarlo.'),
-  clave:p=>new ErrorIA('401',p==='gemini'?'La clave de Gemini no es válida. Revisa que la copiaste completa (empieza con AIza) o crea otra en aistudio.google.com.':'La clave no es válida o fue revocada. Revisa que la copiaste completa (empieza con sk-ant-) o crea una nueva.'),
+  clave:p=>new ErrorIA('401',p==='gemini'?'La clave de Gemini no es válida. Revisa que la copiaste completa (empieza con AIza o AQ.) o crea otra en aistudio.google.com.':'La clave no es válida o fue revocada. Revisa que la copiaste completa (empieza con sk-ant-) o crea una nueva.'),
   saturado:p=>new ErrorIA('saturado',`${PROVEEDORES[p].nombre} está saturado en este momento. Intenta de nuevo en un momento.`),
   negativa:p=>new ErrorIA('negativa',`${PROVEEDORES[p].nombre} prefirió no responder a eso. Prueba con otro tema.`),
   cortada:()=>new ErrorIA('cortada','La respuesta se cortó. Intenta de nuevo.'),
@@ -112,8 +115,10 @@ async function gemini({clave,modelo,sistema,mensajes,esquemaJSON,maxTokens,esfue
   if(!r.ok){
     const msg=String(d?.error?.message||''),st=String(d?.error?.status||'');
     if(r.status===429||st==='RESOURCE_EXHAUSTED')throw ERR.limite('gemini');
+    // Algunas cuentas reciben claves «AQ.» que Google todavía no acepta en esta API (ACCESS_TOKEN_TYPE_UNSUPPORTED)
+    if(/ACCESS_TOKEN_TYPE_UNSUPPORTED/i.test(msg+st+JSON.stringify(d?.error?.details||'')))throw new ErrorIA('401','Google no aceptó este tipo de clave en tu cuenta. Crea otra clave en aistudio.google.com y vuelve a intentarlo; si pasa lo mismo, es un problema de tu cuenta de Google, no de la app.');
     if(r.status===401||/API key not valid|API_KEY_INVALID/i.test(msg+JSON.stringify(d?.error?.details||'')))throw ERR.clave('gemini');
-    if(r.status===403)throw new ErrorIA('403','Tu clave de Gemini no tiene permiso para este modelo o la API no está activada en tu proyecto de Google.');
+    if(r.status===403)throw new ErrorIA('403','Google rechazó la clave (sin permiso). Revisa que esté completa, que no tenga restricciones y que la API de Gemini esté activada en su proyecto; o crea otra en aistudio.google.com.');
     if(r.status===404)throw new ErrorIA('404','Ese modelo de Gemini no está disponible para tu clave.');
     if(r.status>=500)throw ERR.saturado('gemini');
     throw new ErrorIA(String(r.status),`La API respondió con un error (${r.status})${msg?`: ${msg}`:''}.`);

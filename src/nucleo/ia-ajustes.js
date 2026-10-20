@@ -1,13 +1,21 @@
 /* Perfil → ✨ Inteligencia artificial (ruta 'ajustes-ia'): elegir proveedor (Gemini gratis, recomendado; o Claude de pago),
    pegar la clave propia (solo se guarda en este teléfono), probarla o borrarla. */
 import {$,esc} from '../utilidades.js';
-import {PROVEEDORES,MODELOS_CLAUDE,leerAjustes,guardarAjustes,borrarClave,claveOculta,probarClave} from './ia.js';
+import {PROVEEDORES,MODELOS_CLAUDE,leerAjustes,guardarAjustes,borrarClave,claveOculta,probarClave,pareceClave,textoPrefijos} from './ia.js';
 import {boton} from './ui.js';
 
 let msg='',eleccion=null;
+// Al probar, el mensaje dice claramente qué pasó: clave inválida, límite gratis, sin conexión u otro error
+export function mensajePrueba(e,nombre){
+  const c=String(e?.codigo||'');
+  if(c==='401'||c==='403')return `Clave inválida: ${e.message}`;
+  if(c==='429')return `Límite agotado: ${e.message}`;
+  if(c==='offline'||c==='red')return `Sin conexión: no se pudo llegar a ${nombre}. Revisa tu internet y vuelve a probar.`;
+  return e?.message||'No se pudo probar la clave.';
+}
 const GUIAS={
   gemini:`<ol class="pasos"><li>Entra a <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener"><b>aistudio.google.com</b></a> con tu cuenta de Google.</li>
-<li>Toca <b>Get API key</b> → <b>Create API key</b> (es gratis, sin tarjeta).</li><li>Copia la clave (empieza con <code>AIza</code>) y pégala aquí.</li></ol>
+<li>Toca <b>Get API key</b> → <b>Create API key</b> (es gratis, sin tarjeta).</li><li>Copia la clave (empieza con <code>AIza</code> o <code>AQ.</code>) y pégala aquí.</li></ol>
 <p class="nota aviso-ia">⚠️ En el plan gratuito de Gemini, Google puede usar lo que envíes para mejorar sus modelos; no envíes datos personales.</p>`,
   claude:`<ol class="pasos"><li>Entra a <a href="https://console.anthropic.com" target="_blank" rel="noopener"><b>console.anthropic.com</b></a> e inicia sesión.</li>
 <li>En <b>Billing</b> agrega créditos y pon un <b>límite de gasto</b> bajo (por ejemplo, 5 USD).</li><li>En <b>API Keys</b> → <b>Create Key</b>, copia la clave (empieza con <code>sk-ant-</code>) y pégala aquí.</li></ol>
@@ -37,12 +45,12 @@ ${p==='claude'?`<fieldset class="modelos"><legend>Modelo para texto</legend>${MO
     const leer=()=>{const v=$('#ia-clave').value.trim(),modelo=document.querySelector('[name=ia-modelo]:checked')?.value||a.modelo;return {v,modelo}};
     if(t.id==='ia-guardar'||t.id==='ia-probar'){
       const {v,modelo}=leer();
-      if(v&&!v.startsWith(P.prefijo)){msg=`Esa no parece una clave de ${P.nombre} (empieza con ${P.prefijo}).`;repintar();return true}
+      if(v&&!pareceClave(p,v)){msg=`Esa no parece una clave de ${P.nombre} (empieza con ${textoPrefijos(p)}).`;repintar();return true}
       if(!v&&!a.claves[p]){msg='Falta la clave.';repintar();return true}
       guardarAjustes({proveedor:p,clave:v||a.claves[p],modelo});eleccion=null;
       if(t.id==='ia-guardar'){msg=`✓ Guardado. La app usará ${P.nombre}.`;repintar();return true}
       $('#ia-msg').textContent='Probando…';
-      try{await probarClave();msg=`✓ La clave de ${P.nombre} funciona.`}catch(e){msg=e.message}
+      try{await probarClave();msg=`✓ La clave de ${P.nombre} funciona.`}catch(e){msg=`✗ ${mensajePrueba(e,P.nombre)}`}
       repintar();return true}
     if(t.id==='ia-borrar'){borrarClave(p);msg=`Clave de ${P.nombre} borrada de este teléfono.`;repintar();return true}
   }

@@ -3,7 +3,14 @@
  "titulo": "Online Statistics Education",
  "autor": "David M. Lane (Rice University) y colaboradores",
  "idioma": "en",
- "nivel": "Técnico",
+ "nivel": "Universitario",
+ "niveles": [
+  "Universitario"
+ ],
+ "generos": [
+  "Libro de texto"
+ ],
+ "relacionada": "Estadística",
  "icono": "📊",
  "tecnico": true,
  "materia": "ciencia-datos",

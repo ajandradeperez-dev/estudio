@@ -8,12 +8,16 @@
                Programming» de OpenStax, que es CC BY-NC-SA y prohíbe su uso en IA generativa)
      estadistica  Online Statistics Education (David M. Lane, Rice University) · dominio público (reemplaza a
                «Introductory Statistics» de OpenStax por la misma razón)
+     en español (scripts/libros-es.mjs): samaniego, becquer, lazarillo, sorjuana, novelas y quijote, de Project Gutenberg
+   Cada libro lleva etiquetas para los filtros: idioma, niveles (A1–C1 · Fácil/Media/Avanzada · Introductorio/Universitario),
+   generos y, en los libros de texto, relacionada (la materia).
    De los textos de Gutenberg se quitan el encabezado y el pie de licencia (su marca registrada) y se deja solo la obra.
    Los HTML se convierten a bloques seguros: {t:'h'|'p'|'li'|'code', x: texto o HTML con solo b, i, code, sub, sup, img}.
    --cache <dir> reutiliza descargas. Volver a correrlo regenera todo (no edites los JSON a mano). */
 import {mkdirSync,writeFileSync,readFileSync,existsSync,rmSync} from 'node:fs';
 import {join,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import * as ES from './libros-es.mjs';
 
 const raiz=join(dirname(fileURLToPath(import.meta.url)),'..'),SALIDA=join(raiz,'public','libros');
 const ic=process.argv.indexOf('--cache'),CACHE=ic>0?process.argv[ic+1]:null;
@@ -143,21 +147,40 @@ async function python(){
 
 /* ---------- escribir ---------- */
 const LIBROS=[
-  {id:'aesop',titulo:'The Aesop for Children',autor:'Esopo (versión de 1919, ilustraciones de Milo Winter)',idioma:'en',nivel:'A1–A2',icono:'🦊',
+  {id:'aesop',titulo:'The Aesop for Children',autor:'Esopo (versión de 1919, ilustraciones de Milo Winter)',idioma:'en',nivel:'A1–A2',niveles:['A1','A2'],generos:['Fábula','Clásico'],icono:'🦊',
    licencia:'Dominio público en EE. UU.',atribucion:'Texto de dominio público, tomado de Project Gutenberg (libro #19994).',fuente:'https://www.gutenberg.org/ebooks/19994',
    descripcion:'Fábulas cortas en inglés sencillo, cada una con su moraleja.',armar:async()=>aesop(await bajar('https://www.gutenberg.org/ebooks/19994.txt.utf-8'))},
-  {id:'alice',titulo:'Alice’s Adventures in Wonderland',autor:'Lewis Carroll',idioma:'en',nivel:'B1',icono:'🐇',
+  {id:'alice',titulo:'Alice’s Adventures in Wonderland',autor:'Lewis Carroll',idioma:'en',nivel:'B1',niveles:['B1'],generos:['Novela','Aventura','Clásico'],icono:'🐇',
    licencia:'Dominio público en EE. UU.',atribucion:'Texto de dominio público, tomado de Project Gutenberg (libro #11).',fuente:'https://www.gutenberg.org/ebooks/11',
    descripcion:'Alicia cae por la madriguera del Conejo Blanco: 12 capítulos de inglés intermedio.',armar:async()=>alice(await bajar('https://www.gutenberg.org/ebooks/11.txt.utf-8'))},
-  {id:'sherlock',titulo:'The Adventures of Sherlock Holmes',autor:'Arthur Conan Doyle',idioma:'en',nivel:'B2',icono:'🔍',
+  {id:'sherlock',titulo:'The Adventures of Sherlock Holmes',autor:'Arthur Conan Doyle',idioma:'en',nivel:'B2',niveles:['B2'],generos:['Misterio','Cuento','Clásico'],icono:'🔍',
    licencia:'Dominio público en EE. UU.',atribucion:'Texto de dominio público, tomado de Project Gutenberg (libro #1661).',fuente:'https://www.gutenberg.org/ebooks/1661',
    descripcion:'Doce casos del detective más famoso: inglés de nivel avanzado.',armar:async()=>sherlock(await bajar('https://www.gutenberg.org/ebooks/1661.txt.utf-8'))},
-  {id:'python',titulo:'Plotting and Programming in Python',autor:'The Carpentries (Software Carpentry)',idioma:'en',nivel:'Técnico',icono:'🐍',tecnico:true,materia:'python',area:'cursos',
+  {id:'python',titulo:'Plotting and Programming in Python',autor:'The Carpentries (Software Carpentry)',idioma:'en',nivel:'Introductorio',niveles:['Introductorio'],generos:['Libro de texto'],relacionada:'Python',icono:'🐍',tecnico:true,materia:'python',area:'cursos',
    licencia:'CC BY 4.0',atribucion:'Basado en «Plotting and Programming in Python» de The Carpentries, publicado bajo licencia Creative Commons Attribution 4.0 (https://creativecommons.org/licenses/by/4.0/). Se convirtió a texto para leerlo en la app (sin cambios de contenido). The Carpentries no avala esta app.',fuente:CARP,
    descripcion:'Lectura de apoyo del curso de Python (en inglés): variables, tipos, listas, bucles, condicionales y funciones.',armar:python},
-  {id:'estadistica',titulo:'Online Statistics Education',autor:'David M. Lane (Rice University) y colaboradores',idioma:'en',nivel:'Técnico',icono:'📊',tecnico:true,materia:'ciencia-datos',area:'estudio',
+  {id:'estadistica',titulo:'Online Statistics Education',autor:'David M. Lane (Rice University) y colaboradores',idioma:'en',nivel:'Universitario',niveles:['Universitario'],generos:['Libro de texto'],relacionada:'Estadística',icono:'📊',tecnico:true,materia:'ciencia-datos',area:'estudio',
    licencia:'Dominio público',atribucion:'Online Statistics Education: A Multimedia Course of Study (http://onlinestatbook.com/), proyecto dirigido por David M. Lane, Rice University. Obra de dominio público. Las simulaciones y ejercicios interactivos están en el sitio original.',fuente:'https://onlinestatbook.com/2/index.html',
-   descripcion:'Lectura de apoyo de Ciencia de datos (en inglés): estadística descriptiva, probabilidad, normal, muestreo, estimación, pruebas, regresión y chi cuadrada.',armar:estadistica}
+   descripcion:'Lectura de apoyo de Ciencia de datos (en inglés): estadística descriptiva, probabilidad, normal, muestreo, estimación, pruebas, regresión y chi cuadrada.',armar:estadistica},
+  // ---------- En español: autores muertos antes de 1900 (o anónimos antiguos); solo la obra, sin notas ni introducciones modernas ----------
+  {id:'samaniego',titulo:'Fábulas',autor:'Félix María Samaniego (1745–1801)',idioma:'es',nivel:'Fácil',niveles:['Fácil'],generos:['Fábula','Poesía','Clásico'],icono:'🦉',
+   licencia:'Dominio público',atribucion:'Texto de dominio público, tomado de Project Gutenberg (libro #55206). Se incluyen solo las fábulas de Samaniego, sin la introducción ni las notas del editor de esa edición.',fuente:'https://www.gutenberg.org/ebooks/55206',
+   descripcion:'Fábulas en verso, cortas y con moraleja: el mejor inicio.',armar:async()=>ES.samaniego(await bajar('https://www.gutenberg.org/ebooks/55206.txt.utf-8'))},
+  {id:'becquer',titulo:'Rimas y leyendas',autor:'Gustavo Adolfo Bécquer (1836–1870)',idioma:'es',nivel:'Media',niveles:['Media'],generos:['Poesía','Leyenda','Clásico'],icono:'🌙',
+   licencia:'Dominio público',atribucion:'Texto de dominio público, tomado de Project Gutenberg (libro #53552, «Obras escogidas»). Se incluyen seis leyendas y las Rimas de Bécquer, sin la introducción de esa edición.',fuente:'https://www.gutenberg.org/ebooks/53552',
+   descripcion:'Seis leyendas de misterio y las Rimas del poeta romántico.',armar:async()=>ES.becquer(await bajar('https://www.gutenberg.org/ebooks/53552.txt.utf-8'))},
+  {id:'lazarillo',titulo:'Lazarillo de Tormes',autor:'Anónimo (1554)',idioma:'es',nivel:'Media',niveles:['Media'],generos:['Novela','Clásico'],icono:'🥖',
+   licencia:'Dominio público',atribucion:'Texto de dominio público, tomado de Project Gutenberg (libro #320).',fuente:'https://www.gutenberg.org/ebooks/320',
+   descripcion:'La novela picaresca de un niño que sirve a varios amos: corta y con mucho humor.',armar:async()=>ES.lazarillo(await bajar('https://www.gutenberg.org/ebooks/320.txt.utf-8'))},
+  {id:'sorjuana',titulo:'Poemas selectos',autor:'Sor Juana Inés de la Cruz (1651–1695)',idioma:'es',nivel:'Avanzada',niveles:['Avanzada'],generos:['Poesía','Clásico'],icono:'🪶',
+   licencia:'Dominio público',atribucion:'Texto de dominio público, tomado de Project Gutenberg (libro #74087, edición de Juan León Mera, Quito, 1873). Se incluyen solo los poemas, sin la biografía ni el juicio crítico.',fuente:'https://www.gutenberg.org/ebooks/74087',
+   descripcion:'Romances, redondillas («Hombres necios que acusáis…»), sonetos y más de la gran poeta mexicana.',armar:async()=>ES.sorjuana(await bajar('https://www.gutenberg.org/ebooks/74087.txt.utf-8'))},
+  {id:'novelas',titulo:'Novelas ejemplares (selección)',autor:'Miguel de Cervantes (1547–1616)',idioma:'es',nivel:'Avanzada',niveles:['Avanzada'],generos:['Cuento','Clásico'],icono:'📜',
+   licencia:'Dominio público',atribucion:'Texto de dominio público, tomado de Project Gutenberg (libro #61202). Selección: Rinconete y Cortadillo, El licenciado Vidriera y La fuerza de la sangre.',fuente:'https://www.gutenberg.org/ebooks/61202',
+   descripcion:'Tres novelas cortas de Cervantes: pícaros en Sevilla, un loco de vidrio y una historia de amor.',armar:async()=>ES.novelas(await bajar('https://www.gutenberg.org/ebooks/61202.txt.utf-8'))},
+  {id:'quijote',titulo:'Don Quijote de la Mancha (primera parte)',autor:'Miguel de Cervantes (1547–1616)',idioma:'es',nivel:'Avanzada',niveles:['Avanzada'],generos:['Novela','Aventura','Clásico'],icono:'🐴',
+   licencia:'Dominio público',atribucion:'Texto de dominio público, tomado de Project Gutenberg (libro #2000).',fuente:'https://www.gutenberg.org/ebooks/2000',
+   descripcion:'Los 52 capítulos de la primera parte, de los molinos de viento al regreso a casa.',armar:async()=>ES.quijote(await bajar('https://www.gutenberg.org/ebooks/2000.txt.utf-8'))}
 ];
 const solo=process.argv.find(a=>a.startsWith('--solo='))?.split('=')[1];
 const catalogo=[];
@@ -166,7 +189,11 @@ for(const l of LIBROS){
   console.log(`📚 ${l.titulo}`);
   const caps=await l.armar(),dir=join(SALIDA,l.id);
   if(existsSync(dir))rmSync(dir,{recursive:true});mkdirSync(dir,{recursive:true});
-  caps.forEach((c,i)=>writeFileSync(join(dir,`${i+1}.json`),JSON.stringify({titulo:c.titulo,bloques:c.bloques})));
+  // En español, los capítulos sin preguntas escritas a mano (src/materias/lectura/preguntas.js) llevan 3 de «completa la frase»
+  const aMano=(await import(new URL('../src/materias/lectura/preguntas.js',import.meta.url).href)).PREGUNTAS[l.id]||[];
+  caps.forEach((c,i)=>{const pq=l.idioma==='es'&&!aMano[i]?.length?ES.preguntasCloze(c.bloques):[];
+    if(l.idioma==='es'&&!aMano[i]?.length&&pq.length<3)console.log(`   ⚠️ ${c.titulo}: no se pudieron armar 3 preguntas`);
+    writeFileSync(join(dir,`${i+1}.json`),JSON.stringify({titulo:c.titulo,bloques:c.bloques,...(pq.length?{preguntas:pq}:{})}))});
   const {armar,...meta}=l;
   writeFileSync(join(dir,'indice.json'),JSON.stringify({...meta,capitulos:caps.map((c,i)=>({n:i+1,titulo:c.titulo,palabras:palabrasDe(c.bloques),...(c.tema?{tema:c.tema}:{}),...(c.fabulas?{fabulas:c.fabulas}:{})}))},null,1));
   console.log(`   ${caps.length} capítulos, ${caps.reduce((s,c)=>s+palabrasDe(c.bloques),0)} palabras`);

@@ -4,6 +4,34 @@
    El orden de los capítulos es el de public/libros/<libro>/indice.json. Agrega preguntas al final de cada capítulo: el
    repaso guarda su posición. */
 export const PREGUNTAS={
+  // Lazarillo de Tormes (en español). Los demás libros en español usan preguntas de «completa la frase» generadas del
+  // texto al armar el libro (scripts/libros-es.mjs → preguntasCloze), guardadas en cada capítulo.
+  lazarillo:[
+    [['¿A quién dice Lázaro que le escribe esta historia? (abreviado en el texto)',['vuestra merced','v.m.','vm','usted','a vuestra merced'],'V.M.'],
+     ['Según el prólogo, ¿qué cosa no le da Dios a todos por igual, y a otros favorece?',['la fortuna','fortuna','suerte'],'fortuna'],
+     ['¿Quién escribe la historia?',['lázaro','lazaro','lázaro de tormes','el propio lázaro'],'V.M.']],
+    [['¿Quién es el primer amo de Lázaro?',['un ciego','el ciego','ciego'],'ciego'],
+     ['¿Con qué se tomaba Lázaro el vino del jarro del ciego?',['una paja','paja','una paja de centeno','paja de centeno'],'paja larga de centeno'],
+     ['¿Qué cambió Lázaro por la longaniza que estaba asando?',['un nabo','nabo'],'nabo']],
+    [['¿Quién es el segundo amo de Lázaro?',['un clérigo','el clérigo','clérigo','clerigo','un clerigo'],'clérigo'],
+     ['¿En qué guardaba el clérigo el pan?',['un arcaz','arcaz','el arcaz','un arca','arca','baúl'],'arcaz'],
+     ['¿Qué animal creyeron que se comía el pan por las noches?',['una culebra','culebra','ratones','ratón','raton'],'culebra']],
+    [['¿Quién es el tercer amo de Lázaro?',['un escudero','el escudero','escudero'],'escudero'],
+     ['¿En qué ciudad encuentra Lázaro al escudero?',['toledo','Toledo','en toledo'],'Toledo'],
+     ['¿Qué le pide el escudero a Lázaro, aunque decía que ya había comido?',['pan','un pedazo de pan','el pan','comida'],'parece éste buen pan']],
+    [['¿Quién es el cuarto amo de Lázaro?',['un fraile de la merced','fraile de la merced','un fraile','fraile'],'fraile de la Merced'],
+     ['¿Qué le dio el fraile a Lázaro (los primeros que rompió en su vida)?',['zapatos','unos zapatos','los zapatos'],'zapatos'],
+     ['¿Cuánto tiempo estuvo Lázaro con el fraile: mucho o poco?',['poco','poco tiempo','muy poco'],'fraile de la Merced']],
+    [['¿Quién es el quinto amo de Lázaro?',['un buldero','el buldero','buldero'],'buldero'],
+     ['¿Qué vendía el buldero?',['bulas','las bulas','bula'],'bulas'],
+     ['¿Con quién finge una pelea el buldero para convencer a la gente?',['un alguacil','el alguacil','alguacil','aguacil'],'aguacil']],
+    [['¿Quién es el amo con el que Lázaro empieza a ganarse la vida vendiendo agua?',['un capellán','el capellán','capellán','capellan'],'capellán'],
+     ['¿Qué animal le dio el capellán para trabajar?',['un asno','asno','burro','un burro'],'asno'],
+     ['¿Qué repartía Lázaro por la ciudad en ese trabajo?',['agua','el agua'],'echar agua por la cibdad']],
+    [['¿Qué oficio real («oficio real») consigue Lázaro al final?',['pregonero','el de pregonero','pregonar'],'pregonero'],
+     ['¿De quién es criada la mujer con la que se casa Lázaro?',['del arcipreste','el arcipreste','arcipreste','del arcipreste de san salvador'],'arcipreste de Sant Salvador'],
+     ['¿Qué pregonaba Lázaro para el arcipreste?',['sus vinos','vinos','vino','los vinos'],'le pregonaba sus vinos']]
+  ],
   aesop:[
     [['¿Qué querían los ratones colgarle al gato?',['a bell','bell','una campana','campana','cascabel','un cascabel'],'bell'],
      ['¿Con qué cargaban los patos a la tortuga?',['a stick','stick','un palo','palo','una vara','vara'],'stick'],

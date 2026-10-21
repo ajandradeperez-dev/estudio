@@ -1,0 +1,81 @@
+{
+ "id": "novelas",
+ "titulo": "Novelas ejemplares (selección)",
+ "autor": "Miguel de Cervantes (1547–1616)",
+ "idioma": "es",
+ "nivel": "Avanzada",
+ "niveles": [
+  "Avanzada"
+ ],
+ "generos": [
+  "Cuento",
+  "Clásico"
+ ],
+ "icono": "📜",
+ "licencia": "Dominio público",
+ "atribucion": "Texto de dominio público, tomado de Project Gutenberg (libro #61202). Selección: Rinconete y Cortadillo, El licenciado Vidriera y La fuerza de la sangre.",
+ "fuente": "https://www.gutenberg.org/ebooks/61202",
+ "descripcion": "Tres novelas cortas de Cervantes: pícaros en Sevilla, un loco de vidrio y una historia de amor.",
+ "capitulos": [
+  {
+   "n": 1,
+   "titulo": "Rinconete y Cortadillo (1/5)",
+   "palabras": 2835
+  },
+  {
+   "n": 2,
+   "titulo": "Rinconete y Cortadillo (2/5)",
+   "palabras": 2778
+  },
+  {
+   "n": 3,
+   "titulo": "Rinconete y Cortadillo (3/5)",
+   "palabras": 2744
+  },
+  {
+   "n": 4,
+   "titulo": "Rinconete y Cortadillo (4/5)",
+   "palabras": 2811
+  },
+  {
+   "n": 5,
+   "titulo": "Rinconete y Cortadillo (5/5)",
+   "palabras": 2532
+  },
+  {
+   "n": 6,
+   "titulo": "El licenciado Vidriera (1/4)",
+   "palabras": 2381
+  },
+  {
+   "n": 7,
+   "titulo": "El licenciado Vidriera (2/4)",
+   "palabras": 2594
+  },
+  {
+   "n": 8,
+   "titulo": "El licenciado Vidriera (3/4)",
+   "palabras": 2402
+  },
+  {
+   "n": 9,
+   "titulo": "El licenciado Vidriera (4/4)",
+   "palabras": 2119
+  },
+  {
+   "n": 10,
+   "titulo": "La fuerza de la sangre (1/3)",
+   "palabras": 2685
+  },
+  {
+   "n": 11,
+   "titulo": "La fuerza de la sangre (2/3)",
+   "palabras": 2570
+  },
+  {
+   "n": 12,
+   "titulo": "La fuerza de la sangre (3/3)",
+   "palabras": 2427
+  }
+ ]
+}

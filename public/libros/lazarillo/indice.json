@@ -1,0 +1,61 @@
+{
+ "id": "lazarillo",
+ "titulo": "Lazarillo de Tormes",
+ "autor": "Anónimo (1554)",
+ "idioma": "es",
+ "nivel": "Media",
+ "niveles": [
+  "Media"
+ ],
+ "generos": [
+  "Novela",
+  "Clásico"
+ ],
+ "icono": "🥖",
+ "licencia": "Dominio público",
+ "atribucion": "Texto de dominio público, tomado de Project Gutenberg (libro #320).",
+ "fuente": "https://www.gutenberg.org/ebooks/320",
+ "descripcion": "La novela picaresca de un niño que sirve a varios amos: corta y con mucho humor.",
+ "capitulos": [
+  {
+   "n": 1,
+   "titulo": "Prólogo",
+   "palabras": 441
+  },
+  {
+   "n": 2,
+   "titulo": "Tratado Primero: Cuenta Lázaro su vida, y cuyo hijo fue",
+   "palabras": 4735
+  },
+  {
+   "n": 3,
+   "titulo": "Tratado Segundo: Cómo Lázaro se asentó con un clérigo, y de las cosas que con él pasó",
+   "palabras": 3990
+  },
+  {
+   "n": 4,
+   "titulo": "Tratado Tercero: Cómo Lázaro se asentó con un escudero, y de lo que le acaeció con él",
+   "palabras": 6300
+  },
+  {
+   "n": 5,
+   "titulo": "Tratado Cuarto: Cómo Lázaro se asentó con un fraile de la Merced, y de lo que le",
+   "palabras": 98
+  },
+  {
+   "n": 6,
+   "titulo": "Tratado Quinto: Cómo Lázaro se asentó con un buldero, y de las cosas que con él pasó",
+   "palabras": 3183
+  },
+  {
+   "n": 7,
+   "titulo": "Tratado Sexto: Cómo Lázaro se asentó con un capellán, y lo que con él pasó",
+   "palabras": 192
+  },
+  {
+   "n": 8,
+   "titulo": "Tratado Séptimo: Cómo Lázaro se asentó con un alguacil, y de lo que le acaeció con él",
+   "palabras": 1014
+  }
+ ]
+}

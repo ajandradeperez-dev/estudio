@@ -3,7 +3,14 @@
  "titulo": "Plotting and Programming in Python",
  "autor": "The Carpentries (Software Carpentry)",
  "idioma": "en",
- "nivel": "Técnico",
+ "nivel": "Introductorio",
+ "niveles": [
+  "Introductorio"
+ ],
+ "generos": [
+  "Libro de texto"
+ ],
+ "relacionada": "Python",
  "icono": "🐍",
  "tecnico": true,
  "materia": "python",

@@ -473,3 +473,8 @@ body{padding-top:var(--franja,0px)}
 .lec-parrafo .lec-bloque{flex:1;margin:0 0 .8em;min-width:0}
 .lec-oir{flex:0 0 44px;opacity:.75}
 .lector-fin{margin-top:var(--s4);display:flex;flex-direction:column;gap:8px}
+.lec-verso{line-height:1.5}
+.lector .lec-verso{padding-left:.6em;border-left:3px solid var(--line)}
+.libro-etiquetas{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
+.libro-etiquetas .chip{font-size:12px}
+.lib-filtros .filtros{margin-bottom:6px}

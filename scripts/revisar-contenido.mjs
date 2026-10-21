@@ -316,11 +316,13 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
     for(const k of ['titulo','autor','licencia','atribucion','fuente'])if(!l[k])mal(e,`falta ${k} (licencia y atribución son obligatorias)`);
     if(!/dominio público|CC BY/i.test(l.licencia))mal(e,`licencia «${l.licencia}»: solo dominio público o CC BY`);
     for(const c of l.capitulos){const f=join(pub,l.id,`${c.n}.json`);if(!existsSync(f)){mal(e,`falta el capítulo ${c.n} en public/libros`);continue}
-      const t=JSON.parse(readFileSync(f,'utf8')).bloques.map(b=>String(b.x)).join(' ').replace(/<[^>]+>/g,'');
+      const capJ=JSON.parse(readFileSync(f,'utf8')),t=capJ.bloques.map(b=>String(b.x).replace(/<br>/g,' / ')).join(' ').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
       if(/PROJECT GUTENBERG|Gutenberg License|gutenberg\.org\/license/i.test(t))mal(e,`el capítulo ${c.n} conserva el encabezado o la licencia de Project Gutenberg`);
-      for(const [q,resp,ev] of PREGUNTAS[l.id]?.[c.n-1]||[]){nq++;if(!t.includes(ev))mal(e,`capítulo ${c.n}: la evidencia «${ev}» no está en el texto («${q}»)`);if(!resp?.length)mal(e,`capítulo ${c.n}: pregunta sin respuestas`)}}
-    if(l.idioma==='en'&&!l.tecnico&&(PREGUNTAS[l.id]||[]).some((qs,i)=>qs.length<3))mal(e,'cada capítulo necesita al menos 3 preguntas de comprensión');
-    if(l.idioma==='en'&&!l.tecnico&&(PREGUNTAS[l.id]||[]).length!==l.capitulos.length)mal(e,'faltan preguntas para algunos capítulos');
+      const qs=PREGUNTAS[l.id]?.[c.n-1]||capJ.preguntas||[];
+      if(!l.tecnico&&qs.length<3)mal(e,`capítulo ${c.n}: necesita al menos 3 preguntas de comprensión`);
+      for(const [q,resp,ev] of qs){nq++;if(!t.includes(ev))mal(e,`capítulo ${c.n}: la evidencia «${ev}» no está en el texto («${q}»)`);if(!resp?.length)mal(e,`capítulo ${c.n}: pregunta sin respuestas`)}}
+    for(const k of ['idioma','niveles','generos'])if(!l[k]?.length)mal(e,`falta la etiqueta ${k} (para los filtros de la biblioteca)`);
+    if(PREGUNTAS[l.id]&&PREGUNTAS[l.id].length!==l.capitulos.length)mal(e,'las preguntas escritas a mano no cubren todos los capítulos');
   }
   console.log(`lectura: ${LIBROS.length} libros con licencia y atribución, capítulos en public/libros y ${nq} preguntas con su evidencia en el texto`);
 }

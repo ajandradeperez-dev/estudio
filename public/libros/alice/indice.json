@@ -4,6 +4,14 @@
  "autor": "Lewis Carroll",
  "idioma": "en",
  "nivel": "B1",
+ "niveles": [
+  "B1"
+ ],
+ "generos": [
+  "Novela",
+  "Aventura",
+  "Clásico"
+ ],
  "icono": "🐇",
  "licencia": "Dominio público en EE. UU.",
  "atribucion": "Texto de dominio público, tomado de Project Gutenberg (libro #11).",

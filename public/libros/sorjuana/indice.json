@@ -1,0 +1,91 @@
+{
+ "id": "sorjuana",
+ "titulo": "Poemas selectos",
+ "autor": "Sor Juana Inés de la Cruz (1651–1695)",
+ "idioma": "es",
+ "nivel": "Avanzada",
+ "niveles": [
+  "Avanzada"
+ ],
+ "generos": [
+  "Poesía",
+  "Clásico"
+ ],
+ "icono": "🪶",
+ "licencia": "Dominio público",
+ "atribucion": "Texto de dominio público, tomado de Project Gutenberg (libro #74087, edición de Juan León Mera, Quito, 1873). Se incluyen solo los poemas, sin la biografía ni el juicio crítico.",
+ "fuente": "https://www.gutenberg.org/ebooks/74087",
+ "descripcion": "Romances, redondillas («Hombres necios que acusáis…»), sonetos y más de la gran poeta mexicana.",
+ "capitulos": [
+  {
+   "n": 1,
+   "titulo": "Romances (1/6)",
+   "palabras": 1968
+  },
+  {
+   "n": 2,
+   "titulo": "Romances (2/6)",
+   "palabras": 1976
+  },
+  {
+   "n": 3,
+   "titulo": "Romances (3/6)",
+   "palabras": 1960
+  },
+  {
+   "n": 4,
+   "titulo": "Romances (4/6)",
+   "palabras": 1966
+  },
+  {
+   "n": 5,
+   "titulo": "Romances (5/6)",
+   "palabras": 1967
+  },
+  {
+   "n": 6,
+   "titulo": "Romances (6/6)",
+   "palabras": 1914
+  },
+  {
+   "n": 7,
+   "titulo": "Décimas",
+   "palabras": 1728
+  },
+  {
+   "n": 8,
+   "titulo": "Redondillas",
+   "palabras": 2719
+  },
+  {
+   "n": 9,
+   "titulo": "Sonetos (1/2)",
+   "palabras": 1491
+  },
+  {
+   "n": 10,
+   "titulo": "Sonetos (2/2)",
+   "palabras": 1449
+  },
+  {
+   "n": 11,
+   "titulo": "Canciones",
+   "palabras": 2657
+  },
+  {
+   "n": 12,
+   "titulo": "Odas, liras y letrillas",
+   "palabras": 1533
+  },
+  {
+   "n": 13,
+   "titulo": "Poesía burlesca",
+   "palabras": 2473
+  },
+  {
+   "n": 14,
+   "titulo": "Epigramas",
+   "palabras": 171
+  }
+ ]
+}

@@ -1,8 +1,9 @@
 /* npm run lectura: 📚 Lectura en el navegador (360 px, táctil).
-   - La biblioteca muestra los 5 libros; la portada de cada uno, su licencia y atribución.
+   - La biblioteca muestra los 11 libros (5 en inglés, 6 en español), filtros que se combinan y se recuerdan, y búsqueda; la portada de cada uno, su licencia y atribución.
    - Un capítulo se descarga y se lee; A+ agranda la letra, 🌙 cambia a oscuro y se recuerda.
    - Inglés: tocar una palabra abre su ficha (pronunciar, significado); «Guardar en repaso» crea la tarjeta en el progreso.
    - Las preguntas de comprensión (3) marcan el capítulo como leído si aciertas la mayoría.
+   - Español: tocar una palabra antigua muestra su definición del glosario; si no está, «Guardar para buscar luego».
    - Libro técnico: «🎯 Practicar este capítulo» lleva al tema del curso.
    - Sin conexión: un capítulo ya abierto se vuelve a abrir (caché 'libros' del service worker).
    Compila (salvo --sin-build), levanta `vite preview` en el puerto 4793 y lo apaga al terminar. --capturas <dir> [--oscuro]. */
@@ -36,7 +37,7 @@ try{
 
   await p.goto(BASE+'#estudio/lectura');await p.waitForTimeout(900);
   const v=await texto('#vista');
-  check(['Aesop','Alice','Sherlock','Plotting and Programming in Python','Online Statistics Education'].every(t=>v.includes(t)),'la biblioteca muestra los 5 libros');
+  check(['Aesop','Alice','Sherlock','Plotting and Programming in Python','Online Statistics Education'].every(t=>v.includes(t)),'la biblioteca muestra los 5 libros en inglés');
   check(!/Próximamente/.test(v),'Lectura ya no dice «Próximamente»');
   await foto('lec-1-biblioteca');
   await p.click('[data-go="estudio/lectura/libro/aesop"]');await p.waitForTimeout(500);
@@ -65,6 +66,41 @@ try{
   check(/3 de 3/.test(await texto('#vista')),'las 3 preguntas de comprensión se responden');
   const leidos=(await progreso()).materias?.lectura?.extra?.libros?.aesop?.leidos||{};
   check(!!leidos[1],'el capítulo queda marcado como leído');
+  // filtros y búsqueda
+  await p.goto(BASE+'#estudio/lectura');await p.waitForTimeout(700);
+  check(['Lazarillo','Quijote','Bécquer'].every(t=>v.includes(t)),'la biblioteca muestra los libros en español');
+  check(/Continuar leyendo/.test(await texto('#vista')),'«Continuar leyendo» aparece con un libro empezado');
+  await p.click('summary:has-text("Filtrar")');await p.click('[data-filtro="idioma"][data-valor="es"]');await p.waitForTimeout(400);
+  let lv=await texto('#lib-lista');
+  check(/Lazarillo/.test(lv)&&!/Aesop/.test(lv),'el filtro Idioma: Español deja solo libros en español');
+  const gen=await p.$$eval('[data-filtro="genero"]',bs=>bs.map(b=>b.dataset.valor).filter(Boolean));
+  await p.click(`[data-filtro="genero"][data-valor="${gen.find(g=>/poes/i.test(g))||gen[0]}"]`);await p.waitForTimeout(400);
+  const lv2=await texto('#lib-lista');check(lv2!==lv&&!/Aesop/.test(lv2),'los filtros se combinan (idioma + género)');
+  await p.reload();await p.waitForTimeout(900);
+  check((await texto('#lib-lista'))===lv2,'los filtros se recuerdan al volver');
+  await p.click('[data-filtro="genero"][data-valor=""]');await p.click('[data-filtro="idioma"][data-valor=""]');await p.waitForTimeout(300);
+  await p.fill('#lib-buscar','cervantes');await p.waitForTimeout(300);
+  lv=await texto('#lib-lista');check(/Quijote/.test(lv)&&!/Lazarillo/.test(lv),'la búsqueda por autor encuentra a Cervantes');
+  await foto('lec-5-filtros');
+  // libro en español con glosario
+  await p.goto(BASE+'#estudio/lectura/libro/lazarillo');await p.waitForTimeout(500);
+  check(/Dominio público/.test(await texto('#vista'))&&(await p.locator('.libro-portada .chip').count())>=3,'la portada en español muestra licencia y etiquetas');
+  await p.goto(BASE+'#estudio/lectura/libro/lazarillo/2');
+  check(await esperar('#vista',/llaman Lázaro de Tormes/),'el capítulo en español se lee');await p.waitForTimeout(800);
+  const tocar=async w=>{const c=await p.$eval('.lector',(el,w)=>{const it=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let n;while(n=it.nextNode()){const i=n.textContent.search(new RegExp(`(^|[^\p{L}])${w}([^\p{L}]|$)`,'u'));if(i>=0){const j=n.textContent.indexOf(w,i),r=document.createRange();r.setStart(n,j+1);r.setEnd(n,j+2);const b=r.getBoundingClientRect();window.scrollBy(0,b.top-350);const b2=r.getBoundingClientRect();const x=b2.left+b2.width/2,y=b2.top+b2.height/2;return {x,y}}}return null},w);
+    if(c){await p.waitForTimeout(300);await p.mouse.click(c.x,c.y);await p.waitForTimeout(500)}return !!c};
+  check(await tocar('desta')&&/De esta/.test(await texto('.lec-palabra')),'tocar «desta» muestra su definición del glosario');
+  await foto('lec-6-glosario');
+  await p.click('[data-cerrar-palabra]');await p.waitForTimeout(200);
+  check(await tocar('molinero')&&await p.locator('#pal-luego').count()===1,'una palabra fuera del glosario ofrece «Guardar para buscar luego»');
+  await p.click('#pal-luego');await p.waitForTimeout(300);
+  check(((await progreso()).materias?.lectura?.extra?.libros?.lazarillo?.porBuscar||[]).includes('molinero'),'la palabra queda guardada para buscar luego');
+  await p.keyboard.press('Escape').catch(()=>{});
+  await p.goto(BASE+'#estudio/lectura/libro/lazarillo/2');await esperar('#vista',/Lázaro/);
+  await p.click('#lec-preguntas');await p.waitForTimeout(400);
+  check(/1\s*\/\s*3|de 3|Pregunta/.test(await texto('#vista'))||(await p.locator('#ses-resp').count())===1,'el capítulo en español tiene sus 3 preguntas');
+  await p.goto(BASE+'#estudio/lectura/libro/sorjuana/8');await p.waitForTimeout(1500);
+  check(await p.locator('.lec-verso').count()>0,'los poemas se muestran en verso');
   // libro técnico
   await p.goto(BASE+'#estudio/lectura/libro/python/2');
   check(await esperar('#vista',/Variables are names for values/),'el libro técnico se lee');

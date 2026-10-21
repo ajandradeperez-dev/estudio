@@ -1,0 +1,67 @@
+{
+ "id": "samaniego",
+ "titulo": "Fábulas",
+ "autor": "Félix María Samaniego (1745–1801)",
+ "idioma": "es",
+ "nivel": "Fácil",
+ "niveles": [
+  "Fácil"
+ ],
+ "generos": [
+  "Fábula",
+  "Poesía",
+  "Clásico"
+ ],
+ "icono": "🦉",
+ "licencia": "Dominio público",
+ "atribucion": "Texto de dominio público, tomado de Project Gutenberg (libro #55206). Se incluyen solo las fábulas de Samaniego, sin la introducción ni las notas del editor de esa edición.",
+ "fuente": "https://www.gutenberg.org/ebooks/55206",
+ "descripcion": "Fábulas en verso, cortas y con moraleja: el mejor inicio.",
+ "capitulos": [
+  {
+   "n": 1,
+   "titulo": "Libro primero",
+   "palabras": 3170
+  },
+  {
+   "n": 2,
+   "titulo": "Libro segundo",
+   "palabras": 3136
+  },
+  {
+   "n": 3,
+   "titulo": "Libro tercero",
+   "palabras": 2577
+  },
+  {
+   "n": 4,
+   "titulo": "Libro cuarto",
+   "palabras": 3666
+  },
+  {
+   "n": 5,
+   "titulo": "Libro quinto",
+   "palabras": 3695
+  },
+  {
+   "n": 6,
+   "titulo": "Libro sexto",
+   "palabras": 2612
+  },
+  {
+   "n": 7,
+   "titulo": "Libro séptimo",
+   "palabras": 2245
+  },
+  {
+   "n": 8,
+   "titulo": "Libro octavo",
+   "palabras": 2251
+  },
+  {
+   "n": 9,
+   "titulo": "Libro noveno",
+   "palabras": 3895
+  }
+ ]
+}

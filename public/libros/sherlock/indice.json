@@ -4,6 +4,14 @@
  "autor": "Arthur Conan Doyle",
  "idioma": "en",
  "nivel": "B2",
+ "niveles": [
+  "B2"
+ ],
+ "generos": [
+  "Misterio",
+  "Cuento",
+  "Clásico"
+ ],
  "icono": "🔍",
  "licencia": "Dominio público en EE. UU.",
  "atribucion": "Texto de dominio público, tomado de Project Gutenberg (libro #1661).",

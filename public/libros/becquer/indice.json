@@ -1,0 +1,77 @@
+{
+ "id": "becquer",
+ "titulo": "Rimas y leyendas",
+ "autor": "Gustavo Adolfo Bécquer (1836–1870)",
+ "idioma": "es",
+ "nivel": "Media",
+ "niveles": [
+  "Media"
+ ],
+ "generos": [
+  "Poesía",
+  "Leyenda",
+  "Clásico"
+ ],
+ "icono": "🌙",
+ "licencia": "Dominio público",
+ "atribucion": "Texto de dominio público, tomado de Project Gutenberg (libro #53552, «Obras escogidas»). Se incluyen seis leyendas y las Rimas de Bécquer, sin la introducción de esa edición.",
+ "fuente": "https://www.gutenberg.org/ebooks/53552",
+ "descripcion": "Seis leyendas de misterio y las Rimas del poeta romántico.",
+ "capitulos": [
+  {
+   "n": 1,
+   "titulo": "Leyenda: Maese Pérez el organista (1/2)",
+   "palabras": 2651
+  },
+  {
+   "n": 2,
+   "titulo": "Leyenda: Maese Pérez el organista (2/2)",
+   "palabras": 2563
+  },
+  {
+   "n": 3,
+   "titulo": "Leyenda: Los ojos verdes",
+   "palabras": 2671
+  },
+  {
+   "n": 4,
+   "titulo": "Leyenda: El rayo de luna",
+   "palabras": 3558
+  },
+  {
+   "n": 5,
+   "titulo": "Leyenda: El monte de las ánimas",
+   "palabras": 2718
+  },
+  {
+   "n": 6,
+   "titulo": "Leyenda: El miserere",
+   "palabras": 3339
+  },
+  {
+   "n": 7,
+   "titulo": "Leyenda: La corza blanca (1/3)",
+   "palabras": 2241
+  },
+  {
+   "n": 8,
+   "titulo": "Leyenda: La corza blanca (2/3)",
+   "palabras": 2227
+  },
+  {
+   "n": 9,
+   "titulo": "Leyenda: La corza blanca (3/3)",
+   "palabras": 2071
+  },
+  {
+   "n": 10,
+   "titulo": "Rimas (primera mitad)",
+   "palabras": 3624
+  },
+  {
+   "n": 11,
+   "titulo": "Rimas (segunda mitad)",
+   "palabras": 3754
+  }
+ ]
+}

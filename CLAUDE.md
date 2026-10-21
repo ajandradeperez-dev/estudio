@@ -438,9 +438,15 @@ Sin cuenta, cada dispositivo guarda lo suyo y se pasa con el respaldo; con cuent
   dispositivo (XP, notas, fotos, dominadas, último uso) y ofrece **🔀 Combinar** o **♻️ Reemplazar** (con confirmación).
   Lee también los `.json` de antes (formato 1). QR: no cabe (≈3 KB contra MB con fotos) y lo dice en pantalla.
   `npm run datos` lo prueba con tres «teléfonos».
-- **D2 · Cuenta** (ruta `cuenta`, `sync/vista.js`; Perfil muestra su estado): enlace mágico al correo (o Google con
-  `SUPABASE_GOOGLE`); vuelve a `?cuenta=1#access_token=…` y `main.js` guarda la sesión en `ciberlab-cuenta`, limpia la
-  dirección, abre ☁️ Cuenta y combina, mostrando «🔀 Tus datos quedaron combinados» (nube, aquí y resultado).
+- **D2 · Cuenta** (ruta `cuenta`, `sync/vista.js`; Perfil muestra su estado): **correo y contraseña** como lo principal
+  («Entrar» / «Crear cuenta» con `/auth/v1/token?grant_type=password` y `/auth/v1/signup`, mínimo 8 caracteres, 👁️ mostrar
+  u ocultar; «Olvidé mi contraseña» con `/auth/v1/recover`, cuyo enlace vuelve con `type=recovery` y la pantalla pide la
+  nueva, `PUT /auth/v1/user`) y, como alternativa, **código de 6 dígitos** por correo (`/auth/v1/otp` + `/auth/v1/verify`;
+  el mismo correo trae un enlace) o Google con `SUPABASE_GOOGLE`. Los errores de Auth llegan con su `codigo`
+  (`invalid_credentials`, `email_not_confirmed`, `otp_expired`, `weak_password`…) y `mensajeError` los dice en español.
+  Los enlaces del correo (confirmar la cuenta, código, contraseña olvidada) vuelven a `?cuenta=1#access_token=…` y
+  `main.js` guarda la sesión en `ciberlab-cuenta`, limpia la dirección, abre ☁️ Cuenta y combina, mostrando «🔀 Tus datos
+  quedaron combinados» (nube, aquí y resultado).
   `sync/api.js` (fetch a PostgREST, Auth y Storage), `sync/motor.js` (sin DOM) y `sync/navegador.js` (adaptador de los
   datos locales, sesión y cuándo sincronizar: al abrir, 20 s después de practicar, 5 s después de guardar una nota, al
   volver la red y al volver a la app; sin red queda «📴 Sin conexión: se enviará luego»). El motor combina las filas
@@ -450,6 +456,8 @@ Sin cuenta, cada dispositivo guarda lo suyo y se pasa con el respaldo; con cuent
   se detiene al 95 %), el nombre en `perfiles` y cada dispositivo en `equipo:<id>`. La pantalla tiene estado,
   «🔄 Sincronizar ahora», dispositivos, espacio de fotos, cerrar sesión (conservar o borrar lo de aquí) y «🗑️ Borrar mi
   cuenta y mis datos». Sin Supabase configurado: «Próximamente: sincronizar entre dispositivos» y lleva a Mis datos.
+  **Proyecto real**: `nwqnizvugvfxuizfkmyu` (URL y clave publishable en `src/config.js`; `VITE_SUPABASE_URL=ninguno`
+  compila la app sin Supabase, lo usa `npm run cuenta`).
 - **Base de datos**: `supabase/sync.sql` (mismo proyecto que Propuestas): `perfiles`, `progreso(user_id, clave, valor
   jsonb, actualizado, dispositivo)` y `notas(user_id, id, contenido jsonb, actualizado, borrado)` con RLS
   `user_id = auth.uid()` y nada para `anon`; `actualizado` lo pone un trigger; bucket privado `notas-fotos` (3 MB, solo
@@ -577,7 +585,7 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | 3a · Ciberseguridad · Fundamentos de redes (12 habilidades: OSI, IPv4, VLSM, IPv6, DNS, DHCP, ARP nuevas; 2 retos + escenario + simulacro) | ✅ terminado |
 | Cursos fase 1 · Ciberseguridad pasa a 💼 Cursos (progreso v10) | ✅ terminado |
 | Cursos fase 2 · Curso de Excel: evaluador, mini hoja, 25 generadores, 12 retos/escenarios, 3 herramientas | ✅ terminado |
-| Cursos fase 3 · 🗳️ Propuestas y votos (Supabase; falta crear el proyecto y pegar URL y clave pública) | ✅ código listo |
+| Cursos fase 3 · 🗳️ Propuestas y votos (Supabase) | ✅ terminado y conectado al proyecto real |
 | Cursos fase 4 · IA con Gemini (gratis, por defecto) o Claude, capa común `nucleo/ia.js`; pruebas de todo lo nuevo | ✅ terminado |
 | **Nuevo orden (PROMPT «Cursos completos y efectivos», reemplaza el de PROMPT-CONTENIDO.md)** | |
 | P0 · Arreglos: Atrás en el APK (colchón de historial contra la protección de Chrome), versión y «al día» en Acerca de, HTML red primero, assetlinks verificado (todo coincide), lista para renombrar | ✅ terminado (Atrás: falta confirmarlo en el teléfono) |
@@ -596,7 +604,7 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | Parte B · 🐍 Curso de Python (13 temas, 29 habilidades ✅, editor y laboratorio con Pyodide, 39 ejercicios con juez) | ✅ terminado |
 | Parte C · 📚 Lectura con 5 libros libres (dominio público o CC BY), lector sin conexión, palabras al repaso y preguntas | ✅ terminado |
 | PERFIL-LIBROS A · Pistas desglosadas (una acción por paso) · B · Logros al día · C · 6 libros en español, filtros, búsqueda y glosario | ✅ terminado |
-| PERFIL-LIBROS D · Respaldo `.estudio` (Combinar/Reemplazar), sincronización con Supabase (sync.sql con RLS probada en PGlite) y guía `supabase/LEEME.md` | ✅ terminado (falta crear el proyecto de Supabase y pegar URL y clave pública) |
+| PERFIL-LIBROS D · Respaldo `.estudio` (Combinar/Reemplazar), sincronización con Supabase (sync.sql con RLS probada en PGlite) y guía `supabase/LEEME.md` | ✅ terminado; proyecto de Supabase conectado y entrada con correo y contraseña (código de 6 dígitos como alternativa) |
 | P3b · Inglés: metas extra por nivel | ⏳ siguiente |
 | 4 · Inglés: completar A1 y A2, luego B1 | reemplazado por P3 y P6 |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | reemplazado por P3 y P6 |
@@ -629,7 +637,7 @@ npm run cuaderno  # borrar notas: una, varias, deshacer, fotos fuera de IndexedD
 npm run principiante # cada habilidad lista para un principiante: mini-lección, nivel 1, 3 pistas con datos, gemelo (--detalle)
 npm run python    # el curso de Python ejecutado en Pyodide: cada ejercicio generado y cada solución del laboratorio
 npm run datos     # 💾 Mis datos: exportar .estudio, combinar (sin duplicar XP, lápidas) y reemplazar con tres «teléfonos»
-npm run cuenta    # ☁️ Cuenta contra un Supabase simulado: enlace, combinar, dos teléfonos, sin conexión, dispositivos, borrar cuenta
+npm run cuenta    # ☁️ Cuenta contra un Supabase simulado: crear cuenta, entrar, olvidé mi contraseña, código, combinar, dos teléfonos, sin conexión, dispositivos, borrar cuenta
 npm run lectura   # 📚 Lectura en el navegador (biblioteca, capítulo, palabra al repaso, preguntas, sin conexión)
 npm run libros    # vuelve a armar public/libros y el catálogo desde las fuentes (--cache <dir>)
 npm run atras     # botón Atrás nivel por nivel (6 niveles y 7 Atrás, enlace directo, recarga, otras ramas) en teléfono y escritorio

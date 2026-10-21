@@ -22,3 +22,4 @@ android/*
 *.aab
 *.idsig
 dist-cuenta/
+dist-sin/

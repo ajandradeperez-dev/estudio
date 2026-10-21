@@ -1,5 +1,6 @@
 /* ☁️ Sincronización en el navegador: sesión de la cuenta, el motor con los datos de este dispositivo y cuándo sincronizar.
-   - Cuenta opcional: enlace mágico al correo (o Google si SUPABASE_GOOGLE). La sesión vive en 'ciberlab-cuenta' (solo aquí;
+   - Cuenta opcional: correo y contraseña (crear cuenta, entrar, olvidé mi contraseña) o, como alternativa, un código de
+     6 dígitos por correo (o Google si SUPABASE_GOOGLE). La sesión vive en 'ciberlab-cuenta' (solo aquí;
      nunca en respaldos). Las claves de IA nunca se suben: no son parte de nada de lo que se sincroniza.
    - Cuándo: al abrir la app, al terminar de practicar (cambios del progreso, con 20 s de espera), al guardar una nota
      (5 s de espera) y al volver la conexión. Sin conexión no se pierde nada: queda pendiente y se envía después.
@@ -26,16 +27,42 @@ export const cuenta=()=>leer(CUENTA);
 /* ---------- sesión ---------- */
 const volverA=()=>location.origin+location.pathname+'?cuenta=1';
 const datosJWT=t=>{try{return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))}catch(e){return {}}};
-// Vuelta del enlace mágico o de Google: ?cuenta=1#access_token=…&refresh_token=…&expires_in=…
+const guardarSesion=(t,refresh,expiraEn,extra={})=>{const j=datosJWT(t);if(!t||!j.sub)return false;
+  escribir(CUENTA,{access_token:t,refresh_token:refresh,expira:Date.now()+(+expiraEn||3600)*1000,uid:j.sub,email:j.email||extra.email||''});return true};
+// Vuelta de un enlace del correo (confirmar la cuenta, código/enlace mágico, contraseña olvidada) o de Google:
+// ?cuenta=1#access_token=…&refresh_token=…&expires_in=…&type=signup|magiclink|recovery
+let nuevaContrasena=false;
+export const pideNuevaContrasena=()=>nuevaContrasena&&!!cuenta();
 export function recibirSesionCuenta(){
   if(!/[?&]cuenta=1/.test(location.search)||!/access_token=/.test(location.hash))return false;
-  const q=new URLSearchParams(location.hash.slice(1)),t=q.get('access_token'),j=datosJWT(t);
-  if(!t||!j.sub)return false;
-  escribir(CUENTA,{access_token:t,refresh_token:q.get('refresh_token'),expira:Date.now()+(+q.get('expires_in')||3600)*1000,uid:j.sub,email:j.email||''});
+  const q=new URLSearchParams(location.hash.slice(1));
+  if(!guardarSesion(q.get('access_token'),q.get('refresh_token'),q.get('expires_in')))return false;
+  if(q.get('type')==='recovery')nuevaContrasena=true;
   return true;
 }
-export const enviarEnlace=email=>api.enviarEnlace(email,volverA());
+// Respuesta de /token o /verify con la sesión → queda guardada
+const conSesion=(r,email)=>{if(!r.ok)return r;const d=r.datos||{};
+  return guardarSesion(d.access_token,d.refresh_token,d.expires_in,{email})?{ok:true}:{ok:false,error:'servidor'}};
+export const entrar=async(email,password)=>conSesion(await api.entrar(email,password),email);
+// {ok, sesion} si el proyecto no pide confirmar el correo; {ok, confirmar} si llega un correo; {ok:false, error:'existe'}
+export async function crearCuenta(email,password){
+  const r=await api.crearCuenta(email,password,volverA());
+  if(!r.ok)return r.codigo==='user_already_exists'?{ok:false,error:'existe'}:r;
+  if(r.datos?.access_token)return {...conSesion(r,email),sesion:true};
+  const u=r.datos?.user||r.datos;
+  if(Array.isArray(u?.identities)&&!u.identities.length)return {ok:false,error:'existe'};
+  return {ok:true,confirmar:true};
+}
+export const recuperar=email=>api.recuperar(email,volverA());
+// alternativa sin contraseña: código de 6 dígitos (y enlace) por correo; o Google
+export const enviarCodigo=email=>api.enviarEnlace(email,volverA());
 export const urlGoogle=()=>api.urlGoogle(volverA());
+export const verificarCodigo=async(email,codigo)=>conSesion(await api.verificarCodigo(email,codigo),email);
+export async function cambiarContrasena(password){
+  const s=await sesion();if(!s)return {ok:false,error:'sin_sesion'};
+  const r=await api.cambiarContrasena(s.token,password);if(r.ok)nuevaContrasena=false;return r;
+}
+export const omitirNuevaContrasena=()=>{nuevaContrasena=false};
 async function sesion(){
   const s=cuenta();if(!s)return null;
   if(Date.now()<s.expira-60000)return {token:s.access_token,uid:s.uid};

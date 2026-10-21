@@ -18,9 +18,11 @@ export const INVITACION=`Estoy estudiando con ${APP_NOMBRE}: lecciones cortas, r
 // 🗳️ Propuestas y votos (Supabase, plan gratuito). Pega aquí la URL del proyecto y su clave PÚBLICA (anon o publishable):
 // es pública por diseño; la seguridad está en la base (supabase/propuestas.sql, Row Level Security). La clave service_role
 // NUNCA va aquí ni en git. Vacías = la sección muestra las propuestas iniciales y dice que la votación se activa pronto.
-// (npm run cuenta compila una copia de prueba con VITE_SUPABASE_URL/VITE_SUPABASE_CLAVE apuntando a un Supabase simulado)
-export const SUPABASE_URL=''||import.meta.env?.VITE_SUPABASE_URL||'';
-export const SUPABASE_CLAVE_PUBLICA=''||import.meta.env?.VITE_SUPABASE_CLAVE||'';
+// Proyecto: Settings → API. (npm run cuenta compila copias de prueba con VITE_SUPABASE_URL/VITE_SUPABASE_CLAVE: apuntando
+// a un Supabase simulado, o 'ninguno' para probar la app sin Supabase)
+const envUrl=import.meta.env?.VITE_SUPABASE_URL,envClave=import.meta.env?.VITE_SUPABASE_CLAVE;
+export const SUPABASE_URL=envUrl==='ninguno'?'':envUrl||'https://nwqnizvugvfxuizfkmyu.supabase.co';
+export const SUPABASE_CLAVE_PUBLICA=envUrl==='ninguno'?'':envClave||'sb_publishable_kWXgVxgb_EMGLw6Jy1w0Vg_Nkl4iATv';
 // ☁️ Sincronizar entre dispositivos usa el MISMO proyecto (supabase/sync.sql). Vacías = Perfil dice «Próximamente».
-// true si activaste el inicio de sesión con Google en Supabase → Authentication → Providers (si no, solo enlace al correo)
+// true si activaste el inicio de sesión con Google en Supabase → Authentication → Providers (si no, correo y contraseña o código por correo)
 export const SUPABASE_GOOGLE=false||import.meta.env?.VITE_SUPABASE_GOOGLE==='1';

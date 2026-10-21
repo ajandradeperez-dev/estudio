@@ -128,7 +128,10 @@ src/
     procedimiento.js      Pantalla "📖 Procedimiento": pasos revelables, lo que cambia resaltado, diagramas, 🔊 y 📝 por paso
     portada.js            Portada (áreas), página de área, de materia (temas), camino de un tema, migas y barra superior
     miprogreso.js         Pestaña Perfil: progreso, meta diaria y ajustes
-    logros.js             Pestaña Logros: medallas calculadas a partir del progreso y bloques de cada materia
+    logros.js             Pestaña Logros: medallas calculadas del progreso (no se guardan: no hace falta migrar) y GENERADAS del
+                          contenido real: por materia (primera, mitad, completa), Inglés por nivel MCER, Python por unidad y curso,
+                          Lectura (primer libro, 5 capítulos, uno en inglés y uno en español); calidad falla si falta alguno o si
+                          Logros, el Mapa MCER, Cursos o Lectura dicen «Próximamente/todavía no» de algo que existe
     ui.js                 Componentes: barra, puntos, chip, boton, tarjetaNav, cabecera, intro (¿Cómo se usa?), vacio, hoja, confirmar
     recomendador.js       "👉 ¿Qué sigue?": 1 repasos (≥5) → 2 lo urgente de cada materia → 3 punto más débil → 4 continuar
                           → 5 siguiente lección → 6 retos; alterna materias tras 3 sesiones seguidas. Cada materia aporta

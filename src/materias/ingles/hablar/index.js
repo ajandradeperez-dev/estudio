@@ -22,6 +22,7 @@ import {cargarLecciones} from '../../../nucleo/cargar.js';
 import {UNIDADES,NIVELES_MCER,unidad,estadoUnidades,unidadActual} from './unidades.js';
 import {MEDALLAS,comboActual,sonidoActivo,alternarSonido,vencerJefe} from './juego.js';
 import {CONTENIDO} from './contenido.js';
+import TEMAS_INGLES from '../temas.js';
 import {vistaEscucha,vistaFluidez,marcarPaso} from './pasos.js';
 
 const RAIZ='estudio/ingles/hablar';
@@ -42,13 +43,20 @@ export function htmlMision(p=progreso()){
 <div><span class="nota">o 1 conversación de ${MISION.turnos} turnos</span><b>${Math.min(m.conv,MISION.turnos)}/${MISION.turnos}</b>${barra(m.conv,MISION.turnos)}</div></div>
 <p class="nota" style="margin:6px 0 0">Cuenta como meta diaria y suma a tu racha.</p></div>`;
 }
+// Un nivel sin unidades de Hablar (B1, B2): su tema de gramática y vocabulario con el avance (nunca «Próximamente»:
+// el contenido del nivel sí existe en ingles/temas.js)
+function temaNivel(n,p){
+  const t=TEMAS_INGLES.find(x=>x.id===n.toLowerCase());if(!t)return '';
+  const ids=t.nodos.filter(x=>x.id).map(x=>x.id),l=datosMateria(p,'ingles').lecciones,h=ids.filter(id=>l[id]?.dominada).length;
+  return `<button class="mapa-unidad ${h===ids.length?'completa':'actual'}" data-go="estudio/ingles/${t.id}" aria-label="${esc(t.titulo)}: ${h} de ${ids.length} habilidades"><span class="mapa-estado" aria-hidden="true">${h===ids.length?'✓':t.icono}</span><span class="mapa-texto">${esc(t.titulo.replace(/^[ABC][12] · /,''))} · ${h}/${ids.length}</span></button>`;
+}
 // Mapa MCER: una fila por nivel con sus unidades como chips (ícono de estado al lado del texto, nunca encima)
 export function htmlMapa(p=progreso()){
   const e=estadoUnidades(p),actual=unidadActual(p);
   return `<div class="mapa">${NIVELES_MCER.map(n=>{const us=UNIDADES.filter(u=>u.nivel===n);
     return `<div class="mapa-nivel"><span class="mapa-etiqueta">${n}</span><div class="mapa-unidades">${us.length?us.map(u=>{const s=e[u.id],k=UNIDADES.indexOf(u)+1;
       return `<button class="mapa-unidad ${s}${u===actual?' aqui':''}" data-go="${RAIZ}/u/${u.id}" aria-label="Unidad ${k}: ${esc(u.titulo)} (${s==='completa'?'dominada':s==='actual'?'actual':'bloqueada'})"><span class="mapa-estado" aria-hidden="true">${s==='completa'?'✓':s==='bloqueada'?'🔒':k}</span><span class="mapa-texto">${esc(u.titulo)}</span></button>`}).join('')
-      :'<span class="mapa-proximo">Próximamente</span>'}</div></div>`}).join('')}</div>`;
+      :temaNivel(n,p)}</div></div>`}).join('')}</div>`;
 }
 export const htmlMedallas=(p=progreso())=>{const ya=datosMateria(p,'ingles').extra.medallas||{};
   return `<div class="medallas">${MEDALLAS.map(m=>`<span class="medalla${ya[m.id]?' ganada':''}" title="${esc(m.desc)}"><span class="medalla-icono">${ya[m.id]?m.icono:'🔒'}</span>${m.nombre}</span>`).join('')}</div>`};

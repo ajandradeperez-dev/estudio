@@ -510,6 +510,145 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 
 📚 Para profundizar: Microsoft — Objetivos del examen MO-200 (tareas tipo examen)
 
+## ✅ 💼 Curso · 🐍 Python (PCEP y básico de PCAP) `python`
+
+**Cobertura del temario: 100 %** (29 de 29 habilidades ✅)
+
+### ✅ Primeros pasos `primeros-pasos`
+
+2/2 habilidades ✅
+
+- [x] ✅ print y comentarios `print` — PCEP 1.1 – Fundamentos: intérprete, print, comentarios
+- [x] ✅ Leer los errores `errores-comunes` — PCEP 1.4 – Errores de sintaxis y de ejecución
+- 🔧 Laboratorio: escribe la función → `laboratorio/primeros-pasos`
+- 🔧 Editor: prueba tu código → `editor`
+
+📚 Para profundizar: Python Institute — Temario PCEP-30-02, sección 1 (conceptos básicos) · Tutorial oficial de Python (docs.python.org/es) — 3. Una introducción informal
+
+### ✅ Variables, tipos e input `variables`
+
+3/3 habilidades ✅
+
+- [x] ✅ Variables y asignación `variables` — PCEP 1.2 – Variables, nombres y asignación
+- [x] ✅ Tipos y conversión `tipos` — PCEP 1.2 – Tipos de datos y conversiones (int, float, str, bool)
+- [x] ✅ input: leer datos `input` — PCEP 1.3 – Entrada y salida de la consola
+- 🔧 Laboratorio: escribe la función → `laboratorio/variables`
+
+📚 Para profundizar: Python Institute — Temario PCEP-30-02, secciones 1.2 y 1.3 · Tutorial oficial de Python — 3.1 Usar Python como calculadora (números y cadenas)
+
+### ✅ Operadores y f-strings `operadores`
+
+2/2 habilidades ✅
+
+- [x] ✅ Operadores y precedencia `aritmetica` — PCEP 1.3 – Operadores aritméticos y su prioridad
+- [x] ✅ f-strings y redondeo `fstrings` — PCEP 1.3 – Formato de cadenas
+- 🔧 Laboratorio: escribe la función → `laboratorio/operadores`
+
+📚 Para profundizar: Python Institute — Temario PCEP-30-02, sección 1.3 (operadores) · Tutorial oficial de Python — 7.1 Formateo elegante de la salida
+
+### ✅ Condicionales `condicionales`
+
+2/2 habilidades ✅
+
+- [x] ✅ if, elif y else `if-else` — PCEP 2.1 – Ejecución condicional
+- [x] ✅ Lógica booleana `logica` — PCEP 2.1 – Operadores lógicos y de comparación
+- 🔧 Laboratorio: escribe la función → `laboratorio/condicionales`
+
+📚 Para profundizar: Python Institute — Temario PCEP-30-02, sección 2.1 · Tutorial oficial de Python — 4.1 La sentencia if
+
+### ✅ Bucles `bucles`
+
+3/3 habilidades ✅
+
+- [x] ✅ Bucle while `while` — PCEP 2.2 – Bucles while
+- [x] ✅ for y range `for-range` — PCEP 2.2 – Bucles for y range()
+- [x] ✅ break y continue `break-continue` — PCEP 2.2 – break y continue
+- 🔧 Laboratorio: escribe la función → `laboratorio/bucles`
+
+📚 Para profundizar: Python Institute — Temario PCEP-30-02, sección 2.2 · Tutorial oficial de Python — 4.2 a 4.4 (for, range, break y continue)
+
+### ✅ Listas y tuplas `listas`
+
+3/3 habilidades ✅
+
+- [x] ✅ Listas `listas` — PCEP 3.1 – Listas: índices y métodos
+- [x] ✅ Rebanadas `rebanadas` — PCEP 3.1 – Rebanadas (slicing)
+- [x] ✅ Tuplas `tuplas` — PCEP 3.2 – Tuplas e inmutabilidad
+- 🔧 Laboratorio: escribe la función → `laboratorio/listas`
+
+📚 Para profundizar: Python Institute — Temario PCEP-30-02, sección 3.1 y 3.2 · Tutorial oficial de Python — 5.1 Más sobre listas y 5.3 Tuplas
+
+### ✅ Diccionarios y conjuntos `diccionarios`
+
+2/2 habilidades ✅
+
+- [x] ✅ Diccionarios `diccionarios` — PCEP 3.3 – Diccionarios
+- [x] ✅ Conjuntos `conjuntos` — PCEP 3.3 – Conjuntos (set)
+- 🔧 Laboratorio: escribe la función → `laboratorio/diccionarios`
+
+📚 Para profundizar: Python Institute — Temario PCEP-30-02, sección 3.3 · Tutorial oficial de Python — 5.4 Conjuntos y 5.5 Diccionarios
+
+### ✅ Funciones `funciones`
+
+3/3 habilidades ✅
+
+- [x] ✅ Funciones y return `funciones` — PCEP 4.1 – Definir y llamar funciones; return y None
+- [x] ✅ Parámetros por defecto y por nombre `parametros` — PCEP 4.2 – Parámetros posicionales, con nombre y por defecto
+- [x] ✅ Alcance de variables `alcance` — PCEP 4.3 – Alcance (scope) y global
+- 🔧 Laboratorio: escribe la función → `laboratorio/funciones`
+
+📚 Para profundizar: Python Institute — Temario PCEP-30-02, sección 4.1 a 4.3 · Tutorial oficial de Python — 4.7 Definir funciones y 4.8 Más sobre definición de funciones
+
+### ✅ Cadenas a fondo `cadenas`
+
+2/2 habilidades ✅
+
+- [x] ✅ Métodos de cadenas `metodos-cadena` — PCEP 3.4 – Métodos de cadenas
+- [x] ✅ Recorrer y analizar textos `recorrer-cadenas` — PCEP 3.4 – Cadenas como secuencias
+- 🔧 Laboratorio: escribe la función → `laboratorio/cadenas`
+
+📚 Para profundizar: Python Institute — Temario PCEP-30-02, sección 3.4 · Tutorial oficial de Python — 3.1.2 Cadenas de caracteres
+
+### ✅ Errores y excepciones `excepciones`
+
+2/2 habilidades ✅
+
+- [x] ✅ try / except `try-except` — PCEP 4.4 – Manejo de excepciones
+- [x] ✅ Tipos de error `tipos-error` — PCEP 4.4 – Excepciones integradas
+- 🔧 Laboratorio: escribe la función → `laboratorio/excepciones`
+
+📚 Para profundizar: Python Institute — Temario PCEP-30-02, sección 4.4 · Tutorial oficial de Python — 8. Errores y excepciones
+
+### ✅ Archivos y módulos `archivos`
+
+2/2 habilidades ✅
+
+- [x] ✅ Archivos `archivos` — PCAP 4.4 – Archivos: open, read, write y with
+- [x] ✅ Módulos `modulos` — PCEP 4.5 / PCAP 1.1 – import, from … import y alias
+- 🔧 Laboratorio: escribe la función → `laboratorio/archivos`
+
+📚 Para profundizar: Python Institute — Temario PCAP-31-03, secciones 1 (módulos) y 4.4 (archivos) · Tutorial oficial de Python — 6. Módulos y 7.2 Leer y escribir archivos
+
+### ✅ Clases y objetos `clases`
+
+2/2 habilidades ✅
+
+- [x] ✅ Clases y objetos `clases` — PCAP 3.1 – Clases, objetos, __init__ y self
+- [x] ✅ Métodos y estado `metodos` — PCAP 3.2 – Métodos, __str__ y herencia
+- 🔧 Laboratorio: escribe la función → `laboratorio/clases`
+
+📚 Para profundizar: Python Institute — Temario PCAP-31-03, sección 3 (programación orientada a objetos) · Tutorial oficial de Python — 9. Clases
+
+### ✅ Proyectos `proyectos`
+
+1/1 habilidades ✅
+
+- [x] ✅ Proyectos pequeños `proyectos` — PCEP 1–4 – Repaso integrador
+- 🔧 Laboratorio: calculadora, adivinar y reporte → `laboratorio/proyectos`
+- 🔧 Editor: prueba tu código → `editor`
+
+📚 Para profundizar: Python Institute — Temario PCEP-30-02 completo (repaso integrador)
+
 ## ✅ 📊 Ciencia de datos `ciencia-datos`
 
 **Cobertura del temario: 100 %** (44 de 44 habilidades ✅)

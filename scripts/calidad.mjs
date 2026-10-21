@@ -13,14 +13,16 @@ const candidatos=[process.env.NAVEGADOR,'C:/Program Files (x86)/Microsoft/Edge/A
   '/usr/bin/google-chrome','/usr/bin/chromium','/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'].filter(Boolean);
 // Pistas en escalera: la del nivel 2 de cada generador debe usar los números (o datos) de su ejercicio (npm run principiante)
 try{execSync('node scripts/principiante.mjs',{cwd:raiz,stdio:'pipe'})}catch(e){console.log(String(e.stdout||'')+'\nFALLO: hay habilidades sin pistas con datos, mini-lección o gemelo (npm run principiante --detalle).');process.exit(1)}
+// Curso de Python: cada ejercicio y cada solución del laboratorio se ejecutan en Python de verdad (Pyodide)
+try{execSync('node scripts/python.mjs',{cwd:raiz,stdio:'pipe'})}catch(e){console.log(String(e.stdout||'')+'\nFALLO: npm run python (lo que imprime Python no coincide con alguna respuesta).');process.exit(1)}
 if(!process.argv.includes('--sin-build'))execSync('npm run build',{cwd:raiz,stdio:'ignore'});
 const servidor=spawn(`npx vite preview --port ${PUERTO} --strictPort`,{cwd:raiz,shell:true,stdio:'ignore'});
 const apagar=()=>{try{process.platform==='win32'?execSync(`taskkill /PID ${servidor.pid} /T /F`,{stdio:'ignore'}):servidor.kill()}catch(e){}};
 await new Promise(r=>setTimeout(r,3500));
 
 // Rutas: las fijas y la de cada materia y tema (del mismo registro que usa la app, leído del texto de temas.js)
-const RUTAS=['','logros','perfil','notas','notas/foto','mias','mias/nueva','acerca','ajustes-ia','repaso','estudio','cursos','cursos/ciberseguridad','cursos/excel','cursos/excel/hoja','cursos/excel/dinamica','cursos/excel/organizar','cursos/excel/escenarios/retos','estudio/matematicas/examen-final','estudio/matematicas/certificado','propuestas','propuestas/nueva','propuestas/admin','estudio/ingles','estudio/matematicas','estudio/ciencia-datos','estudio/ingles/hablar','cursos/ciberseguridad/retos','cursos/ciberseguridad/firewalls/retos','estudio/ingles/hablar-escuchar/retos','estudio/lectura','estudio/matematicas/algebra-basica'];
-for(const [area,mat] of [['cursos','ciberseguridad'],['cursos','excel'],['estudio','ingles'],['estudio','matematicas'],['estudio','ciencia-datos']]){
+const RUTAS=['','logros','perfil','notas','notas/foto','mias','mias/nueva','acerca','ajustes-ia','repaso','estudio','cursos','cursos/ciberseguridad','cursos/excel','cursos/excel/hoja','cursos/excel/dinamica','cursos/excel/organizar','cursos/excel/escenarios/retos','estudio/matematicas/examen-final','estudio/matematicas/certificado','propuestas','propuestas/nueva','propuestas/admin','estudio/ingles','estudio/matematicas','estudio/ciencia-datos','estudio/ingles/hablar','cursos/ciberseguridad/retos','cursos/ciberseguridad/firewalls/retos','estudio/ingles/hablar-escuchar/retos','estudio/lectura','estudio/matematicas/algebra-basica','cursos/python','cursos/python/editor','cursos/python/laboratorio','cursos/python/laboratorio/bucles','cursos/python/laboratorio/t/suma-hasta','cursos/python/variables/l/variables'];
+for(const [area,mat] of [['cursos','ciberseguridad'],['cursos','excel'],['cursos','python'],['estudio','ingles'],['estudio','matematicas'],['estudio','ciencia-datos']]){
   const temas=(await import(pathToFileURL(join(raiz,'src','materias',mat||area,'temas.js')).href)).default;
   for(const t of temas)RUTAS.push(mat?`${area}/${mat}/${t.id}`:`${area}/${t.id}`);
 }

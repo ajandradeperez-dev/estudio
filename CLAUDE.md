@@ -448,6 +448,16 @@ Hoy cada teléfono guarda lo suyo (no hay cuentas) y se pasa de uno a otro con *
 - **Retos** (`retos.js`): una aplicación por tema y, en Escenarios, 4 escenarios de 4 fórmulas sobre la misma hoja (`excel-escenarios.js`: reporte de ventas, gastos personales, calificaciones, inventario con alertas) y un simulacro.
 - **Herramientas** (secciones): `hoja` (hoja libre con datos de ejemplo, barra de fórmulas y explicación de cada error; se guarda en `localStorage['ciberlab-excel']`), `dinamica` (simulador de tabla dinámica: filas, columnas, Suma/Cuenta/Promedio y filtro de mes) y `organizar` (ordenar, filtrar, formato condicional, barras de datos y validación).
 
+## 🐍 Curso de Python (`src/materias/python/`, área 💼 Cursos)
+
+De cero al nivel PCEP y lo básico de PCAP: 13 temas (primeros pasos → variables → operadores → condicionales → bucles → listas → diccionarios → funciones → cadenas → excepciones → archivos y módulos → clases → proyectos), 29 habilidades `pyc/…`, todas ✅.
+
+- **Generadores** (`generadores/python-1/2/3.js`, piezas en `python-base.js`): `predice` (¿qué imprime?), `completa` (hueco `___`), `encuentraError` (línea o nombre del error) y `ordenar` (líneas con «⇥» de sangría), con números al azar y `traza` con los valores del ejercicio. Cada pregunta lleva `py:{codigo, salida | error, arreglo?, entrada?}`: **`npm run python` la ejecuta en Pyodide (Node) y falla si Python no imprime exactamente la respuesta** (también corre las 39 soluciones del laboratorio contra sus pruebas y verifica que el código inicial no las pase). `calidad` lo llama. La clave del ejercicio incluye el código (`conClave`).
+- **Python en el teléfono** (`nucleo/python/`): `worker.js` (Web Worker con **Pyodide 0.29.5** desde jsDelivr; la 314 ya no carga con importScripts en un worker clásico; el service worker lo guarda en la caché `pyodide`), `runner.js` (`cargarPython`, `ejecutar(codigo,{entrada, limite})`, `detener()`: un bucle infinito se corta a los 6 s terminando el worker), `errores.js` (cada error de Python explicado en español con su línea), `editor.js` (textarea monoespaciado, barra `: ( ) [ ] { } " ' = # ⇥ _ ,`, sangría automática tras «:», resultado) y `juez.js` (arma un programa con las pruebas; cada resultado sale en una línea `@@{json}`; los float se comparan con tolerancia). Pyodide se descarga solo al abrir el editor o el laboratorio.
+- **Secciones**: `editor` (▶️ editor libre con ejemplos y entrada para input(); el código se recuerda en `localStorage['ciberlab-python']`) y `laboratorio` (rutas `laboratorio`, `laboratorio/<tema>`, `laboratorio/t/<id>`): «▶ Probar» (visibles), «✅ Enviar» (también ocultas, dice qué caso falló), «💡 Pista 1/3», «🤷 No sé cómo empezar» y el gemelo. Resolver da 20 XP (10 con pista) la primera vez y se guarda en `materias.python.extra.lab[id]`. Los ejercicios están en `laboratorio.js` (ids en el progreso: no los cambies).
+- **Retos**: por tema un caso práctico (escenario), «Aplica» (aplicación), un simulacro de 12 y el enlace al laboratorio (`PYTHON` en `retos.js`).
+- **Pruebas**: `npm run python` y `node scripts/python-ui.mjs` (editor, error explicado, bucle infinito, input, laboratorio con pistas, «No sé», enviar y caso fallido; necesita internet la primera vez).
+
 ## Definición de terminado (estándar de calidad del contenido)
 
 `src/nucleo/terminado.js` (sin DOM) define cuándo algo está ✅; `npm run revisar` lo aplica a todo, escribe **`src/contenido/estado.json`** (lo lee la app: `nucleo/contenido.js`) y **`src/contenido/PLAN.md`** (no se edita a mano), y **falla si una habilidad marcada `completa:true` en su `temas.js` no cumple los 10 puntos**.
@@ -517,7 +527,10 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | Errores de dedo: `casiIgual` (nomonal → nominal) en respuestas en español | ✅ terminado |
 | Parte 4 · Experiencia: «🧭 Tu plan» en la materia (habilidades que faltan, tiempo estimado ~20 min por habilidad nueva y ~10 si ya se empezó, tema en curso), tiempo por tema en la lista, tarjeta «🎉 ¡Terminaste el tema!» con resumen, simulacro y el tema que sigue (o el examen final), y Repasar con lo débil primero (más fallos y menor rating) sin perder el intercalado | ✅ terminado |
 | Cuaderno · borrar notas (🗑️ en la nota, «⋯» y «☑️ Seleccionar» en la lista, confirmación propia, Deshacer 8 s, fotos y enlaces limpios; `go()` espera el regreso de una capa antes de navegar) | ✅ terminado |
-| P3b · Inglés: metas extra por nivel | ⏳ siguiente |
+| Parte A · Ayuda que enseña (pistas en escalera, «No sé cómo empezar», mini-lección, ejemplos que se desvanecen, «Dónde se desvió», Gauss explicado) | ✅ terminado |
+| Parte B · 🐍 Curso de Python (13 temas, 29 habilidades ✅, editor y laboratorio con Pyodide, 39 ejercicios con juez) | ✅ terminado |
+| Parte C · 📚 Lectura con libros libres | ⏳ siguiente |
+| P3b · Inglés: metas extra por nivel | pendiente |
 | 4 · Inglés: completar A1 y A2, luego B1 | reemplazado por P3 y P6 |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | reemplazado por P3 y P6 |
 | 6 · Inglés B2 y temas avanzados | reemplazado por P3 y P6 |
@@ -546,6 +559,7 @@ npm run preview   # sirve dist/ en http://localhost:4173 (puerto fijo)
 npm run revisar   # método, jerarquía, contenido de habla, migración del progreso, los 50 generadores y Mis materias (esquema, plan, fixtures) (~10 s)
 npm run cuaderno  # borrar notas: una, varias, deshacer, fotos fuera de IndexedDB (la compartida se queda) y Atrás cancela (--capturas <dir> [--oscuro])
 npm run principiante # cada habilidad lista para un principiante: mini-lección, nivel 1, 3 pistas con datos, gemelo (--detalle)
+npm run python    # el curso de Python ejecutado en Pyodide: cada ejercicio generado y cada solución del laboratorio
 npm run atras     # botón Atrás nivel por nivel (6 niveles y 7 Atrás, enlace directo, recarga, otras ramas) en teléfono y escritorio
 npm run calidad   # 360 y 412 px, claro y oscuro: textos encimados, scroll horizontal y toques < 44 px en Aprender, Logros, Perfil, Notas y cada materia y tema (compila y levanta su propio preview; necesita Chrome o Edge)
 ```

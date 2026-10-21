@@ -437,3 +437,17 @@ body{padding-top:var(--franja,0px)}
 .nota-item.elegida{border-color:var(--primary);background:var(--primary-soft,var(--surface))}
 .nota-seleccion{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center;justify-content:space-between;padding:var(--s2) var(--s3);margin-bottom:var(--s2);border-radius:var(--r2);background:var(--surface);border:2px solid var(--line);box-shadow:var(--sombra)}
 .nota-seleccion .row{flex-wrap:wrap;gap:var(--s2)}
+
+/* Curso de Python: editor, salida, errores y resultados del juez */
+.py-editor{display:block;width:100%;box-sizing:border-box;min-height:180px;padding:var(--s3);border:2px solid var(--line);border-radius:var(--r2);background:var(--surface);color:var(--ink);font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;tab-size:4;white-space:pre;overflow:auto;resize:vertical}
+.py-editor:focus{outline:3px solid var(--primary);outline-offset:1px}
+.py-teclas{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.py-teclas .tecla{min-width:44px;min-height:44px;font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:800}
+.py-salida{margin:0 0 var(--s3);padding:var(--s3);border-radius:var(--r2);background:var(--surface);border:2px solid var(--line);font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.py-error{padding:var(--s3);border-radius:var(--r2);background:var(--error-soft,var(--warn-soft));border:2px solid var(--error);margin-bottom:var(--s3);overflow-wrap:anywhere}
+.py-error p{margin:0 0 6px}
+.py-casos,.py-ejemplos{list-style:none;padding:0;margin:0 0 var(--s3);display:flex;flex-direction:column;gap:6px}
+.py-caso{display:flex;gap:8px;padding:8px var(--s3);border-radius:var(--r2);background:var(--surface);border:2px solid var(--line);overflow-wrap:anywhere;min-width:0}
+.py-caso.bien{border-color:var(--ok)}
+.py-caso.mal{border-color:var(--error)}
+.py-ejemplos code,.py-caso code{overflow-wrap:anywhere}

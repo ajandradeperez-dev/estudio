@@ -49,6 +49,20 @@ const CD={estadistica:['est/variables','est/muestreo','est/frecuencias','est/ten
   inferencia:['inf/muestral','inf/ic','inf/hipotesis','inf/valor-p','inf/chi','inf/regresion','inf/multiple'],
   'python-pandas':['py/tipos','py/listas','py/control','py/funciones','py/pandas-basico','py/pandas','py/filtrar','py/agrupar','py/faltantes','viz/barras','viz/que-grafica'],
   'machine-learning':['ml/tipos','ml/validacion','ml/regresion','ml/logistica','ml/knn','ml/arboles','ml/metricas','ml/sobreajuste','ml/etica']};
+// Curso de Python: tema → [título, generadores, caso práctico]
+const PYTHON={'primeros-pasos':['Primeros pasos',['pyc/print','pyc/errores-comunes'],'Tu primer programa en el trabajo'],
+  variables:['Variables, tipos e input',['pyc/variables','pyc/tipos','pyc/input'],'Un formulario de registro'],
+  operadores:['Operadores y f-strings',['pyc/aritmetica','pyc/fstrings'],'El ticket de una tienda'],
+  condicionales:['Condicionales',['pyc/if-else','pyc/logica'],'Reglas de acceso a un evento'],
+  bucles:['Bucles',['pyc/while','pyc/for-range','pyc/break-continue'],'Procesar las ventas del día'],
+  listas:['Listas y tuplas',['pyc/listas','pyc/rebanadas','pyc/tuplas'],'Las calificaciones de un grupo'],
+  diccionarios:['Diccionarios y conjuntos',['pyc/diccionarios','pyc/conjuntos'],'El inventario de una papelería'],
+  funciones:['Funciones',['pyc/funciones','pyc/parametros','pyc/alcance'],'Una calculadora de precios'],
+  cadenas:['Cadenas a fondo',['pyc/metodos-cadena','pyc/recorrer-cadenas'],'Limpiar una lista de clientes'],
+  excepciones:['Errores y excepciones',['pyc/try-except','pyc/tipos-error'],'Un programa que no se cae'],
+  archivos:['Archivos y módulos',['pyc/archivos','pyc/modulos'],'Guardar y leer un registro'],
+  clases:['Clases y objetos',['pyc/clases','pyc/metodos'],'El sistema de una cuenta bancaria'],
+  proyectos:['Proyectos',['pyc/proyectos','pyc/funciones','pyc/diccionarios','pyc/for-range'],'Agenda y reporte de calificaciones']};
 const ALGEBRA=['alg/expresiones','alg/productos-notables','alg/factorizacion','alg/fracciones-algebraicas','alg/ecuacion-lineal','alg/cuadratica','alg/radicales-absoluto','alg/desigualdad','alg/desigualdad-no-lineal','alg/sistema-2x2','alg/sistema-3x3','alg/exponentes'];
 
 export const RETOS=[
@@ -296,7 +310,17 @@ export const RETOS=[
   ...[['presentarte','Presentarte en una reunión'],['rutina-trabajo','Contar tu rutina de trabajo'],['pedir-comprar','Pedir y comprar'],['ciudad-viajes','Moverte en otra ciudad'],
     ['contar-pasado','Contar lo que pasó'],['trabajo-ti','Una conversación de trabajo en TI']].map(([u,t],i)=>
     ({id:`en-jefe-${u}`,materia:'ingles',tema:'hablar-escuchar',titulo:t,profundidad:'escenario',dificultad:Math.min(5,1+Math.floor(i/1.5)),desc:'El jefe de la unidad: una tarea real hablando en inglés.',ir:`estudio/ingles/hablar/u/${u}`})),
-  {id:'en-conversacion-ia',materia:'ingles',tema:'hablar-escuchar',titulo:'Conversación libre con IA',profundidad:'escenario',dificultad:4,desc:'Habla de lo que quieras (necesita tu clave de IA).',ir:'estudio/ingles/hablar/ia'}
+  {id:'en-conversacion-ia',materia:'ingles',tema:'hablar-escuchar',titulo:'Conversación libre con IA',profundidad:'escenario',dificultad:4,desc:'Habla de lo que quieras (necesita tu clave de IA).',ir:'estudio/ingles/hablar/ia'},
+  // ---------- Curso de Python: por tema, un caso práctico (aplicación y escenario de sus habilidades), un simulacro
+  // y el laboratorio («escribe la función» con pruebas) ----------
+  ...Object.entries(PYTHON).flatMap(([t,[titulo,gens,caso]])=>[
+    {id:`py-caso-${t}`,materia:'python',tema:t,titulo:caso,profundidad:'escenario',dificultad:3,habilidades:gens,
+     desc:`Un caso con contexto real que junta ${gens.length>1?'las habilidades':'lo'} de «${titulo}».`,crear:()=>gens.flatMap(g=>[con(caso,crear(g,4)),con(caso,crear(g,5))]).filter(Boolean)},
+    {id:`py-aplica-${t}`,materia:'python',tema:t,titulo:`Aplica: ${titulo}`,profundidad:'aplicacion',dificultad:2,habilidades:gens,
+     desc:'Problemas de aplicación de nivel intermedio.',crear:()=>gens.flatMap(g=>[crear(g,3),crear(g,4)]).filter(Boolean)},
+    {id:`py-simulacro-${t}`,materia:'python',tema:t,titulo:`Simulacro de ${titulo}`,profundidad:'escenario',dificultad:3,simulacro:true,
+     desc:'12 preguntas con tiempo y sin pistas, como un examen.',crear:simulacro(gens)},
+    {id:`py-lab-${t}`,materia:'python',tema:t,titulo:`Laboratorio: ${titulo}`,profundidad:'escenario',dificultad:3,desc:'Escribe funciones completas que se prueban con Python de verdad.',ir:`cursos/python/laboratorio/${t}`}])
 ].filter(r=>r.ir||r.crear);
 
 export const reto=id=>RETOS.find(r=>r.id===id)||null;

@@ -69,6 +69,10 @@ export default defineConfig({
         // OCR sin IA (Tesseract.js): el motor y el idioma se bajan de jsDelivr la primera vez que se usan y quedan guardados
         {urlPattern:({url})=>url.origin==='https://cdn.jsdelivr.net'&&/tesseract/.test(url.pathname),handler:'CacheFirst',
          options:{cacheName:'ocr',expiration:{maxEntries:20,maxAgeSeconds:60*60*24*365},cacheableResponse:{statuses:[0,200]}}},
+        // Curso de Python: Pyodide (Python en el navegador) se baja de jsDelivr la primera vez que se abre el editor o el
+        // laboratorio y queda guardado para usarse sin internet
+        {urlPattern:({url})=>url.origin==='https://cdn.jsdelivr.net'&&url.pathname.startsWith('/pyodide/'),handler:'CacheFirst',
+         options:{cacheName:'pyodide',expiration:{maxEntries:40,maxAgeSeconds:60*60*24*365},cacheableResponse:{statuses:[0,200]}}},
         {urlPattern:({url})=>url.origin==='https://fonts.googleapis.com',handler:'StaleWhileRevalidate',
          options:{cacheName:'fuentes-css',cacheableResponse:{statuses:[0,200]}}},
         {urlPattern:({url})=>url.origin==='https://fonts.gstatic.com',handler:'CacheFirst',

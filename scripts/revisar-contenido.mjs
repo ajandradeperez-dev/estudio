@@ -419,8 +419,8 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
       nRetos+=l.length}
   }
   const retosGen=T.retosPorGenerador(RETOS);
-  const NOMBRES={ciberseguridad:'💼 Curso · 🛡️ Ciberseguridad',excel:'💼 Curso · 📊 Excel',ingles:'🇺🇸 Inglés (MCER A1→B2, método de Nation)',matematicas:'➗ Matemáticas',['ciencia-datos']:'📊 Ciencia de datos'};
-  const ORDEN=['matematicas','ingles','ciberseguridad','excel','ciencia-datos'];
+  const NOMBRES={ciberseguridad:'💼 Curso · 🛡️ Ciberseguridad',excel:'💼 Curso · 📊 Excel',python:'💼 Curso · 🐍 Python (PCEP y básico de PCAP)',ingles:'🇺🇸 Inglés (MCER A1→B2, método de Nation)',matematicas:'➗ Matemáticas',['ciencia-datos']:'📊 Ciencia de datos'};
+  const ORDEN=['matematicas','ingles','ciberseguridad','excel','python','ciencia-datos'];
   const estado={generado:new Date().toISOString().slice(0,10),materias:{}};
   const bt='`';
   let plan=['# Plan de contenido','','Árbol completo del contenido (temarios de referencia en la Parte 2 del estándar). **Se genera con `npm run revisar`** a partir de cada',
@@ -488,7 +488,7 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
   if(l.length!==2||l[0].temas.length!==2||l[1].temas[0].subtemas[0]!=='Derivación implícita')mal(e,'el lector de temarios no reconoce «Unidad N» con «N.M» y letras');
   if(T.leerTemario('- A\n- B\n- C')[0]?.temas.length!==3||T.leerTemario('1. X\n1.1 Y\n2. Z')[1]?.titulo!=='Z')mal(e,'el lector de temarios no reconoce viñetas o numeración de dos niveles');
   // emparejamiento con el catálogo (de los temas.js de cada materia)
-  const cat=[];for(const m of ['ciberseguridad','excel','ingles','matematicas','ciencia-datos']){const t=(await import(pathToFileURL(join(raiz,m,'temas.js')).href)).default;
+  const cat=[];for(const m of ['ciberseguridad','excel','python','ingles','matematicas','ciencia-datos']){const t=(await import(pathToFileURL(join(raiz,m,'temas.js')).href)).default;
     for(const x of t)for(const n of x.nodos.filter(n=>n.id))cat.push({materia:m,id:n.id,titulo:n.titulo||n.id.replace(/-/g,' ')})}
   for(const [q,esperado] of [['Producto escalar','producto-punto'],['Subnetting','subredes-cidr'],['Derivación implícita','regla-cadena'],['Media, mediana y moda','tendencia-central'],['Past simple','pasado-simple']])
     if(EM.emparejar(q,cat)?.id!==esperado)mal(e,`«${q}» debería emparejar con ${esperado} (dio ${EM.emparejar(q,cat)?.id})`);

@@ -1198,6 +1198,212 @@
     }
    }
   },
+  "python": {
+   "estado": "completo",
+   "cobertura": {
+    "completas": 29,
+    "total": 29,
+    "pct": 100
+   },
+   "temas": {
+    "primeros-pasos": {
+     "estado": "completo",
+     "completas": 2,
+     "total": 2,
+     "faltan": []
+    },
+    "variables": {
+     "estado": "completo",
+     "completas": 3,
+     "total": 3,
+     "faltan": []
+    },
+    "operadores": {
+     "estado": "completo",
+     "completas": 2,
+     "total": 2,
+     "faltan": []
+    },
+    "condicionales": {
+     "estado": "completo",
+     "completas": 2,
+     "total": 2,
+     "faltan": []
+    },
+    "bucles": {
+     "estado": "completo",
+     "completas": 3,
+     "total": 3,
+     "faltan": []
+    },
+    "listas": {
+     "estado": "completo",
+     "completas": 3,
+     "total": 3,
+     "faltan": []
+    },
+    "diccionarios": {
+     "estado": "completo",
+     "completas": 2,
+     "total": 2,
+     "faltan": []
+    },
+    "funciones": {
+     "estado": "completo",
+     "completas": 3,
+     "total": 3,
+     "faltan": []
+    },
+    "cadenas": {
+     "estado": "completo",
+     "completas": 2,
+     "total": 2,
+     "faltan": []
+    },
+    "excepciones": {
+     "estado": "completo",
+     "completas": 2,
+     "total": 2,
+     "faltan": []
+    },
+    "archivos": {
+     "estado": "completo",
+     "completas": 2,
+     "total": 2,
+     "faltan": []
+    },
+    "clases": {
+     "estado": "completo",
+     "completas": 2,
+     "total": 2,
+     "faltan": []
+    },
+    "proyectos": {
+     "estado": "completo",
+     "completas": 1,
+     "total": 1,
+     "faltan": []
+    }
+   },
+   "habilidades": {
+    "print": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "errores-comunes": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "variables": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "tipos": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "input": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "aritmetica": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "fstrings": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "if-else": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "logica": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "while": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "for-range": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "break-continue": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "listas": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "rebanadas": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "tuplas": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "diccionarios": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "conjuntos": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "funciones": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "parametros": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "alcance": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "metodos-cadena": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "recorrer-cadenas": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "try-except": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "tipos-error": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "archivos": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "modulos": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "clases": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "metodos": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "proyectos": {
+     "estado": "completa",
+     "faltan": []
+    }
+   }
+  },
   "ciencia-datos": {
    "estado": "completo",
    "cobertura": {

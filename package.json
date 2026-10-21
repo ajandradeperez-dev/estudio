@@ -11,10 +11,12 @@
     "calidad": "node scripts/calidad.mjs",
     "atras": "node scripts/atras.mjs",
     "cuaderno": "node scripts/cuaderno.mjs",
-    "principiante": "node scripts/principiante.mjs"
+    "principiante": "node scripts/principiante.mjs",
+    "python": "node scripts/python.mjs"
   },
   "devDependencies": {
     "playwright-core": "1.64.0",
+    "pyodide": "0.29.5",
     "vite": "^8.3.4",
     "vite-plugin-pwa": "^2.0.0"
   },

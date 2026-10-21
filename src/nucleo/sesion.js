@@ -210,7 +210,7 @@ export function crearSesion(cfg){
   const terminar=()=>{st.fase='fin';cerrarHoja();clearInterval(reloj);sonar.fin()};
   function avanzar(){
     cerrarHoja();
-    st.actual=st.colaGemelo||cfg.siguiente(st);st.colaGemelo=null;st.e={};st.pista=0;st.nose=false;st.t0=Date.now();
+    st.actual=st.colaGemelo||cfg.siguiente(st);st.colaGemelo=null;st.e={};st.pista=0;st.nose=false;st.v2=1;st.v3=1;st.t0=Date.now();
     if(!st.actual)terminar();else st.fase='pregunta';
   }
 
@@ -255,7 +255,12 @@ ${htmlAyuda(p)}</div>${pie()}</div>`;
     if(p.saltable&&cfg.saltar)out.push(`<div class="row centro" style="margin-top:12px"><button type="button" class="btn ghost btn-chico" id="ses-saltar">Ya lo sé, ir a practicar</button></div>`);
     if(!conPistas(p))return out.join('');
     const e=escalera(p);
-    const pasosHtml=pasos=>`<ol class="pasos-proc">${pasos.map((x,i)=>htmlPaso(x,i,{acciones:false})).join('')}</ol><p class="hoja-linea"><b>Respuesta:</b> ${conFormulas(String(p.respuesta??''))}</p>`;
+    // Pasos de uno en uno: «Siguiente paso (n/m)» y «Ver todos» (k: 'v2' pista 2 · 'v3' solución)
+    const deUno=(pasos,k,{respuesta=true}={})=>{const n=Math.min(pasos.length,st[k]||1),todos=n>=pasos.length;
+      return `<ol class="pasos-proc">${pasos.slice(0,n).map((x,i)=>htmlPaso(x,i,{acciones:false})).join('')}</ol>
+${todos?(respuesta?`<p class="hoja-linea"><b>Respuesta:</b> ${conFormulas(String(p.respuesta??''))}</p>`:'')
+  :`<div class="row ses-pasos-nav"><button type="button" class="btn ghost btn-chico" data-ver-todos="${k}">Ver todos</button><button type="button" class="btn btn-chico" data-sig-paso="${k}">Siguiente paso (${n+1}/${pasos.length})</button></div>`}`};
+    const pasosHtml=pasos=>deUno(pasos,'v3');
     if(st.nose&&e){
       out.push(`<div class="ayuda-caja"><p class="etiqueta-actividad">📖 Así se resuelve, paso a paso</p>${pasosHtml(e.pasos)}
 <p class="nota">No pasa nada: esto cuenta como visto, no como error. Ahora intenta uno parecido tú solo.</p>
@@ -264,7 +269,7 @@ ${st.noseSeguidos>=2&&cfg.minileccion?`<p class="hoja-linea">¿Lo vemos desde el
     }
     if(st.pista&&e){
       const niveles=[`<p class="pista"><b>💡 Idea:</b> ${conFormulas(e.idea)}</p>`];
-      if(st.pista>=2&&e.primero)niveles.push(`<div class="pista">${conFormulas(e.primero)}</div>`);
+      if(st.pista>=2&&e.primeros?.length)niveles.push(`<div class="pista pista-pasos">${e.partimos?`<p><b>Partimos de:</b> ${conFormulas(e.partimos)}</p>`:''}${deUno(e.primeros,'v2',{respuesta:false})}</div>`);
       if(st.pista>=3)niveles.push(`<div class="ayuda-caja"><p class="etiqueta-actividad">📖 Solución completa</p>${pasosHtml(e.pasos)}${gemeloDe(p)?`<button type="button" class="btn ancho" id="ses-ahora-tu">Ahora tú: uno parecido</button>`:''}</div>`);
       out.push(niveles.join(''),`<p class="nota">Con pista cuenta como práctica. Para dominarlo, resuelve el gemelo sin ayuda.</p>`);
     }else if(st.pista&&p.pista)out.push(`<p class="pista">💡 ${conFormulas(p.pista)} <span class="nota">Con pista cuenta como práctica; para dominarlo, resuélvelo sin ayuda.</span></p>`);
@@ -385,10 +390,12 @@ ${st.noseSeguidos>=2&&cfg.minileccion?`<p class="hoja-linea">¿Lo vemos desde el
           inp.value=inp.value.slice(0,ini)+k+inp.value.slice(inp.selectionEnd??ini);inp.focus();inp.setSelectionRange?.(ini+k.length,ini+k.length);inp.dispatchEvent(new Event('input'))}
         return true;
       }
+      if(t.dataset.sigPaso){st[t.dataset.sigPaso]=(st[t.dataset.sigPaso]||1)+1;repintar();document.querySelector(`#ses-cuerpo .pasos-proc li:nth-child(${st[t.dataset.sigPaso]})`)?.scrollIntoView({block:'nearest'});return true}
+      if(t.dataset.verTodos){st[t.dataset.verTodos]=99;repintar();return true}
       if(t.id==='ses-pista'){st.pista++;repintar();if(st.pista>=2)document.querySelector('#ses-cuerpo .pista:last-of-type,#ses-cuerpo .ayuda-caja')?.scrollIntoView({block:'nearest'});return true}
       // «No sé cómo empezar»: la solución completa y luego un gemelo; no es un fallo (no se registra respuesta)
       if(t.id==='ses-nosecomo'){st.nose=true;st.noseSeguidos++;cfg.visto?.(p);repintar();document.querySelector('#ses-cuerpo .ayuda-caja')?.scrollIntoView({block:'start'});return true}
-      if(t.id==='ses-ahora-tu'){const g=gemeloDe(p);if(g){st.actual=g;st.e={};st.pista=0;st.nose=false;st.t0=Date.now()}else{st.nose=false;avanzar()}repintar();window.scrollTo(0,0);return true}
+      if(t.id==='ses-ahora-tu'){const g=gemeloDe(p);if(g){st.actual=g;st.e={};st.pista=0;st.nose=false;st.v2=1;st.v3=1;st.t0=Date.now()}else{st.nose=false;avanzar()}repintar();window.scrollTo(0,0);return true}
       if(t.id==='ses-ia'&&cfg.ia){st.cargandoIA=true;repintar();
         try{const q=await cfg.ia(st);if(q){st.actual=q;st.e={};st.pista=0;st.nose=false;st.t0=Date.now()}}catch(e){}
         st.cargandoIA=false;repintar();return true}

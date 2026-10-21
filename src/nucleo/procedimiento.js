@@ -9,11 +9,31 @@ import {hablar,callar,soporte} from './voz.js';
 
 // Acepta pasos viejos en texto (p. ej. de la IA) además de {que, como, porque}
 export const normalPaso=x=>typeof x==='string'?{que:'',como:x,porque:''}:x;
+/* Texto y fórmula separados: en «como», cada fórmula larga (o con «=») sale de la frase y va en su propio renglón,
+   centrada y en modo display, dentro de una caja que se desplaza de lado si no cabe (nunca se parte a la mitad).
+   Las fórmulas cortas se quedan en la frase, sin cortarse (white-space:nowrap en CSS). p.formula (opcional) es una
+   fórmula display propia del paso (p. ej. un \begin{aligned} con las cuentas en columnas). */
+const RE_FORMULA=/\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]/g;
+const larga=f=>f.replace(/\\[a-zA-Z]+|[{}\s]/g,'').length>16||/=|\\Rightarrow|\\begin/.test(f);
+export function separarFormulas(como){
+  const partes=[];let ultimo=0,m;const txt=String(como??'');RE_FORMULA.lastIndex=0;
+  while((m=RE_FORMULA.exec(txt))){const f=m[1]??m[2],display=m[2]!==undefined||larga(f);
+    if(!display)continue;
+    const antes=txt.slice(ultimo,m.index);if(antes.replace(/<br\s*\/?>/g,'').trim())partes.push({t:'texto',x:antes});
+    partes.push({t:'formula',x:f});ultimo=m.index+m[0].length}
+  const resto=txt.slice(ultimo);if(resto.replace(/<br\s*\/?>/g,'').trim())partes.push({t:'texto',x:resto});
+  return partes;
+}
+export const htmlFormula=f=>`<div class="formula-caja" tabindex="0">${conFormulas(`\\[${f}\\]`)}</div>`;
+export function htmlComo(p){
+  const partes=separarFormulas(p.como);
+  return `${partes.map(x=>x.t==='formula'?htmlFormula(x.x):`<p class="paso-texto">${conFormulas(x.x.replace(/^\s*(<br\s*\/?>)+|(<br\s*\/?>)+\s*$/g,'').replace(/^[\s:⇒,;]+|[\s⇒,;]+$/g,''))}</p>`).join('')}${p.formula?htmlFormula(p.formula):''}`;
+}
 export function htmlPaso(x,i,{acciones=true,nota=true}={}){
   const p=normalPaso(x);
   return `<li class="paso-proc" data-paso="${i}">
-${p.que?`<p class="paso-que">${conFormulas(p.que)}</p>`:''}${p.como?`<div class="paso-como">${conFormulas(p.como)}</div>`:''}
-${p.porque?`<p class="paso-porque">💡 ${conFormulas(p.porque)}</p>`:''}${p.ojo?`<p class="paso-ojo">⚠️ <b>Ojo:</b> ${conFormulas(p.ojo)}</p>`:''}
+${p.que?`<p class="paso-que">${conFormulas(p.que)}</p>`:''}${p.como||p.formula?`<div class="paso-como">${htmlComo(p)}</div>`:''}
+${p.porque?`<details class="paso-porque"><summary>¿Por qué?</summary><p>${conFormulas(p.porque)}</p></details>`:''}${p.ojo?`<p class="paso-ojo">⚠️ <b>Ojo:</b> ${conFormulas(p.ojo)}</p>`:''}
 ${acciones?`<div class="paso-acciones">${soporte.hablar?`<button type="button" class="btn-icono" data-leer-paso="${i}" aria-label="Escuchar el paso ${i+1}">🔊</button>`:''}${nota?`<button type="button" class="btn-icono" data-nota-paso="${i}" aria-label="Guardar el paso ${i+1} en Mis notas">📝</button>`:''}</div>`:''}</li>`;
 }
 export const htmlPasos=(pasos,opc)=>`<ol class="pasos-proc">${(pasos||[]).map((x,i)=>htmlPaso(x,i,opc)).join('')}</ol>`;
@@ -41,7 +61,7 @@ ${p.diagrama?`<div class="diagrama-caja">${p.diagrama}</div>`:''}
 <ol class="pasos-proc">${pasos.slice(0,vistos).map((x,i)=>htmlPaso(x,i,{acciones:true,nota:!!guardar})).join('')}</ol>
 ${vistos<pasos.length?`<p class="nota">¿Cuál crees que es el paso ${vistos+1}? Piénsalo y luego míralo.</p>`:''}
 </div>
-<footer class="proc-pie">${vistos<pasos.length?`<button type="button" class="btn ghost" data-todo>Ver todo</button><button type="button" class="btn" data-sig>Siguiente paso (${vistos+1}/${pasos.length})</button>`
+<footer class="proc-pie">${vistos<pasos.length?`<button type="button" class="btn ghost" data-todo>Ver todos</button><button type="button" class="btn" data-sig>Siguiente paso (${vistos+1}/${pasos.length})</button>`
   :`${guardar?`<button type="button" class="btn ghost" data-nota-todo>📝 Guardar todo</button>`:''}<button type="button" class="btn" data-cerrar>Entendido</button>`}</footer></div>`;
     (f.querySelector('[data-sig]')||f.querySelector('[data-cerrar]:not(.btn-icono)'))?.focus({preventScroll:true});
     const ult=f.querySelector('.pasos-proc li:last-child');if(ult&&avanzo)ult.scrollIntoView({block:'nearest',behavior:'smooth'});};

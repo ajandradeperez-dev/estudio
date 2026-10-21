@@ -29,7 +29,7 @@ const tendencia={
     if(tipo==='mediana'){const v=mediana(a),sinOrdenar=k%2?a[(k-1)/2]:(a[k/2-1]+a[k/2])/2;
       return {enunciado:`Datos: <b>${lista(a)}</b>. ¿Cuál es la mediana?`,respuesta:String(v),verificar:e=>igualNum(e,v),
         pasos:[paso('Ordena de menor a mayor',ordenar(a).map((x,i)=>(k%2?i===(k-1)/2:i===k/2-1||i===k/2)?marca(x):x).join(', '),'La mediana es el valor del medio, y solo tiene sentido con los datos ordenados.',{ojo:'No tomes el del medio de la lista original.'}),
-          paso('Busca la posición del medio',k%2?`n = ${k} (impar) → posición \\(\\tfrac{${k}+1}{2} = ${(k+1)/2}\\)`:`n = ${k} (par) → posiciones ${k/2} y ${k/2+1}`,k%2?'Con n impar hay un solo dato en el medio.':'Con n par hay dos datos en el medio.'),
+          paso('Busca la posición del medio',k%2?`Hay ${k} datos (impar): el del medio está en la posición \\(\\tfrac{${k}+1}{2} = ${(k+1)/2}\\)`:`n = ${k} (par) → posiciones ${k/2} y ${k/2+1}`,k%2?'Con n impar hay un solo dato en el medio.':'Con n par hay dos datos en el medio.'),
           final(k%2?'Ese es la mediana':'Promedia los dos del medio',k%2?`Mediana = <b>${v}</b>`:`\\(\\dfrac{${ordenar(a)[k/2-1]} + ${ordenar(a)[k/2]}}{2} = ${c(v)}\\)`,'La mitad de los datos queda por debajo y la otra mitad por encima.',String(v))],
         errores:[{valor:String(sinOrdenar),si:e=>igualNum(e,sinOrdenar)&&sinOrdenar!==v,por:'Primero hay que ordenar los datos de menor a mayor.'}],regla:R,pista:'Ordénalos primero.'}}
     const fr={};a.forEach(x=>fr[x]=(fr[x]||0)+1);const v=+Object.entries(fr).sort((x,y)=>y[1]-x[1])[0][0];

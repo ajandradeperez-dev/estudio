@@ -44,7 +44,6 @@ export function datosDePartida(p){
   const marcado=e.match(/<(b|code|span lang="en")[^>]*>[\s\S]*?<\/\1>|«[^»]{1,80}»/g);
   return marcado?marcado.slice(0,3).join(' · '):'';
 }
-const htmlPaso=(x,i)=>`<b>Paso ${i+1}${x.que?` · ${x.que}`:''}:</b> ${x.como||''}${x.porque?`<br><span class="nota">${x.porque}</span>`:''}`;
 
 const norm=t=>plano(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
 // ¿El paso solo repite el enunciado? (p. ej. «Recuerda el dato: <la misma pregunta>»): no ayuda a quien no sabe
@@ -76,9 +75,12 @@ function oracionClave(p){
   return pun?mejor:null;
 }
 
-// Los 3 niveles de pista de una pregunta: {idea, primero, pasos, tipo} (null si no se puede armar).
+// Los 3 niveles de pista de una pregunta: {idea, primeros, partimos, primero, pasos, tipo} (null si no se puede armar).
+//  primeros: los pasos que muestra el nivel 2 (de uno en uno, con «Siguiente paso»); partimos: «Partimos de: …» (o null);
+//  primero: todo el nivel 2 en texto (para las comprobaciones).
 //  - El nivel 2 es el primer paso; si ese paso todavía no usa los datos (p. ej. «Fórmula: …»), agrega los siguientes hasta
 //    el primero que los sustituye, sin llegar nunca al último (que da la respuesta). Si aun así no los usa: «Partimos de: …».
+//    Un generador puede decir cuántos pasos son con `pista2` (Gauss: la primera eliminación completa).
 //  - Lectura: la oración del texto donde está la respuesta.
 //  - Recordar un dato (el paso solo repite la pregunta): la regla y una señal de la respuesta (palabras e iniciales).
 export function escalera(p){
@@ -87,18 +89,20 @@ export function escalera(p){
   const [ideaPropia,primeroPropio]=p.escalera||[];
   const plan=pasos.length>1?` El plan: ${pasos.map((x,i)=>`${i+1}) ${x.que||'paso '+(i+1)}`).join(' → ')}.`:'';
   const idea=ideaPropia||`${p.idea||p.pista||'Piensa qué te piden y qué datos tienes.'}${plan}`;
-  if(primeroPropio)return {idea,primero:primeroPropio,pasos,tipo:'propia'};
-  if(!pasos.length)return {idea,primero:null,pasos,tipo:'propia'};
+  const listo=(primeros,tipo,partimos=null)=>({idea,primeros,partimos,pasos,tipo,primero:primeros.length?`${partimos?`Partimos de: ${partimos} `:''}${primeros.map(x=>`${x.que||''} ${x.como||''}`).join(' ')}`:null});
+  if(primeroPropio)return listo([{que:'',como:primeroPropio}],'propia');
+  if(!pasos.length)return listo([],'propia');
+  if(p.pista2>0)return listo(pasos.slice(0,Math.min(p.pista2,pasos.length-1)),'paso');
   const clave=oracionClave(p);
-  if(clave)return {idea,pasos,tipo:'lectura',primero:`<b>Paso 1 · Busca en el texto:</b> la respuesta está en esta parte: <span lang="en">«${clave}»</span>${pasos[0].porque?`<br><span class="nota">${pasos[0].porque}</span>`:''}`};
+  if(clave)return listo([{que:'Busca en el texto',como:`La respuesta está en esta parte: <span lang="en">«${clave}»</span>`,porque:pasos[0].porque}],'lectura');
   const sinDatos=!usaDatos(`${pasos[0].que||''} ${pasos[0].como||''}`,p)||repite(pasos[0],p);
   const cue=(p.tipo||'escribir')==='escribir'&&!p.forma?senal(p.respuesta):'';
   if(sinDatos&&(repite(pasos[0],p)||!numerosDe(p.enunciado).size)&&(cue||p.regla))
-    return {idea,pasos,tipo:'recuerdo',primero:`<b>Paso 1 · Acércate a la respuesta:</b> ${parteDeRegla(p)||pasos[0].porque||''}${cue?`<br>La respuesta ${cue}`:''}`};
+    return listo([{que:'Acércate a la respuesta',como:`${parteDeRegla(p)||pasos[0].porque||''}${cue?`<br>La respuesta ${cue}.`:''}`}],'recuerdo');
   let k=0;while(k<pasos.length-2&&!usaDatos(`${pasos[k].que||''} ${pasos[k].como||''}`,p))k++;
-  let primero=pasos.slice(0,k+1).map(htmlPaso).join('<br>'),tipo='paso';
-  if(!usaDatos(primero,p)){const d=datosDePartida(p);if(d){primero=`<b>Partimos de:</b> ${d}<br>${primero}`;tipo='partimos'}}
-  return {idea,primero,pasos,tipo};
+  const primeros=pasos.slice(0,k+1),texto=primeros.map(x=>`${x.que||''} ${x.como||''}`).join(' ');
+  if(!usaDatos(texto,p)){const d=datosDePartida(p);if(d)return listo(primeros,'partimos',d)}
+  return listo(primeros,'paso');
 }
 
 // ¿El nivel 2 usa los datos de ESE ejercicio? (lo exigen npm run revisar y npm run principiante). La oración del texto y la

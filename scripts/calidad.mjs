@@ -12,9 +12,9 @@ const {chromium}=await import('playwright-core');
 const candidatos=[process.env.NAVEGADOR,'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe','C:/Program Files/Google/Chrome/Application/chrome.exe',
   '/usr/bin/google-chrome','/usr/bin/chromium','/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'].filter(Boolean);
 // Pistas en escalera: la del nivel 2 de cada generador debe usar los números (o datos) de su ejercicio (npm run principiante)
-try{execSync('node scripts/principiante.mjs',{cwd:raiz,stdio:'pipe'})}catch(e){console.log(String(e.stdout||'')+'\nFALLO: hay habilidades sin pistas con datos, mini-lección o gemelo (npm run principiante --detalle).');process.exit(1)}
+if(!process.argv.includes('--solo-formulas'))try{execSync('node scripts/principiante.mjs',{cwd:raiz,stdio:'pipe'})}catch(e){console.log(String(e.stdout||'')+'\nFALLO: hay habilidades sin pistas con datos, mini-lección o gemelo (npm run principiante --detalle).');process.exit(1)}
 // Curso de Python: cada ejercicio y cada solución del laboratorio se ejecutan en Python de verdad (Pyodide)
-try{execSync('node scripts/python.mjs',{cwd:raiz,stdio:'pipe'})}catch(e){console.log(String(e.stdout||'')+'\nFALLO: npm run python (lo que imprime Python no coincide con alguna respuesta).');process.exit(1)}
+if(!process.argv.includes('--solo-formulas'))try{execSync('node scripts/python.mjs',{cwd:raiz,stdio:'pipe'})}catch(e){console.log(String(e.stdout||'')+'\nFALLO: npm run python (lo que imprime Python no coincide con alguna respuesta).');process.exit(1)}
 if(!process.argv.includes('--sin-build'))execSync('npm run build',{cwd:raiz,stdio:'ignore'});
 const servidor=spawn(`npx vite preview --port ${PUERTO} --strictPort`,{cwd:raiz,shell:true,stdio:'ignore'});
 const apagar=()=>{try{process.platform==='win32'?execSync(`taskkill /PID ${servidor.pid} /T /F`,{stdio:'ignore'}):servidor.kill()}catch(e){}};
@@ -62,7 +62,8 @@ const chicos=()=>[...document.querySelectorAll('#vista button, #vista a.btn, #vi
 const b=await chromium.launch({executablePath:candidatos.find(existsSync)});
 const fallos=[];let pantallas=0;
 try{
-  for(const ancho of [360,412])for(const esquema of ['light','dark']){
+  // --solo-formulas: solo la revisión de fórmulas de los pasos (más rápida)
+  if(!process.argv.includes('--solo-formulas'))for(const ancho of [360,412])for(const esquema of ['light','dark']){
     const ctx=await b.newContext({viewport:{width:ancho,height:800},colorScheme:esquema,hasTouch:true});
     await ctx.addInitScript(d=>{if(!sessionStorage.x){sessionStorage.x=1;localStorage.setItem('ciberlab-progreso',JSON.stringify(d));localStorage.setItem('ciberlab-usuario','{"bienvenida":true}')}},prog);
     const p=await ctx.newPage();const err=[];p.on('pageerror',e=>err.push(e.message));
@@ -76,6 +77,47 @@ try{
     if(err.length)fallos.push(`${ancho}px ${esquema}: errores JS ${err.slice(0,2).join(' | ')}`);
     await ctx.close();
   }
+  // Fórmulas de los pasos (todas las materias) a 360 px: ninguna se parte en dos renglones ni se sale de la pantalla
+  // (las largas van en .formula-caja, que se desplaza de lado). Usa la ruta oculta #diag-pasos/<generador>.
+  {globalThis.localStorage??={getItem:()=>null,setItem(){},removeItem(){}};
+   const {GENERADORES}=await import(pathToFileURL(join(raiz,'src','nucleo','generadores','index.js')).href);
+   const ctx=await b.newContext({viewport:{width:360,height:800},hasTouch:true});
+   await ctx.addInitScript(()=>{localStorage.setItem('ciberlab-usuario','{"bienvenida":true}')});
+   const p=await ctx.newPage();await p.goto(BASE+'#diag-pasos/al/gauss');await p.waitForSelector('#diag-listo');
+   let revisados=0,formulas=0;
+   for(const id of Object.keys(GENERADORES)){
+     await p.evaluate(r=>{location.hash=r},'diag-pasos/'+id);
+     await p.waitForFunction(id=>document.getElementById('diag-listo')?.textContent===id,id,{timeout:15000}).catch(()=>{});
+     const r=await p.evaluate(()=>{const vw=document.documentElement.clientWidth,mal=[];let n=0;
+       const rotas=new Set();
+       for(const k of document.querySelectorAll('#vista .paso-como .katex, #vista .pista .katex')){n++;
+         const enBloque=k.closest('.formula-caja');
+         if(!enBloque&&!k.closest('.katex-display')){const tops=new Set([...k.getClientRects()].map(x=>Math.round(x.top)));if(tops.size>1)rotas.add('partida: '+k.textContent.slice(0,40))}
+         const rb=k.getBoundingClientRect();
+         if(!enBloque&&rb.right>vw+1)rotas.add('se sale: '+k.textContent.slice(0,40));}
+       for(const c of document.querySelectorAll('#vista .formula-caja')){const rc=c.getBoundingClientRect();if(rc.right>vw+1||rc.left<-1)rotas.add('caja fuera: '+c.textContent.slice(0,40))}
+       return {n,mal:[...rotas]}});
+     revisados++;formulas+=r.n;
+     if(r.mal.length)fallos.push(`fórmulas #diag-pasos/${id}: ${r.mal.slice(0,3).join(' · ')}`);
+   }
+   pantallas+=revisados;console.log(`fórmulas de los pasos: ${revisados} generadores, ${formulas} fórmulas a 360 px`);
+   await ctx.close();}
+  // Textos que dicen que algo «no está» cuando el contenido existe (Logros, Mapa MCER, Cursos, Lectura). La tarjeta de
+  // «Próximamente…» de Cursos que lleva a 🗳️ Propuestas sí es cierta (son cursos que todavía no existen).
+  {const ctx=await b.newContext({viewport:{width:360,height:800},hasTouch:true});
+   await ctx.addInitScript(()=>{localStorage.setItem('ciberlab-usuario','{"bienvenida":true}')});
+   const p=await ctx.newPage();
+   for(const ruta of ['logros','estudio/ingles/hablar','estudio/ingles','cursos','estudio','estudio/lectura']){
+     await p.goto(BASE+'#'+ruta);await p.reload();await p.waitForSelector('#vista > *');await p.waitForTimeout(300);
+     const t=await p.evaluate(()=>{const v=document.getElementById('vista').cloneNode(true);v.querySelectorAll('[data-go="propuestas"]').forEach(x=>x.remove());return v.textContent});
+     const m=t.match(/Próximamente|todav[ií]a no (est[aá]|existe|hay)|a[uú]n no (est[aá]|existe|disponible)|no disponible/i);
+     if(m)fallos.push(`#${ruta}: dice «${m[0]}» y el contenido ya existe`);
+     pantallas++;
+   }
+   await p.goto(BASE+'#logros');await p.reload();await p.waitForSelector('#vista > *');
+   const lg=await p.textContent('#vista');
+   for(const x of ['Inglés B1','Inglés B2','Curso de Python','Primer libro'])if(!lg.includes(x))fallos.push(`#logros: falta el logro «${x}» (los logros salen del contenido)`);
+   await ctx.close();}
   // El botón Atrás tiene su propia prueba: npm run atras (scripts/atras.mjs)
 }finally{await b.close();apagar()}
 fallos.forEach(x=>console.log('ERROR  '+x));

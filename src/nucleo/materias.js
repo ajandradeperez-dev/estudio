@@ -49,6 +49,8 @@ export function analizar(ruta){
   if(!ruta||ruta==='inicio')return {tipo:'portada',ruta:''};
   if(ruta==='progreso')ruta='perfil'; // "Mi progreso" ahora está en la pestaña Perfil
   if(ESPECIALES.includes(ruta))return {tipo:'especial',ruta};
+  // Diagnóstico oculto de los pasos de un generador (npm run calidad)
+  if(ruta.startsWith('diag-pasos/'))return {tipo:'especial',ruta,diag:ruta.slice('diag-pasos/'.length)};
   // Cuaderno: notas/n/<id> (editor) · notas/tema/<materia>/<tema> (resumen del tema)
   if(ruta.startsWith('notas/'))return {tipo:'notas',ruta,resto:ruta.split('/').slice(1)};
   // Mis materias: mias · mias/nueva · mias/<id>[/editar|/t/<tema>|/simulacro|/preguntar[/<tema>]]

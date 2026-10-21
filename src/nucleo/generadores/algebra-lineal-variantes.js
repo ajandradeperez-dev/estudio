@@ -185,7 +185,7 @@ const ecs=(A,b,v)=>A.map((f,i)=>`${lineal(f.map((x,j)=>[x,v[j]]))} = ${b[i]}`);
 // Pasos reales de Gauss con los números del ejercicio (gauss-pasos.js) y su escalera de pistas
 const gaussRes=(A,X,nota)=>{const d=A.length,v=['x','y','z'].slice(0,d),b=A.map(f=>punto(f,X)),g=pasosGauss(A.map((f,i)=>[...f,b[i]]),X);
   return {...comoVector(X),enunciado:`Resuelve por Gauss (escribe ${v.join(', ')}):\\[\\begin{cases}${ecs(A,b,v).join(' \\\\ ')}\\end{cases}\\]`,pasos:g.pasos,
-    escalera:[nota?`${nota} ${g.idea}`:g.idea,g.primero],
+    escalera:[nota?`${nota} ${g.idea}`:g.idea],pista2:g.pista2,
     errores:[{si:e=>Array.isArray(e)&&celdasIguales([...e].reverse(),X)&&X.join()!==[...X].reverse().join(),por:`Escribiste los valores en otro orden: van ${v.join(', ')}.`},{si:e=>Array.isArray(e)&&celdasIguales(e,X.map(x=>-x))&&X.some(Boolean),por:'Todos los signos quedaron al revés: revisa la resta al eliminar (menos por menos da más).'}],comprobar:()=>A.every((f,i)=>punto(f,X)===b[i])}};
 const inv=A=>(A.length===2?det2(A):det3(A))!==0;
 // Cada nivel: sus plantillas y una «general» con los números de la original (todas con los pasos de gauss-pasos.js)

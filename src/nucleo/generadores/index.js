@@ -57,6 +57,7 @@ import ingles from './ingles.js';
 import {bancos} from './bancos.js';
 import {clasificar} from './profundidad.js';
 
+import {desglosarPasos} from './desglosar.js';
 export const GENERADORES={...matematicas,...algebraBasica,...algebraTemas,...algebraTemas2,...aplicaciones,...algebraVariantes,...algebraLineal2,...aplicacionesLineal,...algebraLineal,...calculo,...redes,...redes2,...seguridad,...datos,...ingles,...calculoDif,...calculoInt,...trigonometria,...prealgebra,...excel,...excel2,...matNuevos1,...matNuevos2,...matNuevos3,...inglesA1,...inglesA1b,...inglesA2,...inglesB1,...inglesB2,...ciberRedes,...ciberFwVpn,...ciberDefensa,...inglesMejoras,...ciberMejoras,...excelMejoras,...datosEst,...datosInf,...datosPy,...python1,...python2,...python3,...algebraLinealVariantes,...calculoDifVariantes,...calculoIntVariantes};
 // Extensiones (tarjetas y problemas de aplicación con contexto) sobre los generadores ya registrados: ver extender.js
 for(const ext of [extMatematicas,extCiber])for(const [id,e] of Object.entries(ext))if(GENERADORES[id])GENERADORES[id]=extender(GENERADORES[id],e);
@@ -80,6 +81,9 @@ export function crear(id,nivel=1,{semilla,vistos,evitar,intentos=30}={}){
   vistos?.add(p.clave);
   // Un error típico cuyo valor resulta correcto en este ejercicio (p. ej. 180° − 90° = 90°) se descarta
   if((p.tipo||'escribir')==='escribir'&&!p.forma&&p.errores){const vistos=new Set();p.errores=p.errores.filter(e=>{if(e.valor===undefined)return true;if(vistos.has(e.valor))return false;vistos.add(e.valor);try{return !p.verificar(e.valor)}catch(x){return true}})}
+  // Una acción por paso (desglosar.js): separa las cadenas con ⇒ y alinea las igualdades seguidas
+  const d=desglosarPasos(p.pasos);
+  if(d.mapa){p.pasos=d.pasos;if(p.pasoMal&&d.mapa[p.pasoMal.i]!==undefined)p.pasoMal={...p.pasoMal,i:d.mapa[p.pasoMal.i]}}
   return {tipo:'escribir',alternativa:g.alternativa,...p,gen:id,nivel:n,semilla:s};
 }
 

@@ -56,7 +56,7 @@ try{
   check(/Idea:/.test(cuerpo),'pista 1: la idea');
   const nums=(enun0.match(/\d+/g)||[]);
   const p2=(await p.locator('#ses-cuerpo .pista').nth(1).textContent().catch(()=>''))||'';
-  check(/Paso 1/.test(cuerpo)&&nums.some(x=>p2.includes(x)),`pista 2: el primer paso con números del ejercicio («${p2.trim().slice(0,70)}…»)`);
+  check(await p.locator('#ses-cuerpo .pista-pasos .paso-proc').count()>=1&&nums.some(x=>p2.includes(x)),`pista 2: el primer paso con números del ejercicio («${p2.trim().slice(0,70)}…»)`);
   check(/Solución completa/.test(cuerpo)&&await p.locator('#ses-ahora-tu').count()===1,'pista 3: solución completa y «Ahora tú»');
   check(/Con pista cuenta como práctica/.test(cuerpo),'aviso amable: «Con pista cuenta como práctica…»');
   await foto('4-pistas');

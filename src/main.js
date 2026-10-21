@@ -33,12 +33,15 @@ import {acerca,vistaBienvenida,tocaBienvenida,vigilarConexion,avisarVersionNueva
    Las rutas viejas (#ingles/l/can, #algebra/…, #fw, #progreso) se resuelven y se reescriben a la canónica.
    Cada vista exporta vista() y, si las necesita, alEntrar(), alMostrar(), alSalir(), alClic(t, ir, repintar)
    e inmersiva (true mientras es una sesión de práctica a pantalla completa: sin barras de la app). */
+import {vistaDiagPasos} from './nucleo/diag-pasos.js';
 const ESPECIALES={repaso,logros,perfil,acerca,'ajustes-ia':ajustesIA,get notas(){return vistaNotas([])},get bienvenida(){return vistaBienvenida()}};
 function resolver(ruta){
   const x=analizar(ruta),{m}=x;
   // La primera vez (sin progreso) la portada es la bienvenida: nombre, qué estudiar y meta diaria
   if(x.tipo==='portada')return tocaBienvenida()?{...x,tipo:'especial',ruta:'bienvenida',v:vistaBienvenida()}:{...x,v:portada};
+  if(x.diag)return {...x,v:vistaDiagPasos(x.diag)};
   if(x.tipo==='especial')return {...x,v:ESPECIALES[x.ruta]};
+
   if(x.tipo==='notas')return {...x,v:vistaNotas(x.resto)};
   if(x.tipo==='mias')return {...x,v:vistaMias(x.resto)};
   if(x.tipo==='propuestas')return {...x,v:vistaPropuestas(x.resto)};

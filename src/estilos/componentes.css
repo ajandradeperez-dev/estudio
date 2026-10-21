@@ -279,3 +279,15 @@ button{font:inherit}
 .ayuda-caja .pasos-proc{margin:var(--s2) 0}
 .mini-leccion h2{margin:var(--s2) 0}
 .mini-leccion .campo{display:block;margin:var(--s3) 0}
+/* Pasos desglosados: texto y fórmula separados; la fórmula en su renglón, centrada, y nunca partida (se desplaza de lado) */
+.paso-texto{margin:0 0 var(--s1)}
+.paso-como .katex,.pista .katex,.paso-texto .katex{white-space:nowrap}
+.formula-caja{margin:var(--s1) 0 var(--s2);padding:6px 4px;max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;border-radius:var(--r1,8px);background:var(--bg)}
+.formula-caja:focus-visible{outline:3px solid var(--primary)}
+.formula-caja .katex-display{margin:0;text-align:center}
+.formula-caja .katex-display>.katex{white-space:nowrap}
+details.paso-porque{margin:0 0 var(--s1);color:var(--muted);font-size:15px}
+details.paso-porque summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700;color:var(--primary)}
+details.paso-porque p{margin:4px 0 0}
+.formula-caja .katex-display>.katex{font-size:1.05em}
+@media (max-width:400px){.formula-caja .katex-display>.katex{font-size:.98em}}

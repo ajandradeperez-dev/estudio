@@ -14,6 +14,7 @@ const raiz=join(dirname(fileURLToPath(import.meta.url)),'..','src');
 const {GENERADORES,crear,gemelo}=await import(pathToFileURL(join(raiz,'nucleo','generadores','index.js')).href);
 const {escalera,pistaConDatos,pasoConDatos}=await import(pathToFileURL(join(raiz,'nucleo','pistas.js')).href);
 const {comoHueco}=await import(pathToFileURL(join(raiz,'nucleo','actividades.js')).href);
+const {variasAcciones}=await import(pathToFileURL(join(raiz,'nucleo','generadores','desglosar.js')).href);
 const detalle=process.argv.includes('--detalle'),MUESTRAS=12;
 
 const cobertura={};let fallos=0;
@@ -34,11 +35,14 @@ for(const materia of readdirSync(join(raiz,'materias'))){
     // primer ejercicio de nivel 1
     if(ej.nivel!==1)prob.push('el primer ejercicio no es de nivel 1');
     // escalera con datos en los 5 niveles
-    let sinDatos=null,sinEsc=null,conPartimos=0,muestras=0;
+    let sinDatos=null,sinEsc=null,conPartimos=0,muestras=0,varias=null;
     for(let nv=1;nv<=5;nv++)for(let s=0;s<MUESTRAS;s++){const p=crear(n.gen,nv,{semilla:1000*nv+s});
       const e=escalera(p);if(!e?.idea||!e.primero||!(e.pasos.length>=2)){sinEsc??=p;continue}
-      muestras++;if(!pistaConDatos(p))sinDatos??=p;else if(!pasoConDatos(p))conPartimos++}
+      muestras++;if(!pistaConDatos(p))sinDatos??=p;else if(!pasoConDatos(p))conPartimos++;
+      // una acción por paso: ni dos igualdades independientes ni dos « y » uniendo acciones
+      const doble=(p.pasos||[]).find(x=>variasAcciones(typeof x==='string'?{como:x}:x,p));if(doble)varias??={nv,x:doble}}
     if(conPartimos/Math.max(1,muestras)<=0.2)c.directo++;else c.partimos.push(`${n.gen} (${Math.round(100*conPartimos/muestras)} %)`);
+    if(varias)prob.push(`un paso hace más de una operación (nivel ${varias.nv}: «${varias.x.que} | ${String(varias.x.como).replace(/<[^>]+>/g,' ').slice(0,70)}»)`);
     if(sinEsc)prob.push(`sin escalera de 3 niveles (nivel ${sinEsc.nivel})`);
     if(sinDatos)prob.push(`pista 2 sin datos del ejercicio (nivel ${sinDatos.nivel}: «${String(sinDatos.enunciado).replace(/<[^>]+>/g,' ').slice(0,70)}» → «${escalera(sinDatos).primero.replace(/<[^>]+>/g,' ').slice(0,70)}»)`);
     // «No sé cómo empezar»: solución + gemelo distinto del mismo tipo

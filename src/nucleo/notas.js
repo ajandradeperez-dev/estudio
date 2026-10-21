@@ -7,7 +7,7 @@ import {GENERADORES} from './generadores/index.js';
 import {esc} from '../utilidades.js';
 import {materias,materia as buscarMateria,tema as buscarTema,leccion,rutaLeccion,analizar} from './materias.js';
 import {progreso} from './progreso.js';
-import {vacio,confirmar,aviso,avisoAccion,menuAcciones,chip} from './ui.js';
+import {vacio,confirmar,elegir,aviso,avisoAccion,menuAcciones,chip} from './ui.js';
 import {tex,conFormulas} from './formula.js';
 import {soporte,escuchar} from './voz.js';
 import {crear} from './generadores/index.js';
@@ -16,7 +16,7 @@ import {todasLasNotas,leerNota,leerArchivo,enMemoria} from './cuaderno/db.js';
 import {render,alternarCasilla,tarjetasDe,imagenesDe,plano,normal,TARJETA} from './cuaderno/formato.js';
 import {cuadernoDe,fechaCorta,guardar,crearNota,borrarNotas,restaurarNotas,sincronizarResumenes} from './cuaderno/notas.js';
 import {comprimirFoto,guardarImagen,abrirDibujo} from './cuaderno/medios.js';
-import {descargarRespaldo,leerRespaldo,aplicarRespaldo,descargar} from './cuaderno/respaldo.js';
+import {archivoRespaldo,leerRespaldo,aplicarRespaldo,resumenRespaldo,resumenLocal,descargar} from './cuaderno/respaldo.js';
 import {misMaterias,recargarMias} from './mias/datos.js';
 import {vistaFoto} from './cuaderno/foto.js';
 
@@ -32,24 +32,41 @@ async function cargarImagenes(raiz=document){
   }
 }
 
-/* ---------- respaldo (también lo usa Perfil) ---------- */
+/* ---------- respaldo: «💾 Mis datos» (también lo usa Perfil) ---------- */
+const kb=b=>b<1024*1024?`${Math.max(1,Math.round(b/1024))} KB`:`${(b/1024/1024).toFixed(1)} MB`;
+const fechaLarga=f=>f?new Date(f.length===10?f+'T12:00':f).toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'}):'—';
+const puedeCompartirArchivo=()=>{try{return !!navigator.canShare?.({files:[new File(['x'],'x.estudio',{type:'application/octet-stream'})]})}catch(e){return false}};
 export const htmlRespaldo=()=>`<div class="card respaldo">
-<p style="margin-top:0">Tu progreso, tus notas y tus fotos viven <b>solo en este teléfono</b>. Para no perderlos o pasarlos a otro teléfono:</p>
-<ol class="nota" style="padding-left:20px"><li><b>Exportar todo</b>: se descarga un archivo <code>.json</code>.</li><li>Guárdalo (Drive, correo, WhatsApp a ti mismo…).</li><li>En el otro teléfono abre la app y toca <b>Importar</b>.</li></ol>
-<div class="row"><button type="button" class="btn ghost btn-chico" id="resp-exportar">💾 Exportar todo</button><label class="btn ghost btn-chico" for="resp-archivo">📥 Importar</label>
-<input type="file" id="resp-archivo" accept="application/json,.json" class="oculto-visual"></div>
-<p class="nota" style="margin-bottom:0">La clave de IA no se incluye: es personal y se pega de nuevo en cada teléfono.</p></div>`;
+<p style="margin-top:0">Tu progreso, tus notas y tus fotos viven <b>en este teléfono</b>. Con un respaldo no los pierdes y los pasas a otro teléfono o a la laptop:</p>
+<ol class="nota" style="padding-left:20px"><li><b>Exportar</b>: se crea un archivo <code>.estudio</code> (comprimido) con todo.</li><li>Guárdalo o mándatelo (Drive, correo, WhatsApp a ti mismo…).</li><li>En el otro dispositivo abre la app y toca <b>Importar</b>: eliges <b>Combinar</b> (no se pierde nada de ningún lado) o <b>Reemplazar</b>.</li></ol>
+<div class="row" style="flex-wrap:wrap"><button type="button" class="btn ghost btn-chico" id="resp-exportar">💾 Exportar</button>${puedeCompartirArchivo()?`<button type="button" class="btn ghost btn-chico" id="resp-compartir">📤 Compartir</button>`:''}<label class="btn ghost btn-chico" for="resp-archivo">📥 Importar</label>
+<input type="file" id="resp-archivo" class="oculto-visual"></div>
+<details class="nota-datos"><summary>¿Y por código QR?</summary><p class="nota">Un QR guarda como mucho unos 3 KB y un respaldo pesa mucho más (con fotos, varios MB), así que no cabe sin un servidor de por medio. Por eso se pasa como archivo.</p></details>
+<p class="nota" style="margin-bottom:0">La clave de IA no se incluye: es personal y se pega de nuevo en cada dispositivo.</p></div>`;
 export async function clicRespaldo(t){
-  if(t.id==='resp-exportar'){t.disabled=true;try{const r=await descargarRespaldo();aviso(`💾 Respaldo listo: ${r.notas} notas y ${r.archivos} imágenes`)}catch(e){aviso('No se pudo exportar: '+(e.message||e))}t.disabled=false;return true}
+  if(t.id==='resp-exportar'||t.id==='resp-compartir'){t.disabled=true;
+    try{const r=await archivoRespaldo();
+      if(t.id==='resp-compartir'){try{await navigator.share({files:[new File([r.blob],r.nombre,{type:'application/octet-stream'})],title:r.nombre})}catch(e){if(e?.name!=='AbortError')descargar(r.blob,r.nombre)}}
+      else descargar(r.blob,r.nombre);
+      aviso(`💾 Respaldo listo (${kb(r.bytes)}): ${r.notas} notas y ${r.archivos} imágenes`)}
+    catch(e){aviso('No se pudo exportar: '+(e.message||e))}
+    t.disabled=false;return true}
 }
+const lineaResumen=x=>`<b>${x.xp.toLocaleString('es-MX')} XP</b> · ${x.notas} notas · ${x.fotos} fotos · ${x.dominadas} dominadas · último uso: ${fechaLarga(x.ultimo)}`;
 export function activarImportar(alTerminar){
   const inp=document.getElementById('resp-archivo');if(!inp)return;
   inp.addEventListener('change',async()=>{
     const f=inp.files[0];inp.value='';if(!f)return;
     try{
-      const r=await leerRespaldo(f),fecha=new Date(r.fecha).toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'});
-      if(!(await confirmar({titulo:'¿Importar este respaldo?',texto:`Es del ${fecha}, con ${r.notas.length} notas y ${r.archivos.length} imágenes. <b>Reemplaza</b> el progreso y las notas de este teléfono.`,si:'Sí, importar',peligro:true})))return;
-      const x=await aplicarRespaldo(r);await recargarMias();aviso(`📥 Importado: ${x.notas} notas y ${x.archivos} imágenes`);cache=null;alTerminar?.();
+      const r=await leerRespaldo(f),otro=resumenRespaldo(r),aqui=await resumenLocal();
+      const modo=await elegir({titulo:'📥 Importar respaldo',
+        texto:`<p>El archivo (del ${fechaLarga(String(r.fecha).slice(0,10))}):<br>${lineaResumen(otro)}</p><p>En este dispositivo:<br>${lineaResumen(aqui)}</p>`,
+        opciones:[{valor:'combinar',texto:'🔀 Combinar',clase:'',desc:'Une los dos: lo más nuevo gana y no se pierde ni se duplica nada.'},
+          {valor:'reemplazar',texto:'♻️ Reemplazar',clase:'ghost',desc:'Borra lo de este dispositivo y deja solo lo del archivo.'}]});
+      if(!modo)return;
+      if(modo==='reemplazar'&&!(await confirmar({titulo:'¿Reemplazar todo?',texto:'Se pierde lo que hay en este dispositivo y queda solo lo del archivo.',si:'Sí, reemplazar',peligro:true})))return;
+      const x=await aplicarRespaldo(r,{modo});await recargarMias();cache=null;
+      aviso(modo==='combinar'?`🔀 Combinado: ${x.notas} notas nuevas o actualizadas y ${x.archivos} imágenes`:`📥 Importado: ${x.notas} notas y ${x.archivos} imágenes`,4000);alTerminar?.();
     }catch(e){aviso(e.message||'No se pudo importar el archivo.',4000)}
   });
 }

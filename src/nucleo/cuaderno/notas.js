@@ -5,6 +5,7 @@ import {tarjetasDe,imagenesDe,deHtml} from './formato.js';
 import {progreso,sincronizarTarjetas,borrarTarjetasDe,borrarNota,hoy,instantaneaNota,restaurarInstantaneaNota} from '../progreso.js';
 import {materia as buscarMateria,leccion,tema as buscarTema,areaDe,rutaLeccion,rutaLeccionId} from '../materias.js';
 import {miMateria,buscarTema as temaPropio} from '../mias/datos.js';
+import {marcarBorradas,quitarLapidas,avisarCambio} from '../sync/local.js';
 
 // Cuaderno de una nota: {area, materia, tema} (objetos del registro o null) y su nombre corto
 export function cuadernoDe(n){
@@ -22,6 +23,7 @@ export async function guardar(n,{tocada=true}={}){
   await guardarNota(x);
   sincronizarTarjetas(x.id,{materia:x.materia,titulo:x.titulo||'Nota'},tarjetasDe(x.cuerpo));
   if(!persistida){persistida=true;pedirPersistencia()}
+  avisarCambio('notas');
   return x;
 }
 export async function crearNota({materia=null,tema=null,titulo='',cuerpo='',etiquetas=[],id}={}){
@@ -48,15 +50,17 @@ export async function borrarNotas(lista){
     if(n.origen?.startsWith('resumen:'))borrarNota(n.origen.slice(8));
   }
   for(const o of restantes){let c=o.cuerpo||'';for(const id of ids)c=c.replace(enlaceA(id),'$1');
-    if(c!==o.cuerpo){copia.otras.push(JSON.parse(JSON.stringify(o)));await guardarNota({...o,cuerpo:c})}}
+    if(c!==o.cuerpo){copia.otras.push(JSON.parse(JSON.stringify(o)));await guardarNota({...o,cuerpo:c,editada:Date.now()})}}
+  marcarBorradas([...ids,...archivos.map(a=>a.id)]);
   return copia;
 }
 // Deshacer: vuelve todo como estaba (notas con su fecha, fotos, tarjetas, repasos, resumen y enlaces)
 export async function restaurarNotas(copia){
   for(const a of copia.archivos)await guardarArchivo(a);
   for(const n of copia.notas)await guardarNota(n);
-  for(const o of copia.otras)await guardarNota(o);
+  for(const o of copia.otras)await guardarNota({...o,editada:Date.now()});   // más nueva que la versión sin enlaces (por si ya se sincronizó)
   for(const s of copia.progreso)restaurarInstantaneaNota(s);
+  quitarLapidas([...copia.notas.map(n=>n.id),...copia.archivos.map(a=>a.id)]);avisarCambio('notas');
 }
 export const borrarNotaCompleta=n=>borrarNotas([n]);
 

@@ -6,6 +6,7 @@ import {todasLasMaterias,guardarMateriaDb,borrarMateriaDb,todosLosGenerados,guar
 import {FORMATO,COLORES,ICONOS,validarMateria,validarBanco,aPregunta} from './esquema.js';
 import {emparejar} from './emparejar.js';
 import {planificar} from './plan.js';
+import {marcarBorradas,avisarCambio} from '../sync/local.js';
 import {materias as registro,leccion,tema as temaDe} from '../materias.js';
 import {progreso,datosHabilidad,hoy} from '../progreso.js';
 import {estadoDominio,ULTIMAS} from '../metodo.js';
@@ -62,14 +63,16 @@ export function emparejarTodo(m){
 export async function guardarMateria(m){
   const x={...m,editada:Date.now()};
   const e=validarMateria(x);if(e.length)throw new Error('La materia tiene datos inválidos: '+e.slice(0,3).join('; '));
-  await guardarMateriaDb(x);cache.materias.set(x.id,x);pedirPersistencia();avisar();return x;
+  await guardarMateriaDb(x);cache.materias.set(x.id,x);pedirPersistencia();avisar();avisarCambio('mias');return x;
 }
 export async function borrarMateria(m){
+  const gens=generadosDe(m.id).map(g=>g.id);marcarBorradas(gens);
   for(const g of generadosDe(m.id)){await borrarGeneradoDb(g.id);cache.generados.delete(g.id)}
   for(const f of [...(m.fotos||[]),...(m.referencias||[])])await borrarArchivo(f).catch(()=>{});
   await borrarMateriaDb(m.id);cache.materias.delete(m.id);avisar();
+  marcarBorradas([m.id,...[...(m.fotos||[]),...(m.referencias||[])]]);
 }
-export async function guardarGenerado(g){await guardarGeneradoDb(g);cache.generados.set(g.id,g);avisar();return g}
+export async function guardarGenerado(g){await guardarGeneradoDb(g);cache.generados.set(g.id,g);avisar();avisarCambio('mias');return g}
 
 /* ---------- avance ---------- */
 // Dominio 0–1 de un tema: ya lo sabe → 1; habilidad de la app o práctica con el banco generado → aciertos recientes; "lo estudié" → 0,3

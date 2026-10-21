@@ -21,3 +21,4 @@ android/*
 *.apk
 *.aab
 *.idsig
+dist-cuenta/

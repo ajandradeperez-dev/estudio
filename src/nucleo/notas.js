@@ -73,6 +73,7 @@ export function activarImportar(alTerminar){
 
 /* ---------- lista ---------- */
 let cache=null,cargando=null,buscar='',filtro='todas',orden='recientes';
+addEventListener('datos-sincronizados',()=>{cache=null});   // llegaron notas de otro dispositivo
 function cargar(){
   if(!cargando)cargando=(async()=>{try{await sincronizarResumenes()}catch(e){}cache=await todasLasNotas().catch(()=>[]);cargando=null;repintar()})();
   return cargando;

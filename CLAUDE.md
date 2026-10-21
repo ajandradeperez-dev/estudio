@@ -118,6 +118,8 @@ src/
     mias/                 🎓 Mis materias: esquema.js (formato y validación estricta), temario.js (leer un temario escrito), emparejar.js
                           (temas ↔ habilidades de la app, con sinónimos), plan.js (plan hasta cada examen), datos.js (IndexedDB + caché en
                           memoria, dominio, compartir), vistas.js (lista, asistente, materia, tema, simulacro), ia.js (IA opcional)
+    sync/                 ☁️ Mis datos y sincronizar: fusionar.js (combinar sin perder ni duplicar), local.js (equipo y lápidas),
+                          api.js (Supabase con fetch), motor.js (sin DOM), navegador.js (sesión y cuándo), vista.js (pantalla Cuenta)
     notas.js              Pestaña 📝 Notas: lista (búsqueda, filtros, cuadernos área → materia → tema), editor con barra de formato,
                           fotos, dibujo, dictado, enlaces y tarjetas; modo "repasar nota"; resumen automático del tema; respaldo
     cuaderno/             Datos del cuaderno (sin vistas): db.js (IndexedDB 'ciberlab-notas': notas y archivos; persist()),
@@ -167,6 +169,7 @@ src/
 | `notas/foto[/<materia>/<tema>]` | 📸 Foto a nota y 🧠 Resuélvelo conmigo (archiva en ese tema) |
 | `mias` · `mias/nueva` · `mias/<id>[/editar]` | Mis materias: lista · asistente · materia (cuenta regresiva, hoy, preparación, plan) · editar |
 | `mias/<id>/t/<tema>` · `mias/<id>/simulacro` · `mias/<id>/preguntar[/<tema>]` | Tema · simulacro de examen · "Pregúntale a tu temario" |
+| `cuenta` | ☁️ Cuenta y sincronización (desde Perfil) |
 | `propuestas` · `propuestas/nueva` · `propuestas/admin` | 🗳️ Propuestas: votar · proponer · administrador (7 toques en la versión) |
 | `<área>` | Página del área: tarjetas de materias (`#estudio`) |
 | `<área>/<materia>` | Página de la materia: temas (o lecciones), ubicación y secciones (`#estudio/matematicas`) |
@@ -333,7 +336,7 @@ export default {
 
 ## Progreso (`src/nucleo/progreso.js`)
 
-Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 10`; los formatos anteriores se migran solos en `migrar()`. Si cambias el significado de algo guardado, sube `VERSION` y agrega su paso de migración). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
+Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 11`; los formatos anteriores se migran solos en `migrar()`. Si cambias el significado de algo guardado, sube `VERSION` y agrega su paso de migración). Cada cambio emite el evento `progreso` en `window` para que se actualice la barra superior.
 
 - **Meta diaria**: 10/20/30 ejercicios o 5/10/15 minutos. Los minutos solo cuentan con la pestaña visible y actividad en el último minuto (`main.js`).
 - **Racha**: días seguidos con la meta cumplida. Si hoy aún no se cumple, sigue viva desde ayer; hoy cuenta en cuanto la meta está cumplida. Los datos dependen del navegador: el APK usa el almacenamiento del navegador que lo abre (Chrome comparte con Chrome; con otro navegador son datos aparte). "Acerca de" muestra dónde se guardan y los últimos 7 días. Si otra pestaña cambia el progreso, el evento `storage` repinta la app.
@@ -345,9 +348,10 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 10`; los formatos 
 - **Repaso** (SM-2, `sm2` en `metodo.js`): `{rep, int, ef, proxima, fallos}`. Fallo → mañana; bien con pista, bien o bien y rápido → el intervalo crece (1, 3 y luego × facilidad). Un ejercicio sale al recordarlo a más de 60 días (`dominados`); las habilidades dominadas (`<materia>/h/<id>`) se siguen repasando con tope de 180 días. Los ejercicios generados se guardan como `<materia>/g/<habilidad>/<nivel>` y en el repaso se genera uno nuevo y parecido.
 - **v9** (profundidad): `basicos` `{'<clave>': {ok:[fechas], racha, retirado, materia, habilidad}}` (claves `g:`, `gi:`, `l:`, `b:`), `refuerzos` `{'<materia>/<habilidad>': true}` (un básico retirado pendiente de volver) y `estrellas` `{'<reto>': fecha}` (retos ⭐, repasados con la ref `<materia>/r/<reto>`). Vacíos al migrar. "Reiniciar todo" conserva `estrellas`.
 - **v10** (Cursos): Ciberseguridad pasa al área 💼 Cursos. Sus datos ya se guardaban por materia (`ciberseguridad`), así que solo se reescriben `ultimo.ruta` e `historial[].tipo` a `cursos/ciberseguridad/…`; `revisar` migra un v9 con XP, habilidades, repasos y notas de Ciberseguridad y comprueba que no se pierda nada.
+- **v11** (combinar dispositivos): XP de cada materia y contadores de cada día con `base` (lo acumulado al migrar) y `por` (lo de otros dispositivos); ver «☁️ Mis datos». `revisar` comprueba que la migración deja la base y que combinar no pierde ni duplica.
 - **v8** (cuaderno): `tarjetas` `{[id]: {q, a, nota, titulo, materia, fecha}}`, las líneas `🃏 pregunta | respuesta` de las notas; se repasan con la ref `<materia|notas>/t/<id>` (`ejercicioPorRef`).
 - **Notas** (resúmenes): `{'<materia>/<lección>': {texto, fecha}}`. Se conservan en el progreso y se copian al cuaderno como notas con `origen:'resumen:<clave>'` (si la nota no se tocó, se actualiza al cambiar el resumen; borrarla en el cuaderno borra el resumen). "Reiniciar todo el progreso" conserva notas y tarjetas, porque son texto escrito por el usuario.
-- **Cuaderno** (IndexedDB `ciberlab-notas`, no en `localStorage`): notas `{id, titulo, cuerpo, materia, tema, etiquetas, fijada, creada, editada}` y archivos `{id, nota, blob…}` (fotos JPEG ≤1600 px, dibujos PNG). El formato del cuerpo (negrita, fórmulas `$…$`, casillas, `![](img:<id>)`…) está en `cuaderno/formato.js`. Si cambias la estructura, sube `VERSION` en `db.js` y migra en `onupgradeneeded`. El respaldo `.json` (Perfil y Notas) incluye progreso, ajustes, notas e imágenes, nunca `ciberlab-ia`.
+- **Cuaderno** (IndexedDB `ciberlab-notas`, no en `localStorage`): notas `{id, titulo, cuerpo, materia, tema, etiquetas, fijada, creada, editada}` y archivos `{id, nota, blob…}` (fotos JPEG ≤1600 px, dibujos PNG). El formato del cuerpo (negrita, fórmulas `$…$`, casillas, `![](img:<id>)`…) está en `cuaderno/formato.js`. Si cambias la estructura, sube `VERSION` en `db.js` y migra en `onupgradeneeded`. El respaldo `.estudio` (Perfil y Notas) incluye progreso, ajustes, notas, imágenes, materias propias y lápidas, nunca `ciberlab-ia` ni la sesión.
 - **Borrar notas**: 🗑️ en la cabecera de cada nota, «⋯ → 🗑️ Borrar» en cada nota de la lista y «☑️ Seleccionar» (contador «N seleccionadas» y Borrar) para varias. Siempre con el diálogo propio `confirmar()` (Atrás o Cancelar no borran) y luego «🗑️ Nota borrada · Deshacer» durante 8 s (`avisoAccion` en `ui.js`). `borrarNotas(lista)` (`cuaderno/notas.js`) borra de IndexedDB sus fotos y dibujos salvo los que use otra nota, sus tarjetas y repasos, el resumen del que salió y convierte en texto los enlaces `[…](#notas/n/<id>)` desde otras notas; devuelve una copia completa que `restaurarNotas` vuelve a poner tal cual (mismas fechas). `npm run cuaderno` lo prueba.
 - En Ciberseguridad, los casos del laboratorio y los escenarios de VPN se guardan por posición: agrégalos al final de sus listas en `datos/`.
 - Todo acceso a `localStorage` va en `try/catch` para que la app funcione aunque esté bloqueado.
@@ -412,13 +416,50 @@ El APK es una **Trusted Web Activity** hecha con Bubblewrap: abre `https://ajand
   6. Versiones publicadas: 1.0.0 (código 1, CiberLab) y 1.1.0 (código 2, Estudio+). Cada APK nuevo necesita un `appVersionCode` mayor y la misma llave, o Android no lo instala encima.
 - Si algún día cambia la llave (o se sube a Play Store con la firma de Google), agrega la huella nueva a `assetlinks.json` del repo `ajandradeperez-dev.github.io`.
 
-## Sincronizar entre dispositivos (no implementado)
+## ☁️ Mis datos y sincronizar entre dispositivos (`src/nucleo/sync/`)
 
-Hoy cada teléfono guarda lo suyo (no hay cuentas) y se pasa de uno a otro con **Exportar todo / Importar**. Si algún día se quiere sincronizar:
+Sin cuenta, cada dispositivo guarda lo suyo y se pasa con el respaldo; con cuenta (opcional, Supabase) se sincroniza solo.
+**Las claves de IA nunca salen del dispositivo** (ni en respaldos ni en la nube).
 
-- **Supabase** (recomendado: Postgres, autenticación por correo o Google, plan gratis): una tabla `respaldos(usuario uuid, actualizado timestamptz, datos jsonb)` con Row Level Security (`usuario = auth.uid()`), y las fotos en Supabase Storage en una carpeta por usuario. La app subiría el mismo JSON de `cuaderno/respaldo.js` (sin la clave de IA) al cambiar algo (con espera de unos segundos) y lo bajaría al iniciar sesión; para fusionar, gana lo más reciente por nota (`editada`) y, en el progreso, el máximo de XP/racha y la unión de repasos.
-- **Firebase** (Firestore + Auth + Storage) sirve igual: un documento por usuario con el progreso y una subcolección `notas`, con reglas `request.auth.uid == userId`.
-- En ambos casos: la clave pública del proyecto puede ir en el código (no es secreta), pero nunca la de servicio; la sincronización debe ser opcional y la app tiene que seguir funcionando sin conexión.
+- **Combinar sin perder nada** (`sync/fusionar.js`, sin DOM; `revisar` lo prueba): la XP y los contadores de cada día
+  (ejercicios, segundos, XP, lo hablado) se llevan **por dispositivo** (`por` {equipo: valores} de los OTROS; lo propio es
+  el total menos `base` y los demás): al combinar se toma el máximo por dispositivo y se suman, así nada se duplica aunque
+  se combine muchas veces. `base` (progreso v11) es lo acumulado antes de esta versión: se combina con el **máximo** (no
+  se sabe si dos dispositivos ya lo compartían; puede quedarse corto, nunca inflado). La **racha** sale de la unión de los
+  días; habilidades: dominada en cualquiera, días unidos, dificultad del lado más reciente; **repaso**: gana la respuesta
+  más reciente (`proxima − int`); notas, resúmenes, tarjetas, materias propias y lo generado: gana lo editado más
+  recientemente. Los borrados viajan como **lápidas** (`sync/local.js`, `localStorage['ciberlab-borradas']` {id: ms},
+  180 días): una lápida solo borra si es más nueva que la última edición. `marcarAportes(p, equipo)` deja escrito lo de
+  este dispositivo antes de que salga (respaldo o nube). Identificador del dispositivo: `ciberlab-equipo` (distinto del
+  anónimo de las votaciones).
+- **D1 · 💾 Mis datos** (Perfil y Notas, `cuaderno/respaldo.js`, vista en `notas.js`): «💾 Exportar» / «📤 Compartir»
+  crean un `.estudio` (JSON con gzip por `CompressionStream`; sin soporte, JSON sin comprimir) con progreso, ajustes,
+  notas, fotos, materias propias, lo generado y las lápidas; «📥 Importar» muestra el resumen del archivo y de este
+  dispositivo (XP, notas, fotos, dominadas, último uso) y ofrece **🔀 Combinar** o **♻️ Reemplazar** (con confirmación).
+  Lee también los `.json` de antes (formato 1). QR: no cabe (≈3 KB contra MB con fotos) y lo dice en pantalla.
+  `npm run datos` lo prueba con tres «teléfonos».
+- **D2 · Cuenta** (ruta `cuenta`, `sync/vista.js`; Perfil muestra su estado): enlace mágico al correo (o Google con
+  `SUPABASE_GOOGLE`); vuelve a `?cuenta=1#access_token=…` y `main.js` guarda la sesión en `ciberlab-cuenta`, limpia la
+  dirección, abre ☁️ Cuenta y combina, mostrando «🔀 Tus datos quedaron combinados» (nube, aquí y resultado).
+  `sync/api.js` (fetch a PostgREST, Auth y Storage), `sync/motor.js` (sin DOM) y `sync/navegador.js` (adaptador de los
+  datos locales, sesión y cuándo sincronizar: al abrir, 20 s después de practicar, 5 s después de guardar una nota, al
+  volver la red y al volver a la app; sin red queda «📴 Sin conexión: se enviará luego»). El motor combina las filas
+  `progreso` y `borradas` con escritura condicional (`actualizado=eq.<lo leído>`, si otro dispositivo escribió antes se
+  vuelve a leer y combinar), baja las notas cambiadas desde un cursor y sube las editadas, materias propias y lo generado
+  en filas `mias:`/`gen:`, fotos en `notas-fotos/<user_id>/<id>.<ext>` con su fila `foto:<id>` (avisa al 80 % de 1 GB,
+  se detiene al 95 %), el nombre en `perfiles` y cada dispositivo en `equipo:<id>`. La pantalla tiene estado,
+  «🔄 Sincronizar ahora», dispositivos, espacio de fotos, cerrar sesión (conservar o borrar lo de aquí) y «🗑️ Borrar mi
+  cuenta y mis datos». Sin Supabase configurado: «Próximamente: sincronizar entre dispositivos» y lleva a Mis datos.
+- **Base de datos**: `supabase/sync.sql` (mismo proyecto que Propuestas): `perfiles`, `progreso(user_id, clave, valor
+  jsonb, actualizado, dispositivo)` y `notas(user_id, id, contenido jsonb, actualizado, borrado)` con RLS
+  `user_id = auth.uid()` y nada para `anon`; `actualizado` lo pone un trigger; bucket privado `notas-fotos` (3 MB, solo
+  imágenes, carpeta por usuario); `uso_fotos()` y `borrar_mi_cuenta()` (security definer). **D3**: la guía paso a paso
+  está en `supabase/LEEME.md`.
+- **Pruebas**: `revisar` corre `scripts/sync-pruebas.mjs` (motor real, dos teléfonos y un Supabase simulado: XP exacta,
+  notas, fotos, materias, lápidas, carreras, sin conexión, otra cuenta no ve nada, borrar cuenta) y `scripts/rls.mjs`
+  (`sync.sql` tal cual en **PGlite**, un Postgres real en memoria, con lo mínimo de Supabase: una persona no puede leer,
+  cambiar, borrar ni suplantar lo de otra; anon no puede nada). `npm run cuenta` lo recorre en el navegador contra el
+  simulado (compila `dist-cuenta/` con `VITE_SUPABASE_URL`, que solo usa esa prueba).
 
 ## Convenciones
 
@@ -555,8 +596,8 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | Parte B · 🐍 Curso de Python (13 temas, 29 habilidades ✅, editor y laboratorio con Pyodide, 39 ejercicios con juez) | ✅ terminado |
 | Parte C · 📚 Lectura con 5 libros libres (dominio público o CC BY), lector sin conexión, palabras al repaso y preguntas | ✅ terminado |
 | PERFIL-LIBROS A · Pistas desglosadas (una acción por paso) · B · Logros al día · C · 6 libros en español, filtros, búsqueda y glosario | ✅ terminado |
-| PERFIL-LIBROS D · Respaldo `.estudio` y sincronización con Supabase | ⏳ siguiente |
-| P3b · Inglés: metas extra por nivel | después de D |
+| PERFIL-LIBROS D · Respaldo `.estudio` (Combinar/Reemplazar), sincronización con Supabase (sync.sql con RLS probada en PGlite) y guía `supabase/LEEME.md` | ✅ terminado (falta crear el proyecto de Supabase y pegar URL y clave pública) |
+| P3b · Inglés: metas extra por nivel | ⏳ siguiente |
 | 4 · Inglés: completar A1 y A2, luego B1 | reemplazado por P3 y P6 |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | reemplazado por P3 y P6 |
 | 6 · Inglés B2 y temas avanzados | reemplazado por P3 y P6 |
@@ -587,6 +628,8 @@ npm run revisar   # método, jerarquía, contenido de habla, migración del prog
 npm run cuaderno  # borrar notas: una, varias, deshacer, fotos fuera de IndexedDB (la compartida se queda) y Atrás cancela (--capturas <dir> [--oscuro])
 npm run principiante # cada habilidad lista para un principiante: mini-lección, nivel 1, 3 pistas con datos, gemelo (--detalle)
 npm run python    # el curso de Python ejecutado en Pyodide: cada ejercicio generado y cada solución del laboratorio
+npm run datos     # 💾 Mis datos: exportar .estudio, combinar (sin duplicar XP, lápidas) y reemplazar con tres «teléfonos»
+npm run cuenta    # ☁️ Cuenta contra un Supabase simulado: enlace, combinar, dos teléfonos, sin conexión, dispositivos, borrar cuenta
 npm run lectura   # 📚 Lectura en el navegador (biblioteca, capítulo, palabra al repaso, preguntas, sin conexión)
 npm run libros    # vuelve a armar public/libros y el catálogo desde las fuentes (--cache <dir>)
 npm run atras     # botón Atrás nivel por nivel (6 niveles y 7 Atrás, enlace directo, recarga, otras ramas) en teléfono y escritorio

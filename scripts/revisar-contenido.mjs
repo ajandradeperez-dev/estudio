@@ -421,6 +421,12 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   const TT=S.fusionarProgreso(T1,T2,{yo:'A',el:'B',borradas:{n2:1}});
   if(TT.tarjetas.k||TT.repaso['notas/t/k'])mal(es,'regresan las tarjetas de una nota borrada');
   console.log('combinar dispositivos: XP y ejercicios exactos (sin duplicar al repetir), racha de la unión, repaso más reciente, habilidades y notas con lápidas');
+  // Sincronización con Supabase: motor real con dos teléfonos y un servidor simulado; RLS de sync.sql en un Postgres de verdad
+  const {probarSync}=await import(pathToFileURL(join(raiz,'..','..','scripts','sync-pruebas.mjs')).href);
+  for(const x of await probarSync(join(raiz,'..')))mal('sincronizar',x);
+  const {probarRLS}=await import(pathToFileURL(join(raiz,'..','..','scripts','rls.mjs')).href);
+  for(const x of await probarRLS(join(raiz,'..','..','supabase','sync.sql')))mal('supabase/sync.sql (RLS)',x);
+  console.log('sincronizar: dos teléfonos convergen (XP exacta, notas, fotos, materias, lápidas, carreras, sin conexión); RLS probado en Postgres: nadie ve ni toca lo de otra persona');
 }
 sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
 // Generadores: 200 ejercicios por nivel sin errores, cuya respuesta pasa su propio verificar, con fórmulas válidas y sin repetirse demasiado

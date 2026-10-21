@@ -15,6 +15,8 @@ import {vistaMias} from './nucleo/mias/vistas.js';
 import {ajustesIA} from './nucleo/ia-ajustes.js';
 import {registrar} from './nucleo/diagnostico.js';
 import {vistaPropuestas,recibirEnlaceMagico,sincronizarPropuestas} from './nucleo/propuestas/vistas.js';
+import {recibirSesionCuenta,iniciarSync,sincronizarAhora} from './nucleo/sync/navegador.js';
+import {vistaCuenta,mostrarPrimera} from './nucleo/sync/vista.js';
 import {cargarMias} from './nucleo/mias/datos.js';
 import {vistaUbicacion} from './nucleo/ubicacion.js';
 import {vistaRetos} from './nucleo/vista-retos.js';
@@ -34,7 +36,7 @@ import {acerca,vistaBienvenida,tocaBienvenida,vigilarConexion,avisarVersionNueva
    Cada vista exporta vista() y, si las necesita, alEntrar(), alMostrar(), alSalir(), alClic(t, ir, repintar)
    e inmersiva (true mientras es una sesión de práctica a pantalla completa: sin barras de la app). */
 import {vistaDiagPasos} from './nucleo/diag-pasos.js';
-const ESPECIALES={repaso,logros,perfil,acerca,'ajustes-ia':ajustesIA,get notas(){return vistaNotas([])},get bienvenida(){return vistaBienvenida()}};
+const ESPECIALES={repaso,logros,perfil,acerca,'ajustes-ia':ajustesIA,cuenta:vistaCuenta,get notas(){return vistaNotas([])},get bienvenida(){return vistaBienvenida()}};
 function resolver(ruta){
   const x=analizar(ruta),{m}=x;
   // La primera vez (sin progreso) la portada es la bienvenida: nombre, qué estudiar y meta diaria
@@ -256,12 +258,18 @@ registerSW({
 const rutaDelHash=()=>{try{return decodeURIComponent(location.hash.slice(1))}catch(e){return ''}};
 // Si alguien cambia el #hash a mano o abre un enlace con la app ya abierta (replaceState no dispara este evento)
 // (cuando lo dispara un Atrás, popstate ya pintó esa ruta y aquí no pasa nada)
-window.addEventListener('hashchange',()=>{if(recibirEnlaceMagico(location.hash)){go('propuestas/admin',{modo:'replace'});return}const r=rutaDelHash();if(r!==cur.ruta)go(r,{modo:'replace'})});   // la entrada que creó el navegador queda con la ruta canónica
+window.addEventListener('hashchange',()=>{if(recibirSesionCuenta()){entrarCuenta();return}if(recibirEnlaceMagico(location.hash)){go('propuestas/admin',{modo:'replace'});return}const r=rutaDelHash();if(r!==cur.ruta)go(r,{modo:'replace'})});   // la entrada que creó el navegador queda con la ruta canónica
 // Las materias propias se leen de IndexedDB antes de pintar (el repaso y la portada las necesitan); como mucho 1,5 s de espera
 await Promise.race([cargarMias(),new Promise(r=>setTimeout(r,1500))]);
 window.addEventListener('mias',()=>{pintarNav();if(!cur?.v.inmersiva&&['portada','mias'].includes(cur?.tipo))pintar()});
 // Vuelta del enlace mágico del administrador (#access_token=…): se guarda la sesión y se abre el modo administrador
-if(recibirEnlaceMagico(location.hash))try{history.replaceState({app:1,i:0,ruta:'propuestas/admin'},'',location.pathname+location.search+'#propuestas/admin')}catch(e){}
+// Vuelta del enlace para entrar a la cuenta (?cuenta=1#access_token=…): se guarda la sesión, se abre ☁️ Cuenta y se combina
+function entrarCuenta(){try{history.replaceState({app:1,i:0,ruta:'cuenta'},'',location.pathname+'#cuenta')}catch(e){}
+  if(cur)go('cuenta',{modo:'replace'});
+  sincronizarAhora().then(r=>{if(r.primera)mostrarPrimera(r.primera)})}
+const conCuenta=recibirSesionCuenta();
+if(conCuenta)try{history.replaceState({app:1,i:0,ruta:'cuenta'},'',location.pathname+'#cuenta')}catch(e){}
+else if(recibirEnlaceMagico(location.hash))try{history.replaceState({app:1,i:0,ruta:'propuestas/admin'},'',location.pathname+location.search+'#propuestas/admin')}catch(e){}
 // Primera pantalla: sin agregar entradas. Al recargar, el navegador conserva las entradas de la app y su estado.
 registrar('carga',{ruta:rutaDelHash(),nota:document.referrer?'referrer '+document.referrer:''});
 go(rutaDelHash(),{modo:'replace'});
@@ -271,5 +279,8 @@ vigilarConexion();
 // 🗳️ Votos pendientes y novedades de Propuestas: al abrir y al volver la red (sin bloquear la app)
 const sincProp=()=>sincronizarPropuestas().then(()=>{if(cur?.tipo==='portada')pintar()});
 sincProp();addEventListener('online',sincProp);
+// ☁️ Sincronizar entre dispositivos (solo con Supabase configurado y la sesión iniciada)
+iniciarSync();if(conCuenta)entrarCuenta();
+addEventListener('datos-sincronizados',()=>{if(!cur?.v.inmersiva&&['portada','notas','mias','especial'].includes(cur?.tipo))pintar()});
 // Recordatorio diario: con la app abierta se revisa cada minuto y al volver a ella
 setInterval(revisarRecordatorio,60000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')revisarRecordatorio()});revisarRecordatorio();

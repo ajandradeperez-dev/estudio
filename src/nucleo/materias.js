@@ -43,7 +43,7 @@ export const rutaLeccionId=(m,id)=>{const l=leccion(m,id);return l?rutaLeccion(m
 /* analizar(ruta) → {tipo, ruta canónica, area?, m?, t?, l?, seccion?, resto?}
    tipo: 'portada' | 'especial' (repaso, logros, perfil, notas) | 'notas' (subrutas del cuaderno) | 'area' | 'materia' | 'tema' | 'leccion' (habilidad)
          | 'cofre' (<tema>/cofre/<k>) | 'jefe' (<tema>/jefe) | 'ubicacion' | 'seccion' */
-const ESPECIALES=['repaso','logros','perfil','notas','acerca','bienvenida','ajustes-ia'];
+const ESPECIALES=['repaso','logros','perfil','notas','acerca','bienvenida','ajustes-ia','cuenta'];
 export function analizar(ruta){
   ruta=String(ruta||'').replace(/^#/,'').replace(/\/+$/,'');
   if(!ruta||ruta==='inicio')return {tipo:'portada',ruta:''};
@@ -99,7 +99,7 @@ export function analizar(ruta){
    sección de una materia → la materia (Hablar: unidad/paso → unidad → portada de Hablar) · notas, mias, propuestas: su
    portada y luego Aprender · Acerca de y ✨ IA → Perfil · las pestañas (Repasar, Notas, Logros, Perfil) → Aprender.
    Devuelve null solo en la portada de Aprender. */
-const PADRE_ESPECIAL={acerca:'perfil','ajustes-ia':'perfil'};
+const PADRE_ESPECIAL={acerca:'perfil','ajustes-ia':'perfil',cuenta:'perfil'};
 export function padreDe(x){
   if(typeof x==='string')x=analizar(x);
   const r=x.ruta||'',s=r.split('/');

@@ -12,6 +12,7 @@ import {APK_URL,APP_NOMBRE} from '../config.js';
 import {esc} from '../utilidades.js';
 import {cobertura,textoCobertura,estadoMateria,ESTADO} from './contenido.js';
 import {resultadoFinal} from './examen.js';
+import {textoEstado} from './sync/navegador.js';
 const fila=({go,id,href,icono,titulo,desc})=>`${href?`<a class="tarjeta-nav" href="${href}" rel="noopener"`:`<button class="tarjeta-nav"${go!==undefined?` data-go="${go}"`:''}${id?` id="${id}"`:''}`}><span class="icono" aria-hidden="true">${icono}</span><span class="texto"><span class="titulo">${titulo}</span><span class="desc">${desc}</span></span>${href?'</a>':'</button>'}`;
 
 const est=(v,k)=>`<div class="estadistica"><b>${v}</b><span>${k}</span></div>`;
@@ -85,7 +86,9 @@ ${fila({go:'acerca',icono:'ℹ️',titulo:'Acerca de',desc:'Versión, privacidad
 <button class="tarjeta-nav" data-go="notas"><span class="icono" aria-hidden="true">📝</span><span class="texto"><span class="titulo">Mis notas</span><span class="desc">Tu cuaderno: apuntes, fotos, dibujos y tarjetas</span></span></button>
 ${hoyN?`<button class="tarjeta-nav" data-go="repaso"><span class="icono" aria-hidden="true">🔁</span><span class="texto"><span class="titulo">Repasar</span><span class="desc">${hoyN} para hoy</span></span></button>`:''}
 </div>
-<h2>💾 Mis datos</h2>${htmlRespaldo()}
+<h2>💾 Mis datos</h2>
+<div class="lista-nav"><button class="tarjeta-nav" data-go="cuenta"><span class="icono" aria-hidden="true">☁️</span><span class="texto"><span class="titulo">Cuenta y sincronización</span><span class="desc" id="perfil-sync">${textoEstado()}</span></span></button></div>
+${htmlRespaldo()}
 <div style="margin-top:24px">${boton({texto:'Reiniciar todo el progreso',id:'preset',clase:'ghost ancho'})}</div>
 <p class="nota" style="margin-top:16px;text-align:center">Todo se guarda en este navegador · versión ${__VERSION__}${navigator.serviceWorker?.controller?' · disponible sin internet':''}</p>`;
   },

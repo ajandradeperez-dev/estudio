@@ -35,12 +35,12 @@ export function cerrarHoja(){document.getElementById('hoja')?.remove()}
 /* ---------- modal de confirmación ---------- */
 // Devuelve una promesa con el valor del botón elegido (o null si se cierra)
 // atrasConfirma: el botón Atrás del sistema, con este diálogo abierto, cuenta como «sí» (p. ej. «¿Salir de la lección?»)
-// Como confirmar(), pero con varias opciones: devuelve el `valor` de la elegida o null (Cancelar, Esc o tocar fuera)
+// Como confirmar(), pero con varias opciones: devuelve el `valor` de la elegida o null (Cancelar, Esc o tocar fuera); no:null sin «Cancelar»
 export function elegir({titulo,texto='',opciones,no='Cancelar'}){
   return new Promise(res=>{
     const f=document.createElement('div');f.className='modal-fondo';
     f.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-t"><h2 id="modal-t">${titulo}</h2>${texto?`<div class="modal-texto">${texto}</div>`:''}
-<div class="pila">${opciones.map((o,i)=>`<button class="btn ${o.clase||(i?'ghost':'')} ancho" data-r="1" data-valor="${i}">${o.texto}</button>${o.desc?`<p class="nota" style="margin:-4px 0 4px">${o.desc}</p>`:''}`).join('')}<button class="btn ghost ancho" data-r="0">${no}</button></div></div>`;
+<div class="pila">${opciones.map((o,i)=>`<button class="btn ${o.clase||(i?'ghost':'')} ancho" data-r="1" data-valor="${i}">${o.texto}</button>${o.desc?`<p class="nota" style="margin:-4px 0 4px">${o.desc}</p>`:''}`).join('')}${no?`<button class="btn ghost ancho" data-r="0">${no}</button>`:''}</div></div>`;
     const cerrar=v=>{f.remove();document.removeEventListener('keydown',tecla,true);res(v)};
     const tecla=e=>{if(e.key==='Escape'){e.stopPropagation();cerrar(null)}};
     f.addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(b)cerrar(b.dataset.r==='1'?opciones[+b.dataset.valor].valor:null);else if(e.target===f)cerrar(null)});

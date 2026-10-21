@@ -15,9 +15,11 @@
     "python": "node scripts/python.mjs",
     "lectura": "node scripts/lectura.mjs",
     "datos": "node scripts/datos.mjs",
+    "cuenta": "node scripts/cuenta.mjs",
     "libros": "node scripts/libros.mjs"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
     "playwright-core": "1.64.0",
     "pyodide": "0.29.5",
     "vite": "^8.3.4",

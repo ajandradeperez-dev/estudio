@@ -478,3 +478,9 @@ body{padding-top:var(--franja,0px)}
 .libro-etiquetas{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
 .libro-etiquetas .chip{font-size:12px}
 .lib-filtros .filtros{margin-bottom:6px}
+/* ☁️ Cuenta */
+.aviso-ok{background:var(--success-soft);border-radius:var(--r-m,12px);padding:10px 12px}
+.aviso-error{background:var(--error-soft);border-radius:var(--r-m,12px);padding:10px 12px}
+.lista-simple{list-style:none;padding:0;margin:0}
+.lista-simple li{padding:8px 0;border-bottom:1px solid var(--line)}
+.lista-simple li:last-child{border-bottom:0}

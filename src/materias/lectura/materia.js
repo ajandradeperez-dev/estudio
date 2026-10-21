@@ -1,15 +1,18 @@
-/* 📚 Lectura (⚪ Próximamente): agregar libros, marcar el avance por capítulos, guardar citas y notas y repasar ideas clave.
-   Por ahora solo se ve la pantalla de "Próximamente": no tiene lecciones, no cuenta para la meta ni la racha y no aparece en
-   "Lo siguiente para ti" (proximo:true). Modelo de datos previsto (irá en el progreso, materias.lectura.extra):
-   libros:[{id, titulo, autor, portada?,                      // portada: URL de datos opcional (foto del libro)
-            capitulos:[{titulo, leido}],                      // leido: fecha 'AAAA-MM-DD' o null
-            notas:[{texto, capitulo?, fecha}],                // notas propias (se escapan con esc() al mostrarlas)
-            citas:[{texto, pagina?, fecha}],                  // citas textuales; las ideas clave entran al repaso
-            meta_paginas_dia}]                                // meta opcional de páginas por día (no cuenta para la racha)
-   Al implementarlo: sube VERSION en nucleo/progreso.js si cambia el formato guardado. */
+/* 📚 Lectura: libros libres (dominio público o licencia abierta) para leer en el teléfono, también sin internet.
+   Biblioteca, portada con licencia y atribución, y lector (lector.js). Los textos los arma node scripts/libros.mjs en
+   public/libros/<libro>/ y se descargan por capítulo al abrirlos. Avance en el progreso: materias.lectura.extra.libros[id] =
+   {leidos:{<capítulo>: 'AAAA-MM-DD'}, ultimo}. Las palabras guardadas son tarjetas del repaso ('lectura/t/<id>').
+   No tiene habilidades ni examen de ubicación: su página es la biblioteca (vistaPropia). */
+import {vistaBiblioteca,rutaLibro} from './lector.js';
+
 export default {
-  nombre:'Lectura',icono:'📚',area:'estudio',orden:9,proximo:true,
-  descripcion:'Tus libros, avance por capítulos, citas y notas. Próximamente.',
-  intro:'Agrega tus libros, marca tu avance por capítulos, guarda citas y notas, y repasa ideas clave.',
-  lecciones:[]
+  nombre:'Lectura',icono:'📚',area:'estudio',orden:9,
+  descripcion:'Libros libres en inglés y lecturas de apoyo de los cursos, con preguntas, audio y palabras al repaso.',
+  intro:'Lee libros libres en el teléfono: fábulas, Alicia y Sherlock Holmes en inglés, y lecturas de apoyo de Python y estadística.',
+  lecciones:[],
+  vistaPropia:m=>vistaBiblioteca(m),
+  // La clave forma la ruta (#estudio/lectura/libro/<id>/<capítulo>): no la cambies.
+  secciones:{
+    libro:{titulo:'Libro',grupo:'Libros',desc:'Portada y capítulos de un libro.',modulo:{ruta:rutaLibro},propia:true}
+  }
 };

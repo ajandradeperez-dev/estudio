@@ -1,0 +1,89 @@
+{
+ "id": "python",
+ "titulo": "Plotting and Programming in Python",
+ "autor": "The Carpentries (Software Carpentry)",
+ "idioma": "en",
+ "nivel": "Técnico",
+ "icono": "🐍",
+ "tecnico": true,
+ "materia": "python",
+ "area": "cursos",
+ "licencia": "CC BY 4.0",
+ "atribucion": "Basado en «Plotting and Programming in Python» de The Carpentries, publicado bajo licencia Creative Commons Attribution 4.0 (https://creativecommons.org/licenses/by/4.0/). Se convirtió a texto para leerlo en la app (sin cambios de contenido). The Carpentries no avala esta app.",
+ "fuente": "https://swcarpentry.github.io/python-novice-gapminder/",
+ "descripcion": "Lectura de apoyo del curso de Python (en inglés): variables, tipos, listas, bucles, condicionales y funciones.",
+ "capitulos": [
+  {
+   "n": 1,
+   "titulo": "Running and Quitting",
+   "palabras": 3007,
+   "tema": "primeros-pasos"
+  },
+  {
+   "n": 2,
+   "titulo": "Variables and Assignment",
+   "palabras": 1611,
+   "tema": "variables"
+  },
+  {
+   "n": 3,
+   "titulo": "Data Types and Type Conversion",
+   "palabras": 1524,
+   "tema": "variables"
+  },
+  {
+   "n": 4,
+   "titulo": "Built-in Functions and Help",
+   "palabras": 2146,
+   "tema": "operadores"
+  },
+  {
+   "n": 5,
+   "titulo": "Libraries",
+   "palabras": 1598,
+   "tema": "archivos"
+  },
+  {
+   "n": 6,
+   "titulo": "Lists",
+   "palabras": 1588,
+   "tema": "listas"
+  },
+  {
+   "n": 7,
+   "titulo": "For Loops",
+   "palabras": 1431,
+   "tema": "bucles"
+  },
+  {
+   "n": 8,
+   "titulo": "Conditionals",
+   "palabras": 1267,
+   "tema": "condicionales"
+  },
+  {
+   "n": 9,
+   "titulo": "Looping Over Data Sets",
+   "palabras": 918,
+   "tema": "bucles"
+  },
+  {
+   "n": 10,
+   "titulo": "Writing Functions",
+   "palabras": 2394,
+   "tema": "funciones"
+  },
+  {
+   "n": 11,
+   "titulo": "Variable Scope",
+   "palabras": 448,
+   "tema": "funciones"
+  },
+  {
+   "n": 12,
+   "titulo": "Programming Style",
+   "palabras": 1102,
+   "tema": "proyectos"
+  }
+ ]
+}

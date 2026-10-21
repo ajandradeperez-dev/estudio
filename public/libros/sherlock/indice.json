@@ -1,0 +1,74 @@
+{
+ "id": "sherlock",
+ "titulo": "The Adventures of Sherlock Holmes",
+ "autor": "Arthur Conan Doyle",
+ "idioma": "en",
+ "nivel": "B2",
+ "icono": "🔍",
+ "licencia": "Dominio público en EE. UU.",
+ "atribucion": "Texto de dominio público, tomado de Project Gutenberg (libro #1661).",
+ "fuente": "https://www.gutenberg.org/ebooks/1661",
+ "descripcion": "Doce casos del detective más famoso: inglés de nivel avanzado.",
+ "capitulos": [
+  {
+   "n": 1,
+   "titulo": "A Scandal in Bohemia",
+   "palabras": 8519
+  },
+  {
+   "n": 2,
+   "titulo": "The Red-Headed League",
+   "palabras": 9113
+  },
+  {
+   "n": 3,
+   "titulo": "A Case of Identity",
+   "palabras": 6978
+  },
+  {
+   "n": 4,
+   "titulo": "The Boscombe Valley Mystery",
+   "palabras": 9618
+  },
+  {
+   "n": 5,
+   "titulo": "The Five Orange Pips",
+   "palabras": 7318
+  },
+  {
+   "n": 6,
+   "titulo": "The Man with the Twisted Lip",
+   "palabras": 9205
+  },
+  {
+   "n": 7,
+   "titulo": "The Adventure of the Blue Carbuncle",
+   "palabras": 7821
+  },
+  {
+   "n": 8,
+   "titulo": "The Adventure of the Speckled Band",
+   "palabras": 9805
+  },
+  {
+   "n": 9,
+   "titulo": "The Adventure of the Engineer’s Thumb",
+   "palabras": 8285
+  },
+  {
+   "n": 10,
+   "titulo": "The Adventure of the Noble Bachelor",
+   "palabras": 8118
+  },
+  {
+   "n": 11,
+   "titulo": "The Adventure of the Beryl Coronet",
+   "palabras": 9679
+  },
+  {
+   "n": 12,
+   "titulo": "The Adventure of the Copper Beeches",
+   "palabras": 9947
+  }
+ ]
+}

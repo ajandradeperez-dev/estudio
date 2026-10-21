@@ -1,0 +1,74 @@
+{
+ "id": "alice",
+ "titulo": "Alice’s Adventures in Wonderland",
+ "autor": "Lewis Carroll",
+ "idioma": "en",
+ "nivel": "B1",
+ "icono": "🐇",
+ "licencia": "Dominio público en EE. UU.",
+ "atribucion": "Texto de dominio público, tomado de Project Gutenberg (libro #11).",
+ "fuente": "https://www.gutenberg.org/ebooks/11",
+ "descripcion": "Alicia cae por la madriguera del Conejo Blanco: 12 capítulos de inglés intermedio.",
+ "capitulos": [
+  {
+   "n": 1,
+   "titulo": "Down the Rabbit-Hole",
+   "palabras": 2144
+  },
+  {
+   "n": 2,
+   "titulo": "The Pool of Tears",
+   "palabras": 2097
+  },
+  {
+   "n": 3,
+   "titulo": "A Caucus-Race and a Long Tale",
+   "palabras": 1700
+  },
+  {
+   "n": 4,
+   "titulo": "The Rabbit Sends in a Little Bill",
+   "palabras": 2614
+  },
+  {
+   "n": 5,
+   "titulo": "Advice from a Caterpillar",
+   "palabras": 2169
+  },
+  {
+   "n": 6,
+   "titulo": "Pig and Pepper",
+   "palabras": 2594
+  },
+  {
+   "n": 7,
+   "titulo": "A Mad Tea-Party",
+   "palabras": 2291
+  },
+  {
+   "n": 8,
+   "titulo": "The Queen’s Croquet-Ground",
+   "palabras": 2486
+  },
+  {
+   "n": 9,
+   "titulo": "The Mock Turtle’s Story",
+   "palabras": 2272
+  },
+  {
+   "n": 10,
+   "titulo": "The Lobster Quadrille",
+   "palabras": 2037
+  },
+  {
+   "n": 11,
+   "titulo": "Who Stole the Tarts?",
+   "palabras": 1878
+  },
+  {
+   "n": 12,
+   "titulo": "Alice’s Evidence",
+   "palabras": 2122
+  }
+ ]
+}

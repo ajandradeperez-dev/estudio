@@ -146,7 +146,8 @@ src/
     matematicas/          materia.js + temas.js (lista de temas) + temas/<tema>/NN-….js (antes "algebra": alias y migración v6)
     excel/                materia.js + temas.js + secciones/ (hoja libre, tabla dinámica, organizar)
     ciencia-datos/        materia.js + temas.js + temas/<tema>/NN-….js
-    lectura/              materia.js (⚪ próximamente: proximo:true, sin lecciones; modelo de datos documentado)
+    lectura/              materia.js, lector.js (biblioteca y lector), preguntas.js, catalogo.js (generado por npm run libros)
+    python/               materia.js, temas.js, laboratorio.js (39 ejercicios con juez), secciones/ (editor, laboratorio)
   contenido/PLAN.md       Árbol completo del contenido (fuente de verdad; revisar lo compara con cada temas.js)
 ```
 
@@ -489,13 +490,23 @@ Lo único de la app que usa un servidor: los votos tienen que ser compartidos. T
 - **Administrar**: Perfil → Acerca de → tocar **7 veces** la versión → correo → enlace mágico (Supabase Auth; vuelve a la app con `#access_token=…`, que `main.js` guarda en `ciberlab-admin` y lleva a `#propuestas/admin`). La primera vez, en el SQL Editor: `insert into public.admins(usuario) select id from auth.users where email = '<tu correo>';` (el correo no se escribe en el repositorio). La pantalla muestra cuántas hay pendientes de revisión y aprobadas por preparar; ✅ Publicar / ⛔ Rechazar, estado, respuesta, motivo y enlace. Para un correo automático al aprobarse algo: Supabase → Database → Webhooks sobre `propuestas` (update) hacia una Edge Function o un servicio de correo (opcional).
 - **Pruebas**: `scripts/fixtures/supabase-simulado.mjs` imita las funciones con las mismas reglas; `revisar` prueba límites, duplicados, aprobación a los 5, cola sin conexión, 429, propuestas pendientes ocultas y el aviso de disponible.
 
-## 📚 Lectura (⚪ próximamente)
+## 📚 Lectura (`src/materias/lectura/`)
 
-`src/materias/lectura/materia.js` con `proximo:true`: la tarjeta del área dice "⚪ Próximamente" y su página muestra solo "Agrega tus libros, marca tu avance por capítulos, guarda citas y notas, y repasa ideas clave" con "➕ Agregar libro" deshabilitado. No cuenta para metas ni racha, no sale en la bienvenida, en Perfil ni en "Lo siguiente". Modelo previsto (irá en `materias.lectura.extra`; al implementarlo, sube `VERSION`):
+Libros libres para leer en el teléfono, también sin internet. **Solo dominio público o CC BY**, con licencia y atribución en su portada (`revisar` falla si falta o si un capítulo conserva el encabezado o la licencia de Project Gutenberg).
 
-```js
-libros:[{id, titulo, autor, portada?, capitulos:[{titulo, leido}], notas:[{texto, capitulo?, fecha}], citas:[{texto, pagina?, fecha}], meta_paginas_dia}]
-```
+| Libro | Licencia | Para |
+|---|---|---|
+| The Aesop for Children (1919, Gutenberg #19994) | Dominio público (EE. UU.) | Inglés A1–A2 (fábulas en grupos de 10) |
+| Alice’s Adventures in Wonderland (Gutenberg #11) | Dominio público (EE. UU.) | Inglés B1 |
+| The Adventures of Sherlock Holmes (Gutenberg #1661) | Dominio público (EE. UU.) | Inglés B2 |
+| Plotting and Programming in Python (The Carpentries) | CC BY 4.0 | Apoyo del curso de Python (cada capítulo enlaza su tema) |
+| Online Statistics Education (David M. Lane, Rice) | Dominio público | Apoyo de Ciencia de datos (cada capítulo enlaza su tema) |
+
+Los dos libros de OpenStax que se pidieron al principio (*Introduction to Python Programming* e *Introductory Statistics*) **no se usan**: son CC BY-NC-SA (la 1.ª edición de Statistics tiene texto CC BY pero imágenes NC-SA) y OpenStax prohíbe usarlos en IA generativa sin permiso; se reemplazaron por los dos de arriba (verificado en las páginas oficiales en octubre de 2026).
+
+- **Textos**: `npm run libros` (`scripts/libros.mjs`, con `--cache <dir>` para no volver a descargar) baja cada obra de su fuente, quita el encabezado y el pie de Gutenberg, convierte el HTML a bloques seguros (`{t:'h'|'p'|'li'|'code'|'fuente', x}` con solo b, i, code, sub, sup e img de onlinestatbook), y escribe `public/libros/<libro>/<n>.json` + `indice.json` y el catálogo liviano `src/materias/lectura/catalogo.js` (no se editan a mano). Los capítulos no están en el paquete ni en el precache: se descargan al abrirlos y el service worker los guarda (cachés `libros` y `libros-figuras`).
+- **Lector** (`lector.js`, rutas `estudio/lectura`, `…/libro/<id>`, `…/libro/<id>/<n>`; la materia usa `vistaPropia` en vez de la página de temas): letra A−/A+ y modo oscuro propios, recuerda el capítulo y la posición (`localStorage['ciberlab-lectura']`, comodidad), capítulos leídos en `materias.lectura.extra.libros[id] = {leidos:{n: fecha}, ultimo}`. Inglés: tocar una palabra (`caretPositionFromPoint`, sin envolver cada palabra) abre su ficha con 🔊, significado (✨ IA opcional o lo que escribas; enlace a WordReference) y «🃏 Guardar en repaso» (`agregarTarjeta` en `progreso.js`: tarjeta suelta `lectura/t/<id>` con `origen:'lectura'`); «🔊» por párrafo; 3 preguntas de comprensión por capítulo (`preguntas.js`: `[pregunta, respuestas, evidencia]`, la evidencia debe estar tal cual en el capítulo) que, con mayoría de aciertos, lo marcan como leído. Técnicos: «🎯 Practicar este capítulo».
+- **Pruebas**: `npm run lectura` (biblioteca, licencia, capítulo, letra, oscuro, palabra → repaso, preguntas, práctica y sin conexión).
 
 ## Avance del contenido
 
@@ -529,8 +540,8 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | Cuaderno · borrar notas (🗑️ en la nota, «⋯» y «☑️ Seleccionar» en la lista, confirmación propia, Deshacer 8 s, fotos y enlaces limpios; `go()` espera el regreso de una capa antes de navegar) | ✅ terminado |
 | Parte A · Ayuda que enseña (pistas en escalera, «No sé cómo empezar», mini-lección, ejemplos que se desvanecen, «Dónde se desvió», Gauss explicado) | ✅ terminado |
 | Parte B · 🐍 Curso de Python (13 temas, 29 habilidades ✅, editor y laboratorio con Pyodide, 39 ejercicios con juez) | ✅ terminado |
-| Parte C · 📚 Lectura con libros libres | ⏳ siguiente |
-| P3b · Inglés: metas extra por nivel | pendiente |
+| Parte C · 📚 Lectura con 5 libros libres (dominio público o CC BY), lector sin conexión, palabras al repaso y preguntas | ✅ terminado |
+| P3b · Inglés: metas extra por nivel | ⏳ siguiente |
 | 4 · Inglés: completar A1 y A2, luego B1 | reemplazado por P3 y P6 |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | reemplazado por P3 y P6 |
 | 6 · Inglés B2 y temas avanzados | reemplazado por P3 y P6 |
@@ -560,6 +571,8 @@ npm run revisar   # método, jerarquía, contenido de habla, migración del prog
 npm run cuaderno  # borrar notas: una, varias, deshacer, fotos fuera de IndexedDB (la compartida se queda) y Atrás cancela (--capturas <dir> [--oscuro])
 npm run principiante # cada habilidad lista para un principiante: mini-lección, nivel 1, 3 pistas con datos, gemelo (--detalle)
 npm run python    # el curso de Python ejecutado en Pyodide: cada ejercicio generado y cada solución del laboratorio
+npm run lectura   # 📚 Lectura en el navegador (biblioteca, capítulo, palabra al repaso, preguntas, sin conexión)
+npm run libros    # vuelve a armar public/libros y el catálogo desde las fuentes (--cache <dir>)
 npm run atras     # botón Atrás nivel por nivel (6 niveles y 7 Atrás, enlace directo, recarga, otras ramas) en teléfono y escritorio
 npm run calidad   # 360 y 412 px, claro y oscuro: textos encimados, scroll horizontal y toques < 44 px en Aprender, Logros, Perfil, Notas y cada materia y tema (compila y levanta su propio preview; necesita Chrome o Edge)
 ```

@@ -1,0 +1,266 @@
+{
+ "id": "aesop",
+ "titulo": "The Aesop for Children",
+ "autor": "Esopo (versión de 1919, ilustraciones de Milo Winter)",
+ "idioma": "en",
+ "nivel": "A1–A2",
+ "icono": "🦊",
+ "licencia": "Dominio público en EE. UU.",
+ "atribucion": "Texto de dominio público, tomado de Project Gutenberg (libro #19994).",
+ "fuente": "https://www.gutenberg.org/ebooks/19994",
+ "descripcion": "Fábulas cortas en inglés sencillo, cada una con su moraleja.",
+ "capitulos": [
+  {
+   "n": 1,
+   "titulo": "The Wolf and the Kid … The Kid and the Wolf",
+   "palabras": 1949,
+   "fabulas": [
+    "The Wolf and the Kid",
+    "The Tortoise and the Ducks",
+    "The Young Crab and his Mother",
+    "The Frogs and the Ox",
+    "The Dog, the Cock, and the Fox",
+    "Belling the Cat",
+    "The Eagle and the Jackdaw",
+    "The Boy and the Filberts",
+    "Hercules and the Wagoner",
+    "The Kid and the Wolf"
+   ]
+  },
+  {
+   "n": 2,
+   "titulo": "The Town Mouse and the Country Mouse … The Plane Tree",
+   "palabras": 1923,
+   "fabulas": [
+    "The Town Mouse and the Country Mouse",
+    "The Fox and the Grapes",
+    "The Bundle of Sticks",
+    "The Wolf and the Crane",
+    "The Ass and his Driver",
+    "The Oxen and the Wheels",
+    "The Lion and the Mouse",
+    "The Shepherd Boy and the Wolf",
+    "The Gnat and the Bull",
+    "The Plane Tree"
+   ]
+  },
+  {
+   "n": 3,
+   "titulo": "The Farmer and the Stork … The Boys and the Frogs",
+   "palabras": 1919,
+   "fabulas": [
+    "The Farmer and the Stork",
+    "The Sheep and the Pig",
+    "The Travelers and the Purse",
+    "The Lion and the Ass",
+    "The Frogs Who Wished for a King",
+    "The Owl and the Grasshopper",
+    "The Wolf and his Shadow",
+    "The Oak and the Reeds",
+    "The Rat and the Elephant",
+    "The Boys and the Frogs"
+   ]
+  },
+  {
+   "n": 4,
+   "titulo": "The Crow and the Pitcher … The Monkey and the Camel",
+   "palabras": 1473,
+   "fabulas": [
+    "The Crow and the Pitcher",
+    "The Ants and the Grasshopper",
+    "The Ass Carrying the Image",
+    "A Raven and a Swan",
+    "The Two Goats",
+    "The Ass and the Load of Salt",
+    "The Lion and the Gnat",
+    "The Leap at Rhodes",
+    "The Cock and the Jewel",
+    "The Monkey and the Camel"
+   ]
+  },
+  {
+   "n": 5,
+   "titulo": "The Wild Boar and the Fox … The Wolf and the Lion",
+   "palabras": 1657,
+   "fabulas": [
+    "The Wild Boar and the Fox",
+    "The Ass, the Fox, and the Lion",
+    "The Birds, the Beasts, and the Bat",
+    "The Lion, the Bear, and the Fox",
+    "The Wolf and the Lamb",
+    "The Wolf and the Sheep",
+    "The Hares and the Frogs",
+    "The Fox and the Stork",
+    "The Travelers and the Sea",
+    "The Wolf and the Lion"
+   ]
+  },
+  {
+   "n": 6,
+   "titulo": "The Stag and his Reflection … The Wolf and the Ass",
+   "palabras": 1883,
+   "fabulas": [
+    "The Stag and his Reflection",
+    "The Peacock",
+    "The Mice and the Weasels",
+    "The Wolf and the Lean Dog",
+    "The Fox and the Lion",
+    "The Lion and the Ass",
+    "The Dog and his Master's Dinner",
+    "The Vain Jackdaw and his Borrowed Feathers",
+    "The Monkey and the Dolphin",
+    "The Wolf and the Ass"
+   ]
+  },
+  {
+   "n": 7,
+   "titulo": "The Monkey and the Cat … The Wolf and the Goat",
+   "palabras": 1663,
+   "fabulas": [
+    "The Monkey and the Cat",
+    "The Dogs and the Fox",
+    "The Dogs and the Hides",
+    "The Rabbit, the Weasel, and the Cat",
+    "The Bear and the Bees",
+    "The Fox and the Leopard",
+    "The Heron",
+    "The Cock and the Fox",
+    "The Dog in the Manger",
+    "The Wolf and the Goat"
+   ]
+  },
+  {
+   "n": 8,
+   "titulo": "The Ass and the Grasshoppers … The Goose and the Golden Egg",
+   "palabras": 1790,
+   "fabulas": [
+    "The Ass and the Grasshoppers",
+    "The Mule",
+    "The Fox and the Goat",
+    "The Cat, the Cock, and the Young Mouse",
+    "The Wolf and the Shepherd",
+    "The Peacock and the Crane",
+    "The Farmer and the Cranes",
+    "The Farmer and his Sons",
+    "The Two Pots",
+    "The Goose and the Golden Egg"
+   ]
+  },
+  {
+   "n": 9,
+   "titulo": "The Fighting Bulls and the Frog … Three Bullocks and a Lion",
+   "palabras": 1412,
+   "fabulas": [
+    "The Fighting Bulls and the Frog",
+    "The Mouse and the Weasel",
+    "The Farmer and the Snake",
+    "The Sick Stag",
+    "The Goatherd and the Wild Goats",
+    "The Spendthrift and the Swallow",
+    "The Cat and the Birds",
+    "The Dog and the Oyster",
+    "The Astrologer",
+    "Three Bullocks and a Lion"
+   ]
+  },
+  {
+   "n": 10,
+   "titulo": "Mercury and the Woodman … The Ass and the Lap Dog",
+   "palabras": 2013,
+   "fabulas": [
+    "Mercury and the Woodman",
+    "The Frog and the Mouse",
+    "The Fox and the Crab",
+    "The Serpent and the Eagle",
+    "The Wolf in Sheep's Clothing",
+    "The Bull and the Goat",
+    "The Eagle and the Beetle",
+    "The Old Lion and the Fox",
+    "The Man and the Lion",
+    "The Ass and the Lap Dog"
+   ]
+  },
+  {
+   "n": 11,
+   "titulo": "The Milkmaid and her Pail … The Mischievous Dog",
+   "palabras": 1742,
+   "fabulas": [
+    "The Milkmaid and her Pail",
+    "The Wolf and the Shepherd",
+    "The Goatherd and the Goat",
+    "The Miser",
+    "The Wolf and the House Dog",
+    "The Fox and the Hedgehog",
+    "The Bat and the Weasels",
+    "The Quack Toad",
+    "The Fox Without a Tail",
+    "The Mischievous Dog"
+   ]
+  },
+  {
+   "n": 12,
+   "titulo": "The Rose and the Butterfly … The Flies and the Honey",
+   "palabras": 1548,
+   "fabulas": [
+    "The Rose and the Butterfly",
+    "The Cat and the Fox",
+    "The Boy and the Nettle",
+    "The Old Lion",
+    "The Fox and the Pheasants",
+    "Two Travelers and a Bear",
+    "The Porcupine and the Snakes",
+    "The Fox and the Monkey",
+    "The Mother and the Wolf",
+    "The Flies and the Honey"
+   ]
+  },
+  {
+   "n": 13,
+   "titulo": "The Eagle and the Kite … The Fox and the Crow",
+   "palabras": 2559,
+   "fabulas": [
+    "The Eagle and the Kite",
+    "The Stag, the Sheep, and the Wolf",
+    "The Animals and the Plague",
+    "The Shepherd and the Lion",
+    "The Dog and his Reflection",
+    "The Hare and the Tortoise",
+    "The Bees and Wasps, and the Hornet",
+    "The Lark and her Young Ones",
+    "The Cat and the Old Rat",
+    "The Fox and the Crow"
+   ]
+  },
+  {
+   "n": 14,
+   "titulo": "The Ass and its Shadow … The Mole and his Mother",
+   "palabras": 1739,
+   "fabulas": [
+    "The Ass and its Shadow",
+    "The Miller, his Son, and the Ass",
+    "The Ant and the Dove",
+    "The Man and the Satyr",
+    "The Wolf, the Kid, and the Goat",
+    "The Swallow and the Crow",
+    "Jupiter and the Monkey",
+    "The Lion, the Ass, and the Fox",
+    "The Lion's Share",
+    "The Mole and his Mother"
+   ]
+  },
+  {
+   "n": 15,
+   "titulo": "The North Wind and the Sun … The Fighting Cocks and the Eagle",
+   "palabras": 1101,
+   "fabulas": [
+    "The North Wind and the Sun",
+    "The Hare and his Ears",
+    "The Wolves and the Sheep",
+    "The Cock and the Fox",
+    "The Ass in the Lion's Skin",
+    "The Fisherman and the Little Fish",
+    "The Fighting Cocks and the Eagle"
+   ]
+  }
+ ]
+}

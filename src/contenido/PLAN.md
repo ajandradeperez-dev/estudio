@@ -732,6 +732,6 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 
 📚 Para profundizar: James et al., «An Introduction to Statistical Learning» — caps. 2 a 5 y 8 · Documentación de scikit-learn — guía de usuario (model evaluation)
 
-## 📚 Lectura `lectura` (⚪ Próximamente)
+## 📚 Lectura `lectura`
 
-Agregar libros, avance por capítulos, citas, notas y repaso de ideas clave. Modelo de datos documentado en src/materias/lectura/materia.js y en CLAUDE.md.
+5 libros libres (scripts/libros.mjs → public/libros/): The Aesop for Children (Dominio público en EE. UU., 15 capítulos) · Alice’s Adventures in Wonderland (Dominio público en EE. UU., 12 capítulos) · The Adventures of Sherlock Holmes (Dominio público en EE. UU., 12 capítulos) · Plotting and Programming in Python (CC BY 4.0, 12 capítulos) · Online Statistics Education (Dominio público, 12 capítulos).

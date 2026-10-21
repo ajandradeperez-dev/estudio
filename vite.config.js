@@ -73,6 +73,11 @@ export default defineConfig({
         // laboratorio y queda guardado para usarse sin internet
         {urlPattern:({url})=>url.origin==='https://cdn.jsdelivr.net'&&url.pathname.startsWith('/pyodide/'),handler:'CacheFirst',
          options:{cacheName:'pyodide',expiration:{maxEntries:40,maxAgeSeconds:60*60*24*365},cacheableResponse:{statuses:[0,200]}}},
+        // 📚 Lectura: cada capítulo (public/libros/…) se guarda al abrirlo; las figuras de Online Statistics Education también
+        {urlPattern:({url})=>url.pathname.includes('/libros/')&&url.pathname.endsWith('.json'),handler:'StaleWhileRevalidate',
+         options:{cacheName:'libros',expiration:{maxEntries:120,maxAgeSeconds:60*60*24*365},cacheableResponse:{statuses:[0,200]}}},
+        {urlPattern:({url})=>url.origin==='https://onlinestatbook.com',handler:'CacheFirst',
+         options:{cacheName:'libros-figuras',expiration:{maxEntries:300,maxAgeSeconds:60*60*24*365},cacheableResponse:{statuses:[0,200]}}},
         {urlPattern:({url})=>url.origin==='https://fonts.googleapis.com',handler:'StaleWhileRevalidate',
          options:{cacheName:'fuentes-css',cacheableResponse:{statuses:[0,200]}}},
         {urlPattern:({url})=>url.origin==='https://fonts.gstatic.com',handler:'CacheFirst',

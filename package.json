@@ -12,7 +12,9 @@
     "atras": "node scripts/atras.mjs",
     "cuaderno": "node scripts/cuaderno.mjs",
     "principiante": "node scripts/principiante.mjs",
-    "python": "node scripts/python.mjs"
+    "python": "node scripts/python.mjs",
+    "lectura": "node scripts/lectura.mjs",
+    "libros": "node scripts/libros.mjs"
   },
   "devDependencies": {
     "playwright-core": "1.64.0",

@@ -138,7 +138,7 @@ export function ejercicioPorRef(ref){
   // Tarjeta de una nota del cuaderno ('<materia>/t/<id>' o 'notas/t/<id>' si la nota no es de una materia)
   if(resto[0]==='t'){const c=progreso().tarjetas[resto[1]];if(!c)return null;
     return {materia:m||{id:mid,nombre:'Mis notas'},titulo:`🃏 ${c.titulo||'Tarjeta'}`,pregunta:{enunciado:c.q,respuesta:c.a,verificar:e=>tarjetaBien(e,c.a),
-      regla:`De tu nota «${c.titulo||'Notas'}». Si tu respuesta era correcta con otras palabras, corrígela en la nota para que coincida.`,ref,tarjeta:true}}}
+      regla:c.origen==='lectura'?`Palabra que guardaste leyendo «${c.titulo}».`:`De tu nota «${c.titulo||'Notas'}». Si tu respuesta era correcta con otras palabras, corrígela en la nota para que coincida.`,ref,tarjeta:true}}}
   if(!m)return null;
   if(resto[0]==='l'){
     const l=leccion(m,resto[1]),ej=l&&ejerciciosLeccion(l)[+resto[2]];

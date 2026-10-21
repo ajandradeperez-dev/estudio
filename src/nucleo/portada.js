@@ -128,6 +128,8 @@ ${a.id==='cursos'?tarjetaNav({go:'propuestas',icono:'⚪',titulo:'Próximamente�
 
 /* ---------- página de una materia: lo siguiente, temas (o lecciones) y herramientas ---------- */
 export function vistaMateria(m){
+  // Materia con su propia página (p. ej. 📚 Lectura: la biblioteca)
+  if(m.vistaPropia)return m.vistaPropia(m);
   const tono=m.tono||tonoDe(areaDe(m));
   return {
     titulo:m.nombre,

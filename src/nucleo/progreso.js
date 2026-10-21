@@ -368,6 +368,13 @@ export function sincronizarTarjetas(nota,{materia,titulo},lista){
     return nuevas;
   });
 }
+// Tarjeta suelta (no sale de una nota del cuaderno): p. ej. una palabra guardada desde 📚 Lectura. Entra al repaso hoy.
+export function agregarTarjeta({q,a,materia=null,titulo,origen}){
+  const id=`w${hash(q+'|'+a)}`,ref=refTarjeta(materia,id);
+  cambiar(p=>{if(!p.repaso[ref])p.repaso[ref]={rep:0,int:1,ef:2.5,proxima:hoy(),fallos:0};
+    p.tarjetas[id]={q,a,nota:null,titulo,materia,origen,fecha:p.tarjetas[id]?.fecha||hoy()}});
+  return id;
+}
 export function borrarTarjetasDe(nota){
   if(!Object.values(progreso().tarjetas).some(t=>t.nota===nota))return;
   cambiar(p=>{for(const [id,t] of Object.entries(p.tarjetas))if(t.nota===nota){delete p.tarjetas[id];delete p.repaso[refTarjeta(t.materia,id)]}});

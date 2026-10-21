@@ -1,0 +1,89 @@
+{
+ "id": "estadistica",
+ "titulo": "Online Statistics Education",
+ "autor": "David M. Lane (Rice University) y colaboradores",
+ "idioma": "en",
+ "nivel": "Técnico",
+ "icono": "📊",
+ "tecnico": true,
+ "materia": "ciencia-datos",
+ "area": "estudio",
+ "licencia": "Dominio público",
+ "atribucion": "Online Statistics Education: A Multimedia Course of Study (http://onlinestatbook.com/), proyecto dirigido por David M. Lane, Rice University. Obra de dominio público. Las simulaciones y ejercicios interactivos están en el sitio original.",
+ "fuente": "https://onlinestatbook.com/2/index.html",
+ "descripcion": "Lectura de apoyo de Ciencia de datos (en inglés): estadística descriptiva, probabilidad, normal, muestreo, estimación, pruebas, regresión y chi cuadrada.",
+ "capitulos": [
+  {
+   "n": 1,
+   "titulo": "Introduction",
+   "palabras": 10723,
+   "tema": "estadistica"
+  },
+  {
+   "n": 2,
+   "titulo": "Graphing Distributions",
+   "palabras": 7196,
+   "tema": "estadistica"
+  },
+  {
+   "n": 3,
+   "titulo": "Summarizing Distributions",
+   "palabras": 6448,
+   "tema": "estadistica"
+  },
+  {
+   "n": 4,
+   "titulo": "Describing Bivariate Data",
+   "palabras": 2032,
+   "tema": "estadistica"
+  },
+  {
+   "n": 5,
+   "titulo": "Probability",
+   "palabras": 6909,
+   "tema": "probabilidad"
+  },
+  {
+   "n": 6,
+   "titulo": "Normal Distributions",
+   "palabras": 2379,
+   "tema": "probabilidad"
+  },
+  {
+   "n": 7,
+   "titulo": "Sampling Distributions",
+   "palabras": 4042,
+   "tema": "inferencia"
+  },
+  {
+   "n": 8,
+   "titulo": "Estimation",
+   "palabras": 6619,
+   "tema": "inferencia"
+  },
+  {
+   "n": 9,
+   "titulo": "Logic of Hypothesis Testing",
+   "palabras": 5878,
+   "tema": "inferencia"
+  },
+  {
+   "n": 10,
+   "titulo": "Tests of Means",
+   "palabras": 8028,
+   "tema": "inferencia"
+  },
+  {
+   "n": 11,
+   "titulo": "Prediction",
+   "palabras": 8774,
+   "tema": "inferencia"
+  },
+  {
+   "n": 12,
+   "titulo": "Chi Square",
+   "palabras": 1759,
+   "tema": "inferencia"
+  }
+ ]
+}

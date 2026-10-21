@@ -339,7 +339,7 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
     notas:{'algebra/expresiones':{texto:'Resumen',fecha:f(3)}},ultimo:{ruta:'algebra/l/ecuaciones-lineales',materia:'algebra'},frases:{},historial:[{materia:'algebra',tipo:'algebra/l/expresiones',fecha:f(0)}]};
   mem['ciberlab-progreso']=JSON.stringify(v5);
   const p=P.progreso(),m=p.materias.matematicas,e='migración v5';
-  if(p.v!==10)mal(e,`queda en la versión ${p.v} (se esperaba 10)`);
+  if(p.v!==11)mal(e,`queda en la versión ${p.v} (se esperaba 11)`);
   if(p.materias.algebra||m?.xp!==230||!m.lecciones.expresiones?.dominada||m.lecciones['ecuaciones-lineales']?.mejor!==0.4)mal(e,'se pierden la XP o las lecciones de Álgebra (ahora Matemáticas)');
   if(!p.materias.ingles?.lecciones['verbo-to-be']?.dominada)mal(e,'se pierden lecciones de otras materias');
   if(!p.repaso['matematicas/l/expresiones/3']||!p.repaso['ingles/l/can/2'])mal(e,'se pierden o no se renombran repasos: '+Object.keys(p.repaso).join(', '));
@@ -371,12 +371,56 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   v9.repaso['ciberseguridad/examen/3']={rep:1,int:1,ef:2.5,proxima:f(0),fallos:1};v9.notas['ciberseguridad/subredes-cidr']={texto:'Red y broadcast',fecha:f(1)};
   mem['ciberlab-progreso']=JSON.stringify(v9);
   const q=P.progreso(),e10='migración v10 (Cursos)';
-  if(q.v!==10)mal(e10,`queda en la versión ${q.v}`);
+  if(q.v!==11)mal(e10,`queda en la versión ${q.v}`);
   if(q.materias.ciberseguridad?.xp!==340||!q.materias.ciberseguridad.lecciones['subredes-cidr']?.dominada)mal(e10,'se pierden la XP o las habilidades de Ciberseguridad');
   if(!q.repaso['ciberseguridad/examen/3']||q.notas['ciberseguridad/subredes-cidr']?.texto!=='Red y broadcast')mal(e10,'se pierden repasos o notas de Ciberseguridad');
   if(q.ultimo?.ruta!=='cursos/ciberseguridad/fw'||q.historial[0]?.tipo!=='cursos/ciberseguridad/quiz')mal(e10,'"continuar" sigue en la ruta vieja: '+q.ultimo?.ruta);
   if(q.materias.matematicas?.xp!==230||P.racha(q)!==3)mal(e10,'se pierde lo de otras materias o la racha');
+  // v11: lo acumulado queda como «base» de cada contador (para combinar dispositivos sin contar dos veces)
+  if(q.materias.matematicas?.base?.xp!==230||q.dias[f(0)]?.base?.ej!==12)mal('migración v11','la XP y los contadores del día no quedan como base');
   console.log(`progreso: un v5 migra a v${p.v} conservando lecciones, XP, racha, repasos y notas; un v9 con Ciberseguridad pasa a Cursos sin perder nada`);
+  // Combinar dos dispositivos (sync/fusionar.js): XP exacta sin duplicar, idempotente, racha de la unión, repaso más reciente, lápidas
+  const S=await import(pathToFileURL(join(raiz,'..','nucleo','sync','fusionar.js')).href),es='combinar dispositivos',sumar=P.sumarDias;
+  const vacioP=()=>({v:11,meta:{tipo:'ejercicios',cantidad:10},dias:{},mejorRacha:0,materias:{},repaso:{},dominados:0,notas:{},tarjetas:{},basicos:{},refuerzos:{},estrellas:{},ultimo:null,frases:{},historial:[]});
+  const ganar=(x,mat,xp,ej,dd=0)=>{const m=x.materias[mat]=x.materias[mat]||{xp:0,lecciones:{},extra:{},visitadas:[]};m.xp+=xp;const d=x.dias[f(dd)]=x.dias[f(dd)]||{ej:0,seg:0,xp:0,ok:false};d.ej+=ej;d.xp+=xp;if(d.ej>=10)d.ok=true};
+  const A=vacioP();ganar(A,'matematicas',100,10);ganar(A,'matematicas',40,10,1);ganar(A,'matematicas',30,10,2);
+  // B importa el respaldo de A (Reemplazar) y sigue practicando; A también
+  let B=S.marcarAportes(A,'A');ganar(B,'matematicas',50,5);ganar(B,'ingles',20,2);
+  ganar(A,'matematicas',30,3);
+  const xpDe=(x,mt)=>x.materias[mt]?.xp,ejHoy=x=>x.dias[f(0)]?.ej;
+  const AB=S.fusionarProgreso(A,S.marcarAportes(B,'B'),{yo:'A',el:'B'});
+  if(xpDe(AB,'matematicas')!==250||xpDe(AB,'ingles')!==20||ejHoy(AB)!==20)mal(es,`la XP o los ejercicios no se suman exacto (${xpDe(AB,'matematicas')} XP, ${ejHoy(AB)} ej; se esperaba 250 y 20)`);
+  const AB2=S.fusionarProgreso(AB,S.marcarAportes(B,'B'),{yo:'A',el:'B'}),AB3=S.fusionarProgreso(AB2,S.marcarAportes(AB2,'A'),{yo:'A',el:'A'});
+  if(xpDe(AB2,'matematicas')!==250||ejHoy(AB2)!==20||xpDe(AB3,'matematicas')!==250)mal(es,'combinar otra vez duplica la XP');
+  const BA=S.fusionarProgreso(B,S.marcarAportes(A,'A'),{yo:'B',el:'A'});
+  if(xpDe(BA,'matematicas')!==250||ejHoy(BA)!==20)mal(es,'combinar en el otro sentido no da lo mismo');
+  // B sigue y vuelve a combinar: solo se suma lo nuevo
+  ganar(B,'matematicas',7,1);const AB4=S.fusionarProgreso(AB,S.marcarAportes(B,'B'),{yo:'A',el:'B'});
+  if(xpDe(AB4,'matematicas')!==257)mal(es,`lo nuevo de un dispositivo no se suma una sola vez (${xpDe(AB4,'matematicas')})`);
+  // base de antes de v11: máximo (no se infla)
+  const L1=vacioP(),L2=vacioP();L1.materias.matematicas={xp:100,base:{xp:100},lecciones:{},extra:{}};L2.materias.matematicas={xp:80,base:{xp:80},lecciones:{},extra:{}};
+  if(xpDe(S.fusionarProgreso(L1,L2,{yo:'A',el:'B'}),'matematicas')!==100)mal(es,'la XP de antes de v11 no se combina con el máximo');
+  // racha: unión de los días cumplidos en cualquiera
+  const R1=vacioP(),R2=vacioP();R1.dias[f(1)]={ej:10,seg:0,xp:0,ok:true};R1.dias[f(3)]={ej:10,seg:0,xp:0,ok:true};R2.dias[f(2)]={ej:10,seg:0,xp:0,ok:true};R2.dias[f(0)]={ej:4,seg:0,xp:0,ok:false};R1.dias[f(0)]={ej:6,seg:0,xp:0,ok:false};
+  const RR=S.fusionarProgreso(R1,S.marcarAportes(R2,'B'),{yo:'A',el:'B'});
+  if(P.racha(RR)!==4||RR.mejorRacha<4)mal(es,`la racha no sale de la unión de los días (${P.racha(RR)}; se esperaba 4: 6+4 ejercicios hoy cumplen la meta)`);
+  // repaso: gana el más reciente; habilidades: dominada en cualquiera, días unidos
+  const H1=vacioP(),H2=vacioP();
+  H1.repaso.x={rep:3,int:6,ef:2.5,proxima:sumar(f(0),2),fallos:1};H2.repaso.x={rep:1,int:1,ef:2.3,proxima:sumar(f(0),1),fallos:2};
+  H1.materias.matematicas={xp:0,lecciones:{a:{dominada:false,mejor:0.5,dias:[f(5)],ult:[0,0],rating:2,sesiones:1}},extra:{jefes:{t:{mejor:0.7,fecha:f(5)}}}};
+  H2.materias.matematicas={xp:0,lecciones:{a:{dominada:true,mejor:0.9,dias:[f(1)],ult:[1,1],rating:4,sesiones:3}},extra:{jefes:{t:{mejor:0.9,fecha:f(1)}}}};
+  const HH=S.fusionarProgreso(H1,H2,{yo:'A',el:'B'}),ha=HH.materias.matematicas.lecciones.a;
+  if(HH.repaso.x.rep!==1||HH.repaso.x.fallos!==2)mal(es,'en el repaso no gana la respuesta más reciente');
+  if(!ha.dominada||ha.rating!==4||ha.dias.length!==2||ha.mejor!==0.9||HH.materias.matematicas.extra.jefes.t.mejor!==0.9)mal(es,'una habilidad pierde su dominio, sus días o lo de extra');
+  // notas: la edición más nueva gana; una lápida solo borra si es más nueva que la última edición
+  const nA=[{id:'n1',editada:100,titulo:'vieja'},{id:'n2',editada:100}],nB=[{id:'n1',editada:200,titulo:'nueva'},{id:'n3',editada:300}];
+  const NN=S.fusionarNotas(nA,nB,{n2:150,n3:250});
+  if(NN.find(n=>n.id==='n1')?.titulo!=='nueva'||NN.some(n=>n.id==='n2')||!NN.some(n=>n.id==='n3'))mal(es,'las notas no se combinan por fecha de edición y lápidas');
+  // las tarjetas de una nota borrada aquí no regresan desde el otro dispositivo
+  const T1=vacioP(),T2=vacioP();T2.tarjetas.k={q:'q',a:'a',nota:'n2',materia:null,fecha:f(0)};T2.repaso['notas/t/k']={rep:0,int:1,ef:2.5,proxima:f(0),fallos:0};
+  const TT=S.fusionarProgreso(T1,T2,{yo:'A',el:'B',borradas:{n2:1}});
+  if(TT.tarjetas.k||TT.repaso['notas/t/k'])mal(es,'regresan las tarjetas de una nota borrada');
+  console.log('combinar dispositivos: XP y ejercicios exactos (sin duplicar al repetir), racha de la unión, repaso más reciente, habilidades y notas con lápidas');
 }
 sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
 // Generadores: 200 ejercicios por nivel sin errores, cuya respuesta pasa su propio verificar, con fórmulas válidas y sin repetirse demasiado

@@ -2,7 +2,7 @@
    Si el almacenamiento no está disponible (modo privado, bloqueado), la app funciona igual sin guardar nada.
    Cada cambio emite el evento 'progreso' en window para que la barra superior se actualice.
 
-   Estructura (v: 9):
+   Estructura (v: 11):
    meta      {tipo:'ejercicios'|'minutos', cantidad}
    dias      {'AAAA-MM-DD': {ej, seg, xp, ok, habla:{frases, seg, turnos, conv}}}   ok = se cumplió la meta ese día (cuenta para la racha)
              habla: frases dichas en voz alta, segundos con el micrófono, turnos de conversación y la conversación más larga del día
@@ -32,10 +32,13 @@
    frases    {[id]: {en, es, regla, fecha}}   frases para repasar que no salen de una lección (p. ej. sugeridas por la IA)
    historial [{materia, tipo, fecha}]          últimas sesiones (para alternar materias en "¿Qué sigue?")
    En materias.<id>.extra cada materia guarda lo suyo: cofres {id: fecha}, jefes {tema: {mejor, fecha}};
-   Inglés: sonidos {id:{ok, n, ult:[1,0…]}}, unidades, dialogos, medallas, combo. */
+   Inglés: sonidos {id:{ok, n, ult:[1,0…]}}, unidades, dialogos, medallas, combo.
+   v11 (combinar dispositivos sin contar dos veces, ver sync/fusionar.js): los contadores (materias.<id>.xp y ej, seg, xp y
+   habla de cada día) pueden traer `base` (lo acumulado antes de v11 o de otro respaldo viejo; al combinar se toma el máximo)
+   y `por` {[dispositivo]: valores} con lo que aportó cada OTRO dispositivo; lo de este es el total menos base y los demás. */
 import {DOMINIO,ULTIMAS,estadoDominio,nuevoRating,calidad,sm2,SALE_DEL_REPASO,TOPE_HABILIDAD,INTERVALOS_V6} from './metodo.js';
 
-const CLAVE='ciberlab-progreso',VERSION=10;
+const CLAVE='ciberlab-progreso',VERSION=11;
 const RAPIDO=12000; // ms: responder bien en menos de esto cuenta como "rápido" (sube más la dificultad y el intervalo)
 export const METAS=[['ejercicios',10],['ejercicios',20],['ejercicios',30],['minutos',5],['minutos',10],['minutos',15]];
 const XP_LECCION=20;
@@ -130,13 +133,29 @@ function migrar(p){
     if(Array.isArray(p.historial))p.historial=p.historial.map(h=>obj(h)?{...h,tipo:ren(h.tipo)}:h);
     p.v=10;
   }
+  if(p.v===10){ // v10 → v11: lo acumulado hasta hoy queda como «base» de cada contador (al combinar dos dispositivos se toma
+    // el máximo de la base, porque no se sabe si ya la compartían); lo que se gane desde ahora se suma exacto por dispositivo.
+    for(const m of Object.values(obj(p.materias)||{}))if(obj(m)&&m.xp>0)m.base={xp:m.xp};
+    for(const d of Object.values(obj(p.dias)||{})){if(!obj(d))continue;const b={};
+      for(const k of ['ej','seg','xp'])if(d[k]>0)b[k]=d[k];
+      for(const k of ['frases','seg','turnos'])if(obj(d.habla)?.[k]>0)b['h.'+k]=d.habla[k];
+      if(Object.keys(b).length)d.base=b}
+    p.v=11;
+  }
   return p;
 }
 export function progreso(){
   let p=null;
   try{p=obj(JSON.parse(localStorage.getItem(CLAVE)))}catch(e){}
   const migrado=p&&p.v!==VERSION;
-  if(migrado)p=migrar(p);
+  p=normalizar(p,{copiar:false});
+  if(migrado)guardar(p);
+  return p;
+}
+// Un progreso cualquiera (de este navegador, de un respaldo o de la nube) en la versión actual y con todos sus campos
+export function normalizar(p,{copiar=true}={}){
+  p=obj(p)?(copiar?JSON.parse(JSON.stringify(p)):p):null;
+  if(p&&p.v!==VERSION)p=migrar(p);
   if(!p){p=vacio();p.ultimo=ultimoV1()}
   // Completa lo que falte (datos incompletos o de otra versión) antes de usarlos o guardarlos
   const v=vacio();
@@ -146,7 +165,6 @@ export function progreso(){
   if(typeof p.mejorRacha!=='number')p.mejorRacha=0;
   if(typeof p.dominados!=='number')p.dominados=0;
   if(!obj(p.ultimo))p.ultimo=null;
-  if(migrado)guardar(p);
   return p;
 }
 function guardar(p){
@@ -160,7 +178,8 @@ function cambiar(fn){const p=progreso(),r=fn(p);guardar(p);window.dispatchEvent(
 export function datosMateria(p,id){
   const m=obj(p.materias[id])||{};
   return p.materias[id]={xp:typeof m.xp==='number'?m.xp:0,lecciones:obj(m.lecciones)||{},enCurso:obj(m.enCurso),
-    ubicacion:obj(m.ubicacion),visitadas:Array.isArray(m.visitadas)?m.visitadas:[],extra:obj(m.extra)||{}};
+    ubicacion:obj(m.ubicacion),visitadas:Array.isArray(m.visitadas)?m.visitadas:[],extra:obj(m.extra)||{},
+    ...(obj(m.base)?{base:m.base}:{}),...(obj(m.por)?{por:m.por}:{})};
 }
 const dia=(p,f=hoy())=>{const d=p.dias[f]=Object.assign({ej:0,seg:0,xp:0,ok:false},p.dias[f]);d.habla=Object.assign({frases:0,seg:0,turnos:0,conv:0},obj(d.habla));return d};
 
@@ -168,7 +187,7 @@ const dia=(p,f=hoy())=>{const d=p.dias[f]=Object.assign({ej:0,seg:0,xp:0,ok:fals
 // Misión diaria de habla: 20 frases en voz alta o una conversación de 5 turnos. Cumplirla también cumple la meta del día.
 export const MISION={frases:20,turnos:5};
 const misionCumplida=h=>!!h&&(h.frases>=MISION.frases||h.conv>=MISION.turnos);
-const cumple=(meta,d)=>misionCumplida(d.habla)||(meta.tipo==='minutos'?d.seg>=meta.cantidad*60:d.ej>=meta.cantidad);
+export const cumple=(meta,d)=>misionCumplida(d.habla)||(meta.tipo==='minutos'?d.seg>=meta.cantidad*60:d.ej>=meta.cantidad);
 export function misionHabla(p=progreso(),f=hoy()){const h=hablaDelDia(p,f);return {...h,cumplida:misionCumplida(h)}}
 function comprobarMeta(p){
   const d=dia(p);

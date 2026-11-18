@@ -413,7 +413,8 @@ El APK es una **Trusted Web Activity** hecha con Bubblewrap: abre `https://ajand
   3. Con las contraseñas en `BUBBLEWRAP_KEYSTORE_PASSWORD` y `BUBBLEWRAP_KEY_PASSWORD`, el `bin` del JDK 17 al principio del `PATH` (Bubblewrap llama a `jarsigner` por nombre) y **sin** la variable `NoDefaultCurrentDirectoryInExePath` (si existe, `cmd` no encuentra `gradlew.bat`): `npx @bubblewrap/cli@1.25.0 build --skipPwaValidation`.
   4. Salen `app-release-signed.apk` y `app-release-bundle.aab`. Comprueba la firma con `apksigner verify --print-certs` (la huella debe ser la de `huella-sha256.txt`).
   5. Publica una Release en este repo con los archivos renombrados a `EstudioPlus.apk` y `EstudioPlus.aab` (el enlace de Perfil es `…/releases/latest/download/EstudioPlus.apk`, de `APK_ARCHIVO`/`APK_URL` en `src/config.js`) y una copia `CiberLab.apk` para los enlaces viejos: `gh release create android-<versión> EstudioPlus.apk EstudioPlus.aab CiberLab.apk --latest`.
-  6. Versiones publicadas: 1.0.0 (código 1, CiberLab) y 1.1.0 (código 2, Estudio+). Cada APK nuevo necesita un `appVersionCode` mayor y la misma llave, o Android no lo instala encima.
+  6. Versiones publicadas: 1.0.0 (código 1, CiberLab), 1.1.0 (código 2, Estudio+) y 1.2.0 (código 3, tablet). Ojo: `update` sube solo el `appVersionCode` y pregunta el `versionName` (responde con la versión, p. ej. `printf "1.2.0
+" | npx … update`). Cada APK nuevo necesita un `appVersionCode` mayor y la misma llave, o Android no lo instala encima.
 - Si algún día cambia la llave (o se sube a Play Store con la firma de Google), agrega la huella nueva a `assetlinks.json` del repo `ajandradeperez-dev.github.io`.
 
 ## ☁️ Mis datos y sincronizar entre dispositivos (`src/nucleo/sync/`)

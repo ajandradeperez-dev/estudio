@@ -6,8 +6,8 @@ const temas=cargarTemas(import.meta.glob('./temas/*/*.js',{eager:true}),defs);
 
 export default {
   nombre:'Inglés',sigla:'EN',icono:'🇺🇸',area:'estudio',orden:2,
-  descripcion:'De A1 a A2: la gramática y el vocabulario más frecuentes, y práctica de habla con voz.',
-  intro:'Ordenado por frecuencia de uso, de A1 a A2, siguiendo las 4 vertientes de Nation: escuchar, hablar y escribir para comunicar, la forma (gramática y pronunciación) y la fluidez.',
+  descripcion:'De A1 a B2: gramática y vocabulario más frecuentes, lecturas, escuchas, escritura y práctica de habla con voz.',
+  intro:'Ordenado por frecuencia de uso, de A1 a B2, siguiendo las 4 vertientes de Nation: escuchar, hablar y escribir para comunicar, la forma (gramática y pronunciación) y la fluidez.',
   temas,
   lecciones:habilidades(temas),
   // Tarjeta grande al principio de la página de la materia

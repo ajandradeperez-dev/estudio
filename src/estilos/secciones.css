@@ -493,3 +493,16 @@ body{padding-top:var(--franja,0px)}
 .cta-clave input{flex:1;min-width:0;min-height:44px;padding:0 var(--s3);border:2px solid var(--line);border-radius:var(--r2);background:var(--surface);color:var(--ink);font:inherit;font-weight:600;box-sizing:border-box}
 .cta-clave input:focus{outline:none;border-color:var(--primary)}
 .cta-clave .btn{min-width:48px;padding:0 10px}
+/* 📚 Práctica por nivel de Inglés (materias/ingles/nivel/vistas.js) */
+.lec-graduada{max-width:68ch}
+.lec-graduada p{margin:0 0 .8em}
+.vocab-lista{list-style:none;margin:var(--s4) 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:var(--s2)}
+.vocab-lista li{padding:var(--s2) var(--s3);border:2px solid var(--line);border-radius:var(--r2);background:var(--surface);min-width:0}
+.vocab-fila{display:flex;flex-wrap:wrap;align-items:center;gap:4px var(--s2)}
+.vocab-fila b{font-size:17px}
+.vocab-fila .btn-icono{margin-left:auto}
+.vocab-ej{margin:2px 0 0;font-style:italic;overflow-wrap:anywhere}
+.escrito{min-height:200px;font-size:17px;line-height:1.5}
+.rubrica{list-style:none;padding:0;margin:var(--s2) 0}
+.rubrica li{padding:6px 0;border-bottom:1px solid var(--line)}
+.rubrica li:last-child{border-bottom:0}

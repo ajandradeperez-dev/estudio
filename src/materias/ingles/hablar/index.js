@@ -4,7 +4,8 @@
    frases/<A1|A2>       frases útiles del nivel
    dialogo/<id>         diálogo guiado
    ia                   conversación libre con IA (Gemini o Claude)
-   u/<id>[/escucha|frases|fluidez]  unidad y sus pasos · jefe/<id>  tarea final */
+   u/<id>[/escucha|frases|fluidez]  unidad y sus pasos · jefe/<id>  tarea final
+   nivel/<A1|A2|B1|B2>[/…]  práctica por nivel: lecturas, escuchas, diálogos, vocabulario y escritura (../nivel/vistas.js) */
 import {esc} from '../../../utilidades.js';
 import {soporte,AVISO_SIN_RECONOCIMIENTO} from '../../../nucleo/voz.js';
 import {progreso,datosMateria} from '../../../nucleo/progreso.js';
@@ -24,6 +25,7 @@ import {MEDALLAS,comboActual,sonidoActivo,alternarSonido,vencerJefe} from './jue
 import {CONTENIDO} from './contenido.js';
 import TEMAS_INGLES from '../temas.js';
 import {vistaEscucha,vistaFluidez,marcarPaso} from './pasos.js';
+import {rutaNivel,ejercicioNivel,htmlNiveles} from '../nivel/vistas.js';
 
 const RAIZ='estudio/ingles/hablar';
 // Títulos de las lecciones de forma (para los pasos de cada unidad)
@@ -73,8 +75,9 @@ ${htmlMision(p)}
 <h2>Tu mapa</h2>${htmlMapa(p)}
 ${act?`<button class="card destacado" data-go="${RAIZ}/u/${act.id}"><span class="destacado-titulo">Unidad ${UNIDADES.indexOf(act)+1}: ${esc(act.titulo)}</span><span class="nota">${esc(act.tarea)}</span></button>`:''}
 <h2>Medallas</h2>${htmlMedallas(p)}
+<h2>📚 Práctica por nivel</h2><p class="nota">Lecturas graduadas, escuchas, diálogos, vocabulario con audio y escritura con rúbrica de cada nivel.</p>${htmlNiveles()}
 <h2>Diálogos guiados</h2><p class="nota">Situaciones reales. Funcionan sin internet${soporte.escuchar?' (el reconocimiento de voz de Chrome sí necesita conexión)':''}.</p>
-<div class="grid">${DIALOGOS.map(d=>{const x=dl[d.id];return `<div class="card click" data-go="${RAIZ}/dialogo/${d.id}" tabindex="0"><div class="progress">${d.nivel}${x?` · mejor ${pct(x.mejor)}%`:''}</div><h3 style="margin:4px 0">${d.titulo}</h3><p class="nota" style="margin:0">${d.escena}</p></div>`}).join('')}</div>
+${NIVELES_MCER.map(n=>{const ds=DIALOGOS.filter(d=>d.nivel===n);return ds.length?`<h3 class="prog-k" style="margin-top:12px">${n}</h3><div class="grid">${ds.map(d=>{const x=dl[d.id];return `<div class="card click" data-go="${RAIZ}/dialogo/${d.id}" tabindex="0"><div class="progress">${d.nivel}${x?` · mejor ${pct(x.mejor)}%`:''}</div><h3 style="margin:4px 0">${d.titulo}</h3><p class="nota" style="margin:0">${d.escena}</p></div>`}).join('')}</div>`:''}).join('')}
 <h2>Conversación libre con IA</h2>
 <div class="card click" data-go="${RAIZ}/ia" tabindex="0"><h3>🤖 Habla con un tutor IA</h3><p class="nota" style="margin:0">Conversa sobre lo que quieras; te corrige en español y te propone frases más naturales. ${clave?'Clave configurada ✓':'Necesita tu API key de Anthropic.'}</p></div>
 <h2>Frases útiles</h2>
@@ -145,6 +148,7 @@ export function ruta(resto){
   if(a==='frases'&&FRASES[b])return {ruta:`${RAIZ}/frases/${b}`,v:vistaFrases(b)};
   if(a==='dialogo'&&dialogo(b))return {ruta:`${RAIZ}/dialogo/${b}`,v:vistaDialogo(dialogo(b))};
   if(a==='ia')return {ruta:`${RAIZ}/ia`,v:vistaIA()};
+  if(a==='nivel'){const x=rutaNivel(resto.slice(1));if(x)return x}
   if(a==='u'&&unidad(b)){const u=unidad(b),c=resto[2],bloq=estadoUnidades()[b]==='bloqueada';
     const pasos={escucha:vistaEscucha,frases:vistaChunks,fluidez:vistaFluidez};
     if(pasos[c]&&!bloq)return {ruta:`${RAIZ}/u/${b}/${c}`,v:pasos[c](u)};
@@ -178,6 +182,7 @@ export function ejercicioHabla(tipo,partes,p=progreso()){
     return t&&{titulo:`Diálogo: ${d.titulo}`,ej:{...base,pregunta:`${esc(d.personaje)}: «<span lang="en">${esc(t.dice)}</span>» — ${t.tarea}`,oir:t.dice,acepta:t.acepta,errores:t.errores||{},modelo:t.modelo,pista:t.pista,regla:t.regla}}}
   if(tipo==='e'){const q=CONTENIDO[partes[0]]?.escucha.preguntas[+partes[1]];return q&&{titulo:`Escucha: ${CONTENIDO[partes[0]].escucha.titulo}`,ej:{...q,oir:CONTENIDO[partes[0]].escucha.texto}}}
   if(tipo==='c'){const x=CONTENIDO[partes[0]]?.chunks[+partes[1]];return x&&{titulo:'Frases de la unidad',ej:{...base,frase:x.en,es:x.es,regla:`Frase hecha: ${x.uso}.`}}}
+  if(tipo==='n'||tipo==='v')return ejercicioNivel(tipo,partes);
   if(tipo==='x'){const x=p.frases[partes[0]];return x&&{titulo:'Frase de tu tutor IA',ej:{...base,frase:x.en,es:x.es,regla:x.regla||'Frase para practicar.'}}}
   return null;
 }

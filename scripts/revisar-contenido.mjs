@@ -177,6 +177,39 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   }
   for(const id of Object.keys(CONTENIDO))if(!UNIDADES.some(u=>u.id===id))mal(`contenido ${id}`,'no corresponde a ninguna unidad');
   console.log(`ingles/hablar: ${DIALOGOS.length} diálogos (${turnos} turnos) · ${SONIDOS.length} sonidos · ${UNIDADES.length} unidades`);
+  // Práctica por nivel (P3b): lecturas, escuchas, vocabulario y escritura con rúbrica; en un nivel completo, los mínimos
+  const {NIVELES,MINIMOS,palabrasDe,revisarEscrito,contarPalabras}=await imp('nivel/datos.js');
+  const {coincide}=await import(pathToFileURL(join(raiz,'..','nucleo','comparar.js')).href);
+  const idsN=new Set(),resumen=[];
+  for(const [n,d] of Object.entries(NIVELES)){
+    const e0=`inglés ${n}`;
+    const textos=(tipo,min,max,minQ)=>d[tipo].forEach(t=>{const e=`${e0} ${t.id}`;
+      if(idsN.has(t.id))mal(e,'id repetido');idsN.add(t.id);
+      if(!t.titulo||!t.texto)mal(e,'falta titulo o texto');
+      const w=contarPalabras(t.texto);if(w<min||w>max)mal(e,`el texto tiene ${w} palabras (entre ${min} y ${max})`);
+      if(!(t.preguntas?.length>=minQ))mal(e,`tiene ${t.preguntas?.length||0} preguntas (mínimo ${minQ})`);
+      (t.preguntas||[]).forEach((x,i)=>{const ep=`${e} pregunta ${i+1}`;
+        if(x.tipo!=='completar'||!x.respuestas?.length||!x.regla)mal(ep,'necesita tipo completar, respuestas y regla');
+        else if(!coincide(x.respuestas[0],x.respuestas))mal(ep,'la primera respuesta no pasa su propia comprobación');
+        for(const v of Object.keys(x.errores||{}))if(coincide(v,x.respuestas))mal(ep,`el error típico «${v}» es una respuesta correcta`)})});
+    textos('lecturas',60,220,4);textos('escuchas',40,160,3);
+    const vistas=new Set();let nv=0;
+    d.vocabulario.forEach((t,ti)=>{if(!t.tema)mal(`${e0} vocabulario ${ti+1}`,'falta el tema');
+      palabrasDe(t).forEach((w,i)=>{nv++;const e=`${e0} vocabulario «${t.tema}» #${i+1}`;
+        if(!w.en||!w.es||!w.ej)mal(e,'faltan en, es o ejemplo');
+        const k=String(w.en).toLowerCase();if(vistas.has(k))mal(e,`«${w.en}» repetida en el nivel`);vistas.add(k)})});
+    d.escritura.forEach(t=>{const e=`${e0} ${t.id}`;
+      if(idsN.has(t.id))mal(e,'id repetido');idsN.add(t.id);
+      for(const k of ['titulo','consigna','modelo'])if(!t[k])mal(e,`falta ${k}`);
+      if(!(t.min>0&&t.max>t.min))mal(e,'min y max de palabras inválidos');
+      if(!(t.criterios?.length>=3))mal(e,'la rúbrica necesita al menos 3 criterios');
+      for(const c of t.criterios||[])try{new RegExp(c.re,'im')}catch(x){mal(e,`criterio «${c.texto}»: expresión inválida`)}
+      const r=revisarEscrito(t,t.modelo);if(r.puntos<r.total)mal(e,`el texto modelo no cumple su rúbrica: ${r.criterios.filter(c=>!c.ok).map(c=>c.texto).join('; ')}`)});
+    const nd=DIALOGOS.filter(x=>x.nivel===n).length,cuenta={lecturas:d.lecturas.length,escuchas:d.escuchas.length,vocabulario:nv,escritura:d.escritura.length,dialogos:nd};
+    if(d.completo)for(const [k,min] of Object.entries(MINIMOS))if(cuenta[k]<min)mal(e0,`${k}: ${cuenta[k]} (mínimo ${min})`);
+    resumen.push(`${n}${d.completo?'':' (en construcción)'}: ${cuenta.lecturas} lecturas, ${cuenta.escuchas} escuchas, ${nd} diálogos, ${nv} palabras, ${cuenta.escritura} escritos`);
+  }
+  console.log(`ingles/nivel: ${resumen.join(' · ')}`);
 }
 // Excel: el evaluador de fórmulas da el resultado esperado en cada caso de la tabla (cada función y cada error)
 {

@@ -2,6 +2,7 @@
    viejos de "Mis notas" (progreso.notas, que se conservan tal cual) y "📝 Guardar en mis notas" desde el estudio. */
 import {todasLasNotas,leerNota,guardarNota,borrarNotaDb,borrarArchivo,todosLosArchivos,guardarArchivo,pedirPersistencia,nuevoId} from './db.js';
 import {tarjetasDe,imagenesDe,deHtml} from './formato.js';
+import {guardarImagen} from './medios.js';
 import {progreso,sincronizarTarjetas,borrarTarjetasDe,borrarNota,hoy,instantaneaNota,restaurarInstantaneaNota} from '../progreso.js';
 import {materia as buscarMateria,leccion,tema as buscarTema,areaDe,rutaLeccion,rutaLeccionId} from '../materias.js';
 import {miMateria,buscarTema as temaPropio} from '../mias/datos.js';
@@ -89,6 +90,14 @@ export async function agregarAlTema({materia,habilidad},bloque){
   const n=previa||{id,titulo,cuerpo:'',materia:m?.id||null,tema:t?.id||null,etiquetas:[],fijada:false,creada:Date.now()};
   n.cuerpo=`${n.cuerpo.trim()?n.cuerpo.trimEnd()+'\n\n':''}${bloque.trim()}`;
   return guardar(n,{tocada:false});
+}
+// Una imagen (p. ej. el ✏️ Borrador de un ejercicio) con su texto, en la nota del tema
+export async function agregarImagenAlTema(donde,img,texto){
+  const m=buscarMateria(donde.materia),h=m&&donde.habilidad&&leccion(m,donde.habilidad),t=h?.tema&&buscarTema(m,h.tema);
+  const marca=await guardarImagen(`tema-${m?.id||'general'}-${t?.id||'general'}`,img,'borrador');
+  return agregarAlTema(donde,`${texto}
+
+${marca}`);
 }
 const cabecera=(p,{materia,habilidad})=>{const m=buscarMateria(materia),h=m&&habilidad&&leccion(m,habilidad);
   return {m,h,titulo:`## ${h?h.titulo:p.contexto||'Ejercicio'} · ${new Date().toLocaleDateString('es',{day:'numeric',month:'short'})}`,

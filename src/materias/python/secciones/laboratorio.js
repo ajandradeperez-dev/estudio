@@ -85,14 +85,14 @@ ${pista>=3?`<div class="ayuda-caja"><p class="etiqueta-actividad">📖 Solución
     vista(){
       const t=unidad(x.unidad),hecho=resueltos()[x.id];
       return `<div class="area-python">${miga([t.titulo,`${RAIZ}/${t.id}`],[esc(x.titulo)])}<h1>${hecho?'✅ ':''}${esc(x.titulo)}</h1>
-<div class="card"><p>${x.enunciado}</p><p class="etiqueta-actividad">Ejemplos (pruebas visibles)</p><ul class="py-ejemplos">${x.pruebas.map(c=>`<li><code>${esc(c.llamada)}</code> → <code>${esc(c.esperado)}</code></li>`).join('')}</ul>
+<div class="py-dos"><div class="card py-enun"><p>${x.enunciado}</p><p class="etiqueta-actividad">Ejemplos (pruebas visibles)</p><ul class="py-ejemplos">${x.pruebas.map(c=>`<li><code>${esc(c.llamada)}</code> → <code>${esc(c.esperado)}</code></li>`).join('')}</ul>
 <p class="nota">Además hay ${x.ocultas.length} casos ocultos que se prueban al enviar.</p></div>
-<p class="nota" id="py-estado" role="status">${textoEstado(estadoPython())}</p>
+<div class="py-principal"><p class="nota" id="py-estado" role="status">${textoEstado(estadoPython())}</p>
 ${htmlEditor({id:'lab-codigo',codigo:guardado(),filas:10})}
 <div class="row" style="gap:8px;flex-wrap:wrap;margin:12px 0"><button type="button" class="btn ghost" id="lab-probar"${corriendo?' disabled':''}>▶ Probar</button><button type="button" class="btn area" id="lab-enviar"${corriendo?' disabled':''}>✅ Enviar</button>${corriendo?'<button type="button" class="btn ghost" id="py-detener">⏹ Detener</button>':''}</div>
-<div class="row" style="gap:8px;flex-wrap:wrap">${pista<3&&!nose?`<button type="button" class="btn ghost btn-chico" id="lab-pista">💡 Pista ${pista+1}/3</button>`:''}${!nose?'<button type="button" class="btn ghost btn-chico" id="lab-nose">🤷 No sé cómo empezar</button>':''}<button type="button" class="btn ghost btn-chico" id="lab-reiniciar">↺ Código inicial</button></div>
-${htmlAyuda()}
-<div id="py-resultado" aria-live="polite">${corriendo?'<p class="nota">Probando tu función…</p>':htmlResultados()}</div></div>`;
+<div class="row" style="gap:8px;flex-wrap:wrap">${pista<3&&!nose?`<button type="button" class="btn ghost btn-chico" id="lab-pista">💡 Pista ${pista+1}/3</button>`:''}${!nose?'<button type="button" class="btn ghost btn-chico" id="lab-nose">🤷 No sé cómo empezar</button>':''}<button type="button" class="btn ghost btn-chico" id="lab-reiniciar">↺ Código inicial</button></div></div>
+<div class="py-lado">${htmlAyuda()}
+<div id="py-resultado" aria-live="polite">${corriendo?'<p class="nota">Probando tu función…</p>':htmlResultados()}</div></div></div></div>`;
     },
     alMostrar(){const ta=document.getElementById('lab-codigo');activarEditor(ta);ta?.addEventListener('input',()=>guardarCodigo(`lab:${x.id}`,ta.value))},
     async alClic(t,ir,repintar){

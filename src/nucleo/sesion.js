@@ -25,9 +25,11 @@ import {soporte,htmlMic,htmlOir,htmlFraseEvaluada,escucharConBoton,hablar} from 
 import {evaluarHablar,META_PRONUNCIACION} from './ejercicios.js';
 import {registrarHabla,registrarSonidos} from './progreso.js';
 import {sonar} from './sonido.js';
-import {agregarAlTema,bloqueProcedimiento,bloqueError} from './cuaderno/notas.js';
+import {agregarAlTema,agregarImagenAlTema,bloqueProcedimiento,bloqueError} from './cuaderno/notas.js';
+import {crearLienzo,papelTema,tintaTema} from './lienzo.js';
+import {iaDisponible,pedir} from './ia.js';
 import {htmlPaso,normalPaso,textoPlano,abrirProcedimiento,cerrarProcedimiento} from './procedimiento.js';
-import {vibrar} from './ajustes.js';
+import {vibrar,ajustes,cambiarAjuste} from './ajustes.js';
 import {conFormulas} from './formula.js';
 import {casiIgual} from './comparar.js';
 import {htmlHoja,activarHoja,insertarRef,previa,olvidarRef} from './excel/hoja.js';
@@ -66,7 +68,8 @@ const TECLADOS={
 const etiqueta=(icono,txt)=>`<p class="etiqueta-actividad"><span aria-hidden="true">${icono}</span>${txt}</p>`;
 // p.hoja: mini hoja de cálculo (Excel); con teclado 'xl' los toques en las celdas escriben su referencia en la respuesta
 const enunciado=p=>`<div class="pregunta">${conFormulas(p.enunciado||'')}</div>${p.hoja?htmlHoja(p.hoja):''}${p.codigo?`<pre class="ej-codigo" style="margin-bottom:16px">${esc(p.codigo)}</pre>`:''}${p.oir?`<div class="row" style="margin-bottom:16px">${htmlOir(p.oir)}</div>`:''}`;
-const teclado=p=>p.teclado&&TECLADOS[p.teclado]?`<div class="teclado" aria-label="Símbolos">${TECLADOS[p.teclado].map(k=>`<button type="button" class="tecla" data-tecla="${esc(k)}">${esc(k)}</button>`).join('')}</div>`:'';
+// Con teclado físico (atajos.js) el teclado de símbolos se esconde; «⌨️ Símbolos» lo vuelve a mostrar
+const teclado=p=>p.teclado&&TECLADOS[p.teclado]?`<button type="button" class="btn ghost btn-chico ver-simbolos" data-ver-simbolos>⌨️ Símbolos</button><div class="teclado" aria-label="Símbolos">${TECLADOS[p.teclado].map(k=>`<button type="button" class="tecla" data-tecla="${esc(k)}">${esc(k)}</button>`).join('')}</div>`:'';
 const casillaFoco={el:null};
 
 // Tolerancia a errores de dedo: solo respuestas en español hechas de palabras (no inglés, fórmulas de Excel, matrices ni voz)
@@ -200,11 +203,25 @@ ${v<n?`<p class="nota">¿Cuál es el paso ${v+1}? Piénsalo y míralo.</p><butto
   }
 };
 
+/* ---------- ancho del panel de ayuda: se arrastra el borde (o ← → con el teclado) y se recuerda ---------- */
+function activarAsa(){
+  const asa=document.querySelector('.ses-panel-asa'),ses=document.querySelector('.sesion.con-panel');if(!asa||!ses)return;
+  const cuerpo=ses.querySelector('.sesion-cuerpo'),limitar=w=>Math.round(Math.min(cuerpo.clientWidth*.6,Math.max(300,w)));
+  const poner=w=>{ses.style.setProperty('--panel-ancho',limitar(w)+'px')};
+  let x0=null,w0=0;
+  asa.addEventListener('pointerdown',e=>{x0=e.clientX;w0=ses.querySelector('.ses-panel').getBoundingClientRect().width;try{asa.setPointerCapture(e.pointerId)}catch(x){}e.preventDefault()});
+  asa.addEventListener('pointermove',e=>{if(x0!==null)poner(w0+(x0-e.clientX))});
+  const fin=()=>{if(x0===null)return;x0=null;cambiarAjuste('panelAncho',parseInt(ses.style.getPropertyValue('--panel-ancho'))||null)};
+  asa.addEventListener('pointerup',fin);asa.addEventListener('pointercancel',fin);
+  asa.addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();
+    poner(ses.querySelector('.ses-panel').getBoundingClientRect().width+(e.key==='ArrowLeft'?24:-24));cambiarAjuste('panelAncho',parseInt(ses.style.getPropertyValue('--panel-ancho')))});
+}
+
 /* ---------- la sesión ---------- */
 export function crearSesion(cfg){
   let st;
   // id: identifica la sesión (un básico se retira al acertarlo en 2 sesiones distintas)
-  const nuevo=()=>({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),i:0,ok:0,xp:0,historial:[],fase:'pregunta',actual:null,e:{},pista:0,nose:false,noseSeguidos:0,colaGemelo:null,t0:Date.now(),fin0:cfg.crono?Date.now()+cfg.crono*1000:0,cargandoIA:false});
+  const nuevo=()=>({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),i:0,ok:0,xp:0,historial:[],fase:'pregunta',actual:null,e:{},pista:0,nose:false,noseSeguidos:0,colaGemelo:null,borrador:{abierto:false,por:{}},t0:Date.now(),fin0:cfg.crono?Date.now()+cfg.crono*1000:0,cargandoIA:false});
   const act=()=>ACT[st.actual?.tipo]||ACT.escribir;
   let reloj;
   const terminar=()=>{st.fase='fin';cerrarHoja();clearInterval(reloj);sonar.fin()};
@@ -226,7 +243,7 @@ export function crearSesion(cfg){
   function cabecera(){
     const total=Math.max(st.i+(st.fase==='fin'?0:1),cfg.total?.(st)||0);
     const crono=cfg.crono?`<span class="cronometro" id="ses-crono" aria-live="off">${tiempoRestante()}</span>`:'';
-    return `<header class="sesion-cab"><button type="button" class="btn-icono" data-salir aria-label="Salir">✕</button>${barra(st.fase==='fin'?total:st.i,total,{gruesa:true})}${crono}${cfg.nivel&&st.fase!=='fin'?puntos(cfg.nivel(st)):''}</header>`;
+    return `<header class="sesion-cab"><button type="button" class="btn-icono" data-salir aria-label="Salir">✕</button>${barra(st.fase==='fin'?total:st.i,total,{gruesa:true})}${crono}${cfg.nivel&&st.fase!=='fin'?puntos(cfg.nivel(st)):''}${st.fase!=='fin'&&respondible(st.actual)?`<button type="button" class="btn-icono" id="ses-borrador" aria-pressed="${st.borrador.abierto}" aria-label="Borrador para hacer cuentas a mano" title="Borrador (B)">✏️</button>`:''}</header>`;
   }
   const tiempoRestante=()=>{const s=Math.max(0,Math.ceil((st.fin0-Date.now())/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`};
 
@@ -244,16 +261,38 @@ export function crearSesion(cfg){
 
   function vista(){
     if(st.fase==='fin')return `<div class="sesion ${cfg.tono?`area-${cfg.tono}`:''}">${cabecera()}<div class="sesion-cuerpo"><div class="fin-sesion">${cfg.fin(st)}</div></div></div>`;
-    const p=st.actual;
-    return `<div class="sesion ${cfg.tono?`area-${cfg.tono}`:''}">${cabecera()}<div class="sesion-cuerpo" id="ses-cuerpo">${act().html(p,st.e)}
-${htmlAyuda(p)}</div>${pie()}</div>`;
+    const p=st.actual,{abajo,panel:ayuda}=htmlAyuda(p),ancho=ajustes().panelAncho;
+    // Con ayuda o el borrador abiertos, en tablet y pantallas anchas van en un panel a la derecha (estilos/tablet.css);
+    // en el teléfono, debajo del ejercicio
+    const borr=st.borrador.abierto&&respondible(p)?htmlBorrador():'',panel=borr+ayuda;
+    const conPanel=panel&&!st.panelOculto;
+    return `<div class="sesion ${cfg.tono?`area-${cfg.tono}`:''}${conPanel?' con-panel':''}"${conPanel&&ancho?` style="--panel-ancho:${ancho}px"`:''}>${cabecera()}<div class="sesion-cuerpo" id="ses-cuerpo"><div class="ses-principal">${act().html(p,st.e)}
+${abajo}${panel&&st.panelOculto?'<div class="row solo-dos" style="margin-top:12px"><button type="button" class="btn ghost btn-chico" id="ses-panel-abrir">💡 Mostrar la ayuda</button></div>':''}</div>${conPanel?`<aside class="ses-panel" aria-label="Ayuda"><div class="ses-panel-asa" role="separator" aria-orientation="vertical" aria-label="Cambiar el ancho del panel" tabindex="0"></div><div class="ses-panel-cab"><b>${!ayuda?'✏️ Borrador':st.nose?'📖 Así se resuelve':'💡 Ayuda'}</b><button type="button" class="btn-icono" id="ses-panel-cerrar" aria-label="Cerrar el panel">✕</button></div>${panel}</aside>`:''}</div>${pie()}</div>`;
+  }
+
+  // ✏️ Borrador: un lienzo para hacer las cuentas a mano (dedo o S Pen), uno por ejercicio mientras dura la sesión
+  const claveBorrador=()=>`${st.i}:${String(st.actual?.enunciado||'').slice(0,120)}`;
+  const htmlBorrador=()=>`<section class="ses-borrador" aria-label="Borrador"><div class="row ses-borrador-barra"><span class="segmentos" role="group" aria-label="Herramienta"><button type="button" data-borr="lapiz" aria-pressed="${st.borrador.herr!=='borrar'}" aria-label="Lápiz">✏️</button><button type="button" data-borr="borrar" aria-pressed="${st.borrador.herr==='borrar'}" aria-label="Goma">🧽</button></span>
+<button type="button" class="btn-icono" data-borr="deshacer" aria-label="Deshacer">↩️</button><button type="button" class="btn-icono" data-borr="rehacer" aria-label="Rehacer">↪️</button>
+<button type="button" class="btn ghost btn-chico" data-borr="limpiar">Limpiar</button><button type="button" class="btn ghost btn-chico" data-borr="guardar">📝 Guardar en el Cuaderno</button></div>
+<canvas class="borrador-lienzo" aria-label="Lienzo del borrador: dibuja con el dedo o con el lápiz"></canvas>
+${iaDisponible()&&st.fase==='pregunta'&&(st.actual.tipo||'escribir')==='escribir'&&!st.actual.forma?`<div class="row" style="margin-top:8px"><button type="button" class="btn ghost btn-chico" data-borr="leer"${st.borrador.leyendo?' disabled':''}>${st.borrador.leyendo?'Leyendo tu letra…':'✍️ Escribir con el lápiz'}</button><span class="nota">Escribe la respuesta en el borrador y la IA la pasa a texto para que la revises.</span></div>`:''}</section>`;
+  let lienzo=null;
+  // Lo escrito a mano → texto (o fórmula) con la IA ya configurada; se pone en la respuesta para confirmarlo antes de comprobar
+  async function leerLetra(){
+    if(!lienzo?.usado){aviso('Primero escribe la respuesta en el borrador.');return null}
+    const {blob}=await lienzo.aBlob(),data=await new Promise(res=>{const f=new FileReader();f.onload=()=>res(String(f.result).split(',')[1]);f.readAsDataURL(blob)});
+    const t=await pedir({nivel:'vision',maxTokens:200,imagenes:[{media_type:'image/png',data}],
+      sistema:'Transcribes la respuesta escrita a mano por un estudiante. Devuelve SOLO la respuesta, en una línea, como se escribiría con un teclado: números, letras, signos y fórmulas con ^, /, sqrt(). Sin explicaciones. Si no se entiende, responde ?',
+      mensajes:[{role:'user',content:`Ejercicio: ${textoPlano(st.actual.enunciado||'')}\nTranscribe la respuesta escrita a mano.`}]});
+    return String(t).trim().split('\n')[0].replace(/^["«`]+|["»`]+$/g,'').slice(0,200);
   }
 
   // Pistas (1 idea, 2 primer paso, 3 solución + «Ahora tú»), «No sé cómo empezar» y «Ya lo sé» de la mini-lección
   function htmlAyuda(p){
-    const out=[];
+    const out=[],panel=[],res=()=>({abajo:out.join(''),panel:panel.join('')});
     if(p.saltable&&cfg.saltar)out.push(`<div class="row centro" style="margin-top:12px"><button type="button" class="btn ghost btn-chico" id="ses-saltar">Ya lo sé, ir a practicar</button></div>`);
-    if(!conPistas(p))return out.join('');
+    if(!conPistas(p))return res();
     const e=escalera(p);
     // Pasos de uno en uno: «Siguiente paso (n/m)» y «Ver todos» (k: 'v2' pista 2 · 'v3' solución)
     const deUno=(pasos,k,{respuesta=true}={})=>{const n=Math.min(pasos.length,st[k]||1),todos=n>=pasos.length;
@@ -262,19 +301,19 @@ ${todos?(respuesta?`<p class="hoja-linea"><b>Respuesta:</b> ${conFormulas(String
   :`<div class="row ses-pasos-nav"><button type="button" class="btn ghost btn-chico" data-ver-todos="${k}">Ver todos</button><button type="button" class="btn btn-chico" data-sig-paso="${k}">Siguiente paso (${n+1}/${pasos.length})</button></div>`}`};
     const pasosHtml=pasos=>deUno(pasos,'v3');
     if(st.nose&&e){
-      out.push(`<div class="ayuda-caja"><p class="etiqueta-actividad">📖 Así se resuelve, paso a paso</p>${pasosHtml(e.pasos)}
+      panel.push(`<div class="ayuda-caja"><p class="etiqueta-actividad">📖 Así se resuelve, paso a paso</p>${pasosHtml(e.pasos)}
 <p class="nota">No pasa nada: esto cuenta como visto, no como error. Ahora intenta uno parecido tú solo.</p>
 ${st.noseSeguidos>=2&&cfg.minileccion?`<p class="hoja-linea">¿Lo vemos desde el principio? La mini-lección explica la idea con un ejemplo.</p><button type="button" class="btn ghost ancho" id="ses-minilec">📘 Ver la mini-lección</button>`:''}</div>`);
-      return out.join('');
+      return res();
     }
     if(st.pista&&e){
       const niveles=[`<p class="pista"><b>💡 Idea:</b> ${conFormulas(e.idea)}</p>`];
       if(st.pista>=2&&e.primeros?.length)niveles.push(`<div class="pista pista-pasos">${e.partimos?`<p><b>Partimos de:</b> ${conFormulas(e.partimos)}</p>`:''}${deUno(e.primeros,'v2',{respuesta:false})}</div>`);
       if(st.pista>=3)niveles.push(`<div class="ayuda-caja"><p class="etiqueta-actividad">📖 Solución completa</p>${pasosHtml(e.pasos)}${gemeloDe(p)?`<button type="button" class="btn ancho" id="ses-ahora-tu">Ahora tú: uno parecido</button>`:''}</div>`);
-      out.push(niveles.join(''),`<p class="nota">Con pista cuenta como práctica. Para dominarlo, resuelve el gemelo sin ayuda.</p>`);
-    }else if(st.pista&&p.pista)out.push(`<p class="pista">💡 ${conFormulas(p.pista)} <span class="nota">Con pista cuenta como práctica; para dominarlo, resuélvelo sin ayuda.</span></p>`);
+      panel.push(niveles.join(''),`<p class="nota">Con pista cuenta como práctica. Para dominarlo, resuelve el gemelo sin ayuda.</p>`);
+    }else if(st.pista&&p.pista)panel.push(`<p class="pista">💡 ${conFormulas(p.pista)} <span class="nota">Con pista cuenta como práctica; para dominarlo, resuélvelo sin ayuda.</span></p>`);
     if(!st.pista&&e&&(p.tipo||'escribir')!=='vf')out.push(`<div class="row centro" style="margin-top:8px"><button type="button" class="btn ghost btn-chico" id="ses-nosecomo">🤷 No sé cómo empezar</button></div>`);
-    return out.join('');
+    return res();
   }
 
   // "📝 Guardar en mis notas": a la nota del tema de la habilidad (ver cuaderno/notas.js)
@@ -335,7 +374,7 @@ ${st.noseSeguidos>=2&&cfg.minileccion?`<p class="hoja-linea">¿Lo vemos desde el
       if(cfg.crono)reloj=setInterval(()=>{if(!st||st.fase==='fin'){clearInterval(reloj);return}
         const el=$('#ses-crono');if(el)el.textContent=tiempoRestante();
         if(Date.now()>=st.fin0&&st.fase==='pregunta'){terminar();document.dispatchEvent(new Event('repintar'))}},500)},
-    alSalir(){clearInterval(reloj);cerrarHoja();cerrarProcedimiento()},
+    alSalir(){clearInterval(reloj);cerrarHoja();cerrarProcedimiento();lienzo?.destruir();lienzo=null},
     vista,
     estado:()=>st,
     alMostrar(){
@@ -359,6 +398,11 @@ ${st.noseSeguidos>=2&&cfg.minileccion?`<p class="hoja-linea">¿Lo vemos desde el
             for(const [k,v] of Object.entries(pv)){const td=marco.querySelector(`td[data-celda="${k}"]`);if(td){td.textContent=v;td.classList.toggle('xl-err',/^#/.test(v))}}});
         }
       }
+      activarAsa();
+      lienzo?.destruir();lienzo=null;
+      const cv=document.querySelector('#vista .borrador-lienzo');
+      if(cv){const k=claveBorrador(),trazos=st.borrador.por[k]||(st.borrador.por[k]=[]);
+        lienzo=crearLienzo(cv,{fondo:papelTema,tinta:tintaTema,trazos});lienzo.grosor(2.5);if(st.borrador.herr==='borrar')lienzo.herramienta('borrar')}
       const primero=$('#ses-resp')||document.querySelector('#vista .celda');
       if(primero&&st.fase==='pregunta'&&matchMedia('(pointer:fine)').matches)primero.focus({preventScroll:true});
     },
@@ -367,6 +411,25 @@ ${st.noseSeguidos>=2&&cfg.minileccion?`<p class="hoja-linea">¿Lo vemos desde el
         if(st.fase!=='fin'&&st.i>0&&!(await confirmar({atrasConfirma:true,titulo:'¿Salir de la lección?',texto:'Perderás el avance de esta ronda (lo que ya respondiste sí queda guardado).',si:'Salir',no:'Seguir'})))return true;
         cerrarHoja();clearInterval(reloj);ir(cfg.salir);return true;
       }
+      if(t.id==='ses-borrador'){st.borrador.abierto=!st.borrador.abierto;if(st.borrador.abierto)st.panelOculto=false;repintar();return true}
+      if(t.dataset.borr){const a=t.dataset.borr;
+        if(a==='lapiz'||a==='borrar'){st.borrador.herr=a;lienzo?.herramienta(a);document.querySelectorAll('[data-borr="lapiz"],[data-borr="borrar"]').forEach(x=>x.setAttribute('aria-pressed',String(x===t)));return true}
+        if(a==='deshacer')lienzo?.deshacer();if(a==='rehacer')lienzo?.rehacer();if(a==='limpiar')lienzo?.limpiar();
+        if(a==='guardar'){const p=st.fase!=='pregunta'&&st.historial.at(-1)?st.historial.at(-1).p:st.actual,d=dondeDe(p);
+          if(!lienzo?.usado){aviso('El borrador está vacío.');return true}
+          if(!d.materia){aviso('Este ejercicio no tiene un cuaderno donde guardarlo.');return true}
+          t.disabled=true;
+          try{const n=await agregarImagenAlTema(d,await lienzo.aBlob(),`### ✏️ Borrador · ${new Date().toLocaleDateString('es',{day:'numeric',month:'short'})}\n${textoPlano(p.enunciado||'').slice(0,200)}`);aviso(`📝 Guardado en «${n.titulo}»`)}
+          catch(e){aviso('No se pudo guardar el borrador.')}
+          t.disabled=false;return true}
+        if(a==='leer'){st.borrador.leyendo=true;repintar();let txt=null;
+          try{txt=await leerLetra()}catch(e){aviso(e.message||'No se pudo leer lo escrito.')}
+          st.borrador.leyendo=false;repintar();
+          const inp=$('#ses-resp');
+          if(txt&&txt!=='?'&&inp){inp.value=txt;inp.dispatchEvent(new Event('input'));inp.focus();inp.select?.();aviso('✍️ Revisa lo que leímos y corrígelo si hace falta; luego Comprobar.',4000)}
+          else if(txt==='?')aviso('No se entendió la letra: escribe un poco más grande.');
+          return true}
+        return true}
       if(t.id==='hoja-seguir'||t.id==='ses-continuar'){avanzar();repintar();window.scrollTo(0,0);return true}
       if(t.id==='hoja-gemelo'&&st.gemeloHoja){st.colaGemelo=st.gemeloHoja;st.gemeloHoja=null;avanzar();repintar();window.scrollTo(0,0);return true}
       if(t.id==='ses-saltar'&&cfg.saltar){cfg.saltar(st);avanzar();repintar();window.scrollTo(0,0);return true}
@@ -390,11 +453,13 @@ ${st.noseSeguidos>=2&&cfg.minileccion?`<p class="hoja-linea">¿Lo vemos desde el
           inp.value=inp.value.slice(0,ini)+k+inp.value.slice(inp.selectionEnd??ini);inp.focus();inp.setSelectionRange?.(ini+k.length,ini+k.length);inp.dispatchEvent(new Event('input'))}
         return true;
       }
+      if(t.id==='ses-panel-cerrar'){st.panelOculto=true;repintar();return true}
+      if(t.id==='ses-panel-abrir'){st.panelOculto=false;repintar();return true}
       if(t.dataset.sigPaso){st[t.dataset.sigPaso]=(st[t.dataset.sigPaso]||1)+1;repintar();document.querySelector(`#ses-cuerpo .pasos-proc li:nth-child(${st[t.dataset.sigPaso]})`)?.scrollIntoView({block:'nearest'});return true}
       if(t.dataset.verTodos){st[t.dataset.verTodos]=99;repintar();return true}
-      if(t.id==='ses-pista'){st.pista++;repintar();if(st.pista>=2)document.querySelector('#ses-cuerpo .pista:last-of-type,#ses-cuerpo .ayuda-caja')?.scrollIntoView({block:'nearest'});return true}
+      if(t.id==='ses-pista'){st.pista++;st.panelOculto=false;repintar();if(st.pista>=2)document.querySelector('#ses-cuerpo .pista:last-of-type,#ses-cuerpo .ayuda-caja')?.scrollIntoView({block:'nearest'});return true}
       // «No sé cómo empezar»: la solución completa y luego un gemelo; no es un fallo (no se registra respuesta)
-      if(t.id==='ses-nosecomo'){st.nose=true;st.noseSeguidos++;cfg.visto?.(p);repintar();document.querySelector('#ses-cuerpo .ayuda-caja')?.scrollIntoView({block:'start'});return true}
+      if(t.id==='ses-nosecomo'){st.nose=true;st.panelOculto=false;st.noseSeguidos++;cfg.visto?.(p);repintar();document.querySelector('#ses-cuerpo .ayuda-caja')?.scrollIntoView({block:'start'});return true}
       if(t.id==='ses-ahora-tu'){const g=gemeloDe(p);if(g){st.actual=g;st.e={};st.pista=0;st.nose=false;st.v2=1;st.v3=1;st.t0=Date.now()}else{st.nose=false;avanzar()}repintar();window.scrollTo(0,0);return true}
       if(t.id==='ses-ia'&&cfg.ia){st.cargandoIA=true;repintar();
         try{const q=await cfg.ia(st);if(q){st.actual=q;st.e={};st.pista=0;st.nose=false;st.t0=Date.now()}}catch(e){}

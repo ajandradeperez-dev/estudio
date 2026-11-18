@@ -44,18 +44,7 @@ main{flex:1;width:100%;max-width:760px;margin:0 auto;padding:var(--s4) var(--s4)
 /* Sesión de práctica a pantalla completa: sin barras de la app */
 body.sesion-activa .barra-sup,body.sesion-activa .nav-inferior{display:none}
 body.sesion-activa main{padding:0;max-width:680px}
-/* Pantallas anchas: la navegación pasa a la izquierda */
-@media (min-width:900px){
-  .app{display:grid;grid-template-columns:220px 1fr;grid-template-rows:auto 1fr}
-  .barra-sup{grid-column:1/-1}
-  .nav-inferior{position:sticky;top:58px;grid-row:2;grid-column:1;align-self:start;display:flex;flex-direction:column;gap:var(--s1);height:auto;padding:var(--s4) var(--s3);border-top:0;border-right:2px solid var(--line);background:transparent}
-  .nav-tab{flex-direction:row;justify-content:flex-start;gap:var(--s3);padding:0 var(--s3);min-height:52px;border-radius:var(--r2);font-size:15px}
-  .nav-tab[aria-current="page"]{background:var(--primary-soft)}
-  .nav-tab[aria-current="page"]::before{display:none}
-  .nav-insignia{position:static;margin-left:auto}
-  main{grid-row:2;grid-column:2;padding-bottom:var(--s10)}
-  body.sesion-activa .app{display:block}
-}
+/* Tablet, DeX y laptop: estilos/tablet.css (riel de navegación lateral desde 600 px, panel con nombres desde 1280 px) */
 /* Transición corta al cambiar de pantalla (≤250 ms) */
 #vista.entrando{animation:entrar .2s ease-out}
 @keyframes entrar{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}

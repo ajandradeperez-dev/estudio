@@ -24,11 +24,16 @@ const repintar=()=>document.dispatchEvent(new Event('repintar'));
 const opcTex={tex:s=>tex(s)};
 // URLs de las imágenes mostradas (se liberan al volver a pintar)
 let urls=[];
+// Miniatura (lado mayor 320 px) para las tiras de fotos: no se decodifica la foto completa solo para verla chiquita
+async function miniatura(blob){
+  try{const b=await createImageBitmap(blob,{resizeWidth:320,resizeQuality:'medium'});const c=document.createElement('canvas');c.width=b.width;c.height=b.height;c.getContext('2d').drawImage(b,0,0);b.close?.();
+    return await new Promise(r=>c.toBlob(x=>r(x||blob),'image/jpeg',.8))}catch(e){return blob}
+}
 async function cargarImagenes(raiz=document){
   urls.forEach(u=>URL.revokeObjectURL(u));urls=[];
   for(const img of raiz.querySelectorAll('img[data-img]')){
-    const a=await leerArchivo(img.dataset.img).catch(()=>null);
-    if(a?.blob){const u=URL.createObjectURL(a.blob);urls.push(u);img.src=u;if(a.ancho){img.width=a.ancho;img.height=a.alto}}else img.alt='(imagen no disponible)';
+    const a=await leerArchivo(img.dataset.img).catch(()=>null);img.decoding='async';img.loading='lazy';
+    if(a?.blob){const mini=img.closest('.nota-miniaturas'),u=URL.createObjectURL(mini?await miniatura(a.blob):a.blob);urls.push(u);img.src=u;if(a.ancho&&!mini){img.width=a.ancho;img.height=a.alto}}else img.alt='(imagen no disponible)';
   }
 }
 
@@ -109,12 +114,21 @@ function resumenTexto(n,q){
   if(!q)return t.slice(0,110);
   const i=normal(t).indexOf(normal(q));return (i>40?'…':'')+t.slice(Math.max(0,i-40),i+90);
 }
-const item=n=>{const c=cuadernoDe(n),nt=tarjetasDe(n.cuerpo).length,sel=seleccion?.has(n.id);
-  const dentro=`<span class="nota-item-cab"><b>${seleccion?`<span aria-hidden="true">${sel?'☑️':'⬜'}</span> `:''}${n.fijada?'📌 ':''}${esc(n.titulo||'Sin título')}</b><span class="nota">${fechaCorta(n.editada)}</span></span>
-<span class="nota-item-txt">${esc(resumenTexto(n,buscar))||'<i>Vacía</i>'}</span>
-<span class="nota-item-pie">${chip(esc(c.nombre))}${nt?chip(`🃏 ${nt}`):''}${imagenesDe(n.cuerpo).length?chip('🖼️'):''}${(n.etiquetas||[]).slice(0,3).map(e=>chip('#'+esc(e))).join('')}</span>`;
+const item=n=>{const sel=seleccion?.has(n.id),dentro=dentroItem(n);
   if(seleccion)return `<button type="button" class="nota-item${sel?' elegida':''}" data-sel="${esc(n.id)}" aria-pressed="${!!sel}">${dentro}</button>`;
   return `<div class="nota-fila"><button class="nota-item" data-go="notas/n/${esc(n.id)}">${dentro}</button><button type="button" class="nota-menu" data-menu="${esc(n.id)}" aria-label="Más opciones de «${esc(n.titulo||'Sin título')}»">⋯</button></div>`};
+const dentroItem=n=>{const c=cuadernoDe(n),nt=tarjetasDe(n.cuerpo).length,sel=seleccion?.has(n.id);
+  return `<span class="nota-item-cab"><b>${seleccion?`<span aria-hidden="true">${sel?'☑️':'⬜'}</span> `:''}${n.fijada?'📌 ':''}${esc(n.titulo||'Sin título')}</b><span class="nota">${fechaCorta(n.editada)}</span></span>
+<span class="nota-item-txt">${esc(resumenTexto(n,buscar))||'<i>Vacía</i>'}</span>
+<span class="nota-item-pie">${chip(esc(c.nombre))}${nt?chip(`🃏 ${nt}`):''}${imagenesDe(n.cuerpo).length?chip('🖼️'):''}${(n.etiquetas||[]).slice(0,3).map(e=>chip('#'+esc(e))).join('')}</span>`};
+// Lista de al lado mientras se edita una nota (dos paneles en tablet y pantallas anchas; en el teléfono no se ve)
+const htmlLado=actual=>!cache?'<p class="cargando">Cargando tus notas</p>':`<div class="pila-notas">${ordenar(cache).map(n=>`<button class="nota-item" data-go="notas/n/${esc(n.id)}"${n.id===actual?' aria-current="true"':''}>${dentroItem(n)}</button>`).join('')}</div>`;
+async function nuevaNota(ir){
+  // el cuaderno sale de dónde estabas estudiando (lo último que abriste)
+  const u=progreso().ultimo,x=u?analizar(u.ruta):{};
+  const n=await crearNota({materia:x.m?.id||null,tema:x.l?.tema||x.t?.id||null});
+  ir(`notas/n/${n.id}`);
+}
 function htmlLista(){
   if(!cache)return '<p class="cargando">Cargando tus notas</p>';
   const l=ordenar(filtrar(cache));
@@ -135,7 +149,7 @@ function vistaLista(){
   return {
     titulo:'Notas',
     alEntrar(){cache=null;seleccion=null;cargar()},
-    vista:()=>`<div class="row" style="justify-content:space-between;align-items:center"><h1 style="margin:0">📝 Notas</h1><span class="row"><button type="button" class="btn ghost btn-chico" data-go="notas/foto">📸 Foto a nota</button><button type="button" class="btn btn-chico" id="nota-nueva">＋ Nueva</button></span></div>
+    vista:()=>`<div class="notas-dos"><div class="panel-principal"><div class="row" style="justify-content:space-between;align-items:center"><h1 style="margin:0">📝 Notas</h1><span class="row"><button type="button" class="btn ghost btn-chico" data-go="notas/foto">📸 Foto a nota</button><button type="button" class="btn btn-chico" id="nota-nueva">＋ Nueva</button></span></div>
 ${enMemoria?'<p class="aviso-linea">⚠️ Este navegador no deja guardar notas: se perderán al cerrar la app (¿modo privado?).</p>':''}
 <label class="buscar"><span class="oculto-visual">Buscar en tus notas</span><input type="search" id="notas-buscar" placeholder="🔎 Buscar en tus notas" value="${esc(buscar)}" autocomplete="off"></label>
 <div class="filtros" role="group" aria-label="Filtrar">${filtros().map(([v,t])=>`<button type="button" class="chip-filtro" data-filtro="${esc(v)}" aria-pressed="${filtro===v}">${t}</button>`).join('')}</div>
@@ -144,7 +158,7 @@ ${cache?.length?(seleccion?`<div class="nota-seleccion" role="region" aria-label
 <span class="row"><button type="button" class="btn ghost btn-chico" id="sel-todas">Todas</button><button type="button" class="btn ghost btn-chico" id="sel-cancelar">Cancelar</button><button type="button" class="btn peligro btn-chico" id="sel-borrar"${seleccion.size?'':' disabled'}>🗑️ Borrar</button></span></div>`
 :`<div class="row" style="justify-content:flex-end"><button type="button" class="btn ghost btn-chico" id="sel-empezar">☑️ Seleccionar</button></div>`):''}
 <div id="notas-lista">${htmlLista()}</div>
-<h2>💾 Respaldo</h2>${htmlRespaldo()}`,
+<h2>💾 Respaldo</h2>${htmlRespaldo()}</div><div class="panel-vacio solo-dos"><p style="font-size:40px;margin:0" aria-hidden="true">🗒️</p><p>Elige una nota de la lista para verla aquí, o crea una nueva.</p></div></div>`,
     alMostrar(){
       const b=document.getElementById('notas-buscar');
       b?.addEventListener('input',()=>{buscar=b.value;document.getElementById('notas-lista').innerHTML=htmlLista()});
@@ -165,12 +179,7 @@ ${cache?.length?(seleccion?`<div class="nota-seleccion" role="region" aria-label
         else if(r==='fijar'){Object.assign(n,await guardar({...n,fijada:!n.fijada},{tocada:false}));repintar()}
         else if(r==='borrar'){await borrarConConfirmar([n]);repintar()}
         return true}
-      if(t.id==='nota-nueva'){
-        // el cuaderno sale de dónde estabas estudiando (lo último que abriste)
-        const u=progreso().ultimo,x=u?analizar(u.ruta):{};
-        const n=await crearNota({materia:x.m?.id||null,tema:x.l?.tema||x.t?.id||null});
-        ir(`notas/n/${n.id}`);return true;
-      }
+      if(t.id==='nota-nueva'){await nuevaNota(ir);return true}
       return clicRespaldo(t);
     }
   };
@@ -209,8 +218,11 @@ function vistaEditor(id){
   const ponerEstado=e=>{estado=e;const el=document.getElementById('nota-estado');if(el)el.textContent=e};
   async function guardarYa(){
     clearTimeout(timer);if(!pendiente||!n)return;pendiente=false;
-    try{n=await guardar(n);ponerEstado('✓ Guardado')}catch(e){pendiente=true;ponerEstado('⚠️ No se pudo guardar')}
+    try{n=await guardar(n);ponerEstado('✓ Guardado');
+      if(cache){const i=cache.findIndex(x=>x.id===n.id);if(i>=0)cache[i]=n;else cache.unshift(n);pintarLado()}}
+    catch(e){pendiente=true;ponerEstado('⚠️ No se pudo guardar')}
   }
+  const pintarLado=()=>{const l=document.getElementById('notas-lado');if(l)l.innerHTML=htmlLado(id)};
   const cambio=()=>{pendiente=true;ponerEstado('Guardando…');clearTimeout(timer);timer=setTimeout(guardarYa,600)};
   // leer lo que hay en pantalla antes de cambiar algo
   const leerCampos=()=>{const c=cuerpo(),t=document.getElementById('nota-titulo');if(c)n.cuerpo=c.value;if(t)n.titulo=t.value};
@@ -263,12 +275,17 @@ function vistaEditor(id){
     titulo:'Nota',
     alEntrar(){
       modo='editar';n=null;error='';document.body.classList.add('editando-nota');
+      if(!cache)todasLasNotas().then(l=>{cache=cache||l;pintarLado()}).catch(()=>{});
       leerNota(id).then(x=>{if(!x)error='Esa nota no existe (quizá la borraste).';n=x||null;repintar()}).catch(()=>{error='No se pudo abrir la nota.';repintar()});
       window.visualViewport?.addEventListener('resize',teclado);window.visualViewport?.addEventListener('scroll',teclado);
     },
     alSalir(){if(n&&cuerpo())leerCampos();guardarYa();document.body.classList.remove('editando-nota');document.documentElement.style.removeProperty('--teclado');
       window.visualViewport?.removeEventListener('resize',teclado);window.visualViewport?.removeEventListener('scroll',teclado);urls.forEach(u=>URL.revokeObjectURL(u));urls=[]},
     vista(){
+      const lado=`<aside class="panel-lista" aria-label="Tus notas"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px"><h2 style="margin:0">📝 Notas</h2><button type="button" class="btn btn-chico" id="nota-nueva">＋ Nueva</button></div><div id="notas-lado">${htmlLado(id)}</div></aside>`;
+      return `<div class="notas-dos">${lado}<div class="panel-detalle">${this.detalle()}</div></div>`;
+    },
+    detalle(){
       if(error)return vacio({icono:'🗒️',titulo:error,boton:'<button class="btn" data-go="notas">Ver mis notas</button>'});
       if(!n)return '<p class="cargando">Abriendo la nota</p>';
       const c=cuadernoDe(n),nt=tarjetasDe(n.cuerpo).length;
@@ -313,6 +330,7 @@ ${modo==='repasar'?'<button type="button" class="btn ghost ancho" id="nota-desta
       if(modo!=='editar')cargarImagenes(document.querySelector('.nota-render'));
     },
     async alClic(b,ir,repintarV){
+      if(b.id==='nota-nueva'){if(n&&cuerpo())leerCampos();await guardarYa();await nuevaNota(ir);return true}
       if(!n)return;
       if(b.dataset.modo){leerCampos();await guardarYa();modo=b.dataset.modo;repintarV();window.scrollTo(0,0);return true}
       if(b.id==='nota-fijar'){n.fijada=!n.fijada;pendiente=true;await guardarYa();repintarV();return true}

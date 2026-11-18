@@ -477,7 +477,7 @@ Sin cuenta, cada dispositivo guarda lo suyo y se pasa con el respaldo; con cuent
 - Todo texto que escriba el usuario (respuestas, notas) se pasa por `esc()` antes de meterlo en HTML.
 - Los colores siempre salen de las variables CSS (`--accent`, `--ok`, `--bad`…) para que funcione el modo oscuro.
 - **Sistema de diseño** (estilo app de idiomas, paleta propia): todo color, radio y espacio sale de `estilos/tokens.css`; los componentes de `nucleo/ui.js` y `estilos/componentes.css` se reutilizan en vez de escribir estilos sueltos. Botón principal 3D (`.btn`), secundario (`.btn.ghost`), del área (`.btn.area`). Móvil primero a 360 px, toques de **44 px** como mínimo, sin scroll horizontal, contraste AA (cada color de fondo tiene su `--on-…`). Animaciones de 250 ms o menos, desactivadas con `prefers-reduced-motion`. Cada área tiene su color (`--t-<tono>`): dentro de `.area-<tono>` barras, nodos y `.btn.area` lo usan.
-- **Navegación**: barra inferior fija con 5 pestañas (Aprender, Repasar con el número de repasos de hoy, Notas, Logros, Perfil); al editar una nota se oculta y la barra de formato queda encima del teclado (`--teclado`, `interactive-widget=resizes-content`); en pantallas anchas pasa a la izquierda. Una vista con `inmersiva: true` (sesión de práctica) oculta las barras. Las migas de pan con botón ← ubican dentro de Aprender.
+- **Navegación**: barra inferior fija con 5 pestañas (Aprender, Repasar con el número de repasos de hoy, Notas, Logros, Perfil); al editar una nota en el teléfono se oculta y la barra de formato queda encima del teclado (`--teclado`, `interactive-widget=resizes-content`); desde 600 px es un riel a la izquierda (ver «📱 Tablet»). Una vista con `inmersiva: true` (sesión de práctica) oculta las barras. Las migas de pan con botón ← ubican dentro de Aprender.
 - **Botón Atrás** (Android, APK/TWA, PWA, laptop y el ← de las migas; `main.js`): el historial del navegador ES la pila de pantallas. **Una entrada por cada navegación que hace la persona**, con `pushState` síncrono dentro de su toque o clic (lleva la activación del usuario: Chrome en Android se salta con el botón Atrás las entradas agregadas sin ella, «history manipulation intervention»; por eso fallaron la «trampa» y el colchón de entradas). Navegaciones automáticas (rutas viejas, redirecciones, la vuelta de un enlace, el primer pintado) usan `replaceState`. **Sin entradas de relleno.**
   - `go(ruta,{modo})`: `'push'` (la persona navegó), `'replace'` (automático) o `'pop'` (Atrás: solo pinta). Salir de una práctica o capa a la misma ruta vuelve de un salto a su entrada (`desde`) en vez de agregar otra.
   - **popstate solo pinta** la ruta guardada en la entrada (`{app, i, ruta, inm?, capa?, desde?}`) o cierra las capas que ya no tienen entrada; nunca hace push ni replace (el diagnóstico lo marca con `enPop` y `npm run atras` lo comprueba).
@@ -491,6 +491,37 @@ Sin cuenta, cada dispositivo guarda lo suyo y se pasa con el respaldo; con cuent
   - **Cómo probarlo en el teléfono**: 1) Perfil → Acerca de: la versión debe ser la del último commit y decir «✅ Al día»; 2) toca la versión 3 veces y luego «🗑️ Borrar» para empezar limpio; 3) Aprender → Estudio → Matemáticas → un tema → una lección → Practicar, responde una y abre «📖 Ver procedimiento»; 4) presiona Atrás sin tocar la pantalla: procedimiento, hoja, práctica, lección, tema, Matemáticas, Estudio, Aprender y «Toca otra vez para salir»; 5) si algo falla, vuelve a Acerca de, toca la versión 3 veces y «📋 Copiar», y envía el texto.
 - **Pantalla de práctica**: siempre con `crearSesion()` (una pregunta por pantalla, ✕, barra de progreso, "Comprobar" abajo, hoja verde o roja con la respuesta correcta, el porqué, el error típico y la regla). No escribas pantallas de ejercicios a mano.
 - El laboratorio de incidentes es **defensivo**: identificar ataques y elegir respuestas, nunca enseñar a ejecutarlos.
+
+## 📱 Tablet, S Pen, teclado y DeX (`estilos/tablet.css`, `nucleo/lienzo.js`, `nucleo/atajos.js`)
+
+Pensado para la Galaxy Tab S10 (FE, S10+, Ultra), pantalla dividida, ventana flotante y Samsung DeX; el teléfono no cambia.
+
+- **Puntos de corte por ancho, nunca por dispositivo**: compacto < 600 px (barra inferior, como siempre), medio 600–1023
+  (riel de navegación de 88 px a la izquierda), expandido ≥ 1024; desde 1280 el riel muestra los nombres. Tipografía fluida
+  (`clamp`, ~18 px), texto a ≤ 68ch, tarjetas en cuadrícula (`.lista-nav`, libros, notas, medallas) y toques de 48 px.
+  Todo es CSS: girar o entrar a pantalla dividida no vuelve a pintar, así que no se pierde lo escrito ni la pista abierta.
+- **Dos paneles** (≥ 840 px, se apaga en Perfil → 🖥️ Pantalla, `html[data-paneles="no"]`): práctica (pista, solución,
+  «No sé cómo empezar» y ✏️ Borrador en `.ses-panel` a la derecha, con ✕ y ancho arrastrable que se recuerda en
+  `ajustes().panelAncho`; el procedimiento entra por la derecha sin tapar el ejercicio), Cuaderno (lista + nota), Lectura
+  (filtros + libros; portada + capítulos; **dos páginas** en horizontal ≥ 1024 con ‹ › y ←/→, la posición se guarda como
+  fracción del capítulo y sirve en los dos modos), Python (editor + enunciado/salida), Mis materias (resumen y temario +
+  plan) y Perfil (índice + secciones). Excel muestra más filas. En el teléfono todo vuelve a una columna.
+- **Perfil → 🖥️ Pantalla**: tamaño del texto (normal, grande, muy grande: `html[data-texto]`, `zoom` en `main`) y dos
+  paneles. Se guardan en `ciberlab-ajustes` (no es progreso).
+- **S Pen** (`lienzo.js`, usado por el dibujo del cuaderno y el Borrador): trazos como datos (se redibujan al girar),
+  grosor según la presión, eventos coalescidos y curvas suaves, rechazo de la palma (al ver un lápiz, el dedo desplaza en
+  vez de dibujar), botón lateral o extremo borrador (buttons 2/32, button 5) borran, deshacer y rehacer (Ctrl+Z / Ctrl+Y).
+  **✏️ Borrador** en cada ejercicio (botón en la cabecera o B): uno por ejercicio mientras dura la sesión, «Limpiar» y «📝
+  Guardar en el Cuaderno» (PNG en la nota del tema, `agregarImagenAlTema`). Con IA configurada, «✍️ Escribir con el lápiz»
+  lee lo escrito y lo pone en la respuesta para revisarlo antes de comprobar; sin IA no aparece.
+- **Teclado físico** (`atajos.js`): Enter comprobar/continuar, 1–4 opción, H pista, S solución, B borrador, Esc cerrar
+  panel o diálogo, Ctrl+K buscar (materias, temas, habilidades, notas y libros), ←/→ páginas del lector, Ctrl+Enter
+  ejecutar Python, ? ayuda. Si se escribe con un teclado de verdad (`html[data-teclado-fisico]`) se esconden el teclado
+  matemático y la barra de Python («⌨️ Símbolos» los muestra). Clic derecho en una nota abre su menú «⋯».
+- **Pruebas**: `npm run tablet` (9 tamaños × claro/oscuro × 12 pantallas; capturas en `capturas/tablet/`, que no se
+  versiona): sin scroll horizontal, ≤ 75 caracteres por línea, controles ≥ 48 px, fórmulas en su caja, cuerpo ≥ 16 px,
+  nada tapado; girar a mitad de un ejercicio; S Pen (dibuja, la palma no, el botón borra, deshacer, girar) y atajos.
+  `--play` guarda las capturas para Google Play en `capturas/play-tablet/`.
 
 ## 📊 Curso de Excel (`src/materias/excel/`, área 💼 Cursos)
 
@@ -605,6 +636,7 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | Parte C · 📚 Lectura con 5 libros libres (dominio público o CC BY), lector sin conexión, palabras al repaso y preguntas | ✅ terminado |
 | PERFIL-LIBROS A · Pistas desglosadas (una acción por paso) · B · Logros al día · C · 6 libros en español, filtros, búsqueda y glosario | ✅ terminado |
 | PERFIL-LIBROS D · Respaldo `.estudio` (Combinar/Reemplazar), sincronización con Supabase (sync.sql con RLS probada en PGlite) y guía `supabase/LEEME.md` | ✅ terminado; proyecto de Supabase conectado y entrada con correo y contraseña (código de 6 dígitos como alternativa) |
+| PROMPT-TABLET · Tab S10: riel lateral, dos paneles, S Pen (borrador, presión, palma), atajos de teclado, Pantalla en Perfil, `npm run tablet`, APK 1.2.0 | ✅ terminado |
 | P3b · Inglés: metas extra por nivel | ⏳ siguiente |
 | 4 · Inglés: completar A1 y A2, luego B1 | reemplazado por P3 y P6 |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | reemplazado por P3 y P6 |
@@ -641,5 +673,6 @@ npm run cuenta    # ☁️ Cuenta contra un Supabase simulado: crear cuenta, ent
 npm run lectura   # 📚 Lectura en el navegador (biblioteca, capítulo, palabra al repaso, preguntas, sin conexión)
 npm run libros    # vuelve a armar public/libros y el catálogo desde las fuentes (--cache <dir>)
 npm run atras     # botón Atrás nivel por nivel (6 niveles y 7 Atrás, enlace directo, recarga, otras ramas) en teléfono y escritorio
+npm run tablet    # Galaxy Tab S10 (FE, S10+, Ultra), dividida, flotante y DeX: capturas y comprobaciones, S Pen y teclado (--claro, --solo <caso>, --play)
 npm run calidad   # 360 y 412 px, claro y oscuro: textos encimados, scroll horizontal y toques < 44 px en Aprender, Logros, Perfil, Notas y cada materia y tema (compila y levanta su propio preview; necesita Chrome o Edge)
 ```

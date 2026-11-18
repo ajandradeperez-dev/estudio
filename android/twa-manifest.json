@@ -21,8 +21,8 @@
     "path": "C:\\Users\\angel\\.ciberlab-firma\\ciberlab.keystore",
     "alias": "ciberlab"
   },
-  "appVersionName": "1.1.0",
-  "appVersionCode": 2,
+  "appVersionName": "1.2.0",
+  "appVersionCode": 3,
   "shortcuts": [
     {
       "name": "Repasar",
@@ -37,7 +37,7 @@
       "chosenIconUrl": "https://ajandradeperez-dev.github.io/estudio/icons/icon-96.png"
     }
   ],
-  "generatorApp": "unknown",
+  "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://ajandradeperez-dev.github.io/estudio/manifest.webmanifest",
   "fallbackType": "customtabs",
   "features": {},
@@ -57,5 +57,5 @@
   "fileHandlers": [],
   "launchHandlerClientMode": "",
   "displayOverride": [],
-  "appVersion": "1.1.0"
+  "appVersion": "1.2.0"
 }

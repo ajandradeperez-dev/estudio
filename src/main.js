@@ -2,6 +2,7 @@ import './estilos/tokens.css';
 import './estilos/base.css';
 import './estilos/componentes.css';
 import './estilos/secciones.css';
+import './estilos/tablet.css';
 import {$} from './utilidades.js';
 import {analizar,rutaMateria,rutaTema,padreDe} from './nucleo/materias.js';
 import {visitar,guardarUltimo,sumarSegundos,registrarSesion,pendientes} from './nucleo/progreso.js';
@@ -22,6 +23,7 @@ import {vistaUbicacion} from './nucleo/ubicacion.js';
 import {vistaRetos} from './nucleo/vista-retos.js';
 import {vistaExamenFinal,vistaCertificado} from './nucleo/examen.js';
 import {aplicarTema} from './nucleo/ajustes.js';
+import {activarAtajos} from './nucleo/atajos.js';
 import {cerrarHoja,intro,boton,aviso} from './nucleo/ui.js';
 import {cerrarProcedimiento} from './nucleo/procedimiento.js';
 import {leccion,rutaLeccion} from './nucleo/materias.js';
@@ -208,6 +210,7 @@ function go(ruta,{modo='push'}={}){
 }
 
 aplicarTema();
+activarAtajos();   // teclado físico: Enter, 1–4, H, S, B, Esc, Ctrl+K, ? (nucleo/atajos.js)
 $('#nav').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)go(b.dataset.go)});
 $('#barra').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)go(b.dataset.go)});
 $('#main').addEventListener('keydown',e=>{if(e.key==='Enter'){const c=e.target.closest('[data-go]');if(c&&c.tagName!=='BUTTON')go(c.dataset.go)}});

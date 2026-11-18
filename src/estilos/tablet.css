@@ -1,0 +1,181 @@
+/* Tablet (Galaxy Tab S10), pantalla dividida, ventana flotante, DeX y laptop.
+   Todo se decide por el ANCHO disponible, nunca por el tipo de dispositivo:
+   - compacto  (< 600 px): teléfono, igual que siempre (barra inferior);
+   - medio     (600–1023 px): tablet en vertical, pantalla dividida: riel de navegación a la izquierda;
+   - expandido (≥ 1024 px): tablet en horizontal, DeX, laptop; desde 1280 px el riel muestra los nombres completos.
+   Dos paneles (práctica, cuaderno, lectura, Python, Mis materias, Perfil) desde 840 px, salvo que en Perfil → Pantalla
+   se apague «Usar dos paneles» (html[data-paneles="no"]). Como todo es CSS, girar la tablet no vuelve a pintar nada:
+   no se pierde lo escrito, la pista abierta ni la posición. Tamaño del texto: html[data-texto="grande"|"muy-grande"]. */
+
+/* ---------- tamaño del texto (Perfil → Pantalla) ---------- */
+html[data-texto="grande"] main,html[data-texto="grande"] #hoja,html[data-texto="grande"] #procedimiento{zoom:1.12}
+html[data-texto="muy-grande"] main,html[data-texto="muy-grande"] #hoja,html[data-texto="muy-grande"] #procedimiento{zoom:1.25}
+
+/* Lo que solo tiene sentido con dos paneles (p. ej. «Elige una nota») */
+.solo-dos{display:none}
+
+@media (min-width:600px){
+  /* tipografía fluida: 16 px en 600, ~18 px en 1024 o más */
+  body{font-size:clamp(16px,calc(11px + .7vw),18px)}
+  .lec-p,.lector{font-size:max(var(--letra,18px),1em)}
+  .pregunta{font-size:clamp(21px,calc(14px + 1vw),25px)}
+  .formula-caja .katex-display>.katex,.pregunta .katex-display>.katex{font-size:1.15em}
+  .paso-como{font-size:18px}
+  .paso-porque,details.paso-porque,.paso-ojo,.nota-item-txt,.hoja-linea{font-size:16px}
+  /* nada de texto a lo ancho de toda la pantalla: ~68 caracteres por línea */
+  main p,main li,.hoja-linea,.proc p{max-width:68ch}
+
+  /* ---------- armazón: riel de navegación a la izquierda ---------- */
+  .app{display:grid;grid-template-columns:calc(88px + env(safe-area-inset-left)) minmax(0,1fr);grid-template-rows:auto 1fr}
+  .barra-sup{grid-column:1/-1;padding-left:calc(var(--s4) + env(safe-area-inset-left));padding-right:calc(var(--s4) + env(safe-area-inset-right))}
+  .nav-inferior{position:sticky;top:58px;grid-row:2;grid-column:1;align-self:start;display:flex;flex-direction:column;gap:var(--s1);
+    height:calc(100dvh - 58px);overflow-y:auto;padding:var(--s3) var(--s2) calc(var(--s3) + env(safe-area-inset-bottom)) calc(var(--s2) + env(safe-area-inset-left));
+    border-top:0;border-right:2px solid var(--line);background:var(--bg)}
+  .nav-tab{min-height:64px;border-radius:var(--r3);font-size:12px;text-align:center;padding:6px 2px}
+  .nav-tab:hover{background:var(--surface-2)}
+  .nav-tab[aria-current="page"]{background:var(--primary-soft)}
+  .nav-tab[aria-current="page"]::before{display:none}
+  .nav-insignia{top:4px;left:calc(50% + 6px)}
+  main{grid-row:2;grid-column:2;max-width:1180px;width:100%;margin:0 auto;
+    padding:var(--s6) calc(clamp(var(--s4),3vw,var(--s10)) + env(safe-area-inset-right)) calc(var(--s10) + env(safe-area-inset-bottom)) clamp(var(--s4),3vw,var(--s10))}
+  body.sesion-activa .app{display:block}
+  body.editando-nota .nav-inferior{display:flex}
+  body.editando-nota main{padding-bottom:var(--s10)}
+  .aviso,#aviso-flotante{bottom:calc(var(--s6) + env(safe-area-inset-bottom) + var(--teclado,0px))}
+
+  /* ---------- tarjetas en cuadrícula en vez de estirarse ---------- */
+  .lista-nav,.lib-lista,.pila-notas{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:var(--s3);align-items:stretch}
+  .lista-nav>.tarjeta-nav,.lib-lista>.tarjeta-nav{margin-bottom:0;height:100%}
+  .prog-grid{grid-template-columns:repeat(4,1fr)}
+  .medallas{grid-template-columns:repeat(auto-fill,minmax(132px,1fr))}
+
+  /* ---------- toques de 48 px como mínimo (dedo, S Pen, DeX) ---------- */
+  :is(#vista,#nav,#barra,#hoja,#procedimiento,.modal-fondo,.dibujo-fondo) :is(button,a.btn,select,input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range])){min-height:48px}
+  :is(#vista,#nav,#barra,#hoja,#procedimiento,.modal-fondo,.dibujo-fondo) :is(button,a.btn){min-width:48px}
+  .btn-icono{width:48px;height:48px}
+  .marca,.sup-chip{min-height:48px;display:inline-flex;align-items:center}
+  .mp-emparejado,.mapa-unidad,.chip-filtro,.enlace,.pieza,.tecla,.opcion-enlace{display:inline-flex;align-items:center}
+  .tecla{justify-content:center}
+  .migas{margin-bottom:var(--s4)}
+}
+
+/* ---------- desde 1280 px: el riel muestra los nombres completos ---------- */
+@media (min-width:1280px){
+  .app{grid-template-columns:calc(232px + env(safe-area-inset-left)) minmax(0,1fr)}
+  .nav-inferior{padding:var(--s4) var(--s3) var(--s4) calc(var(--s3) + env(safe-area-inset-left))}
+  .nav-tab{flex-direction:row;justify-content:flex-start;gap:var(--s3);padding:0 var(--s4);min-height:56px;font-size:16px;text-align:left}
+  .nav-insignia{position:static;margin-left:auto}
+}
+
+/* ---------- dos paneles (≥ 840 px) ---------- */
+@media (min-width:840px){
+  html:not([data-paneles="no"]) .solo-dos{display:block}
+  /* Práctica: el ejercicio a la izquierda; pista, solución o «No sé cómo empezar» a la derecha */
+  html:not([data-paneles="no"]) body.sesion-activa main:has(.sesion.con-panel){max-width:1360px}
+  html:not([data-paneles="no"]) .sesion.con-panel .sesion-cuerpo{display:grid;grid-template-columns:minmax(0,1fr) var(--panel-ancho,clamp(340px,40%,560px));gap:var(--s6);align-items:start}
+  html:not([data-paneles="no"]) .ses-panel{position:sticky;top:76px;max-height:calc(100dvh - 180px);overflow-y:auto;overscroll-behavior:contain;
+    padding:0 var(--s4) var(--s4) var(--s5);border:2px solid var(--line);border-radius:var(--r3);background:var(--surface)}
+  html:not([data-paneles="no"]) .ses-panel-cab{display:flex}
+  html:not([data-paneles="no"]) .ses-panel-asa{display:block}
+  html:not([data-paneles="no"]) .ses-panel .pista:first-child,html:not([data-paneles="no"]) .ses-panel .ayuda-caja:first-child{margin-top:0}
+  /* el procedimiento («📖 Ver solución paso a paso») entra por la derecha y deja ver el ejercicio */
+  html:not([data-paneles="no"]) .proc-fondo{justify-content:flex-end;align-items:stretch;background:transparent;pointer-events:none}
+  html:not([data-paneles="no"]) .proc{pointer-events:auto;max-width:min(560px,44vw);max-height:none;height:100dvh;border-radius:var(--r3) 0 0 var(--r3);border-left:2px solid var(--line);box-shadow:-8px 0 30px rgb(0 0 0 / .12)}
+  html:not([data-paneles="no"]) body:has(#procedimiento) .sesion{margin-right:min(560px,44vw)}
+  html:not([data-paneles="no"]) body:has(#procedimiento) #hoja{right:min(560px,44vw)}
+
+  /* Cuaderno: lista a la izquierda, nota abierta a la derecha */
+  html:not([data-paneles="no"]) .notas-dos{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:var(--s6);align-items:start}
+  html:not([data-paneles="no"]) .notas-dos>.panel-lista{display:block;position:sticky;top:76px;max-height:calc(100dvh - 96px);overflow-y:auto;overscroll-behavior:contain;padding-right:4px}
+  html:not([data-paneles="no"]) .notas-dos .pila-notas{grid-template-columns:1fr}
+  html:not([data-paneles="no"]) .notas-dos .panel-vacio{position:sticky;top:76px}
+  html:not([data-paneles="no"]) .panel-lista .nota-item[aria-current="true"]{border-color:var(--primary);background:var(--primary-soft)}
+  html:not([data-paneles="no"]) body.editando-nota .migas{display:none}
+
+  /* Lectura: filtros en su columna y libros en la otra; portada del libro con sus capítulos al lado */
+  html:not([data-paneles="no"]) .lib-dos{display:grid;grid-template-columns:minmax(260px,320px) minmax(0,1fr);gap:var(--s6);align-items:start}
+  html:not([data-paneles="no"]) .lib-lado{position:sticky;top:76px}
+  html:not([data-paneles="no"]) .lib-dos #lib-lista>h2:first-child{margin-top:0}
+  html:not([data-paneles="no"]) .libro-dos{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--s8);align-items:start}
+  html:not([data-paneles="no"]) .libro-info{position:sticky;top:76px}
+  html:not([data-paneles="no"]) .libro-dos h2:first-child{margin-top:0}
+
+  /* Python: editor a la izquierda; salida, pruebas y enunciado a la derecha */
+  html:not([data-paneles="no"]) .py-dos{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);grid-template-areas:"ed lado";gap:var(--s4) var(--s6);align-items:start}
+  html:not([data-paneles="no"]) .py-dos:has(.py-enun){grid-template-areas:"ed enun" "ed lado";grid-template-rows:auto 1fr}
+  html:not([data-paneles="no"]) .py-principal{grid-area:ed;position:sticky;top:76px}
+  html:not([data-paneles="no"]) .py-enun{grid-area:enun;margin:0}
+  html:not([data-paneles="no"]) .py-lado{grid-area:lado;min-width:0}
+  html:not([data-paneles="no"]) .py-dos .py-editor{min-height:420px}
+
+  /* Mis materias: temario a la izquierda, plan y detalle a la derecha */
+  html:not([data-paneles="no"]) .mp-dos{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"res plan" "tem plan" "acc plan";grid-template-rows:auto auto 1fr;gap:0 var(--s6);align-items:start}
+  html:not([data-paneles="no"]) .mp-resumen{grid-area:res}
+  html:not([data-paneles="no"]) .mp-plan{grid-area:plan;position:sticky;top:76px;max-height:calc(100dvh - 96px);overflow-y:auto;overscroll-behavior:contain}
+  html:not([data-paneles="no"]) .mp-temario{grid-area:tem}
+  html:not([data-paneles="no"]) .mp-acciones{grid-area:acc}
+  html:not([data-paneles="no"]) .mp-plan>h2:first-child{margin-top:0}
+
+  /* Perfil: índice de secciones a la izquierda y contenido a la derecha */
+  html:not([data-paneles="no"]) .perfil-dos{display:grid;grid-template-columns:220px minmax(0,1fr);gap:var(--s8);align-items:start}
+  html:not([data-paneles="no"]) .perfil-indice{display:flex;flex-direction:column;gap:var(--s1);position:sticky;top:76px}
+  html:not([data-paneles="no"]) .perfil-dos>div>h2:first-child{margin-top:0}
+
+  /* Excel: la mini hoja usa el ancho (todas las columnas a la vista) */
+  .xl-hoja td{min-width:96px;height:44px}
+  #xh-marco .xl-hoja{width:100%}
+}
+/* ✏️ Borrador de la práctica (debajo del ejercicio en el teléfono; en el panel derecho en tablet) */
+.ses-borrador{margin:var(--s3) 0}
+.ses-borrador-barra{gap:6px;margin-bottom:var(--s2)}
+.borrador-lienzo{display:block;width:100%;height:clamp(240px,42dvh,520px);border:2px solid var(--line);border-radius:var(--r2);background:var(--surface);cursor:crosshair}
+#ses-borrador[aria-pressed="true"]{background:var(--primary-soft);color:var(--primary)}
+/* Partes de los paneles que en el teléfono no se ven */
+.ses-panel-cab,.ses-panel-asa,.perfil-indice{display:none}
+.notas-dos>.panel-lista{display:none}
+.ses-panel-cab{align-items:center;justify-content:space-between;gap:var(--s2);position:sticky;top:0;z-index:1;margin:0 calc(-1 * var(--s4)) var(--s2) calc(-1 * var(--s5));padding:var(--s2) var(--s2) var(--s2) var(--s5);background:var(--surface);border-bottom:2px solid var(--line)}
+.ses-panel-cab b{font-size:15px}
+.ses-panel{position:relative}
+.ses-panel-asa{position:absolute;left:-14px;top:0;bottom:0;width:12px;cursor:col-resize;touch-action:none;border-radius:6px}
+.ses-panel-asa:hover,.ses-panel-asa:focus-visible{background:var(--line)}
+.panel-vacio{text-align:center;color:var(--muted);padding:var(--s10) var(--s4);border:2px dashed var(--line);border-radius:var(--r3)}
+.perfil-indice button{all:unset;box-sizing:border-box;display:flex;align-items:center;min-height:48px;padding:0 var(--s3);border-radius:var(--r2);color:var(--ink);font-weight:700;cursor:pointer}
+.perfil-indice button:hover{background:var(--surface-2)}
+.perfil-indice button:focus-visible{outline:3px solid var(--primary)}
+#vista h2[id]{scroll-margin-top:72px}
+
+/* ---------- Lectura: vista de dos páginas en horizontal (como un libro abierto) ---------- */
+.lec-paginas{display:none}
+@media (min-width:1024px) and (orientation:landscape){
+  html:not([data-paneles="no"]) .lec-paginas{display:inline-flex}
+  html:not([data-paneles="no"]) .lector.lector-libro{column-count:2;column-gap:56px;column-fill:auto;height:var(--lec-alto,calc(100dvh - 250px));min-height:360px;
+    overflow-x:auto;overflow-y:hidden;padding:var(--s5) 0;scrollbar-width:none;background:transparent}
+  html:not([data-paneles="no"]) .lector.lector-libro::-webkit-scrollbar{display:none}
+  html:not([data-paneles="no"]) .lector.lector-libro.lector-oscuro{background:#16171b;padding-left:0;padding-right:0}
+  html:not([data-paneles="no"]) .lector-libro .lec-parrafo{break-inside:auto}
+  html:not([data-paneles="no"]) .lector-libro h2{break-after:avoid}
+  html:not([data-paneles="no"]) .lector-libro img{max-height:calc(100dvh - 320px);object-fit:contain}
+  html:not([data-paneles="no"]) .lec-nav{display:flex}
+}
+.lec-nav{display:none;align-items:center;justify-content:space-between;gap:var(--s3);margin:var(--s2) 0}
+
+/* ---------- pantallas grandes en oscuro: nada blanco que deslumbre ---------- */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .lector img,:root:not([data-theme="light"]) .nota-img{background:#d9d9d9;filter:brightness(.9)}}
+:root[data-theme="dark"] .lector img,:root[data-theme="dark"] .nota-img{background:#d9d9d9;filter:brightness(.9)}
+
+/* ---------- ratón, S Pen flotando y teclado (Parte 3) ---------- */
+@media (hover:hover),(any-pointer:fine){
+  .tarjeta-nav:hover,.nota-item:hover,.capitulo:hover{border-color:var(--line-2)}
+  button:not(:disabled),a[href],[data-go],summary,.xl-hoja td{cursor:pointer}
+}
+
+/* Teclado físico detectado (atajos.js): sin teclados de símbolos en pantalla, salvo que se pidan con «⌨️ Símbolos» */
+.ver-simbolos{display:none!important}
+html[data-teclado-fisico] .ver-simbolos{display:inline-flex!important;margin-top:var(--s2)}
+html[data-teclado-fisico]:not([data-simbolos]) :is(.teclado,.py-teclas){display:none}
+/* Ayuda de atajos y búsqueda (Ctrl+K) */
+.modal.modal-ancho{max-width:560px;text-align:left}
+.atajos td{white-space:normal;font-size:15px;vertical-align:middle}
+kbd{display:inline-block;min-width:28px;padding:2px 8px;border:2px solid var(--line-2);border-bottom-width:4px;border-radius:8px;background:var(--surface-2);font:800 14px var(--f-mono);text-align:center;white-space:nowrap}
+.buscar-res{display:flex!important;gap:8px;align-items:baseline;flex-wrap:wrap;text-align:left;width:100%}
+.buscar-res[aria-selected="true"]{background:var(--primary-soft);outline:2px solid var(--primary)}

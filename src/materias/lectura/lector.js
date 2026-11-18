@@ -61,18 +61,20 @@ export function vistaBiblioteca(m){
   const lista=()=>{const f=filtros(),todos=LIBROS.filter(l=>pasa(l,f));
     const continuar=todos.filter(l=>{const h=leidos(l);return h&&h<l.capitulos.length}),faciles=['es','en'].map(i=>todos.filter(l=>l.idioma===i&&!l.tecnico).sort((a,b)=>ORDEN_NIVEL.indexOf((a.niveles||[a.nivel])[0])-ORDEN_NIVEL.indexOf((b.niveles||[b.nivel])[0]))[0]).filter(Boolean);
     if(!todos.length)return `<p class="nota" style="text-align:center">Ningún libro coincide con esos filtros.</p>`;
-    return `${continuar.length?`<h2>📖 Continuar leyendo</h2><div class="pila">${continuar.map(tarjetaLibro).join('')}</div>`:''}
-${faciles.length&&!buscar?`<h2>🌱 Para empezar</h2><div class="pila">${faciles.map(tarjetaLibro).join('')}</div>`:''}
-<h2>📚 Todos · ${todos.length}</h2><div class="pila">${todos.map(tarjetaLibro).join('')}</div>`};
+    return `${continuar.length?`<h2>📖 Continuar leyendo</h2><div class="pila lib-lista">${continuar.map(tarjetaLibro).join('')}</div>`:''}
+${faciles.length&&!buscar?`<h2>🌱 Para empezar</h2><div class="pila lib-lista">${faciles.map(tarjetaLibro).join('')}</div>`:''}
+<h2>📚 Todos · ${todos.length}</h2><div class="pila lib-lista">${todos.map(tarjetaLibro).join('')}</div>`};
   return {titulo:'Lectura',vista(){
     const f=filtros(),generos=[...new Set(LIBROS.flatMap(l=>l.generos||[]))].sort(),niveles=ORDEN_NIVEL.filter(n=>LIBROS.some(l=>(l.niveles||[l.nivel]).includes(n)));
     return `<div class="area-${m.tono||'estudio'}">${cabecera({icono:'📚',titulo:'Lectura',desc:'Libros libres para leer en el teléfono, también sin internet.'})}
 <p class="intro">Todos son de dominio público o tienen una licencia abierta que permite compartirlos. Toca una palabra para ver qué significa (en inglés, también oírla y guardarla en tu repaso).</p>
-<label class="buscar"><span class="oculto-visual">Buscar por título o autor</span><input type="search" id="lib-buscar" placeholder="🔎 Título o autor" value="${esc(buscar)}" autocomplete="off"></label>
+<div class="lib-dos"><aside class="lib-lado"><label class="buscar"><span class="oculto-visual">Buscar por título o autor</span><input type="search" id="lib-buscar" placeholder="🔎 Título o autor" value="${esc(buscar)}" autocomplete="off"></label>
 <details class="nota-datos lib-filtros"${f.idioma||f.genero||f.nivel?' open':''}><summary>Filtrar${f.idioma||f.genero||f.nivel?' (activos)':''}</summary>
 <p class="prog-k">Idioma</p>${chips('idioma',Object.entries(IDIOMAS),f)}<p class="prog-k">Género</p>${chips('genero',generos.map(g=>[g,g]),f)}<p class="prog-k">Nivel</p>${chips('nivel',niveles.map(n=>[n,n]),f)}</details>
-<div id="lib-lista">${lista()}</div></div>`},
-    alMostrar(){const b=document.getElementById('lib-buscar');b?.addEventListener('input',()=>{buscar=sinAcentos(b.value.trim());document.getElementById('lib-lista').innerHTML=lista()})},
+</aside><div id="lib-lista">${lista()}</div></div></div>`},
+    // en dos paneles los filtros quedan abiertos en su columna
+    alMostrar(){if(matchMedia('(min-width:840px)').matches&&document.documentElement.dataset.paneles!=='no')document.querySelector('.lib-filtros')?.setAttribute('open','');
+      const b=document.getElementById('lib-buscar');b?.addEventListener('input',()=>{buscar=sinAcentos(b.value.trim());document.getElementById('lib-lista').innerHTML=lista()})},
     alClic(t,ir,repintar){if(t.dataset.filtro){const k=t.dataset.filtro,v=t.dataset.valor;guardarPrefs(x=>{x.filtros={...(x.filtros||{}),[k]:v||undefined}});repintar();return true}}
   };
 }
@@ -82,12 +84,12 @@ function vistaPortada(l){
   return {titulo:l.titulo,vista(){
     const d=datos(l.id),leidosL=d.leidos||{},sig=l.capitulos.find(c=>!leidosL[c.n])||l.capitulos[0];
     return `<div class="area-estudio"><p class="miga"><button class="enlace" data-go="${RAIZ}">📚 Lectura</button> › ${esc(l.titulo)}</p>
-<div class="libro-portada"><span class="libro-icono" aria-hidden="true">${l.icono}</span><div><h1>${esc(l.titulo)}</h1><p class="lead">${esc(l.autor)}</p>
+<div class="libro-dos"><div class="libro-info"><div class="libro-portada"><span class="libro-icono" aria-hidden="true">${l.icono}</span><div><h1>${esc(l.titulo)}</h1><p class="lead">${esc(l.autor)}</p>
 <div class="row" style="gap:6px;flex-wrap:wrap">${chip(IDIOMAS[l.idioma])}${chip(esc((l.niveles||[l.nivel]).join('–')))}${(l.generos||[]).map(g=>chip(esc(g))).join('')}${l.relacionada?chip(`📐 ${esc(l.relacionada)}`):''}${chip(`⏱️ ≈ ${duracion(l)}`)}${chip('📜 '+esc(l.licencia))}</div></div></div>
 <p>${esc(l.descripcion)}</p>
-${boton({texto:`${Object.keys(leidosL).length?'▶ Seguir':'▶ Empezar'}: ${sig.n}. ${esc(sig.titulo)}`,go:ruta(l.id,sig.n),clase:'ancho area'})}
-<h2>Capítulos</h2><ol class="capitulos">${l.capitulos.map(c=>`<li><button class="capitulo${leidosL[c.n]?' leido':''}" data-go="${ruta(l.id,c.n)}"><span>${leidosL[c.n]?'✅':c.n}</span><span><b>${esc(c.titulo)}</b><span class="nota">≈ ${minutos(l,c.palabras)} min${PREGUNTAS[l.id]?.[c.n-1]?` · ${PREGUNTAS[l.id][c.n-1].length} preguntas`:''}</span></span></button></li>`).join('')}</ol>
-<div class="card licencia"><p class="etiqueta-actividad">📜 Licencia y atribución</p><p>${esc(l.atribucion)}</p><p class="nota">Licencia: <b>${esc(l.licencia)}</b>. Fuente: <a href="${esc(l.fuente)}" target="_blank" rel="noopener">${esc(l.fuente)}</a></p></div></div>`}};
+${boton({texto:`${Object.keys(leidosL).length?'▶ Seguir':'▶ Empezar'}: ${sig.n}. ${esc(sig.titulo)}`,go:ruta(l.id,sig.n),clase:'ancho area'})}</div>
+<div><h2>Capítulos</h2><ol class="capitulos">${l.capitulos.map(c=>`<li><button class="capitulo${leidosL[c.n]?' leido':''}" data-go="${ruta(l.id,c.n)}"><span>${leidosL[c.n]?'✅':c.n}</span><span><b>${esc(c.titulo)}</b><span class="nota">≈ ${minutos(l,c.palabras)} min${PREGUNTAS[l.id]?.[c.n-1]?` · ${PREGUNTAS[l.id][c.n-1].length} preguntas`:''}</span></span></button></li>`).join('')}</ol>
+<div class="card licencia"><p class="etiqueta-actividad">📜 Licencia y atribución</p><p>${esc(l.atribucion)}</p><p class="nota">Licencia: <b>${esc(l.licencia)}</b>. Fuente: <a href="${esc(l.fuente)}" target="_blank" rel="noopener">${esc(l.fuente)}</a></p></div></div></div></div>`}};
 }
 
 /* ---------- capítulo ---------- */
@@ -108,7 +110,20 @@ function palabraEn(x,y){
 }
 function vistaCapitulo(l,n){
   const c=l.capitulos.find(x=>x.n===n);
-  let estado='cargando',cap=null,palabra=null,ses=null,traduciendo=false,guardarPos=null;
+  let estado='cargando',cap=null,palabra=null,ses=null,traduciendo=false,guardarPos=null,fraccion=0,alGirar=null,teclas=null;
+  // Dos páginas (tablet en horizontal, estilos/tablet.css): el capítulo va en columnas y se pasa de lado, página por página
+  const art=()=>document.querySelector('.lector');
+  const enLibro=()=>{const a=art();return !!a&&getComputedStyle(a).columnCount==='2'};
+  const salto=a=>a.clientWidth+(parseFloat(getComputedStyle(a).columnGap)||0);
+  const leerFraccion=()=>{const a=art();if(enLibro())return a.scrollLeft/Math.max(1,a.scrollWidth-a.clientWidth);const h=document.documentElement.scrollHeight-innerHeight;return h>0?scrollY/h:fraccion};
+  const irA=f=>{const a=art();if(!a)return;if(enLibro()){const p=salto(a);a.scrollLeft=Math.round(f*(a.scrollWidth-a.clientWidth)/p)*p}else window.scrollTo(0,f*(document.documentElement.scrollHeight-innerHeight))};
+  const pasar=d=>{const a=art();if(a)a.scrollBy({left:d*salto(a),behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})};
+  // alto de las dos páginas: lo que queda de pantalla debajo del título, dejando lugar para «‹ Anterior · Siguiente ›»
+  const ajustarAlto=()=>{const a=art();if(!a)return;const arriba=a.getBoundingClientRect().top+scrollY;a.style.setProperty('--lec-alto',Math.max(360,innerHeight-arriba-84)+'px')};
+  function paginas(){ajustarAlto();const a=art(),el=document.getElementById('lec-pag');if(!a||!el||!enLibro())return;
+    const p=salto(a),total=Math.max(1,Math.ceil((a.scrollWidth+(p-a.clientWidth))/p)),i=Math.round(a.scrollLeft/p)+1;
+    el.textContent=`Páginas ${2*i-1}–${Math.min(2*i,2*total)} de ${2*total}`;
+    const ant=document.getElementById('lec-ant'),sig=document.getElementById('lec-sig');if(ant)ant.disabled=i<=1;if(sig)sig.disabled=i>=total}
   // preguntas escritas a mano (preguntas.js) o, en español, las de «completa la frase» que trae el capítulo
   let qs=PREGUNTAS[l.id]?.[n-1]||[];
   const voz=l.idioma==='en'?'en-US':'es-MX',conVoz=!l.tecnico&&soporte.hablar;
@@ -154,16 +169,17 @@ ${def?`<p><b>${esc(def.palabra)}:</b> ${esc(def.significado)}</p>${def.nota?`<p 
       guardarPrefs(x=>{x.ultimo={...(x.ultimo||{}),[l.id]:n}});
       document.dispatchEvent(new Event('repintar'));
     },
-    alSalir(){ses?.alSalir?.();if(guardarPos)removeEventListener('scroll',guardarPos);guardarPos=null},
+    alSalir(){ses?.alSalir?.();if(guardarPos)removeEventListener('scroll',guardarPos);guardarPos=null;removeEventListener('resize',alGirar);document.removeEventListener('keydown',teclas)},
     vista(){
       if(ses)return ses.vista();
       const pr=prefs(),leido=datos(l.id).leidos?.[n],sig=l.capitulos.find(x=>x.n===n+1);
       const cuerpo=estado==='cargando'?'<p class="cargando">Abriendo el capítulo</p>':estado==='error'?'<div class="card"><p>No se pudo abrir el capítulo. La primera vez necesita internet; después queda guardado para leerlo sin conexión.</p></div>'
-        :`<article class="lector${pr.oscuro?' lector-oscuro':''}" style="--letra:${pr.letra}px" lang="${l.idioma}">${cap.bloques.map(bloqueHtml).join('')}</article>`;
+        :`<article class="lector${pr.oscuro?' lector-oscuro':''}${pr.dosPaginas!==false?' lector-libro':''}" style="--letra:${pr.letra}px" lang="${l.idioma}" tabindex="-1">${cap.bloques.map(bloqueHtml).join('')}</article>
+<div class="lec-nav"><button type="button" class="btn ghost btn-chico" id="lec-ant" aria-label="Página anterior">‹ Anterior</button><span class="nota" id="lec-pag" aria-live="polite"></span><button type="button" class="btn ghost btn-chico" id="lec-sig" aria-label="Página siguiente">Siguiente ›</button></div>`;
       return `<div class="area-estudio"><p class="miga"><button class="enlace" data-go="${RAIZ}">📚 Lectura</button> › <button class="enlace" data-go="${ruta(l.id)}">${esc(l.titulo)}</button> › ${n}</p>
 <h1>${esc(c.titulo)}</h1>
 <div class="lector-barra" role="toolbar" aria-label="Lector"><button type="button" class="btn ghost btn-chico" data-letra="-1" aria-label="Letra más chica">A−</button><button type="button" class="btn ghost btn-chico" data-letra="1" aria-label="Letra más grande">A+</button>
-<button type="button" class="btn ghost btn-chico" id="lec-tema" aria-pressed="${pr.oscuro}">${pr.oscuro?'☀️ Claro':'🌙 Oscuro'}</button>${leido?chip('✅ Leído','ok'):''}</div>
+<button type="button" class="btn ghost btn-chico" id="lec-tema" aria-pressed="${pr.oscuro}">${pr.oscuro?'☀️ Claro':'🌙 Oscuro'}</button><button type="button" class="btn ghost btn-chico lec-paginas" id="lec-paginas" aria-pressed="${pr.dosPaginas!==false}">${pr.dosPaginas!==false?'📄 Una columna':'📖 Dos páginas'}</button>${leido?chip('✅ Leído','ok'):''}</div>
 ${!l.tecnico?`<p class="nota">👆 ${l.idioma==='en'?'Toca cualquier palabra para oírla, ver su significado y guardarla en tu repaso.':'Toca una palabra antigua o difícil para ver qué significa.'}</p>`:''}
 ${(datos(l.id).porBuscar||[]).length?`<p class="nota">🔖 Palabras para buscar luego: ${(datos(l.id).porBuscar||[]).map(esc).join(', ')}</p>`:''}
 ${cuerpo}
@@ -176,10 +192,20 @@ ${sig?boton({texto:`Siguiente: ${sig.n}. ${esc(sig.titulo)}`,go:ruta(l.id,sig.n)
     alMostrar(){
       if(ses){ses.alMostrar?.();return}
       if(estado!=='listo')return;
-      // volver a donde ibas (una vez, al abrir) y recordar mientras lees
+      // volver a donde ibas (una vez, al abrir) y recordar mientras lees. La posición es la fracción leída del capítulo,
+      // así sirve igual en una columna (desplazar hacia abajo) que en dos páginas (pasar de lado) y al girar la tablet
       const k=`${l.id}/${n}`,pos=prefs().pos?.[k];
-      if(pos&&!this._restaurado){this._restaurado=true;requestAnimationFrame(()=>window.scrollTo(0,pos*(document.documentElement.scrollHeight-innerHeight)))}
-      if(!guardarPos){let t=null;guardarPos=()=>{clearTimeout(t);t=setTimeout(()=>{const h=document.documentElement.scrollHeight-innerHeight;if(h>0)guardarPrefs(x=>{x.pos={...(x.pos||{}),[k]:scrollY/h}})},400)};addEventListener('scroll',guardarPos,{passive:true})}
+      if(pos&&!this._restaurado){this._restaurado=true;fraccion=pos;requestAnimationFrame(()=>irA(pos))}
+      else requestAnimationFrame(()=>irA(fraccion));
+      if(!guardarPos){let t=null;guardarPos=()=>{clearTimeout(t);t=setTimeout(()=>{fraccion=leerFraccion();paginas();guardarPrefs(x=>{x.pos={...(x.pos||{}),[k]:fraccion}})},250)};
+        addEventListener('scroll',guardarPos,{passive:true});
+        // al girar o cambiar de ventana: el mismo punto del texto
+        let modo=enLibro();alGirar=()=>{const m=enLibro();if(m!==modo){modo=m;requestAnimationFrame(()=>irA(fraccion))}paginas()};addEventListener('resize',alGirar);
+        teclas=e=>{if(!enLibro()||e.altKey||e.ctrlKey||e.metaKey||e.target.closest?.('input,textarea,select,[contenteditable]')||document.querySelector('.modal-fondo'))return;
+          if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();pasar(1)}else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();pasar(-1)}};
+        document.addEventListener('keydown',teclas)}
+      document.querySelector('.lector')?.addEventListener('scroll',guardarPos,{passive:true});
+      paginas();
       if(!l.tecnico)document.querySelector('.lector')?.addEventListener('click',e=>{
         if(e.target.closest('button,a'))return;const r=palabraEn(e.clientX,e.clientY);
         if(r){palabra={...r,sig:''};document.dispatchEvent(new Event('repintar'))}});
@@ -187,8 +213,10 @@ ${sig?boton({texto:`Siguiente: ${sig.n}. ${esc(sig.titulo)}`,go:ruta(l.id,sig.n)
     },
     async alClic(t,ir,repintar){
       if(ses)return ses.alClic(t,ir,repintar);
-      if(t.dataset.letra){guardarPrefs(x=>{x.letra=Math.min(28,Math.max(14,(x.letra||18)+2*t.dataset.letra))});repintar();return true}
-      if(t.id==='lec-tema'){guardarPrefs(x=>{x.oscuro=!x.oscuro});repintar();return true}
+      if(t.dataset.letra){fraccion=leerFraccion();guardarPrefs(x=>{x.letra=Math.min(28,Math.max(14,(x.letra||18)+2*t.dataset.letra))});repintar();return true}
+      if(t.id==='lec-tema'){fraccion=leerFraccion();guardarPrefs(x=>{x.oscuro=!x.oscuro});repintar();return true}
+      if(t.id==='lec-paginas'){fraccion=leerFraccion();guardarPrefs(x=>{x.dosPaginas=x.dosPaginas===false});repintar();return true}
+      if(t.id==='lec-ant'||t.id==='lec-sig'){pasar(t.id==='lec-sig'?1:-1);return true}
       if(t.dataset.oir!==undefined){const b=cap.bloques[+t.dataset.oir];hablar(String(b.x).replace(/<br\s*\/?>/g,'. ').replace(/<[^>]+>/g,''),{idioma:voz});return true}
       if(t.id==='lec-leido'){marcarLeido();aviso('✅ Capítulo marcado como leído');repintar();return true}
       if(t.id==='lec-preguntas'){ses=sesionPreguntas();ses.alEntrar();repintar();window.scrollTo(0,0);return true}

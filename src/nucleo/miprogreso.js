@@ -13,6 +13,7 @@ import {esc} from '../utilidades.js';
 import {cobertura,textoCobertura,estadoMateria,ESTADO} from './contenido.js';
 import {resultadoFinal} from './examen.js';
 import {textoEstado} from './sync/navegador.js';
+import {ayudaAtajos,buscar} from './atajos.js';
 const fila=({go,id,href,icono,titulo,desc})=>`${href?`<a class="tarjeta-nav" href="${href}" rel="noopener"`:`<button class="tarjeta-nav"${go!==undefined?` data-go="${go}"`:''}${id?` id="${id}"`:''}`}><span class="icono" aria-hidden="true">${icono}</span><span class="texto"><span class="titulo">${titulo}</span><span class="desc">${desc}</span></span>${href?'</a>':'</button>'}`;
 
 const est=(v,k)=>`<div class="estadistica"><b>${v}</b><span>${k}</span></div>`;
@@ -40,24 +41,34 @@ export const perfil={
       const e=d?.ok?'ok':d&&(d.ej||d.seg>=60)?'algo':'';
       return `<span class="dia ${e}" title="${f}${d?` · ${d.ej} ejercicios · ${Math.floor(d.seg/60)} min · ${d.xp} XP`:''}"></span>`}).join('');
     const u=usuario(),rec=u.recordatorio;
+    const indice=[['perfil-meta','🎯 Meta de hoy'],['perfil-semanas','📅 Últimas 4 semanas'],['perfil-materias','📚 Por materia'],['perfil-pantalla','🖥️ Pantalla'],['perfil-ajustes','⚙️ Ajustes'],['perfil-ia','✨ Inteligencia artificial'],['perfil-app','📲 La app'],['perfil-datos','💾 Mis datos']];
     return `<h1>👤 ${u.nombre?esc(u.nombre):'Perfil'}</h1>
+<div class="perfil-dos"><nav class="perfil-indice" aria-label="Secciones del perfil">${indice.map(([id,t])=>`<button type="button" data-ir-a="${id}">${t}</button>`).join('')}</nav><div>
 <div class="prog-grid">${est(`🔥 ${r}`,`Racha (mejor ${Math.max(r,p.mejorRacha)})`)}${est(`⚡ ${xpTotal}`,'XP total')}${est(`👑 ${dominadas}`,'Dominadas')}${est(`🎙️ ${mh.semana}`,'Min. hablados (7 días)')}</div>
 
-<h2>Meta de hoy</h2>
+<h2 id="perfil-meta">Meta de hoy</h2>
 <div class="card"><p class="nota" style="margin-bottom:8px">${h.hecho} de ${h.meta} ${h.tipo==='minutos'?'minutos':'ejercicios'}${h.ok?' · ✅ cumplida':''}</p>${barra(h.hecho,h.meta)}
 <div class="tabs" style="margin-top:14px">${METAS.map(([t,c])=>`<button data-meta="${t}:${c}" aria-pressed="${p.meta.tipo===t&&p.meta.cantidad===c}">${c} ${t==='minutos'?'min':'ejercicios'}</button>`).join('')}</div>
 <p class="nota" style="margin:0">La racha cuenta los días seguidos con la meta cumplida. Sesiones cortas de 5–10 minutos rinden más que una larga.</p></div>
 
-<h2>Últimas 4 semanas</h2>
+<h2 id="perfil-semanas">Últimas 4 semanas</h2>
 <div class="card"><div class="dias" role="img" aria-label="Actividad de los últimos 28 días">${dias}</div>
 <p class="nota" style="margin:8px 0 0"><span class="dia ok"></span> meta cumplida · <span class="dia algo"></span> practicaste</p></div>
 
-<h2>Por materia</h2>
+<h2 id="perfil-materias">Por materia</h2>
 ${materias.filter(m=>!m.proximo).map(m=>{const d=datosMateria(p,m.id);
   return `<div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${m.icono||''} ${m.nombre}</h3>${boton({texto:'Abrir',go:rutaMateria(m),clase:'ghost btn-chico'})}</div>
 <div style="margin-top:10px">${htmlNivel(d.xp)}</div>${m.temas?(c=>`<div style="margin-top:10px">${barra(c.completas,c.total)}<p class="nota" style="margin:6px 0 0">${(ESTADO[estadoMateria(m.id).estado]||ESTADO.parcial).icono} ${textoCobertura(c)}${resultadoFinal(m.id)?` · examen final: ${Math.round(resultadoFinal(m.id).pct*100)} %`:''}</p></div>`)(cobertura(m.id)):''}${htmlRetirados(p,m)}</div>`}).join('')}
 
-<h2>Ajustes</h2>
+<h2 id="perfil-pantalla">🖥️ Pantalla</h2>
+<div class="card">
+<div class="ajuste"><span>🔠 Tamaño del texto</span>${segmentos('texto',[['normal','Normal'],['grande','Grande'],['muy-grande','Muy grande']],a.texto)}</div>
+<div class="ajuste"><span>🪟 Usar dos paneles en horizontal</span>${segmentos('paneles',[[true,'Sí'],[false,'No']],a.paneles)}</div>
+<p class="nota" style="margin:8px 0 0">En tablet o en una pantalla ancha, la pista y la solución salen al lado del ejercicio, y el cuaderno, la lectura y Python usan dos columnas. En el teléfono siempre es una sola.</p>
+<div class="row" style="margin-top:8px"><button type="button" class="btn ghost btn-chico" id="perfil-atajos">⌨️ Atajos de teclado</button><button type="button" class="btn ghost btn-chico" id="perfil-buscar">🔎 Buscar (Ctrl+K)</button></div>
+</div>
+
+<h2 id="perfil-ajustes">Ajustes</h2>
 <div class="card">
 <div class="ajuste"><span>🌗 Tema</span>${segmentos('tema',[['auto','Auto'],['light','Claro'],['dark','Oscuro']],a.tema)}</div>
 <div class="ajuste"><span>🔊 Sonidos</span>${segmentos('sonido',[[true,'Sí'],[false,'No']],a.sonido)}</div>
@@ -67,11 +78,11 @@ ${rec.activo?`<div class="ajuste"><label for="rec-hora">⏰ A qué hora</label><
 <p class="nota" style="margin:8px 0 0">${soporteNotificaciones()?'Si a esa hora no cumpliste tu meta, te avisamos para no perder la racha. Con la app cerrada, el teléfono decide el momento exacto (puede llegar un poco después).':'Este navegador no permite notificaciones.'}</p>
 </div>
 
-<h2>✨ Inteligencia artificial (opcional)</h2>
+<h2 id="perfil-ia">✨ Inteligencia artificial (opcional)</h2>
 <div class="card"><p style="margin-top:0"><b>Cada persona usa su propia clave: Gemini (gratis con tu cuenta de Google) o Claude (de pago).</b> Tu clave se guarda solo en este teléfono: no se sube a ningún lado, no va en los respaldos y nunca se comparte con quien instale la app. Si invitas a amigos, cada quien pone la suya (o usa la app sin IA: todo lo demás funciona igual).</p>
 <button class="btn ghost ancho" data-go="ajustes-ia">✨ Configurar la IA</button></div>
 
-<h2>📲 La app</h2>
+<h2 id="perfil-app">📲 La app</h2>
 <div class="lista-nav">
 ${instalada()?'':fila({id:'perfil-instalar',icono:'📲',titulo:'Instalar app',desc:esIOS()?'En iPhone: Compartir → Agregar a inicio':puedeInstalar()?'Ábrela como app, sin barra del navegador':'Cómo agregarla a tu pantalla de inicio'})}
 ${esIOS()?'':fila({href:APK_URL,icono:'🤖',titulo:'Descargar app para Android',desc:`El APK de ${APP_NOMBRE} (se actualiza sola con cada versión)`})}
@@ -86,11 +97,11 @@ ${fila({go:'acerca',icono:'ℹ️',titulo:'Acerca de',desc:'Versión, privacidad
 <button class="tarjeta-nav" data-go="notas"><span class="icono" aria-hidden="true">📝</span><span class="texto"><span class="titulo">Mis notas</span><span class="desc">Tu cuaderno: apuntes, fotos, dibujos y tarjetas</span></span></button>
 ${hoyN?`<button class="tarjeta-nav" data-go="repaso"><span class="icono" aria-hidden="true">🔁</span><span class="texto"><span class="titulo">Repasar</span><span class="desc">${hoyN} para hoy</span></span></button>`:''}
 </div>
-<h2>💾 Mis datos</h2>
+<h2 id="perfil-datos">💾 Mis datos</h2>
 <div class="lista-nav"><button class="tarjeta-nav" data-go="cuenta"><span class="icono" aria-hidden="true">☁️</span><span class="texto"><span class="titulo">Cuenta y sincronización</span><span class="desc" id="perfil-sync">${textoEstado()}</span></span></button></div>
 ${htmlRespaldo()}
 <div style="margin-top:24px">${boton({texto:'Reiniciar todo el progreso',id:'preset',clase:'ghost ancho'})}</div>
-<p class="nota" style="margin-top:16px;text-align:center">Todo se guarda en este navegador · versión ${__VERSION__}${navigator.serviceWorker?.controller?' · disponible sin internet':''}</p>`;
+<p class="nota" style="margin-top:16px;text-align:center">Todo se guarda en este navegador · versión ${__VERSION__}${navigator.serviceWorker?.controller?' · disponible sin internet':''}</p></div></div>`;
   },
   alMostrar(){activarImportar(()=>document.dispatchEvent(new Event('repintar')));
     const h=document.getElementById('rec-hora');h?.addEventListener('change',()=>{if(h.value)activarRecordatorio(true,h.value)})},
@@ -102,8 +113,13 @@ ${htmlRespaldo()}
     if(t.id==='perfil-instalar'){await instalar();repintar();return true}
     if(t.id==='perfil-invitar'){await invitar();return true}
     if(t.id==='perfil-qr'){mostrarQR();return true}
+    if(t.id==='perfil-atajos'){ayudaAtajos();return true}
+    if(t.id==='perfil-buscar'){buscar();return true}
     if(t.dataset.meta){const [tipo,c]=t.dataset.meta.split(':');cambiarMeta(tipo,+c);repintar();return true}
     if(t.dataset.tema){cambiarAjuste('tema',t.dataset.tema);repintar();return true}
+    if(t.dataset.irA){document.getElementById(t.dataset.irA)?.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});return true}
+    if(t.dataset.texto){cambiarAjuste('texto',t.dataset.texto);repintar();return true}
+    if(t.dataset.paneles){cambiarAjuste('paneles',t.dataset.paneles==='true');repintar();return true}
     if(t.dataset.sonido){cambiarAjuste('sonido',t.dataset.sonido==='true');repintar();return true}
     if(t.dataset.vibracion){cambiarAjuste('vibracion',t.dataset.vibracion==='true');repintar();return true}
     if(t.id==='preset'){

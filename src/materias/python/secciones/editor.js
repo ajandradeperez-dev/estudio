@@ -29,10 +29,10 @@ export function vista(){
   return `<div class="area-python">${cabecera({icono:'▶️',titulo:'Editor de Python',desc:'Escribe un programa y ejecútalo aquí mismo, sin instalar nada.'})}
 <p class="nota" id="py-estado" role="status">${textoEstado(estadoPython())}</p>
 <div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:8px">${EJEMPLOS.map(([t],i)=>`<button type="button" class="chip-filtro" data-ejemplo="${i}">${esc(t)}</button>`).join('')}</div>
-${htmlEditor({codigo,filas:12})}
+<div class="py-dos"><div class="py-principal">${htmlEditor({codigo,filas:12})}
 <details class="nota-datos"${g.entrada?' open':''}><summary>⌨️ Entrada para input() (una por línea)</summary><textarea id="py-entrada" class="py-editor" rows="3" spellcheck="false" autocapitalize="off">${esc(g.entrada||'')}</textarea></details>
 <div class="row" style="gap:8px;flex-wrap:wrap;margin:12px 0"><button type="button" class="btn area" id="py-ejecutar"${corriendo?' disabled':''}>▶ Ejecutar</button><button type="button" class="btn ghost" id="py-detener"${corriendo?'':' disabled'}>⏹ Detener</button></div>
-<div id="py-resultado" aria-live="polite">${corriendo?'<p class="nota">Ejecutando…</p>':htmlResultado(resultado)}</div></div>`;
+</div><div class="py-lado"><p class="etiqueta-actividad solo-dos">📤 Resultado</p><div id="py-resultado" aria-live="polite">${corriendo?'<p class="nota">Ejecutando…</p>':htmlResultado(resultado)||'<p class="nota solo-dos">Toca «▶ Ejecutar» (o Ctrl+Enter) para ver aquí lo que imprime tu programa.</p>'}</div></div></div></div>`;
 }
 export function alEntrar(){resultado=null;quitar?.();quitar=escucharEstado();cargarPython().catch(()=>{})}
 export function alSalir(){quitar?.();quitar=null}

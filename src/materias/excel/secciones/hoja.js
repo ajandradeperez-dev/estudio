@@ -15,11 +15,13 @@ let st=null;
 function cargar(){try{const x=JSON.parse(localStorage.getItem(CLAVE));if(x&&typeof x.celdas==='object')return x}catch(e){}return null}
 function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({datos:st.datos,celdas:st.celdas}))}catch(e){}}
 function nuevos(datos){const g=DATOS[datos]?.[1];return g?aCeldas(g(crearRng(),8)):{}}
-const hoja=()=>({celdas:st.celdas,filas:12,cols:8});
+// En tablet y pantallas anchas se ven más filas vacías para seguir escribiendo (las columnas A–H ya caben todas)
+const ancha=()=>matchMedia('(min-width:840px)').matches;
+const hoja=()=>({celdas:st.celdas,filas:ancha()?20:12,cols:8});
 
 function pintarHoja(){
   const h=crearHoja(st.celdas),v=valorCelda(h,st.activa),txt=mostrar(v),raw=st.celdas[st.activa];
-  $('#xh-marco').innerHTML=htmlHoja(hoja(),{activa:st.activa,minFilas:10});
+  $('#xh-marco').innerHTML=htmlHoja(hoja(),{activa:st.activa,minFilas:ancha()?16:10});
   $('#xh-ref').textContent=st.activa;
   const info=esError(v)?`<span class="deny">${esc(txt)}: ${EXPLICA[txt]||''}</span>`:raw!==undefined&&String(raw).startsWith('=')?`Resultado: <b>${esc(txt)}</b>`:'';
   $('#xh-info').innerHTML=info;

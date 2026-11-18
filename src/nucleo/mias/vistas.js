@@ -85,7 +85,7 @@ function vistaAsistente(id){
   const leerTexto=()=>{const t=document.getElementById('mp-texto');if(t)texto=t.value};
   async function pintarFotos(){
     const caja=document.getElementById('mp-fotos');if(!caja)return;urls.forEach(u=>URL.revokeObjectURL(u));urls=[];
-    caja.innerHTML=(m.fotos||[]).map(f=>`<button type="button" class="mp-foto" data-ver-foto="${esc(f)}"><img data-foto="${esc(f)}" alt="Foto del temario"></button>`).join('');
+    caja.innerHTML=(m.fotos||[]).map(f=>`<button type="button" class="mp-foto" data-ver-foto="${esc(f)}"><img data-foto="${esc(f)}" alt="Foto del temario" decoding="async"></button>`).join('');
     for(const img of caja.querySelectorAll('img[data-foto]')){const a=await leerArchivo(img.dataset.foto).catch(()=>null);if(a?.blob){const u=URL.createObjectURL(a.blob);urls.push(u);img.src=u}}
   }
   const unidadesHtml=()=>m.unidades.map((u,ui)=>`<div class="mp-unidad card" data-unidad="${u.id}">
@@ -275,7 +275,7 @@ function vistaMateria(id){
       return `<div class="mp-pagina" ${estiloMateria(m)}><div class="nota-cab"><button type="button" class="btn-icono" data-go="mias" aria-label="Volver a Mis materias">←</button><span></span>
 <button type="button" class="btn-icono" data-go="mias/${m.id}/editar" aria-label="Editar la materia">✏️</button></div>
 <div class="mp-cab"><span class="mp-icono-grande" aria-hidden="true">${esc(m.icono)}</span><div><h1 style="margin:0">${esc(m.nombre)}</h1>${m.escuela?`<p class="nota" style="margin:2px 0 0">${esc(m.escuela)}</p>`:''}</div></div>
-${ex?`<div class="card mp-cuenta"><span class="mp-cuenta-num">${Math.max(0,diasEntre(hoy(),ex.fecha))}</span><div><b>${diasEntre(hoy(),ex.fecha)===0?'¡Hoy es el examen!':`días para ${esc(ex.nombre)}`}</b><p class="nota" style="margin:0">${fechaLarga(ex.fecha)}</p></div></div>`
+<div class="mp-dos"><div class="mp-resumen">${ex?`<div class="card mp-cuenta"><span class="mp-cuenta-num">${Math.max(0,diasEntre(hoy(),ex.fecha))}</span><div><b>${diasEntre(hoy(),ex.fecha)===0?'¡Hoy es el examen!':`días para ${esc(ex.nombre)}`}</b><p class="nota" style="margin:0">${fechaLarga(ex.fecha)}</p></div></div>`
   :'<p class="aviso-linea">No hay exámenes próximos. Agrega uno en ✏️ Editar para armar el plan.</p>'}
 <h2>👉 Hoy</h2>
 ${h?`<div class="card mp-hoy"><p style="margin-top:0">${h.bloques.map(b=>descBloque(m,b)).join(' + ')}</p><div class="pila">${h.bloques.map(b=>`<button class="btn ancho${b.tipo==='tema'?'':' ghost'}" data-go="${rutaBloque(m,b)}">${b.tipo==='tema'?'📖 Estudiar':b.tipo==='simulacro'?'⏱️ Simulacro':'🔁 Repasar'}: ${b.tipo==='tema'?esc(temaDeId(m,b.tema)?.titulo||''):b.min+' min'}</button>`).join('')}</div></div>`
@@ -285,16 +285,16 @@ ${h?`<div class="card mp-hoy"><p style="margin-top:0">${h.bloques.map(b=>descBlo
 <p class="nota" style="margin:8px 0 0">Estimado con tu dominio en la práctica, lo que ya sabes y tus simulacros.</p></div>
 ${debiles.length?`<h2>🎯 Temas débiles</h2><div class="lista-nav">${debiles.map(x=>`<button class="tarjeta-nav" data-go="mias/${m.id}/t/${x.t.id}"><span class="icono" aria-hidden="true">${x.t.dificil?'🔥':'📖'}</span><span class="texto"><span class="titulo">${esc(x.t.titulo)}</span><span class="desc">${pct(x.v)} % · ${esc(x.u.titulo)}</span></span></button>`).join('')}</div>`:''}
 <div class="row" style="margin:16px 0"><button class="btn" data-go="mias/${m.id}/simulacro">⏱️ Simulacro de examen</button>${IA.disponible()?`<button class="btn ghost" data-go="mias/${m.id}/preguntar">💬 Pregúntale a tu temario</button>`:''}</div>
-<h2>🗓️ Tu plan</h2>${errores.length?`<p class="aviso-linea">⚠️ ${esc(errores[0])}</p>`:''}
+</div><div class="mp-plan"><h2>🗓️ Tu plan</h2>${errores.length?`<p class="aviso-linea">⚠️ ${esc(errores[0])}</p>`:''}
 ${plan.semanas.length?plan.semanas.map((s,i)=>`<details class="mp-semana"${i===0?' open':''}><summary>Semana ${s.n} <span class="nota">· ${fechaCorta(s.dias[0].fecha)} a ${fechaCorta(s.dias.at(-1).fecha)}</span></summary>
 <ul class="mp-dias">${s.dias.map(d=>`<li class="${d.fecha===hoy()?'hoy':''}"><b>${fechaCorta(d.fecha)}</b> ${d.tipo==='simulacro'?'⏱️':d.tipo==='repaso'?'🔁':'📖'} ${d.bloques.map(b=>descBloque(m,b)).join(' + ')}</li>`).join('')}</ul></details>`).join('')
   :'<p class="nota">Sin días en el plan: agrega un examen con fecha futura.</p>'}
 <p class="nota">El plan se reajusta solo cada día según lo que vas dominando: si un día no estudias, se reparte lo que falta.</p>
-<h2>📚 Temario</h2>
+</div><div class="mp-temario"><h2>📚 Temario</h2>
 ${m.unidades.map(u=>`<details class="mp-semana"><summary>${esc(u.titulo)} <span class="nota">· ${u.temas.length} ${u.temas.length===1?'tema':'temas'}</span></summary><div class="lista-nav">${u.temas.map(t=>{const v=dominioTema(m,t,p);
   return `<button class="tarjeta-nav" data-go="mias/${m.id}/t/${t.id}"><span class="icono" aria-hidden="true">${t.sabe?'✅':v>=.8?'👑':t.habilidad?'🎯':generado(m.id,t.id)?'✨':'📖'}</span><span class="texto"><span class="titulo">${esc(t.titulo)}</span><span class="desc">${t.sabe?'Ya lo sé':`${pct(v)} %`}${t.habilidad?' · práctica de la app':generado(m.id,t.id)?' · práctica generada':''}</span></span></button>`}).join('')}</div></details>`).join('')}
-<div class="pila" style="margin-top:20px"><button class="btn ghost ancho" data-go="notas/foto/${m.id}">📸 Foto a nota</button><button class="btn ghost ancho" id="mp-compartir">📤 Compartir con mi grupo</button>${m.fotos.length?'<button class="btn ghost ancho" id="mp-ver-fotos">📷 Fotos del temario</button>':''}
-<button class="btn ghost ancho peligro-texto" id="mp-borrar">🗑️ Borrar materia</button></div></div>`;
+</div><div class="mp-acciones"><div class="pila" style="margin-top:20px"><button class="btn ghost ancho" data-go="notas/foto/${m.id}">📸 Foto a nota</button><button class="btn ghost ancho" id="mp-compartir">📤 Compartir con mi grupo</button>${m.fotos.length?'<button class="btn ghost ancho" id="mp-ver-fotos">📷 Fotos del temario</button>':''}
+<button class="btn ghost ancho peligro-texto" id="mp-borrar">🗑️ Borrar materia</button></div></div></div></div>`;
     },
     async alClic(t,ir){
       const m=miMateria(id);if(!m)return;

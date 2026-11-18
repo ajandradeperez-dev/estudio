@@ -6,7 +6,8 @@
    - una fórmula KaTeX se sale de su caja;
    - hay texto de cuerpo de menos de 16 px;
    - un elemento importante queda tapado por otro (p. ej. la navegación sobre «Comprobar»).
-   Además gira la tablet a mitad de un ejercicio y comprueba que no se pierde nada (respuesta escrita y pista abierta).
+   Además gira la tablet a mitad de un ejercicio y comprueba que no se pierde nada (respuesta escrita y pista abierta), y prueba
+   el S Pen en el ✏️ Borrador (dibuja, la palma no, el botón borra, deshacer, girar) y los atajos de teclado (B, H, Esc, ?, Ctrl+K).
    Opciones: --sin-build · --sin-capturas · --solo <caso> (fe-h, dex…) · --claro (solo tema claro) · --play (capturas para
    Google Play en capturas/play-tablet/). Compila, levanta `vite preview` en el puerto 4795 y lo apaga al terminar. */
 import {existsSync,mkdirSync,writeFileSync} from 'node:fs';
@@ -46,9 +47,10 @@ function revisar(){
   const ch=el=>{const s=document.createElement('span');s.textContent='0'.repeat(20);s.style.cssText='position:absolute;visibility:hidden;white-space:pre;font:inherit;letter-spacing:inherit';el.appendChild(s);const w=s.getBoundingClientRect().width/20;s.remove();return w};
   const largos=[];
   for(const el of document.querySelectorAll('#vista p, #vista li, #vista .lec-bloque, #procedimiento p, #hoja p')){
-    if(!visible(el)||el.closest('pre,code,table,.katex,.formula-caja,.xl-marco,.py-editor,.lector-dos'))continue;
+    if(!visible(el)||el.closest('pre,code,table,.katex,.formula-caja,.xl-marco,.py-editor'))continue;
     if((el.textContent||'').trim().length<160)continue;   // solo párrafos de verdad (que ocupan varias líneas)
-    const cs=getComputedStyle(el),r=el.getBoundingClientRect(),w=r.width-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
+    // en dos páginas (columnas) un párrafo partido abarca las dos: se mide su primer pedazo
+    const cs=getComputedStyle(el),r=el.getClientRects()[0]||el.getBoundingClientRect(),w=r.width-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
     const n=w/ch(el);if(n>76)largos.push(`${nombre(el)} (${Math.round(n)}ch)`);
   }
   if(largos.length)fallos.push(`líneas de más de 75 caracteres: ${[...new Set(largos)].slice(0,3).join(' · ')}`);
@@ -150,6 +152,49 @@ try{
     await ir('perfil');await medir('perfil');
     await ir('cuenta');await medir('cuenta');
     if(err.length)fallos.push(`${caso}: errores JS ${[...new Set(err)].slice(0,2).join(' | ')}`);
+    await ctx.close();
+  }
+  // S Pen en el ✏️ Borrador y teclado físico (Tab S10+ en horizontal)
+  if(!arg('--solo')||arg('--solo')==='plus-h'){
+    const ctx=await b.newContext({viewport:{width:1400,height:876},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+    await ctx.addInitScript(([d])=>{if(!sessionStorage.x){sessionStorage.x=1;localStorage.setItem('ciberlab-progreso',JSON.stringify(d));localStorage.setItem('ciberlab-usuario','{"bienvenida":true,"nombre":"Ana"}')}},[PROG]);
+    const p=await ctx.newPage();const err=[];p.on('pageerror',e=>err.push(e.message));
+    await p.goto(BASE+'#estudio/matematicas/algebra-lineal/l/gauss');await p.waitForSelector('#vista > *');await p.waitForTimeout(400);
+    if(await p.locator('#mini-saltar').count())await p.click('#mini-saltar');
+    for(let k=0;k<4&&await p.locator('#ses-continuar').count();k++){await p.click('#ses-continuar');await p.waitForTimeout(200)}
+    await p.keyboard.press('b');await p.waitForTimeout(300);
+    ok(await p.locator('.ses-panel .borrador-lienzo').count()===1,'S Pen: la tecla B abre el borrador en el panel derecho');
+    // trazos con Pointer Events (lápiz con presión, dedo, botón lateral) y cuántos píxeles tienen tinta
+    const trazo=(tipo,x0,y0,{pr=.8,botones=1,boton=0}={})=>p.evaluate(([tipo,x0,y0,pr,botones,boton])=>{const cv=document.querySelector('.borrador-lienzo'),r=cv.getBoundingClientRect();
+      const ev=(t,x,y)=>cv.dispatchEvent(new PointerEvent(t,{bubbles:true,cancelable:true,pointerId:tipo==='pen'?2:3,pointerType:tipo,pressure:t==='pointerup'?0:pr,buttons:t==='pointerup'?0:botones,button:t==='pointermove'?-1:boton,clientX:r.left+x,clientY:r.top+y,isPrimary:true}));
+      ev('pointerover',x0,y0);ev('pointerdown',x0,y0);for(let i=1;i<=20;i++)ev('pointermove',x0+i*8,y0+i*3);ev('pointerup',x0+160,y0+60)},[tipo,x0,y0,pr,botones,boton]);
+    const tinta=()=>p.evaluate(()=>{const cv=document.querySelector('.borrador-lienzo');if(!cv)return -1;const d=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data;let n=0;
+      for(let i=0;i<d.length;i+=16)if(Math.abs(d[i]-d[0])+Math.abs(d[i+1]-d[1])+Math.abs(d[i+2]-d[2])>60)n++;return n});
+    await trazo('pen',30,40,{pr:.9});const t1=await tinta();
+    ok(t1>0,'S Pen: el lápiz dibuja en el borrador');
+    await trazo('touch',30,160);const t2=await tinta();
+    ok(t2===t1,`S Pen: con el lápiz activo, el dedo (la palma) no dibuja (${t1} → ${t2})`);
+    await trazo('pen',30,40,{botones:32,boton:5});const t3=await tinta();
+    ok(t3<t1,`S Pen: el borrador del lápiz (botón 5 / buttons 32) borra (${t1} → ${t3})`);
+    await p.click('[data-borr="deshacer"]');await p.waitForTimeout(100);
+    ok(await tinta()===t1,'S Pen: deshacer devuelve el trazo borrado');
+    await p.setViewportSize({width:876,height:1400});await p.waitForTimeout(500);
+    ok(await tinta()>0,'S Pen: al girar la tablet el dibujo sigue ahí');
+    await p.setViewportSize({width:1400,height:876});await p.waitForTimeout(400);
+    // teclado físico
+    await p.keyboard.press('h');await p.waitForTimeout(250);
+    ok(await p.locator('#ses-cuerpo .pista').count()===1,'teclado: H abre la primera pista');
+    await p.keyboard.press('Escape');await p.waitForTimeout(250);
+    ok(await p.locator('.ses-panel').count()===0,'teclado: Esc cierra el panel');
+    await p.keyboard.press('?');await p.waitForTimeout(250);
+    ok(/Atajos de teclado/.test(await p.textContent('body')),'teclado: ? abre la ayuda de atajos');
+    await p.keyboard.press('Escape');await p.waitForTimeout(200);
+    ok(await p.locator('.modal-fondo').count()===0,'teclado: Esc cierra la ayuda');
+    await p.goto(BASE+'#logros');await p.waitForSelector('#vista > *');await p.waitForTimeout(300);
+    await p.keyboard.press('Control+k');await p.waitForSelector('#buscar-global');await p.keyboard.type('regla de la cadena');await p.waitForTimeout(250);
+    await p.keyboard.press('Enter');await p.waitForTimeout(500);
+    ok(/cadena/.test(await p.evaluate(()=>location.hash)),'teclado: Ctrl+K busca y Enter abre el resultado');
+    if(err.length)fallos.push(`S Pen / teclado: errores JS ${[...new Set(err)].slice(0,2).join(' | ')}`);
     await ctx.close();
   }
 }finally{await b.close();apagar()}

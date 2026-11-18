@@ -7,7 +7,7 @@ import {explicarError} from './errores.js';
 export const TECLAS=[[':',':'],['(','('],[')',')'],['[','['],[']',']'],['{','{'],['}','}'],['"','"'],["'","'"],['=','='],['#','#'],['⇥','    '],['_','_'],[',',',']];
 export const htmlEditor=({id='py-codigo',codigo='',filas=10,etiqueta='Tu código'})=>`<label class="oculto-visual" for="${id}">${etiqueta}</label>
 <textarea id="${id}" class="py-editor" rows="${filas}" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" translate="no">${esc(codigo)}</textarea>
-<div class="py-teclas" role="toolbar" aria-label="Símbolos de Python">${TECLAS.map(([t,v])=>`<button type="button" class="tecla" data-pytecla="${esc(v)}" data-para="${id}" aria-label="${t==='⇥'?'Sangría de 4 espacios':t}">${esc(t)}</button>`).join('')}</div>`;
+<button type="button" class="btn ghost btn-chico ver-simbolos" data-ver-simbolos>⌨️ Símbolos</button><div class="py-teclas" role="toolbar" aria-label="Símbolos de Python">${TECLAS.map(([t,v])=>`<button type="button" class="tecla" data-pytecla="${esc(v)}" data-para="${id}" aria-label="${t==='⇥'?'Sangría de 4 espacios':t}">${esc(t)}</button>`).join('')}</div>`;
 
 function insertar(ta,txt){
   const a=ta.selectionStart??ta.value.length,b=ta.selectionEnd??a;

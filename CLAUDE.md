@@ -639,7 +639,7 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | PERFIL-LIBROS A · Pistas desglosadas (una acción por paso) · B · Logros al día · C · 6 libros en español, filtros, búsqueda y glosario | ✅ terminado |
 | PERFIL-LIBROS D · Respaldo `.estudio` (Combinar/Reemplazar), sincronización con Supabase (sync.sql con RLS probada en PGlite) y guía `supabase/LEEME.md` | ✅ terminado; proyecto de Supabase conectado y entrada con correo y contraseña (código de 6 dígitos como alternativa) |
 | PROMPT-TABLET · Tab S10: riel lateral, dos paneles, S Pen (borrador, presión, palma), atajos de teclado, Pantalla en Perfil, `npm run tablet`, APK 1.2.0 | ✅ terminado |
-| P3b · Inglés: metas extra por nivel (lecturas, escuchas, diálogos, vocabulario con audio, escritura con rúbrica e IA) | 🟡 A1 y A2 completos (6 lecturas, 6 escuchas, 8 diálogos, 400 palabras y 3 escritos cada uno); siguen B1 y B2 |
+| P3b · Inglés: metas extra por nivel (lecturas, escuchas, diálogos, vocabulario con audio, escritura con rúbrica e IA) | 🟡 A1, A2 y B1 completos (6 lecturas, 6 escuchas, 8 diálogos, 400 palabras y 3 escritos cada uno); sigue B2 |
 | 4 · Inglés: completar A1 y A2, luego B1 | reemplazado por P3 y P6 |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | reemplazado por P3 y P6 |
 | 6 · Inglés B2 y temas avanzados | reemplazado por P3 y P6 |

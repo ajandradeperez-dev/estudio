@@ -23,3 +23,5 @@ android/*
 *.idsig
 dist-cuenta/
 dist-sin/
+# Capturas de npm run tablet (y de Google Play): se generan, no se versionan
+capturas/

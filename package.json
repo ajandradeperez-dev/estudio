@@ -16,7 +16,8 @@
     "lectura": "node scripts/lectura.mjs",
     "datos": "node scripts/datos.mjs",
     "cuenta": "node scripts/cuenta.mjs",
-    "libros": "node scripts/libros.mjs"
+    "libros": "node scripts/libros.mjs",
+    "tablet": "node scripts/tablet.mjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",

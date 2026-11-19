@@ -506,3 +506,4 @@ body{padding-top:var(--franja,0px)}
 .rubrica{list-style:none;padding:0;margin:var(--s2) 0}
 .rubrica li{padding:6px 0;border-bottom:1px solid var(--line)}
 .rubrica li:last-child{border-bottom:0}
+.mic.procesando{background:var(--warn-bg);color:#3b2500;box-shadow:0 6px 0 #b9790f}

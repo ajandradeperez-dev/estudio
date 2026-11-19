@@ -158,7 +158,7 @@ tr.hit td{background:var(--success-soft)}
 .campo{display:flex;flex-direction:column;gap:4px;margin:var(--s2) 0;font-weight:800;font-size:14px}
 .campo input,.campo select,.buscar input,.modal input[type=search]{min-height:44px;padding:0 var(--s3);border:2px solid var(--line);border-radius:var(--r2);background:var(--surface);color:var(--ink);font:inherit;font-weight:600;width:100%;box-sizing:border-box}
 .campo input:focus,.campo select:focus,.buscar input:focus,.modal input:focus{outline:none;border-color:var(--primary)}
-.aviso{position:fixed;left:50%;bottom:calc(var(--nav-alto) + 16px + env(safe-area-inset-bottom) + var(--teclado,0px));z-index:80;transform:translate(-50%,20px);opacity:0;max-width:calc(100vw - 32px);padding:10px 16px;border-radius:var(--r2);background:var(--ink);color:var(--bg);font-weight:800;font-size:15px;box-shadow:var(--sombra);transition:opacity .2s,transform .2s;pointer-events:none}
+.aviso:not(.card){position:fixed;left:50%;bottom:calc(var(--nav-alto) + 16px + env(safe-area-inset-bottom) + var(--teclado,0px));z-index:80;transform:translate(-50%,20px);opacity:0;max-width:calc(100vw - 32px);padding:10px 16px;border-radius:var(--r2);background:var(--ink);color:var(--bg);font-weight:800;font-size:15px;box-shadow:var(--sombra);transition:opacity .2s,transform .2s;pointer-events:none}
 .aviso.visible{opacity:1;transform:translate(-50%,0)}
 .aviso-accion{display:flex;align-items:center;gap:12px;pointer-events:auto;width:max-content}
 .aviso-btn{min-height:44px;padding:0 12px;border:0;border-radius:var(--r1,8px);background:transparent;color:inherit;font:inherit;font-weight:900;text-decoration:underline;cursor:pointer}
@@ -507,3 +507,40 @@ body{padding-top:var(--franja,0px)}
 .rubrica li{padding:6px 0;border-bottom:1px solid var(--line)}
 .rubrica li:last-child{border-bottom:0}
 .mic.procesando{background:var(--warn-bg);color:#3b2500;box-shadow:0 6px 0 #b9790f}
+/* 🏁 Simulacros de Inglés (materias/ingles/simulacros) */
+.sim-texto{white-space:pre-wrap;word-break:break-word;font-family:var(--f-body);font-size:16px;line-height:1.6;background:var(--surface);max-width:68ch}
+.sim-preguntas{padding-left:20px;display:flex;flex-direction:column;gap:var(--s4)}
+.sim-pregunta{min-width:0}
+.sim-enunciado{font-weight:800;margin:0 0 var(--s2)}
+.sim-opciones .opcion{min-height:48px;font-size:16px}
+.sim-cab{flex-wrap:wrap}
+.sim-parte{flex:1;font-weight:800;min-width:0}
+.sim-reloj{font-size:18px;color:var(--ink)}
+.sim-reloj.poco{color:var(--error)}
+.sim-oficial{margin:var(--s2) 0}
+.sim-escena{margin:var(--s3) 0;max-width:520px}
+.sim-escena .escena{width:100%;height:auto;display:block;border-radius:var(--r2)}
+.escena .esc-fondo{fill:var(--surface-2)}
+.sim-ex{margin:var(--s3) 0}
+.sim-transcripcion{display:flex;flex-direction:column;gap:var(--s2);margin-top:var(--s4)}
+.sim-rev ol{padding-left:20px}
+.sim-rev li{margin-bottom:var(--s2)}
+.sim-nivel{font-size:20px;font-weight:900;margin-top:0}
+.sim-grafica{width:100%;max-width:420px;height:auto}
+.sim-linea{fill:none;stroke:var(--primary);stroke-width:3}
+.sim-linea-meta{stroke:var(--line-2);stroke-dasharray:4 4}
+.sim-punto{fill:var(--primary)}
+@media (min-width:840px){html:not([data-paneles="no"]) .sim-dos{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--s6);align-items:start}
+  html:not([data-paneles="no"]) .sim-dos .sim-transcripcion{margin-top:0;position:sticky;top:76px;max-height:calc(100dvh - 180px);overflow-y:auto}
+  html:not([data-paneles="no"]) body.sesion-activa main:has(.sim-examen){max-width:1180px}}
+/* 💬 Conversa con la IA: corrección suave bajo lo que dijiste */
+.charla-correccion{display:block;margin-top:6px;padding:6px 10px;border-radius:var(--r1);background:var(--success-soft);font-size:15px}
+.charla-botones{gap:6px;margin-bottom:var(--s2)}
+.charla-ayuda ul{margin:0;padding-left:20px}
+.sim-crit{padding:var(--s2) 0;border-bottom:2px solid var(--line)}
+.sim-crit p{margin:0 0 var(--s2)}
+.sim-escala{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.sim-escala button{all:unset;box-sizing:border-box;display:grid;place-items:center;min-height:48px;border-radius:var(--r2);border:2px solid var(--line);background:var(--surface);font-weight:800;cursor:pointer}
+.sim-escala button[aria-pressed="true"]{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+.sim-escala button:focus-visible{outline:3px solid var(--primary)}
+.card.sim-pausada{border-color:var(--warn-bg);background:var(--warn-soft)}

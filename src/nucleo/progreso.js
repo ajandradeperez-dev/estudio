@@ -342,6 +342,16 @@ export function guardarUbicacion(materia,resultados){
   });
 }
 
+// Prueba de nivel de Inglés → «Ajustar mi punto de partida»: marca como sabidas (vía ubicación) las habilidades de los
+// niveles inferiores que todavía no dominas. No borra nada: lo que ya practicaste se queda igual.
+export function marcarSabidas(materia,ids){
+  return cambiar(p=>{const m=datosMateria(p,materia),nuevas=[];
+    for(const id of ids){const prev=obj(m.lecciones[id]);if(prev?.dominada)continue;
+      m.lecciones[id]={...(prev||{}),dominada:true,mejor:Math.max(prev?.mejor||0,0.8),intentos:prev?.intentos||0,via:'ubicacion',rating:Math.max(prev?.rating||1,3)};nuevas.push(id);
+      const ref=`${materia}/h/${id}`;if(!p.repaso[ref])p.repaso[ref]={rep:1,int:3,ef:2.5,proxima:sumarDias(hoy(),3),fallos:0}}
+    return nuevas});
+}
+
 /* ---------- habla ---------- */
 // Lo hablado hoy: frases dichas en voz alta, segundos con el micrófono y turnos de conversación (conv = turnos de la conversación más larga)
 export function registrarHabla({frases=0,seg=0,turnos=0,conv=0}){

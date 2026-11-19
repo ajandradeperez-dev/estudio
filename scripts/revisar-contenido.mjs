@@ -210,6 +210,10 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
     resumen.push(`${n}${d.completo?'':' (en construcción)'}: ${cuenta.lecturas} lecturas, ${cuenta.escuchas} escuchas, ${nd} diálogos, ${nv} palabras, ${cuenta.escritura} escritos`);
   }
   console.log(`ingles/nivel: ${resumen.join(' · ')}`);
+  // 🏁 Simulacros: contenido original, longitudes por nivel, una sola respuesta correcta por pregunta, rúbricas y escenas
+  const sim=await imp('simulacros/motor.js');
+  for(const x of sim.validar())mal('simulacros',x);
+  console.log(`ingles/simulacros: ${sim.SIMULACROS.length} simulacros (${sim.NIVELES.map(n=>`${n} ${sim.SIMULACROS.filter(s=>s.nivel===n).length}`).join(', ')}) · ${sim.SIMULACROS.reduce((a,s)=>a+sim.partesDe(s).length,0)} partes`);
 }
 // Excel: el evaluador de fórmulas da el resultado esperado en cada caso de la tabla (cada función y cada error)
 {

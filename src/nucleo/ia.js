@@ -62,7 +62,7 @@ const ERR={
   sinClave:p=>new ErrorIA('sin-clave',`Falta tu clave de ${PROVEEDORES[p].nombre}. Agrégala en Perfil → ✨ Inteligencia artificial.`),
   offline:()=>new ErrorIA('offline','Sin internet: la IA necesita conexión. Todo lo demás de la app funciona sin internet.'),
   red:p=>new ErrorIA('red',`No se pudo conectar con ${PROVEEDORES[p].nombre}. Revisa tu conexión e intenta de nuevo.`),
-  limite:p=>new ErrorIA('429',p==='gemini'?'Llegaste al límite gratis de Gemini por ahora. Si fue el del día, vuelve mañana o usa el modo sin IA; si fue el del minuto, espera un momento y vuelve a intentarlo.':'Llegaste al límite de uso por minuto. Espera un momento y vuelve a intentarlo.'),
+  limite:p=>new ErrorIA('429',p==='gemini'?'Llegaste al límite gratis de hoy de Gemini (plan gratuito): vuelve mañana o usa el modo sin IA. Si solo fue el límite por minuto, espera un momento y reintenta.':'Llegaste al límite de uso por minuto. Espera un momento y vuelve a intentarlo.'),
   clave:p=>new ErrorIA('401',p==='gemini'?'La clave de Gemini no es válida. Revisa que la copiaste completa (empieza con AIza o AQ.) o crea otra en aistudio.google.com.':'La clave no es válida o fue revocada. Revisa que la copiaste completa (empieza con sk-ant-) o crea una nueva.'),
   saturado:p=>new ErrorIA('saturado',`${PROVEEDORES[p].nombre} está saturado en este momento. Intenta de nuevo en un momento.`),
   negativa:p=>new ErrorIA('negativa',`${PROVEEDORES[p].nombre} prefirió no responder a eso. Prueba con otro tema.`),

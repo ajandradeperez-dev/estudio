@@ -78,8 +78,9 @@ ${act?`<button class="card destacado" data-go="${RAIZ}/u/${act.id}"><span class=
 <h2>📚 Práctica por nivel</h2><p class="nota">Lecturas graduadas, escuchas, diálogos, vocabulario con audio y escritura con rúbrica de cada nivel.</p>${htmlNiveles()}
 <h2>Diálogos guiados</h2><p class="nota">Situaciones reales. Funcionan sin internet${soporte.escuchar?' (el reconocimiento de voz de Chrome sí necesita conexión)':''}.</p>
 ${NIVELES_MCER.map(n=>{const ds=DIALOGOS.filter(d=>d.nivel===n);return ds.length?`<h3 class="prog-k" style="margin-top:12px">${n}</h3><div class="grid">${ds.map(d=>{const x=dl[d.id];return `<div class="card click" data-go="${RAIZ}/dialogo/${d.id}" tabindex="0"><div class="progress">${d.nivel}${x?` · mejor ${pct(x.mejor)}%`:''}</div><h3 style="margin:4px 0">${d.titulo}</h3><p class="nota" style="margin:0">${d.escena}</p></div>`}).join('')}</div>`:''}).join('')}
-<h2>Conversación libre con IA</h2>
-<div class="card click" data-go="${RAIZ}/ia" tabindex="0"><h3>🤖 Habla con un tutor IA</h3><p class="nota" style="margin:0">Conversa sobre lo que quieras; te corrige en español y te propone frases más naturales. ${clave?'Clave configurada ✓':'Necesita tu API key de Anthropic.'}</p></div>
+<h2>💬 Conversa con la IA</h2>
+<div class="card click" data-go="${RAIZ}/ia" tabindex="0"><h3>💬 Conversa con la IA</h3><p class="nota" style="margin:0">Elige tu nivel y una situación (entrevista, soporte de TI, viaje, opinar…). Te corrige con suavidad y te ayuda si te atoras. ${clave?'Clave configurada ✓':'Necesita tu clave de IA (Gemini es gratis).'}</p></div>
+<div class="card click" data-go="estudio/ingles/simulacros" tabindex="0" style="margin-top:12px"><h3>🏁 Simulacros y prueba de nivel</h3><p class="nota" style="margin:0">Exámenes de práctica A1–B2 con escucha y habla con un examinador IA.</p></div>
 <h2>Frases útiles</h2>
 <div class="row">${Object.keys(FRASES).map(n=>`<button class="btn ghost" data-go="${RAIZ}/frases/${n}">Frases ${n}</button>`).join('')}</div>
 <h2>Pronunciación: sonidos difíciles</h2><p class="nota">Pares mínimos y frases para los errores típicos de hispanohablantes.</p>

@@ -139,7 +139,7 @@ export function vistaMateria(m){
 <div class="card"><p>${m.intro||m.descripcion}</p>${boton({texto:'➕ Agregar libro',clase:'ancho',extra:'disabled aria-disabled="true"'})}
 <p class="nota" style="text-align:center;margin-top:8px">Próximamente</p></div></div>`;
       const p=progreso(),d=datosMateria(p,m.id),ls=m.lecciones||[],r=recomendar({materia:m.id},p),u=d.ubicacion,k=repartoUbicacion(ls.filter(l=>l.rondas?.length).length).reduce((a,b)=>a+b,0);
-      const ss=secciones(m).filter(([k])=>`${rutaMateria(m)}/${k}`!==m.destacado?.ruta),grupos=[...new Set(ss.map(([,s])=>s.grupo))];
+      const dest=m.destacados||(m.destacado?[m.destacado]:[]),ss=secciones(m).filter(([k])=>!dest.some(x=>x.ruta===`${rutaMateria(m)}/${k}`)),grupos=[...new Set(ss.map(([,s])=>s.grupo))];
       const temas=m.temas?`<h2>Temas</h2><div class="lista-nav">${m.temas.map(t=>{const c=conteo(d,t.lecciones),prox=!t.lecciones.length;
         const clase=prox&&!t.nodos.some(n=>n.ir)?'proximo':'',e=ESTADO[estadoTema(m,t).estado];
         return tarjetaNav({go:rutaTema(m,t),icono:t.icono,titulo:t.titulo,desc:t.descripcion,clase,
@@ -148,7 +148,7 @@ ${retosDe(m.id).length?boton({texto:`🎯 Retos y escenarios (${retosDe(m.id).le
         :ls.length?`<h2>Lecciones</h2><div class="lista-nav">${ls.map((l,i)=>tarjetaNav({go:rutaLeccion(m,l),icono:dominada(d,l)?'✅':i+1,titulo:l.titulo,desc:l.resumen})).join('')}</div>`:'';
       return `<div class="area-${tono}">${cabecera({icono:m.icono||m.sigla,titulo:m.nombre,desc:m.descripcion})}
 ${r.ruta?htmlSiguiente(r):''}
-${m.destacado?`<button class="destacado" data-go="${m.destacado.ruta}"><span class="destacado-titulo">${m.destacado.titulo}</span><span class="nota">${m.destacado.desc}</span></button>`:''}
+${dest.map(x=>`<button class="destacado" data-go="${x.ruta}"><span class="destacado-titulo">${x.titulo}</span><span class="nota">${x.desc}</span></button>`).join('')}
 <div class="card">${htmlNivel(d.xp)}${m.temas?htmlCobertura(m)+htmlPlan(m,d):''}</div>
 ${temas}
 ${m.temas?htmlExamenFinal(m):''}

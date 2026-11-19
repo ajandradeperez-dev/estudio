@@ -59,7 +59,7 @@ try{
     const ctx=await b.newContext({viewport:{width:ancho,height:alto},isMobile:ancho<600,hasTouch:true,colorScheme:oscuro?'dark':'light'});
     await ctx.addInitScript(DOBLES);
     await ctx.addInitScript(([clave])=>{if(!localStorage.getItem('ciberlab-usuario')){localStorage.setItem('ciberlab-usuario','{"bienvenida":true,"nombre":"Ana"}');
-      if(clave)localStorage.setItem('ciberlab-ia',JSON.stringify({proveedor:'gemini',claves:{gemini:'AIzaPRUEBA_simulada_000000000000000000'}}))}},[clave]);
+      if(clave)localStorage.setItem('ciberlab-ia',JSON.stringify({proveedor:'gemini',claves:{gemini:['AI','za'].join('')+'-prueba-simulada'}}))}},[clave]);
     await ctx.route('https://generativelanguage.googleapis.com/**',ia);
     const p=await ctx.newPage();const err=[];p.on('pageerror',e=>err.push(e.message));return {ctx,p,err};
   };

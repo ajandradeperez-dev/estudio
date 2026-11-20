@@ -142,9 +142,10 @@ try{
     await ir('estudio/ingles/hablar');await medir('mapa-mcer');
     await ir('logros');await medir('logros');
     // cuaderno con una nota abierta
-    await ir('notas');await p.click('#nota-nueva');await p.waitForSelector('#nota-cuerpo');
-    await p.fill('#nota-titulo','Derivadas: regla de la cadena');await p.fill('#nota-cuerpo',NOTA);await p.waitForTimeout(800);
-    await p.click('[data-modo="ver"]');await p.waitForTimeout(300);await medir('cuaderno');
+    await ir('notas');await p.click('#nota-nueva');await p.waitForSelector('#nota-titulo');
+    await p.fill('#nota-titulo','Derivadas: regla de la cadena');await p.click('#ed-final');await p.waitForSelector('.ed-texto');
+    await p.fill('.ed-texto',NOTA);await p.click('#nota-titulo');await p.waitForTimeout(800);await medir('cuaderno');
+    await p.click('#nota-leer');await p.waitForTimeout(300);await medir('cuaderno-leer');
     await ir('estudio/lectura');await medir('biblioteca');
     await ir('estudio/lectura/libro/aesop/1');await p.waitForSelector('.lector',{timeout:8000}).catch(()=>{});await medir('lector');
     await ir('cursos/python/editor');await medir('python');

@@ -85,7 +85,7 @@ html[data-texto="muy-grande"] main,html[data-texto="muy-grande"] #hoja,html[data
   html:not([data-paneles="no"]) body:has(#procedimiento) #hoja{right:min(560px,44vw)}
 
   /* Cuaderno: lista a la izquierda, nota abierta a la derecha */
-  html:not([data-paneles="no"]) .notas-dos{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:var(--s6);align-items:start}
+  html:not([data-paneles="no"]) .notas-dos{display:grid;grid-template-columns:minmax(300px,340px) minmax(0,1fr);gap:var(--s6);align-items:start}
   html:not([data-paneles="no"]) .notas-dos>.panel-lista{display:block;position:sticky;top:76px;max-height:calc(100dvh - 96px);overflow-y:auto;overscroll-behavior:contain;padding-right:4px}
   html:not([data-paneles="no"]) .notas-dos .pila-notas{grid-template-columns:1fr}
   html:not([data-paneles="no"]) .notas-dos .panel-vacio{position:sticky;top:76px}

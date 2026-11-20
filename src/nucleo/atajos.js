@@ -13,7 +13,9 @@ import {todasLasNotas} from './cuaderno/db.js';
 import {esc} from '../utilidades.js';
 
 export const ATAJOS=[['Enter','Comprobar o continuar'],['1 – 4','Elegir una opción'],['H','Siguiente pista'],['S','Ver la solución'],['B','Abrir o cerrar el borrador'],
-  ['Esc','Cerrar el panel o el diálogo (como Atrás)'],['Ctrl + K','Buscar materias, temas, notas y libros'],['← →','Página anterior o siguiente en el lector'],['Ctrl + Enter','Ejecutar en Python'],['?','Esta ayuda']];
+  ['Esc','Cerrar el panel o el diálogo (como Atrás)'],['Ctrl + K','Buscar materias, temas, notas y libros'],['← →','Página anterior o siguiente en el lector'],['Ctrl + Enter','Ejecutar en Python'],
+  ['Ctrl + N','Notas: nueva nota'],['Ctrl + B · Ctrl + M','Notas: negrita · fórmula'],['Ctrl + Shift + 8','Notas: lista'],['Alt + ↑ ↓','Notas: mover el bloque'],
+  ['Esc','Notas: terminar el bloque y luego volver a la lista'],['Espacio · 1 2 3','Repasar una nota: mostrar · Otra vez, Bien, Fácil'],['?','Esta ayuda']];
 const ir=ruta=>document.dispatchEvent(new CustomEvent('ir',{detail:ruta}));
 const q=s=>document.querySelector(s);
 const clic=s=>{const b=q(s);if(b&&!b.disabled&&b.offsetParent!==null){b.click();return true}return false};

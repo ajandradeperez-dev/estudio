@@ -122,12 +122,13 @@ src/
                           memoria, dominio, compartir), vistas.js (lista, asistente, materia, tema, simulacro), ia.js (IA opcional)
     sync/                 ☁️ Mis datos y sincronizar: fusionar.js (combinar sin perder ni duplicar), local.js (equipo y lápidas),
                           api.js (Supabase con fetch), motor.js (sin DOM), navegador.js (sesión y cuándo), vista.js (pantalla Cuenta)
-    notas.js              Pestaña 📝 Notas: lista (búsqueda, filtros, cuadernos área → materia → tema), editor con barra de formato,
-                          fotos, dibujo, dictado, enlaces y tarjetas; modo "repasar nota"; resumen automático del tema; respaldo
+    notas.js              Pestaña 📝 Cuaderno: lista (búsqueda, chips de filtro, orden, cuadernos área → materia → tema) y editor
+                          por bloques en un solo modo (ver «📝 Cuaderno: editor»); 👁️ lectura, 🧠 repasar; resumen del tema; respaldo
     cuaderno/             Datos del cuaderno (sin vistas): db.js (IndexedDB 'ciberlab-notas': notas y archivos; persist()),
                           formato.js (marcas → HTML, sin DOM; tarjetas; deHtml() pasa pasos de la app a texto de nota),
                           notas.js (crear/guardar/borrar, copia de los resúmenes viejos, "📝 Guardar en mis notas" desde el estudio),
-                          medios.js (comprimir fotos, lienzo de dibujo), respaldo.js (exportar/importar TODO en .json, sin la clave de IA),
+                          medios.js (comprimir y guardar fotos), editor-ui.js (teclado de fórmulas, visor, recortar y girar,
+                          crear tarjeta, bloque de dibujo), respaldo.js (exportar/importar TODO en .json, sin la clave de IA),
                           foto.js ("📸 Foto a nota" y "🧠 Resuélvelo conmigo" con IA; sin clave, OCR local con Tesseract.js)
     procedimiento.js      Pantalla "📖 Procedimiento": pasos revelables, lo que cambia resaltado, diagramas, 🔊 y 📝 por paso
     portada.js            Portada (áreas), página de área, de materia (temas), camino de un tema, migas y barra superior
@@ -354,7 +355,32 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 11`; los formatos 
 - **v8** (cuaderno): `tarjetas` `{[id]: {q, a, nota, titulo, materia, fecha}}`, las líneas `🃏 pregunta | respuesta` de las notas; se repasan con la ref `<materia|notas>/t/<id>` (`ejercicioPorRef`).
 - **Notas** (resúmenes): `{'<materia>/<lección>': {texto, fecha}}`. Se conservan en el progreso y se copian al cuaderno como notas con `origen:'resumen:<clave>'` (si la nota no se tocó, se actualiza al cambiar el resumen; borrarla en el cuaderno borra el resumen). "Reiniciar todo el progreso" conserva notas y tarjetas, porque son texto escrito por el usuario.
 - **Cuaderno** (IndexedDB `ciberlab-notas`, no en `localStorage`): notas `{id, titulo, cuerpo, materia, tema, etiquetas, fijada, creada, editada}` y archivos `{id, nota, blob…}` (fotos JPEG ≤1600 px, dibujos PNG). El formato del cuerpo (negrita, fórmulas `$…$`, casillas, `![](img:<id>)`…) está en `cuaderno/formato.js`. Si cambias la estructura, sube `VERSION` en `db.js` y migra en `onupgradeneeded`. El respaldo `.estudio` (Perfil y Notas) incluye progreso, ajustes, notas, imágenes, materias propias y lápidas, nunca `ciberlab-ia` ni la sesión.
-- **Borrar notas**: 🗑️ en la cabecera de cada nota, «⋯ → 🗑️ Borrar» en cada nota de la lista y «☑️ Seleccionar» (contador «N seleccionadas» y Borrar) para varias. Siempre con el diálogo propio `confirmar()` (Atrás o Cancelar no borran) y luego «🗑️ Nota borrada · Deshacer» durante 8 s (`avisoAccion` en `ui.js`). `borrarNotas(lista)` (`cuaderno/notas.js`) borra de IndexedDB sus fotos y dibujos salvo los que use otra nota, sus tarjetas y repasos, el resumen del que salió y convierte en texto los enlaces `[…](#notas/n/<id>)` desde otras notas; devuelve una copia completa que `restaurarNotas` vuelve a poner tal cual (mismas fechas). `npm run cuaderno` lo prueba.
+- **📝 Cuaderno: editor** (`notas.js`, `cuaderno/editor-ui.js`; PROMPT-NOTAS). Pensado para teclado y dedo; el texto
+  guardado es el mismo de siempre (no hay migración: las notas viejas se ven y se editan igual). `bloques(texto)` /
+  `unirBloques` (`formato.js`) parten la nota en bloques: texto (separado por líneas en blanco, sin partir ```), fórmula
+  `$$…$$` e imagen sola en su línea (`![pie](img:<id>)`; «foto», «dibujo» o «imagen» = sin pie). **Un solo modo**: los
+  bloques se ven formateados y el que tocas muestra sus marcas (el cursor queda donde tocaste, `cursorDesde`; tocar una
+  fórmula la selecciona) con la vista previa KaTeX de la fórmula de esa línea. Enter sigue las listas (`- `, `1. `,
+  `- [ ] `, `> `). Título grande arriba; debajo, en una línea, el cuaderno (selector), las etiquetas y la fecha relativa.
+  **Barra** de una fila (Título, Negrita, Lista, Casilla, ∑, 🖼️ foto o dibujo, ⋯ más): en el teléfono `.ed-herr` va
+  fija encima del teclado (`--teclado` con `visualViewport`) y el cursor nunca queda detrás (`visible()`); con ratón
+  (`hover:hover and pointer:fine`) va arriba y fija. **∑** abre el teclado de símbolos (`SIMBOLOS`) en el teléfono; con
+  teclado físico no se abre solo. **Bloques** con menú «⋮»: ↑ Subir, ↓ Bajar, 🗑️ Borrar (con Deshacer), en fotos ✂️
+  Recortar o girar (foto nueva, la vieja se borra si nadie la usa) y 💬 Pie; tocar una foto la amplía. **Dibujo** como
+  bloque dentro de la nota (`htmlDibujo`/`activarDibujo`): lápiz, borrador, 3 grosores, 4 colores, deshacer; un dedo
+  dibuja, dos desplazan; «✓ Listo» guarda un PNG con sus `trazos` en el archivo (así se vuelve a editar; los dibujos de
+  antes no tienen trazos). **👁️ Lectura**: sin herramientas, letra 18 px y fórmulas grandes; al seleccionar texto,
+  «🃏 Crear tarjeta» (también en el editor) agrega `🃏 pregunta | respuesta` al final. **🧠 Repasar**: las tarjetas de la
+  nota (pregunta → Mostrar respuesta → Otra vez / Bien / Fácil, que actualizan su repaso SM-2 con `idTarjeta`); sin
+  tarjetas ofrece «Tapar las negritas». Guardado automático con «Guardado ✓». **Atajos**: Ctrl+B, Ctrl+I, Ctrl+Shift+8,
+  Ctrl+M, Ctrl+K (buscar en las notas), Ctrl+N o Alt+N (nueva), Alt+↑/↓ (mover el bloque), Esc (terminar el bloque;
+  otra vez, a la lista), Espacio y 1–3 al repasar. **Lista**: «＋ Nueva nota» (y botón flotante en el teléfono),
+  buscador, chips (Todas, Fijadas, cada materia, Con fórmulas, Con fotos, Para repasar, etiquetas), orden Recientes /
+  A–Z / Por cuaderno (fijadas arriba; `ciberlab-notas-orden`), tarjetas con 2 líneas de vista previa (`vistaPrevia`:
+  fórmulas como texto corto con `formulaCorta`), chip de la materia con su color, fecha relativa e íconos 🖼️ 🃏; dos
+  paneles en la laptop. `node scripts/cuaderno-capturas.mjs <carpeta>` toma las capturas del cuaderno (teléfono 360 y
+  390, laptop 1366 y 1440, claro y oscuro, teclado abierto) con un informe de medidas.
+- **Borrar notas**: «⋯ → 🗑️ Borrar la nota» en la cabecera de cada nota, «⋯ → 🗑️ Borrar» en cada nota de la lista y «☑️ Seleccionar» (contador «N seleccionadas» y Borrar) para varias. Siempre con el diálogo propio `confirmar()` (Atrás o Cancelar no borran) y luego «🗑️ Nota borrada · Deshacer» durante 8 s (`avisoAccion` en `ui.js`). `borrarNotas(lista)` (`cuaderno/notas.js`) borra de IndexedDB sus fotos y dibujos salvo los que use otra nota, sus tarjetas y repasos, el resumen del que salió y convierte en texto los enlaces `[…](#notas/n/<id>)` desde otras notas; devuelve una copia completa que `restaurarNotas` vuelve a poner tal cual (mismas fechas). `npm run cuaderno` lo prueba.
 - En Ciberseguridad, los casos del laboratorio y los escenarios de VPN se guardan por posición: agrégalos al final de sus listas en `datos/`.
 - Todo acceso a `localStorage` va en `try/catch` para que la app funcione aunque esté bloqueado.
 - El progreso depende del origen (`localhost:5173` y `localhost:4173` tienen progresos distintos). Por eso los puertos están fijos con `strictPort`: si el 5173 está ocupado, Vite falla en vez de abrir otro puerto con el progreso vacío.
@@ -641,6 +667,7 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | PERFIL-LIBROS D · Respaldo `.estudio` (Combinar/Reemplazar), sincronización con Supabase (sync.sql con RLS probada en PGlite) y guía `supabase/LEEME.md` | ✅ terminado; proyecto de Supabase conectado y entrada con correo y contraseña (código de 6 dígitos como alternativa) |
 | PROMPT-TABLET · Tab S10: riel lateral, dos paneles, S Pen (borrador, presión, palma), atajos de teclado, Pantalla en Perfil, `npm run tablet`, APK 1.2.0 | ✅ terminado |
 | PROMPT-SIMULACROS-INGLES · motor de voz, 7 simulacros (escucha y habla con IA), conversación libre y prueba de nivel adaptativa | ✅ terminado |
+| PROMPT-NOTAS · Cuaderno para teclado y dedo: dibujo sin desfase (2b), lista nueva, editor por bloques en un solo modo, fórmulas en vivo, foto y dibujo como bloques, lectura, repasar y atajos | ✅ terminado |
 | P3b · Inglés: metas extra por nivel (lecturas, escuchas, diálogos, vocabulario con audio, escritura con rúbrica e IA) | ✅ terminado: A1, A2, B1 y B2 con 6 lecturas, 6 escuchas, 8 diálogos, 400 palabras con ejemplo y audio y 3 escritos con rúbrica cada uno (24 lecturas, 24 escuchas, 32 diálogos, 1600 palabras, 12 escritos). |
 | 4 · Inglés: completar A1 y A2, luego B1 | reemplazado por P3 y P6 |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | reemplazado por P3 y P6 |
@@ -669,7 +696,7 @@ npm run dev       # servidor de desarrollo: http://localhost:5173 (puerto fijo)
 npm run build     # genera dist/
 npm run preview   # sirve dist/ en http://localhost:4173 (puerto fijo)
 npm run revisar   # método, jerarquía, contenido de habla, migración del progreso, los 50 generadores y Mis materias (esquema, plan, fixtures) (~10 s)
-npm run cuaderno  # borrar notas: una, varias, deshacer, fotos fuera de IndexedDB (la compartida se queda) y Atrás cancela (--capturas <dir> [--oscuro])
+npm run cuaderno  # cuaderno: notas viejas, editor (atajos, fórmula en vivo, foto, dibujo, mover bloques, guardado, teclado simulado), lectura, repasar, borrar (--capturas <dir> [--oscuro])
 npm run principiante # cada habilidad lista para un principiante: mini-lección, nivel 1, 3 pistas con datos, gemelo (--detalle)
 npm run python    # el curso de Python ejecutado en Pyodide: cada ejercicio generado y cada solución del laboratorio
 npm run datos     # 💾 Mis datos: exportar .estudio, combinar (sin duplicar XP, lápidas) y reemplazar con tres «teléfonos»

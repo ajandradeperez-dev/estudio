@@ -67,7 +67,7 @@ try{
   // en A se borra la nota con el diálogo propio
   await A.p.goto(BASE+'#notas');await A.p.waitForTimeout(900);
   await A.p.goto(BASE+'#notas/n/nx');await A.p.waitForTimeout(900);
-  await A.p.click('[aria-label="Borrar nota"], #nota-borrar').catch(()=>{});await A.p.waitForTimeout(300);
+  await A.p.click('#nota-mas').catch(()=>{});await A.p.waitForTimeout(300);await A.p.click('.modal [data-r="borrar"]').catch(()=>{});await A.p.waitForTimeout(300);
   await A.p.click('.modal [data-r="1"]').catch(()=>{});await A.p.waitForTimeout(800);
   const lap=await A.p.evaluate(()=>JSON.parse(localStorage.getItem('ciberlab-borradas')||'{}'));
   check(!!lap.nx,'borrar una nota deja su lápida (para que no vuelva al combinar)');

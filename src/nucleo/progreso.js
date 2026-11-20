@@ -383,6 +383,8 @@ export function borrarNota(clave){cambiar(p=>{delete p.notas[clave]})}
 // Tarjetas de una nota del cuaderno: agrega las nuevas al repaso (hoy) y quita las que ya no están en la nota
 const hash=s=>{let h=5381;for(const ch of String(s))h=(h*33^ch.codePointAt(0))>>>0;return h.toString(36)};
 export const refTarjeta=(materia,id)=>`${materia||'notas'}/t/${id}`;
+// Id de la tarjeta «🃏 q | a» de una nota (el mismo que usa sincronizarTarjetas)
+export const idTarjeta=(nota,q,a)=>`n${hash(nota+'|'+q+'|'+a)}`;
 export function sincronizarTarjetas(nota,{materia,titulo},lista){
   const p=progreso(),ids=new Set(lista.map(x=>`n${hash(nota+'|'+x.q+'|'+x.a)}`));
   const viejas=Object.entries(p.tarjetas).filter(([id,t])=>t.nota===nota);
@@ -391,7 +393,7 @@ export function sincronizarTarjetas(nota,{materia,titulo},lista){
   return cambiar(p=>{
     for(const [id,t] of viejas)if(!ids.has(id)||t.materia!==(materia||null)){delete p.tarjetas[id];delete p.repaso[refTarjeta(t.materia,id)]}
     let nuevas=0;
-    lista.forEach(x=>{const id=`n${hash(nota+'|'+x.q+'|'+x.a)}`;
+    lista.forEach(x=>{const id=idTarjeta(nota,x.q,x.a);
       if(!p.tarjetas[id]){nuevas++;p.repaso[refTarjeta(materia,id)]={rep:0,int:1,ef:2.5,proxima:hoy(),fallos:0}}
       p.tarjetas[id]={q:x.q,a:x.a,nota,titulo,materia:materia||null,fecha:p.tarjetas[id]?.fecha||hoy()};});
     return nuevas;

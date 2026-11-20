@@ -638,6 +638,21 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
   if(JSON.stringify(F.tarjetasDe('🃏 ¿P? | R\n🃏 sin respuesta'))!=='[{"q":"¿P?","a":"R"}]')mal(e,'lee mal las tarjetas');
   if(F.deHtml('<b>x</b> \\(\\cambio{\\dfrac{1}{2}}\\)')!=='**x** $\\dfrac{1}{2}$')mal(e,'convierte mal un paso a texto de nota');
   console.log('cuaderno: el formato de las notas es seguro y lee las tarjetas');
+  // Editor por bloques: las notas de siempre se parten y se vuelven a unir sin perder nada y se ven igual
+  const viejas=['## Resumen\nLínea $x^2$\n**negrita**\n![foto](img:a1)\n- [ ] c\n- [x] d\n🃏 ¿P? | R\nfoto en renglón ![foto](img:a1) igual',
+    'Uno\n\n\nDos\n```\ncódigo\n\n con línea vacía\n```\n$$\n\\frac{a}{b}\n$$\n![Mi pie](img:b2)\n$$x$$','',' \n','Solo texto'];
+  // (el número de renglón de las casillas cambia al separar bloques; en el editor cada bloque lleva su cuenta)
+  const sinVacias=h=>String(h).replace(/data-casilla="\d+"/g,'').split('\n').filter(Boolean).join('\n'),tx={tex:(f,b)=>`[${b?'B':'L'}:${f}]`};
+  for(const v of viejas){const bs=F.bloques(v),u=F.unirBloques(bs);
+    if(sinVacias(F.render(u,tx))!==sinVacias(F.render(v,tx)))mal(e,`una nota vieja se ve distinto al pasar por bloques: ${JSON.stringify(v.slice(0,30))}`);
+    if(JSON.stringify(F.bloques(u))!==JSON.stringify(bs))mal(e,'partir y unir bloques no da lo mismo');
+    for(const id of F.imagenesDe(v))if(!F.imagenesDe(u).includes(id))mal(e,'al unir bloques se pierde una imagen');
+    if(F.tarjetasDe(u).length!==F.tarjetasDe(v).length)mal(e,'al unir bloques se pierde una tarjeta');}
+  const bs=F.bloques(viejas[1]);
+  if(bs.map(b=>b.tipo).join()!=='texto,texto,formula,imagen,formula')mal(e,`tipos de bloque: ${bs.map(b=>b.tipo)}`);
+  if(!F.render('$$\\frac{a}{b}$$',tx).includes('[B:\\frac{a}{b}]')||!F.render('![Mi pie](img:b2)').includes('<figcaption>Mi pie</figcaption>')||F.render('![foto](img:b2)').includes('figcaption'))mal(e,'fórmula en bloque o pie de foto');
+  if(F.formulaCorta('x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}')!=='x = (-b ± √(b²-4ac))/2a'||F.vistaPrevia('**a** $x^2$ ![f](img:z)\n🃏 q | r')!=='a x² q | r')mal(e,'vista previa de la lista (fórmulas como texto corto)');
+  console.log('cuaderno: los bloques del editor conservan las notas viejas (imágenes, tarjetas, código, fórmulas)');
 }
 // Errores de dedo: se aceptan en palabras en español (nomonal → nominal) pero nunca cambian el sentido
 {

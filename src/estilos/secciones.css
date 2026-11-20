@@ -160,7 +160,7 @@ tr.hit td{background:var(--success-soft)}
 .campo input:focus,.campo select:focus,.buscar input:focus,.modal input:focus{outline:none;border-color:var(--primary)}
 .aviso:not(.card){position:fixed;left:50%;bottom:calc(var(--nav-alto) + 16px + env(safe-area-inset-bottom) + var(--teclado,0px));z-index:80;transform:translate(-50%,20px);opacity:0;max-width:calc(100vw - 32px);padding:10px 16px;border-radius:var(--r2);background:var(--ink);color:var(--bg);font-weight:800;font-size:15px;box-shadow:var(--sombra);transition:opacity .2s,transform .2s;pointer-events:none}
 .aviso.visible{opacity:1;transform:translate(-50%,0)}
-.aviso-accion{display:flex;align-items:center;gap:12px;pointer-events:auto;width:max-content}
+.aviso.aviso-accion{display:flex;align-items:center;gap:12px;pointer-events:auto;width:max-content}
 .aviso-btn{min-height:44px;padding:0 12px;border:0;border-radius:var(--r1,8px);background:transparent;color:inherit;font:inherit;font-weight:900;text-decoration:underline;cursor:pointer}
 body.sesion-activa .aviso{bottom:calc(96px + env(safe-area-inset-bottom))}
 .aviso-linea{padding:var(--s2) var(--s3);border-radius:var(--r2);background:var(--warn-soft)}

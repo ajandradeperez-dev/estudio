@@ -178,6 +178,21 @@ try{
     ok(t3<t1,`S Pen: el borrador del lápiz (botón 5 / buttons 32) borra (${t1} → ${t3})`);
     await p.click('[data-borr="deshacer"]');await p.waitForTimeout(100);
     ok(await tinta()===t1,'S Pen: deshacer devuelve el trazo borrado');
+    // sin desfase: la tinta queda bajo la punta y la raya llega hasta donde se soltó (también con el texto «muy grande», zoom 1,25)
+    for(const tam of ['normal','muy-grande']){
+      await p.evaluate(t=>{t==='normal'?delete document.documentElement.dataset.texto:document.documentElement.dataset.texto=t},tam);await p.waitForTimeout(300);
+      await p.click('[data-borr="limpiar"]');await p.waitForTimeout(100);
+      const r=await p.evaluate(()=>{const cv=document.querySelector('.borrador-lienzo'),b=cv.getBoundingClientRect(),k=b.width/cv.offsetWidth,x0=b.left+cv.clientLeft*k,y0=b.top+cv.clientTop*k;
+        const X1=x0+40*k,X2=x0+220*k,Y=y0+120*k;
+        const ev=(t,x)=>cv.dispatchEvent(new PointerEvent(t,{bubbles:true,cancelable:true,pointerId:2,pointerType:'pen',pressure:t==='pointerup'?0:.5,buttons:t==='pointerup'?0:1,button:t==='pointermove'?-1:0,clientX:x,clientY:Y,isPrimary:true}));
+        ev('pointerdown',X1);for(let i=1;i<=9;i++)ev('pointermove',X1+(X2-X1)*i/9);ev('pointerup',X2);
+        const d=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data,f=[d[0],d[1],d[2]];let mx=-1,sy=0,n=0;
+        for(let i=0;i<d.length;i+=4)if(Math.abs(d[i]-f[0])+Math.abs(d[i+1]-f[1])+Math.abs(d[i+2]-f[2])>150){const px=(i/4)%cv.width,py=Math.floor(i/4/cv.width);mx=Math.max(mx,px);sy+=py;n++}
+        const aPant=v=>v/cv.width*cv.clientWidth*k;
+        return {fin:x0+aPant(mx)-X2,y:n?y0+(sy/n)/cv.height*cv.clientHeight*k-Y:99}});
+      ok(r.fin>-1.5&&r.fin<6&&Math.abs(r.y)<1.5,`S Pen (texto ${tam}): la tinta queda bajo la punta y llega hasta donde se soltó (final ${r.fin.toFixed(1)} px, vertical ${r.y.toFixed(1)} px)`);
+    }
+    await p.evaluate(()=>delete document.documentElement.dataset.texto);
     await p.setViewportSize({width:876,height:1400});await p.waitForTimeout(500);
     ok(await tinta()>0,'S Pen: al girar la tablet el dibujo sigue ahí');
     await p.setViewportSize({width:1400,height:876});await p.waitForTimeout(400);

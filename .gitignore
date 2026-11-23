@@ -25,3 +25,6 @@ dist-cuenta/
 dist-sin/
 # Capturas de npm run tablet (y de Google Play): se generan, no se versionan
 capturas/
+
+# Videos de promoción y tutorial (npm run video): se generan, no se versionan
+videos/

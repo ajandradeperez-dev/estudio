@@ -733,3 +733,10 @@ body{padding-top:var(--franja,0px)}
 .ia-check input:checked+span::after{content:"✓";color:var(--on-primary);font-weight:800;font-size:14px}
 .ia-check input:disabled+span{opacity:.5}
 .ia-check input:focus-visible+span{outline:3px solid var(--primary);outline-offset:2px}
+
+/* 📱 aviso de la app nueva (web y TWA) */
+.aviso-app{position:relative;border:2px solid var(--primary-soft)}
+.aviso-app h3{padding-right:44px}
+.aviso-app-x{position:absolute;top:6px;right:6px}
+.ini-principal{flex-direction:column;gap:2px}
+.ini-principal small{display:block;font-size:13px;font-weight:600;opacity:.9;color:inherit}

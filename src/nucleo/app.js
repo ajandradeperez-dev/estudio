@@ -4,6 +4,7 @@
    (public/sw-recordatorio.js) lo revisa con Periodic Background Sync cuando el navegador lo permite (Chrome/Android con la
    app instalada). El navegador decide cuándo despierta al service worker: la hora es aproximada. */
 import {esc} from '../utilidades.js';
+import {buscarApk} from './actualizar-app.js';
 import {esNativa,programarAvisos} from './plataforma.js';
 import {APP_NOMBRE,APP_URL,APK_URL,REPO_URL,INVITACION} from '../config.js';
 import {areas,materias,rutaMateria} from './materias.js';
@@ -214,7 +215,7 @@ export const acerca={
   vista(){
     const u=usuario();
     return `<div class="nota-cab"><button type="button" class="btn-icono" data-go="perfil" aria-label="Volver a Perfil">←</button><span></span><span></span></div>
-<div class="acerca-cab"><img src="icons/icon-192.png" alt="" width="88" height="88"><div><h1 style="margin:0">${APP_NOMBRE}</h1><button type="button" class="enlace nota version-boton" id="acerca-version">Versión ${__VERSION__}</button><p class="nota" id="acerca-estado-version" style="margin:0" role="status">${versionNueva?'✨ Actualización disponible':navigator.onLine===false?'Sin conexión: no se puede revisar ahora':'✅ Al día'}</p></div></div>
+<div class="acerca-cab"><img src="icons/icon-192.png" alt="" width="88" height="88"><div><h1 style="margin:0">${APP_NOMBRE}</h1><button type="button" class="enlace nota version-boton" id="acerca-version">${esNativa()?'App Android · ':''}Versión ${__VERSION__}</button><p class="nota" id="acerca-estado-version" style="margin:0" role="status">${esNativa()?'Se actualiza instalando un APK nuevo: toca «Buscar actualización».':versionNueva?'✨ Actualización disponible':navigator.onLine===false?'Sin conexión: no se puede revisar ahora':'✅ Al día'}</p></div></div>
 <div class="card" id="acerca-diag" hidden><h2 style="margin-top:0">🩺 Diagnóstico del botón Atrás</h2><p class="nota">Los últimos 30 eventos de navegación de este teléfono. Cópialos y envíalos para revisar el botón Atrás. No incluye tu progreso ni tus notas.</p>
 <pre class="ej-codigo diag-texto" id="diag-texto"></pre><div class="row" style="gap:8px;flex-wrap:wrap">${boton({texto:'📋 Copiar',id:'diag-copiar'})}${boton({texto:'🔄 Actualizar',id:'diag-actualizar',clase:'ghost'})}${boton({texto:'🗑️ Borrar',id:'diag-borrar',clase:'ghost'})}</div></div>
 <p class="intro">Una app para estudiar ciberseguridad, inglés, matemáticas y ciencia de datos con lecciones cortas, repaso espaciado y metas diarias.</p>
@@ -246,6 +247,8 @@ ${!esIOS()?`<a class="btn ghost ancho" href="${APK_URL}" rel="noopener">🤖 Des
     if(t.id==='diag-actualizar'){document.getElementById('diag-texto').textContent=textoDiagnostico(__VERSION__);return true}
     if(t.id==='diag-borrar'){borrarDiagnostico();document.getElementById('diag-texto').textContent=textoDiagnostico(__VERSION__);return true}
     if(t.id==='acerca-actualizar'){location.reload();return true}
+    // app nativa: la última Release de GitHub (APK nuevo); en la web, el service worker
+    if(t.id==='acerca-buscar'&&esNativa()){t.disabled=true;await buscarApk({manual:true});t.disabled=false;return true}
     if(t.id==='acerca-buscar'){const e=document.getElementById('acerca-estado-version');if(e)e.textContent='Buscando…';const n=await buscarActualizacion();if(e)e.textContent=n?'✨ Actualización disponible':navigator.onLine===false?'Sin conexión: no se puede revisar ahora':'✅ Al día';if(n)t.outerHTML=boton({texto:'✨ Actualizar ahora',id:'acerca-actualizar',clase:'ancho'});return true}
     if(t.id==='acerca-invitar'){await invitar();return true}
     if(t.id==='acerca-instalar'){await instalar();return true}

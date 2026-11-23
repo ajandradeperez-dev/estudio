@@ -454,6 +454,52 @@ Todas las funciones con IA (conversación de Hablar, «Explícamelo de otra form
 - **📸 Foto a nota**: Sonnet devuelve `{titulo, tema_sugerido, tipo, contenido_markdown, pasos, conceptos_clave, tarjetas, dudas_o_partes_ilegibles, posibles_errores_en_la_foto}`; vista previa editable con la foto, archivada en el tema sugerido (materias propias primero, luego el catálogo); los errores de la foto quedan como `> ⚠️` sin cambiar el texto; «🃏 Crear tarjetas» las agrega al repaso. **🧠 Resuélvelo conmigo**: el primer turno lleva la foto (Sonnet) y los siguientes solo texto (Haiku); preguntas, pistas graduales, el paso completo al segundo error en el mismo paso, solución en formato de procedimiento y 3 ejercicios parecidos (del generador de la app si empareja; si no, con IA y validados).
 - **Sin clave**: todo lo demás funciona; los botones ✨ explican cómo obtenerla. OCR local con Tesseract.js 7 (dependencia exacta, se importa al usarlo; el motor y el idioma se bajan de jsDelivr la primera vez y el service worker los guarda en la caché `ocr`): funciona mal con fórmulas.
 
+## 📱 App Android nativa (Capacitor, PROMPT-APP-NATIVA)
+
+Desde la 2.0.0 el APK es una **app nativa**: la web entera va **dentro del APK** (Capacitor 8, WebView propio), abre sin
+internet desde la primera vez y no depende de Chrome ni de la página. La web de GitHub Pages sigue para la laptop y quien no
+tenga Android. Mismo paquete `io.github.ajandradeperez.estudio` y la **misma llave** de la TWA: se instala encima (versionCode
+200 > 3). El proyecto Android vive en `android-app/` (se versiona salvo `build/` y lo generado); `android/` es la TWA vieja
+(respaldo).
+
+- **Compilar**: `npm run build:app` (web en `dist-app/` con base `/`, sin service worker, `__NATIVA__`, + `cap sync`) y
+  `npm run apk` (además Gradle `assembleRelease` → `EstudioPlus.apk` firmado; `-- --aab` también `EstudioPlus.aab`;
+  `-- --debug` sin firmar → `EstudioPlus-debug.apk`; `-- --sin-python` sin Pyodide). Script: `scripts/app/apk.mjs`.
+  Herramientas: el JDK 21 de Android Studio (`C:/Program Files/Android/Android Studio/jbr`) y el SDK en
+  `%LOCALAPPDATA%/Android/Sdk` (los busca solo). Firma: contraseñas en `ESTUDIO_KEYSTORE_PASSWORD`/`ESTUDIO_KEY_PASSWORD`
+  (o las `BUBBLEWRAP_…`); si no, se leen **en memoria** de `~/.ciberlab-firma/contraseñas.txt` y van a Gradle como
+  `ORG_GRADLE_PROJECT_estudio…` (nunca a un archivo). Versión en `android-app/variables.gradle` (`appVersionCode`,
+  `appVersionName`): súbelas en cada APK.
+- **Íconos y splash**: `node scripts/app/iconos.mjs` (ícono adaptable con degradado, primer plano en la zona segura y
+  monocromo; splash). Barras del sistema con el tema (`values/barras.xml` y `values-night/`); de borde a borde con
+  `env(safe-area-inset-*)` (la barra superior lo usa).
+- **`src/nucleo/plataforma.js`** (`esNativa()`): Atrás de Android (`@capacitor/app`: vuelve con el historial de la app
+  —`history.state.i`— y sin nada atrás sale), enlaces `io.github.ajandradeperez.estudio://auth` (vuelta del correo de
+  Supabase → evento `enlace-app` → sesión y ☁️ Cuenta; **agregar esa URL en Supabase → Authentication → URL
+  Configuration → Redirect URLs**), descargas `<a download>` y `navigator.share` → `@capacitor/filesystem` +
+  `@capacitor/share`, `imprimir()` (plugin propio `ImprimirPlugin.java` con el PrintManager de Android; también «Guardar
+  como PDF»), vibración (`@capacitor/haptics`), recordatorios (`@capacitor/local-notifications`, no exactos, también con
+  la app cerrada; se reprograman al cumplir la meta). Voz (`voz.js`): `@capacitor-community/speech-recognition` (parciales,
+  en-US/en-GB, permiso del micrófono) y `text-to-speech`. Python: Pyodide copiado al APK (`dist-app/pyodide/`).
+  Cámara y archivos: el `<input type=file>` de siempre (el WebView de Capacitor lo maneja).
+- **Pasar los datos** (`app-nueva.js`): la app nativa guarda aparte de Chrome. La primera vez, sin datos: ☁️ Entrar con mi
+  cuenta (recomendado), 📥 Importar respaldo `.estudio` o Empezar de cero. En la web y la TWA, la portada avisa «Pronto
+  llega la app nueva» (cuenta o respaldo; se oculta con ✕).
+- **Actualizaciones** (`actualizar-app.js`): al abrir (máximo 1 vez al día) y en Acerca de → «Buscar actualización», la
+  última Release de GitHub; si es mayor que `App.getInfo().version`, «Versión X disponible» → «Descargar e instalar»
+  (abre `EstudioPlus.apk` en el navegador; la primera vez explica «Instalar apps desconocidas»).
+- **Publicar una versión**: sube `appVersionCode`/`appVersionName`, `npm run apk -- --aab`, comprueba la firma
+  (`apksigner verify --print-certs`, huella de `huella-sha256.txt`) y
+  `gh release create v<versión> EstudioPlus.apk EstudioPlus.aab --latest` (mismo nombre de archivo: el enlace de Perfil
+  sigue sirviendo).
+- **Pruebas en el emulador**: `node scripts/app/emulador.mjs` (con un emulador encendido; AVD `estudio35`, Android 35
+  con Google Play): bienvenida, Atrás, deep link, TTS y reconocimiento, compartir, imprimir, recordatorios y Python sin
+  internet, por CDP directo al WebView (Playwright no se conecta a un WebView). En el teléfono por USB: activa
+  Opciones de desarrollador → Depuración USB y `adb install -r EstudioPlus.apk`.
+- **Google Play (pendiente)**: el AAB ya se genera; falta la cuenta de desarrollador, la ficha (descripción, capturas de
+  `npm run tablet -- --play`, ícono 512 px, gráfico de 1024×500), la política de privacidad (URL), la clasificación de
+  contenido y la sección de seguridad de los datos (permisos: micrófono, cámara, notificaciones).
+
 ## APK para Android (Trusted Web Activity)
 
 El APK es una **Trusted Web Activity** hecha con Bubblewrap: abre `https://ajandradeperez-dev.github.io/estudio/` a pantalla completa, sin barra del navegador. Como carga la web, **cada push a `main` llega solo a quienes tienen el APK**; solo hay que regenerarlo si cambian el nombre, el ícono, los colores, el paquete o los atajos.

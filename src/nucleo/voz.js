@@ -15,8 +15,9 @@ import {esc} from '../utilidades.js';
 import {evaluar} from './pronunciacion.js';
 import {esNativa} from './plataforma.js';
 const nativa=esNativa();
-const TTS=()=>import('@capacitor-community/text-to-speech').then(m=>m.TextToSpeech);
-const SR=()=>import('@capacitor-community/speech-recognition').then(m=>m.SpeechRecognition);
+// (se devuelve el módulo, no el plugin: un plugin de Capacitor no puede ser el valor de una promesa, se le buscaría .then)
+const TTS=()=>import('@capacitor-community/text-to-speech');
+const SR=()=>import('@capacitor-community/speech-recognition');
 
 const Reconocedor=typeof window!=='undefined'?(window.SpeechRecognition||window.webkitSpeechRecognition):undefined;
 export const soporte={
@@ -52,7 +53,7 @@ export function vocesDialogo(){
 export function hablar(texto,{lento=false,idioma='en-US',voz=null}={}){
   if(!soporte.hablar||!texto)return Promise.resolve();
   // app nativa: el motor de voz de Android (la segunda persona de un diálogo, con otro tono)
-  if(nativa)return TTS().then(t=>t.speak({text:texto,lang:idioma.startsWith('es')?'es-MX':idioma,rate:lento?0.75:1,pitch:voz==='b'?0.75:voz==='a'?1.1:1,queueStrategy:0})).catch(()=>{});
+  if(nativa)return TTS().then(({TextToSpeech:t})=>t.speak({text:texto,lang:idioma.startsWith('es')?'es-MX':idioma,rate:lento?0.75:1,pitch:voz==='b'?0.75:voz==='a'?1.1:1,queueStrategy:0})).catch(()=>{});
   return new Promise(res=>{
     try{
       speechSynthesis.cancel();
@@ -75,7 +76,7 @@ export async function hablarDialogo(lineas,{lento=false}={}){
   const mio=++turnoDialogo;
   for(const [quien,texto] of lineas){if(mio!==turnoDialogo)return;await hablar(texto,{lento,voz:quien==='B'?'b':quien==='A'?'a':null})}
 }
-export function callar(){turnoDialogo++;if(nativa){TTS().then(t=>t.stop()).catch(()=>{});return}try{speechSynthesis.cancel()}catch(e){}}
+export function callar(){turnoDialogo++;if(nativa){TTS().then(({TextToSpeech:t})=>t.stop()).catch(()=>{});return}try{speechSynthesis.cancel()}catch(e){}}
 
 /* ---------- escuchar ---------- */
 const MENSAJES={
@@ -137,7 +138,7 @@ export function detenerEscucha(){if(activo){try{activo.stop()}catch(e){}}}
 /* App nativa: el reconocedor de Android con resultados parciales. Se corta solo tras una pausa; en un turno largo
    (continuo) se vuelve a abrir y se juntan las frases hasta el silencio pedido, el tiempo máximo o tocar otra vez. */
 async function escucharNativo({idioma,alternativas,alParcial,maxSegundos,silencio,continuo,alEstado}){
-  const r=await SR();
+  const {SpeechRecognition:r}=await SR();
   try{if(!(await r.available()).available)throw new ErrorVoz('sin-soporte')}catch(e){throw e instanceof ErrorVoz?e:new ErrorVoz('sin-soporte')}
   let p=await r.checkPermissions().catch(()=>({}));
   if(p.speechRecognition!=='granted')p=await r.requestPermissions().catch(()=>({}));

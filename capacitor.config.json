@@ -5,8 +5,7 @@
   "android": {
     "path": "android-app",
     "allowMixedContent": false,
-    "captureInput": true,
-    "webContentsDebuggingEnabled": false
+    "captureInput": true
   },
   "server": {
     "androidScheme": "https",

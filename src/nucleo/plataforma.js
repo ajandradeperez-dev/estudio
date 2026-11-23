@@ -7,7 +7,8 @@
      navigator.share → archivo en la caché de la app + menú «Compartir» de Android (guardar en Archivos, Drive, WhatsApp…).
    - imprimir(): window.print() en el navegador; en la app, el PrintManager de Android (plugin propio «Imprimir»,
      android-app/…/ImprimirPlugin.java), que también guarda en PDF.
-   - vibrarNativo(), recordatorios con @capacitor/local-notifications (programarAvisos). */
+   - vibrarNativo(), recordatorios con @capacitor/local-notifications (programarAvisos; no exactos: así Android no pide el
+     permiso de «Alarmas y recordatorios», y el aviso puede llegar unos minutos después). */
 export const esNativa=()=>{try{return !!(typeof __NATIVA__!=='undefined'&&__NATIVA__)||!!globalThis.Capacitor?.isNativePlatform?.()}catch(e){return false}};
 export const ESQUEMA_APP='io.github.ajandradeperez.estudio';
 // Plugin nativo registrado por Capacitor (o null en el navegador)
@@ -37,7 +38,8 @@ export async function instalarNativo({aviso=()=>{}}={}){
   document.documentElement.dataset.nativa='1';
   const {App}=await import('@capacitor/app');
   // Atrás de Android: el historial de la app ES la pila de pantallas (main.js); sin nada atrás, se sale de la app
-  App.addListener('backButton',({canGoBack})=>{if(canGoBack)history.back();else App.exitApp()});
+  // (history.state.i es la posición que guarda main.js: más fiable que canGoBack del WebView con pushState)
+  App.addListener('backButton',({canGoBack})=>{if((history.state?.i||0)>0||canGoBack)history.back();else App.exitApp()});
   // Enlaces que abren la app (los del correo de Supabase: confirmar la cuenta, contraseña olvidada, código)
   const enlace=url=>{if(url)dispatchEvent(new CustomEvent('enlace-app',{detail:String(url)}))};
   App.addListener('appUrlOpen',e=>enlace(e.url));
@@ -81,10 +83,10 @@ export async function programarAvisos({diario,examenes=[]}){
     const [h,m]=String(diario.hora||'19:00').split(':').map(Number),cuando=new Date();cuando.setHours(h,m||0,0,0);
     // si hoy ya pasó la hora o la meta ya está cumplida, el primero es mañana; luego se repite cada día
     if(cuando<=new Date()||diario.cumplidaHoy)cuando.setDate(cuando.getDate()+1);
-    lista.push({id:ID_DIARIO,title:diario.titulo,body:diario.cuerpo,schedule:{at:cuando,repeats:true,every:'day',allowWhileIdle:true},extra:{ruta:''}});
+    lista.push({id:ID_DIARIO,title:diario.titulo,body:diario.cuerpo,schedule:{at:cuando,repeats:true,every:'day',allowWhileIdle:true},isExactNotification:false,extra:{ruta:''}});
   }
   examenes.forEach((x,i)=>{for(const [d,t,c] of [[7,'📅 En una semana: ','Revisa tu plan: esta semana toca repaso y simulacros.'],[1,'📅 Mañana: ','Haz un simulacro corto y repasa tus temas débiles. ¡Tú puedes!']]){
-    const at=new Date(x.fecha+'T09:00');at.setDate(at.getDate()-d);if(at>new Date())lista.push({id:100+i*2+(d===1?1:0),title:t+x.nombre,body:c,schedule:{at,allowWhileIdle:true},extra:{ruta:x.ruta}})}});
+    const at=new Date(x.fecha+'T09:00');at.setDate(at.getDate()-d);if(at>new Date())lista.push({id:100+i*2+(d===1?1:0),title:t+x.nombre,body:c,schedule:{at,allowWhileIdle:true},isExactNotification:false,extra:{ruta:x.ruta}})}});
   if(!lista.length)return true;
   let perm=await LocalNotifications.checkPermissions().catch(()=>({display:'denied'}));
   if(perm.display!=='granted')perm=await LocalNotifications.requestPermissions().catch(()=>({display:'denied'}));

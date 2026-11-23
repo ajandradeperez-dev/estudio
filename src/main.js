@@ -1,5 +1,7 @@
 import './estilos/tokens.css';
 import './estilos/base.css';
+import {buscarApk} from './nucleo/actualizar-app.js';
+import {tocaInicioApp,vistaInicioApp} from './nucleo/app-nueva.js';
 import './estilos/componentes.css';
 import './estilos/secciones.css';
 import './estilos/tablet.css';
@@ -43,6 +45,8 @@ const ESPECIALES={repaso,logros,perfil,acerca,'ajustes-ia':ajustesIA,cuenta:vist
 function resolver(ruta){
   const x=analizar(ruta),{m}=x;
   // La primera vez (sin progreso) la portada es la bienvenida: nombre, qué estudiar y meta diaria
+  // app nativa, la primera vez y sin datos: traer el progreso de la app anterior (cuenta o respaldo) antes de la bienvenida
+  if(x.tipo==='portada'&&tocaBienvenida()&&tocaInicioApp())return {...x,tipo:'especial',ruta:'bienvenida',v:vistaInicioApp()};
   if(x.tipo==='portada')return tocaBienvenida()?{...x,tipo:'especial',ruta:'bienvenida',v:vistaBienvenida()}:{...x,v:portada};
   if(x.diag)return {...x,v:vistaDiagPasos(x.diag)};
   if(x.tipo==='especial')return {...x,v:ESPECIALES[x.ruta]};
@@ -308,4 +312,6 @@ if(esNativa()){
   addEventListener('enlace-app',e=>{if(recibirSesionCuenta(e.detail))entrarCuenta()});
   alTocarAviso(ruta=>go(ruta||''));
   addEventListener('app-vuelve',()=>revisarRecordatorio());
+  // ¿hay un APK nuevo? (una vez al día, sin estorbar el arranque)
+  setTimeout(()=>buscarApk().catch(()=>{}),4000);
 }

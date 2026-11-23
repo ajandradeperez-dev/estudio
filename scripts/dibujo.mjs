@@ -10,6 +10,8 @@
    - dibujos viejos: el formato de PROMPT-NOTAS (trazos) se migra y el de antes (solo PNG) queda como imagen para escribir encima;
    - sincronización con el Supabase simulado: el dibujo (vectores) llega igual al otro teléfono;
    - rendimiento: 2000 trazos y el zoom sigue fluido (tiempo por cuadro);
+   - ✌️ Dos dedos: apagada no dibuja; regla (1 línea), compás (radio y arco), medir (m = 2 de (1, 2) a (3, 6)), marco,
+     barrido (espaciado, un paso para deshacer), ratón y el ejemplo de la parábola; el ✏️ Borrador viejo no une los dedos;
    - tablet (barra a un lado) y laptop (barra arriba, Ctrl + rueda, espacio + arrastrar, «0»).
    Capturas en claro y oscuro en capturas/dibujo/. Compila, levanta `vite preview` en el puerto 4799 y lo apaga al terminar. */
 import {existsSync,mkdirSync} from 'node:fs';
@@ -252,6 +254,97 @@ try{
   check(s.n===nS+1&&(s.vista.x!==vS.x||s.vista.y!==vS.y),'S Pen: el lápiz dibuja y, después, un dedo mueve el lienzo');
   await p.click('[data-d="listo"]');await p.waitForTimeout(1500);
   check(!err.length,'sin errores de JavaScript'+(err.length?': '+err.slice(0,2).join(' | '):''));
+  await ctx.close();
+}
+
+/* ================= ✌️ Dos dedos (PROMPT-DOS-DEDOS) ================= */
+{
+  console.log('--- ✌️ Dos dedos: regla, compás, medir, marco, barrido y los lienzos viejos');
+  const M=await import(pathToFileURL(join(raiz,'src','nucleo','dibujo','modelo.js')).href);
+  const ctx=await nuevoContexto({viewport:{width:360,height:800},deviceScaleFactor:2.625,isMobile:true,hasTouch:true});
+  const p=await ctx.newPage(),err=[];p.on('pageerror',e=>err.push(e.message));
+  await abrirNuevo(p);
+  // apagada: dos dedos hacen zoom y no dibujan
+  let s=await D(p);const z0=s.vista.z;
+  await gesto(p,dosDedos([140,300],[220,300],[100,300],[260,300],{n:12}));s=await D(p);
+  check(s.n===0&&s.vista.z>z0*1.5,'herramienta apagada: dos dedos hacen zoom y no dibujan');
+  await p.evaluate(()=>document.querySelector('.dib').__dib.irA({z:1,x:0,y:0}));
+  // elegirla: 📐 Formas → «✌️ Dos dedos»
+  await p.click('[data-herr="formas"]');await p.click('[data-herr="formas"]');await p.waitForTimeout(200);
+  await p.click('[data-d="dos"]');await p.waitForTimeout(250);
+  s=await D(p);check(s.herr==='dosdedos'&&await p.locator('.dib-opc [data-dos-modo]').count()===5&&await p.locator('.dib-zoombtns:not([hidden])').count()===1,'✌️ en 📐 Formas: 5 modos y los botones + y − del zoom');
+  await diseno(p,'✌️ Dos dedos (360)');
+  await p.screenshot({path:join(CAP,'dos-dedos-panel.png')});
+  const modo=async m=>{if(!await p.locator('.dib-opc:not([hidden])').count()){await p.click('[data-herr="formas"]');await p.waitForTimeout(150)}await p.click(`.dib-opc [data-dos-modo="${m}"]`);await p.click('[data-d="opc-cerrar"]');await p.waitForTimeout(100)};
+  const nuevos=async n0=>(await D(p,'d.objs')).slice(n0);
+  // 📏 regla: un abanico de movimientos deja UNA línea, entre donde quedaron los dedos
+  await modo('regla');let n0=(await D(p)).n;
+  await gesto(p,dosDedos([100,200],[260,260],[80,220],[290,320],{n:14}));
+  let o=await nuevos(n0);
+  check(o.length===1&&o[0].pts.length===2,`📏 regla: queda 1 sola línea recta (${o.length} objetos)`);
+  // ajustada a la cuadrícula si el fondo la tiene: aquí liso, así que los extremos son los dedos
+  check(o.length===1&&Math.abs(o[0].pts[0][0]-80)<1&&Math.abs(o[0].pts[1][1]-320)<1,'📏 la línea va de dedo a dedo');
+  // 🧭 compás: centro y radio
+  await modo('compas');n0=(await D(p)).n;
+  await gesto(p,[['pointerdown',1,180,450],['pointerdown',2,260,450],['pointermove',2,261,451],['pointermove',2,260,450],['pointerup',2,260,450],['pointerup',1,180,450]]);
+  o=await nuevos(n0);const radio=o[0]?Math.hypot(o[0].pts[0][0]-180,o[0].pts[0][1]-450):0;
+  check(o.length===1&&o[0].forma==='circulo'&&Math.abs(radio-80)<1.5,`🧭 compás: 1 círculo con el radio de los dedos (r = ${radio.toFixed(1)}, esperado 80)`);
+  // girando el segundo dedo un cuarto de vuelta: solo el arco
+  n0=(await D(p)).n;
+  await gesto(p,[['pointerdown',1,180,450],['pointerdown',2,260,450],...Array.from({length:12},(_,i)=>{const a=-(i+1)/12*Math.PI/2;return ['pointermove',2,180+80*Math.cos(a),450+80*Math.sin(a)]}),['pointerup',2,180,370],['pointerup',1,180,450]]);
+  o=await nuevos(n0);check(o.length===1&&o[0].forma==='arco',`🧭 girar el segundo dedo deja solo el arco (${o[0]?.forma})`);
+  // 📐 medir sobre el plano cartesiano: de (1, 2) a (3, 6), m = 2
+  await modo('medir');await p.click('[data-herr="formas"]');await p.waitForTimeout(150);
+  if(await p.locator('.dib-opc [data-d="dos-plano"]').count())await p.click('.dib-opc [data-d="dos-plano"]');
+  await p.click('[data-d="opc-cerrar"]');
+  const st=await D(p,'d.estado()'),[ox,oy]=M.origenCartesiano(st);
+  await p.evaluate(([ox,oy])=>document.querySelector('.dib').__dib.irA({z:1,x:ox-60,y:oy-500}),[ox,oy]);
+  const v=await D(p,'d.vista'),pant=q=>{const w=M.dePlano(q,st);return [(w[0]-v.x)*v.z,(w[1]-v.y)*v.z]};
+  const A=pant([1,2]),B=pant([3,6]);n0=(await D(p)).n;
+  await gesto(p,[['pointerdown',1,A[0]+3,A[1]-2],['pointerdown',2,B[0]-2,B[1]+3],['pointermove',1,A[0]+2,A[1]-1],['pointermove',2,B[0]-1,B[1]+2],['pointerup',1,A[0]+2,A[1]-1],['pointerup',2,B[0]-1,B[1]+2]]);
+  const med=await D(p,'d.dos().medicion');
+  check(med?.m===2&&med.dist===4.47&&med.medio?.join()==='2,4'&&(await nuevos(n0)).length===0,`📐 medir de (1, 2) a (3, 6): m = ${med?.m}, d = ${med?.dist}, punto medio (${med?.medio}) (se ajusta a la cuadrícula)`);
+  await p.screenshot({path:join(CAP,'dos-dedos-medir.png')});
+  check(await p.locator('.dib-dejar:not([hidden])').count()===1,'📐 aparece «📌 Dejar en la hoja»');
+  await p.click('.dib-dejar');o=await nuevos(n0);
+  check(o.length>=8&&new Set(o.map(x=>x.g)).size===1&&o.some(x=>x.t==='texto'&&x.texto==='m = Δy / Δx = 2'),'📌 la medida queda en la hoja con sus etiquetas (un solo grupo)');
+  // ▭ marco y resaltado
+  await modo('marco');n0=(await D(p)).n;await gesto(p,dosDedos([60,150],[200,230],[60,150],[220,250],{n:4}));
+  o=await nuevos(n0);check(o.length===1&&o[0].forma==='rectangulo','▭ marco: un rectángulo entre las esquinas');
+  // 🌀 barrido: una línea cada 14 px (el espaciado), todo en un grupo que se deshace de una vez
+  await modo('barrido');n0=(await D(p)).n;const h0=(await D(p,'d.hist'));
+  await gesto(p,[['pointerdown',1,60,520],['pointerdown',2,60,700],...Array.from({length:70},(_,i)=>[['pointermove',1,62+i*2,520],['pointermove',2,62+i*2,700]]).flat(),['pointerup',1,200,520],['pointerup',2,200,700]]);
+  o=await nuevos(n0);const esperado=1+Math.floor(140/14);
+  check(Math.abs(o.length-esperado)<=1&&new Set(o.map(x=>x.g)).size===1,`🌀 barrido: respeta el espaciado (${o.length} líneas en 140 px cada 14 px; esperado ~${esperado}) y es un solo grupo`);
+  check((await D(p,'d.hist'))===h0+1,'🌀 el barrido es un solo paso del historial');
+  await p.screenshot({path:join(CAP,'dos-dedos-barrido.png')});
+  await p.click('[data-d="deshacer"]');check((await D(p)).n===n0,'🌀 se deshace en un paso');
+  // ratón: presionar = punto A, arrastrar = punto B
+  await modo('regla');n0=(await D(p)).n;await gesto(p,linea(7,40,600,300,640,{n:8,tipo:'mouse'}));
+  o=await nuevos(n0);check(o.length===1&&o[0].pts.length===2,'ratón: clic y arrastrar hace la regla');
+  // 📈 ejemplo: parábola con rectas
+  await p.click('[data-herr="formas"]');await modo('barrido');await p.click('[data-herr="formas"]');await p.waitForTimeout(150);
+  n0=(await D(p)).n;await p.click('.dib-opc [data-d="dos-parabola"]');o=await nuevos(n0);
+  check(o.filter(x=>x.t==='texto').length>=20&&new Set(o.map(x=>x.g)).size===1,'📈 «Ejemplo: parábola con rectas»: dos ejes con puntos numerados');
+  // volver a la pluma: dos dedos vuelven a ser zoom
+  await p.click('[data-herr="pluma"]');n0=(await D(p)).n;await gesto(p,dosDedos([140,300],[220,300],[120,300],[240,300],{n:8}));
+  check((await D(p)).n===n0,'otra herramienta: dos dedos ya no dibujan');
+  check(!err.length,'sin errores de JavaScript'+(err.length?': '+err.slice(0,2).join(' | '):''));
+  await p.close();
+  // ✏️ Borrador de los ejercicios (lienzo viejo): dos dedos desplazan y NO dibujan líneas entre ellos; tocar con 2 deshace
+  const q=await ctx.newPage();
+  await q.goto(BASE+'#estudio/matematicas/algebra-lineal/l/gauss');await q.waitForSelector('#vista > *');await q.waitForTimeout(500);
+  if(await q.locator('#mini-saltar').count())await q.click('#mini-saltar');
+  for(let k=0;k<4&&await q.locator('#ses-continuar').count();k++){await q.click('#ses-continuar');await q.waitForTimeout(200)}
+  await q.click('#ses-borrador');await q.waitForTimeout(300);
+  const ev=pasos=>q.evaluate(pasos=>{const cv=document.querySelector('.borrador-lienzo'),r=cv.getBoundingClientRect();
+    for(const [t,id,x,y] of pasos)cv.dispatchEvent(new PointerEvent(t,{bubbles:true,cancelable:true,pointerId:id,pointerType:'touch',isPrimary:id===1,pressure:t==='pointerup'?0:.5,buttons:t==='pointerup'?0:1,button:t==='pointermove'?-1:0,clientX:r.left+x,clientY:r.top+y}))},pasos);
+  const tintaB=()=>q.evaluate(()=>{const cv=document.querySelector('.borrador-lienzo'),d=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data;let n=0;for(let i=0;i<d.length;i+=16)if(Math.abs(d[i]-d[0])+Math.abs(d[i+1]-d[1])+Math.abs(d[i+2]-d[2])>60)n++;return n});
+  await ev([['pointerdown',1,40,40],['pointerdown',2,200,120],...Array.from({length:12},(_,i)=>[['pointermove',1,40+i*6,40+i*4],['pointermove',2,200-i*5,120+i*3]]).flat(),['pointerup',1,112,88],['pointerup',2,140,156]]);
+  await q.waitForTimeout(100);check(await tintaB()===0,'✏️ Borrador de los ejercicios: dos dedos no dibujan líneas entre ellos');
+  await ev([['pointerdown',1,40,60],...Array.from({length:10},(_,i)=>['pointermove',1,40+i*12,60+i*3]),['pointerup',1,160,90]]);await q.waitForTimeout(100);
+  const t1=await tintaB();await ev([['pointerdown',1,60,80],['pointerdown',2,120,80],['pointerup',1,60,80],['pointerup',2,120,80]]);await q.waitForTimeout(100);
+  check(t1>0&&await tintaB()===0,'✏️ Borrador: un dedo dibuja y tocar con dos deshace');
   await ctx.close();
 }
 

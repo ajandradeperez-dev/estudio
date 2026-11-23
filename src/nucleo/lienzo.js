@@ -11,7 +11,7 @@
      botón lateral (buttons 2 o 32) o el extremo borrador (button 5) borran mientras se mantienen.
    - Rechazo de la palma: en cuanto el lienzo ve un lápiz, los toques de dedo ya no dibujan y sirven para desplazar o hacer
      zoom (touch-action vuelve a dejar pasar el gesto). Sin lápiz, un dedo dibuja y DOS dedos desplazan la página (el
-     trazo que había empezado el primer dedo se descarta).
+     trazo que había empezado el primer dedo se descarta: dos dedos NUNCA dibujan); tocar con dos dedos deshace.
    - Dentro del lienzo no hay selección de texto ni menú contextual (touch-action:none solo en el lienzo).
    crearLienzo(canvas, {fondo, tinta, trazos, alCambiar}) → {herramienta, color, grosor, deshacer, rehacer, limpiar, usado,
    trazos, aBlob, destruir} */
@@ -91,7 +91,7 @@ export function crearLienzo(cv,{fondo=()=>'#ffffff',tinta=()=>'#1f2430',trazos=[
       dedos.set(e.pointerId,[e.clientX,e.clientY]);
       if(dedos.size>=2){   // dos dedos: se descarta el trazo del primero y se desplaza
         if(actual){const i=trazos.indexOf(actual.t);if(i>=0)trazos.splice(i,1);actual=null;prediccion=null;componer()}
-        pan={c:centroDedos(),el:desplazable()};return;
+        pan={c:centroDedos(),el:desplazable(),t0:performance.now(),mov:0};return;
       }
     }
     if(pan)return;
@@ -103,7 +103,7 @@ export function crearLienzo(cv,{fondo=()=>'#ffffff',tinta=()=>'#1f2430',trazos=[
     if(e.pointerType==='pen')verLapiz(e);
     if(e.pointerType==='touch'&&dedos.has(e.pointerId)){
       dedos.set(e.pointerId,[e.clientX,e.clientY]);
-      if(pan&&dedos.size>=2){e.preventDefault();const c=centroDedos();pan.el.scrollBy(pan.c[0]-c[0],pan.c[1]-c[1]);pan.c=c;return}
+      if(pan&&dedos.size>=2){e.preventDefault();const c=centroDedos();pan.mov+=Math.hypot(pan.c[0]-c[0],pan.c[1]-c[1]);pan.el.scrollBy(pan.c[0]-c[0],pan.c[1]-c[1]);pan.c=c;return}
     }
     if(!actual||e.pointerId!==actual.id)return;
     e.preventDefault();
@@ -113,12 +113,13 @@ export function crearLienzo(cv,{fondo=()=>'#ffffff',tinta=()=>'#1f2430',trazos=[
     pedirCuadro();
   }
   function arriba(e){
-    if(e.pointerType==='touch'){dedos.delete(e.pointerId);if(pan){if(!dedos.size)pan=null;return}}
+    if(e.pointerType==='touch'){dedos.delete(e.pointerId);if(pan){if(!dedos.size){const toque=performance.now()-pan.t0<320&&pan.mov<12;pan=null;if(toque)deshacer()}return}}
     if(!actual||e.pointerId!==actual.id)return;
     const t=actual.t;actual=null;prediccion=null;
     if(cuadro){cancelAnimationFrame(cuadro);cuadro=0}
     preparar(hctx,esc);pintar(hctx,t);componer();alCambiar(trazos);
   }
+  function deshacer(){if(trazos.length){rehacer.push(trazos.pop());redibujar();alCambiar(trazos)}}
   const sinMenu=e=>e.preventDefault();
   cv.addEventListener('pointerdown',abajo);cv.addEventListener('pointermove',mover);
   cv.addEventListener('pointerup',arriba);cv.addEventListener('pointercancel',arriba);cv.addEventListener('pointerover',verLapiz);
@@ -127,7 +128,7 @@ export function crearLienzo(cv,{fondo=()=>'#ffffff',tinta=()=>'#1f2430',trazos=[
   const mq=matchMedia('(prefers-color-scheme: dark)'),alTema=()=>redibujar();mq.addEventListener?.('change',alTema);
   return {
     herramienta(h){estado.herr=h},color(c){estado.color=c;estado.herr='lapiz'},grosor(g){estado.grosor=g},
-    deshacer(){if(trazos.length){rehacer.push(trazos.pop());redibujar();alCambiar(trazos)}},
+    deshacer,
     rehacer(){if(rehacer.length){trazos.push(rehacer.pop());redibujar();alCambiar(trazos)}},
     limpiar(){if(!trazos.length)return;rehacer.length=0;trazos.splice(0);redibujar();alCambiar(trazos)},
     get usado(){return trazos.length>0},get puedeDeshacer(){return trazos.length>0},get puedeRehacer(){return rehacer.length>0},

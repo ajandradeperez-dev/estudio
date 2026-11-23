@@ -405,6 +405,17 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 11`; los formatos 
   tocan para ver), exportar PNG / PDF y compartir. Hoja que crece o páginas carta. Preferencias del dispositivo en
   `ciberlab-dibujo`. **Rendimiento**: 3 canvas, solo lo visible, Path2D por objeto y, durante un gesto con muchos
   trazos, la imagen ya pintada se mueve y al soltar se vuelve a pintar nítida (2000 trazos a más de 60 fps).
+  **✌️ Dos dedos** (PROMPT-DOS-DEDOS; en 📐 Formas → «✌️ Dos dedos», o la tecla D): la única herramienta en la que dos
+  dedos dibujan (se elige a propósito; mientras está activa el zoom va con los botones + y −, y el botón 📐 muestra ✌️).
+  Modos (`P.dos.modo`): 📏 regla (una línea entre los dedos, con largo y ángulo; ajuste a la cuadrícula opcional), 🧭
+  compás (primer dedo centro, segundo radio; girarlo deja un arco con su ángulo en grados y radianes), 📐 medir (Δx, Δy,
+  pendiente, distancia, punto medio y ecuación en el plano cartesiano, 1 unidad = 1 cm; «📌 Dejar en la hoja»), ▭ marco o
+  resaltado (esquinas opuestas) y 🌀 barrido (una línea entre los dedos cada «espaciado» px, degradado y espejo opcionales,
+  «📈 Ejemplo: parábola con rectas» y «¿Para qué sirve?»). Con ratón o lápiz solo: presionar = A, arrastrar = B; lápiz +
+  dedo también. Todo sale como trazos y textos normales con un grupo `g` (un paso de deshacer; el lazo lo toma entero).
+  Lo puro (`medirDos`, `objetosMedida`, `arcoCompas`, `marcoDos`, `objetosBarrido`, `parabolaConRectas`) está en
+  `modelo.js`. El «abanico» que la originó venía del dibujo viejo del cuaderno (antes de la versión tablet: un solo trazo
+  para todos los dedos); el ✏️ Borrador (`lienzo.js`) descarta el trazo al llegar el segundo dedo y tocar con dos deshace.
   Desde un ejercicio, el ✏️ Borrador tiene «✏️ Resolver en el Cuaderno» (`resolverEnCuaderno`: el enunciado como imagen
   fija arriba; se guarda en la nota del tema).
 - **Borrar notas**: «⋯ → 🗑️ Borrar la nota» en la cabecera de cada nota, «⋯ → 🗑️ Borrar» en cada nota de la lista y «☑️ Seleccionar» (contador «N seleccionadas» y Borrar) para varias. Siempre con el diálogo propio `confirmar()` (Atrás o Cancelar no borran) y luego «🗑️ Nota borrada · Deshacer» durante 8 s (`avisoAccion` en `ui.js`). `borrarNotas(lista)` (`cuaderno/notas.js`) borra de IndexedDB sus fotos y dibujos salvo los que use otra nota, sus tarjetas y repasos, el resumen del que salió y convierte en texto los enlaces `[…](#notas/n/<id>)` desde otras notas; devuelve una copia completa que `restaurarNotas` vuelve a poner tal cual (mismas fechas). `npm run cuaderno` lo prueba.
@@ -746,6 +757,7 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | PROMPT-SIMULACROS-INGLES · motor de voz, 7 simulacros (escucha y habla con IA), conversación libre y prueba de nivel adaptativa | ✅ terminado |
 | PROMPT-NOTAS · Cuaderno para teclado y dedo: dibujo sin desfase (2b), lista nueva, editor por bloques en un solo modo, fórmulas en vivo, foto y dibujo como bloques, lectura, repasar y atajos | ✅ terminado |
 | PROMPT-DIBUJO · Dibujo del cuaderno como app de notas a mano: lienzo con zoom, bloqueo y desbloqueo temporal, herramientas, formas, fondos, plantillas, capas, modo práctica, PNG/PDF, migración | ✅ terminado |
+| Límites legibles (2.0.1) y PROMPT-DOS-DEDOS · ✌️ regla, compás, medir, marco y barrido (2.0.2) | ✅ terminado |
 | P3b · Inglés: metas extra por nivel (lecturas, escuchas, diálogos, vocabulario con audio, escritura con rúbrica e IA) | ✅ terminado: A1, A2, B1 y B2 con 6 lecturas, 6 escuchas, 8 diálogos, 400 palabras con ejemplo y audio y 3 escritos con rúbrica cada uno (24 lecturas, 24 escuchas, 32 diálogos, 1600 palabras, 12 escritos). |
 | 4 · Inglés: completar A1 y A2, luego B1 | reemplazado por P3 y P6 |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | reemplazado por P3 y P6 |
@@ -774,7 +786,7 @@ npm run dev       # servidor de desarrollo: http://localhost:5173 (puerto fijo)
 npm run build     # genera dist/
 npm run preview   # sirve dist/ en http://localhost:4173 (puerto fijo)
 npm run revisar   # método, jerarquía, contenido de habla, migración del progreso, los 50 generadores y Mis materias (esquema, plan, fixtures) (~10 s)
-npm run dibujo    # ✏️ dibujo: gestos (zoom, mover, bloqueo y desbloqueo temporal, toques de 2 y 3 dedos), lazo, formas, goma, fondos, plantillas, PNG/PDF, migración, sincronización, 2000 trazos, tablet y laptop (capturas en capturas/dibujo/)
+npm run dibujo    # ✏️ dibujo (y ✌️ Dos dedos): gestos (zoom, mover, bloqueo y desbloqueo temporal, toques de 2 y 3 dedos), lazo, formas, goma, fondos, plantillas, PNG/PDF, migración, sincronización, 2000 trazos, tablet y laptop (capturas en capturas/dibujo/)
 npm run cuaderno  # cuaderno: notas viejas, editor (atajos, fórmula en vivo, foto, dibujo, mover bloques, guardado, teclado simulado), lectura, repasar, borrar (--capturas <dir> [--oscuro])
 npm run principiante # cada habilidad lista para un principiante: mini-lección, nivel 1, 3 pistas con datos, gemelo (--detalle)
 npm run python    # el curso de Python ejecutado en Pyodide: cada ejercicio generado y cada solución del laboratorio

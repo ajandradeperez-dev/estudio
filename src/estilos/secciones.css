@@ -260,6 +260,15 @@ body.con-dibujo .aviso:not(.card){bottom:calc(118px + env(safe-area-inset-bottom
 /* flotantes sobre el lienzo */
 .dib-mapa{position:absolute;top:8px;right:8px;z-index:2;border:1px solid var(--line-2);border-radius:6px;box-shadow:var(--sombra,0 2px 8px rgba(0,0,0,.2));pointer-events:none;background:var(--surface)}
 .dib-avanzar{position:absolute;right:12px;bottom:12px;z-index:2;width:56px;height:56px;border-radius:50%;border:0;background:var(--primary);color:var(--on-primary);font-size:1.6rem;box-shadow:0 2px 10px rgba(0,0,0,.25);cursor:pointer}
+.dib-zoombtns{position:absolute;right:12px;bottom:80px;z-index:2;display:flex;flex-direction:column;gap:6px}
+.dib-zoombtns button{width:48px;height:48px;border-radius:50%;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:1.5rem;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer}
+.dib-dejar{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:2;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.dib-para summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600}
+.dib-para-svg{display:block;width:150px;height:150px;margin:4px auto;color:var(--ink)}
+.dib-para-svg line{stroke:var(--primary);stroke-width:1.5;opacity:0;animation:dib-para 3.6s infinite}
+@keyframes dib-para{0%{opacity:0}8%,80%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.dib-para-svg line{animation:none;opacity:1}}
+.dib-para ul{margin:4px 0 0;padding-left:20px}
 .dib-selbar{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:3;display:flex;flex-wrap:wrap;justify-content:center;gap:2px;padding:4px;max-width:calc(100% - 16px);box-sizing:border-box;background:var(--surface);border:1px solid var(--line-2);border-radius:14px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .dib-selbar button{width:44px;height:44px;border:0;border-radius:10px;background:none;font-size:1.2rem;color:var(--ink);cursor:pointer;display:grid;place-items:center}
 .dib-selbar button:hover{background:var(--surface-2)}

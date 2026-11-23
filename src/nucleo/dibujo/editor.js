@@ -8,6 +8,11 @@
    - 🔒 Bloquear: la vista queda fija y 2 dedos solo deshacen. Se quita tocando 🔒 o manteniendo 2 dedos medio segundo:
      se desbloquea mientras los tienes puestos y se vuelve a bloquear sola al soltar. Con «Escribir y avanzar», la flecha →
      mueve la vista a la derecha o al inicio del siguiente renglón.
+   - ✌️ Dos dedos (en 📐 Formas, PROMPT-DOS-DEDOS): la única herramienta en la que dos dedos dibujan, elegida a propósito.
+     Modos: 📏 regla (una línea entre los dedos), 🧭 compás (centro y radio; girando, un arco con su ángulo), 📐 medir
+     (pendiente, distancia, punto medio y ecuación en el plano; «Dejar en la hoja»), ▭ marco o resaltado y 🌀 barrido
+     (una línea entre los dedos cada tantos px, con degradado y espejo; todo es un solo grupo). Con ratón o lápiz solo:
+     presionar = punto A, arrastrar = punto B; lápiz + dedo también. El zoom, con + y −.
    - ✋ Modo mano: un dedo mueve. Con el S Pen («Solo el lápiz dibuja»), el lápiz dibuja y el dedo mueve.
    - Herramientas: pluma (bolígrafo, fuente, lápiz), resaltador (detrás de la tinta), borrador (de trazo o de precisión),
      lazo (mover, escalar, rotar, color, grosor, copiar, duplicar, borrar, ✨ pasar a texto), formas (inteligentes al
@@ -26,7 +31,8 @@ import {comprimirFoto} from '../cuaderno/medios.js';
 import {SIMBOLOS} from '../cuaderno/editor-ui.js';
 import {normalizarDibujo,nuevoIdObj,caja,cajaDe,cajaPuntos,tocaObjeto,objetoEn,simplificar,recortarTrazo,borrarCon,enLazo,conGrupos,
   transformar,mMover,mEscalar,mRotar,aplicarM,diferencia,aplicarOp,reconocerForma,formaDirecta,FORMAS,plantilla,PLANTILLAS,FONDOS,
-  region,paginasPDF,anchoPagina,paraGuardar,medidasTexto,distSeg,capaDe,PAGINA,CM,ZOOM_MIN,ZOOM_MAX,TINTA} from './modelo.js';
+  region,paginasPDF,anchoPagina,paraGuardar,medidasTexto,distSeg,capaDe,PAGINA,CM,ZOOM_MIN,ZOOM_MAX,TINTA,
+  MODOS_DOS,conRejilla,ajustarRejilla,medirDos,lineasMedida,objetosMedida,arcoCompas,textoAngulo,marcoDos,objetosBarrido,parabolaConRectas,numero} from './modelo.js';
 import {pintarObjetos,pintarFondo,pintarObjeto,pintarTrazo,colorVisible,rgb} from './pintar.js';
 import {imagenFormula,medirFormula,pdfDePaginas} from './raster.js';
 
@@ -39,10 +45,10 @@ const HERR=[['pluma','✏️','Pluma'],['resaltador','🖍️','Resaltador'],['b
 /* ---------- preferencias del dibujo en este dispositivo (no son progreso) ---------- */
 const CLAVE='ciberlab-dibujo';
 const PREF0={pluma:{tipo:'boli',color:'#1f2430',ancho:2},resaltador:{color:'#facc15',ancho:16,recta:false},borrador:{modo:'trazo',tam:24,soloRes:false},
-  texto:{tam:20,color:'#1f2430'},forma:'linea',filas:3,cols:3,favoritas:[],recientes:[],contraida:false,inteligentes:true,minimapa:true,soloLapiz:true,avanzar:false};
+  texto:{tam:20,color:'#1f2430'},dos:{modo:'regla',ajustar:true,marco:'marco',espaciado:14,degradado:false,color2:'#7c3aed',simetria:'no',ancho:1,visto:false},forma:'linea',filas:3,cols:3,favoritas:[],recientes:[],contraida:false,inteligentes:true,minimapa:true,soloLapiz:true,avanzar:false};
 export function prefsDibujo(){
   let x={};try{x=JSON.parse(localStorage.getItem(CLAVE))||{}}catch(e){}
-  const p={...PREF0,...x};for(const k of ['pluma','resaltador','borrador','texto'])p[k]={...PREF0[k],...(x[k]||{})};
+  const p={...PREF0,...x};for(const k of ['pluma','resaltador','borrador','texto','dos'])p[k]={...PREF0[k],...(x[k]||{})};
   p.favoritas=Array.isArray(p.favoritas)?p.favoritas.slice(0,4):[];p.recientes=Array.isArray(p.recientes)?p.recientes.slice(0,5):[];return p;
 }
 const guardarPrefs=p=>{try{localStorage.setItem(CLAVE,JSON.stringify(p))}catch(e){}};
@@ -67,7 +73,9 @@ export function abrirEditorDibujo({dibujo,titulo='Dibujo',nuevo=false,cargarImag
 <div class="dib-area" tabindex="-1"><canvas class="dib-c dib-cfondo" aria-hidden="true"></canvas><canvas class="dib-c dib-ctinta" aria-hidden="true"></canvas>
 <canvas class="dib-c dib-cvivo" aria-label="Lienzo: dibuja con un dedo, el ratón o el lápiz; con dos dedos acercas y te mueves"></canvas>
 <canvas class="dib-mapa" aria-hidden="true" hidden></canvas><div class="dib-selbar" role="toolbar" aria-label="Lo seleccionado" hidden></div>
-<button type="button" class="dib-avanzar" data-d="avanzar" aria-label="Avanzar: mover la vista a la derecha" hidden>→</button><div class="dib-opc" role="dialog" aria-label="Opciones de la herramienta" hidden></div></div>
+<button type="button" class="dib-avanzar" data-d="avanzar" aria-label="Avanzar: mover la vista a la derecha" hidden>→</button>
+<div class="dib-zoombtns" role="group" aria-label="Zoom" hidden><button type="button" data-d="zoom-menos" aria-label="Alejar">−</button><button type="button" data-d="zoom-mas" aria-label="Acercar">＋</button></div>
+<button type="button" class="btn btn-chico dib-dejar" data-d="dos-dejar" hidden>📌 Dejar en la hoja</button><div class="dib-opc" role="dialog" aria-label="Opciones de la herramienta" hidden></div></div>
 <nav class="dib-barra" aria-label="Herramientas de dibujo"><div class="dib-fila dib-herrs" role="toolbar" aria-label="Herramienta">${HERR.map(([h,i,n])=>bot(`h-${h}`,i,n,` data-herr="${h}" aria-pressed="${h==='pluma'}"`)).join('')}${bot('contraer','▾','Contraer la barra',' class="dib-contraer"')}</div>
 <div class="dib-fila dib-acc" role="toolbar" aria-label="Acciones">${bot('deshacer','↶','Deshacer (Ctrl+Z)')}${bot('rehacer','↷','Rehacer (Ctrl+Y)')}${bot('bloquear','🔓','Bloquear la vista',' aria-pressed="false" class="dib-candado"')}${bot('mano','✋','Modo mano: un dedo mueve',' aria-pressed="false" class="dib-mano"')}<span class="dib-favs"></span></div></nav>
 <input type="file" accept="image/*" capture="environment" class="dib-camara" hidden><input type="file" accept="image/*" class="dib-galeria" hidden>`;
@@ -155,6 +163,12 @@ export function abrirEditorDibujo({dibujo,titulo='Dibujo',nuevo=false,cargarImag
     if(sel&&!g?.sel)pintarSeleccion(x);
     if(g?.sel)pintarSeleccion(x,g.m);
     if(g?.goma){const [a,b]=g.goma;x.strokeStyle=oscuro?'#e5e7eb':'#334155';x.lineWidth=1.2;x.beginPath();x.arc(a,b,g.radioPx,0,Math.PI*2);x.stroke()}
+    if(!g?.dos&&medicion&&herr==='dosdedos'){x.setTransform(k*vista.z,0,0,k*vista.z,-vista.x*vista.z*k,-vista.y*vista.z*k);for(const o of medicion.vista)pintarObjeto(x,o,{vista,oscuro});x.setTransform(k,0,0,k,0,0)}
+    if(g?.dos&&g.pista&&!g.activo){x.strokeStyle=css('--primary')||'#2563eb';x.lineWidth=2;x.beginPath();x.arc(g.pista[0],g.pista[1],14,0,Math.PI*2);x.stroke()}
+    const info=g?.dos?g.info:medicion&&herr==='dosdedos'?lineasMedida(medicion.res):null;
+    if(info?.length){x.font='600 13px system-ui,sans-serif';const w=Math.min(W-16,Math.max(...info.map(t=>x.measureText(t).width))+16),h=info.length*19+10;
+      x.fillStyle=oscuro?'rgba(20,24,32,.88)':'rgba(255,255,255,.94)';x.fillRect(8,8,w,h);x.strokeStyle=oscuro?'#475569':'#cbd5e1';x.lineWidth=1;x.strokeRect(8.5,8.5,w-1,h-1);
+      x.fillStyle=oscuro?'#e5e7eb':'#1f2430';info.forEach((t,i)=>x.fillText(t,16,26+i*19,w-16))}
     if(g?.medida){x.font='600 13px system-ui,sans-serif';const t=g.medida,w=x.measureText(t).width+12,[a,b]=g.medidaEn;x.fillStyle=oscuro?'rgba(20,24,32,.85)':'rgba(255,255,255,.92)';
       x.fillRect(Math.min(W-w-4,a+14),Math.max(4,b-34),w,24);x.fillStyle=oscuro?'#e5e7eb':'#1f2430';x.fillText(t,Math.min(W-w-4,a+14)+6,Math.max(4,b-34)+16)}
   }
@@ -218,7 +232,9 @@ export function abrirEditorDibujo({dibujo,titulo='Dibujo',nuevo=false,cargarImag
     const c=$('[data-d="bloquear"]');c.textContent=bloqueado?'🔒':'🔓';c.setAttribute('aria-pressed',String(bloqueado));c.setAttribute('aria-label',bloqueado?'Vista bloqueada: toca para desbloquear':'Bloquear la vista');c.title=c.getAttribute('aria-label');
     area.classList.toggle('bloqueada',bloqueado);area.classList.toggle('temporal',temporal);
     $('[data-d="mano"]').setAttribute('aria-pressed',String(mano));
-    f.querySelectorAll('[data-herr]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.herr===herr)));
+    f.querySelectorAll('[data-herr]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.herr===herr||b.dataset.herr==='formas'&&herr==='dosdedos')));
+    const bf=$('[data-herr="formas"]');bf.textContent=herr==='dosdedos'?'✌️':'📐';bf.setAttribute('aria-label',herr==='dosdedos'?'Dos dedos (toca para ver los modos)':'Formas');
+    $('.dib-zoombtns').hidden=herr!=='dosdedos';$('.dib-dejar').hidden=!(herr==='dosdedos'&&medicion);
     $('.dib-barra').classList.toggle('contraida',!!P.contraida);const ct=$('[data-d="contraer"]');ct.textContent=P.contraida?'▴':'▾';ct.setAttribute('aria-label',P.contraida?'Mostrar toda la barra':'Contraer la barra');
     $('.dib-avanzar').hidden=!(bloqueado&&P.avanzar);
     $('.dib-favs').innerHTML=P.favoritas.map((x,i)=>`<button type="button" data-d="fav" data-fav="${i}" class="dib-fav" aria-label="Pluma favorita: ${esc(x.nombre)}" title="${esc(x.nombre)}"><span style="--c:${x.color};--g:${Math.min(12,Math.max(2,x.ancho*1.4))}px"></span></button>`).join('');
@@ -226,9 +242,12 @@ export function abrirEditorDibujo({dibujo,titulo='Dibujo',nuevo=false,cargarImag
   }
   function bloquear(v){bloqueado=v;temporal=false;vibrar(v?[18]:[10,40,10]);botones();aviso(v?'🔒 Vista bloqueada: escribe sin que se mueva. Mantén 2 dedos para moverte.':'🔓 Vista desbloqueada',1600);autoguardarYa()}
   function elegir(h){
+    if(h==='formas'&&herr==='dosdedos'){abrirPanel('dosdedos');return}
     if(h===herr&&h!=='papel'){abrirPanel(h);return}
-    herr=h;cerrarPanel();if(sel&&!['lazo'].includes(h))limpiarSel();botones();
+    medicion=null;herr=h;cerrarPanel();if(sel&&!['lazo'].includes(h))limpiarSel();botones();
     if(h==='formas')aviso(`📐 ${FORMAS.find(x=>x[0]===P.forma)?.[2]||'Línea'}: arrastra para dibujarla. Toca 📐 otra vez para elegir otra.`,2200);
+    if(h==='dosdedos'){abrirPanel('dosdedos');
+      if(!P.dos.visto){P.dos.visto=true;guardarPrefs(P);aviso('✌️ Con esta herramienta los dos dedos dibujan. Para el zoom usa + y −, o elige otra herramienta.',4200)}}
   }
 
   /* ---------- opciones de cada herramienta (panel sobre la barra) ---------- */
@@ -249,19 +268,21 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
     if(h==='formas')return `<label class="dib-check"><input type="checkbox" data-inteligentes ${P.inteligentes?'checked':''}> Formas inteligentes: mantén quieto al final del trazo</label>
 <div class="dib-formas" role="group" aria-label="Forma">${FORMAS.map(([id,i,n])=>`<button type="button" data-forma="${id}" aria-pressed="${P.forma===id}" aria-label="${n}" title="${n}"><span aria-hidden="true">${i}</span><small>${n}</small></button>`).join('')}</div>
 <div class="row dib-tabla"><label>Filas <input type="number" min="1" max="20" value="${P.filas}" data-filas></label><label>Columnas <input type="number" min="1" max="12" value="${P.cols}" data-cols></label></div>
+<button type="button" class="btn ghost btn-chico" data-d="dos">✌️ Dos dedos: regla, compás, medir, marco y barrido</button>
 <div class="row"><button type="button" class="btn ghost btn-chico" data-d="regla" aria-pressed="${!!regla}">📏 Regla</button><button type="button" class="btn ghost btn-chico" data-d="transp" aria-pressed="${!!transp}">◠ Transportador</button></div>`;
+    if(h==='dosdedos')return htmlDos();
     if(h==='texto'){const p=P.texto;return `<div class="segmentos" role="group" aria-label="Tamaño de letra">${[14,20,28,40].map(t=>`<button type="button" data-tam="${t}" aria-pressed="${p.tam===t}">${t}</button>`).join('')}</div>${colores(PALETA.slice(0,7),p.color)}
 <div class="row"><button type="button" class="btn ghost btn-chico" data-d="formula">Σ Fórmula</button><span class="nota">Toca el lienzo para escribir.</span></div>`}
     return '';
   }
-  function abrirPanel(h){const p=$('.dib-opc');if(panel===h){cerrarPanel();return}panel=h;p.innerHTML=`<div class="dib-opc-cab"><b>${HERR.find(x=>x[0]===h)?.[2]||''}</b><button type="button" class="btn-icono" data-d="opc-cerrar" aria-label="Cerrar las opciones">✕</button></div>${htmlPanel(h)}`;p.hidden=false;marcaSiHace()}
+  function abrirPanel(h){const p=$('.dib-opc');if(panel===h){cerrarPanel();return}panel=h;p.innerHTML=`<div class="dib-opc-cab"><b>${h==='dosdedos'?'✌️ Dos dedos':HERR.find(x=>x[0]===h)?.[2]||''}</b><button type="button" class="btn-icono" data-d="opc-cerrar" aria-label="Cerrar las opciones">✕</button></div>${htmlPanel(h)}`;p.hidden=false;marcaSiHace()}
   function cerrarPanel(marcar=true){if(!panel)return;panel=null;$('.dib-opc').hidden=true;if(marcar)marcaSiHace()}
   const repintarPanel=()=>{if(panel){const h=panel;panel=null;abrirPanel(h)}};
   function usarColor(c){
     if(sel)return cambiarSel(o=>o.t==='trazo'||o.t==='texto'||o.t==='formula'?{...o,color:c}:o);
     const h=panel==='resaltador'||herr==='resaltador'&&panel!=='pluma'?'resaltador':panel==='texto'||herr==='texto'?'texto':'pluma';
     P[h].color=c;if(h==='pluma'&&!PALETA.some(x=>x[1]===c)){P.recientes=[c,...P.recientes.filter(x=>x!==c)].slice(0,5)}
-    if(herr!==h&&h!=='texto')herr=h;guardarPrefs(P);botones();repintarPanel();
+    if(herr!==h&&h!=='texto'&&herr!=='dosdedos')herr=h;guardarPrefs(P);botones();repintarPanel();
   }
 
   /* ---------- selección ---------- */
@@ -304,6 +325,8 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
     if(panel)cerrarPanel();
     e.preventDefault();try{cV.setPointerCapture(e.pointerId)}catch(x){}
     const [sx,sy]=posDe(e);
+    // ✌️ Dos dedos: cualquier puntero (dedo, lápiz o ratón) marca un punto; nada de zoom ni deshacer con dos dedos
+    if(herr==='dosdedos'&&!(e.pointerType==='mouse'&&(e.button!==0||espacio))&&(!g||g.dos)){if(e.pointerType==='pen')lapizVisto=true;dosAbajo(e,sx,sy);return}
     if(e.pointerType==='pen'){lapizVisto=true;lapizActivo=true;if(g&&g.dedos){cancelarGesto()}}
     if(e.pointerType==='touch'){
       if(lapizActivo)return;   // la palma mientras escribes con el lápiz
@@ -327,6 +350,7 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
   const anguloDedos=()=>{const [a,b]=[...toques.values()];return Math.atan2(b.y-a.y,b.x-a.x)};
   function mover(e){
     const [sx,sy]=posDe(e);
+    if(g?.dos){dosMover(e,sx,sy);return}
     if(e.pointerType==='touch'&&toques.has(e.pointerId)){const t=toques.get(e.pointerId);t.x=sx;t.y=sy;
       if(g?.tipo==='dos'){e.preventDefault();moverDos();return}
       if(g?.tipo==='tres'||g?.tipo==='fin')return;
@@ -348,6 +372,7 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
   }
   function arriba(e){
     if(e.pointerType==='pen')lapizActivo=false;
+    if(g?.dos){dosArriba(e);return}
     if(e.pointerType==='touch'&&toques.has(e.pointerId)){
       toques.delete(e.pointerId);
       if(g?.tipo==='dos'){
@@ -476,6 +501,101 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
     if(x.texto){const o=objetoEn(objs,x.texto[0],x.texto[1],6/vista.z,o=>o.t==='texto'||o.t==='formula');
       if(o?.t==='formula')editarFormula(o);else editarTexto(o||null,x.texto);return}
   }
+  /* ---------- ✌️ Dos dedos ---------- */
+  let medicion=null;   // la última medida de 📐 Medir, para «Dejar en la hoja»
+  const r2=v=>Math.round(v*100)/100,gruesoDos=()=>Math.max(1.5,P.pluma.ancho);
+  function dosAbajo(e,sx,sy){
+    if(sel)limpiarSel();
+    if(!g){g={dos:true,ptr:new Map(),orden:[],segs:[],t0:performance.now()};if(medicion){medicion=null;botones()}}
+    if(g.fin||g.ptr.size>=2)return;
+    try{cV.setPointerCapture(e.pointerId)}catch(x){}
+    g.ptr.set(e.pointerId,[sx,sy]);g.orden.push(e.pointerId);
+    if(g.ptr.size===1){g.a0=[sx,sy];g.unico=e.pointerType!=='touch';g.pista=[sx,sy];pintarVivo();return}
+    g.unico=false;dosInicio();
+  }
+  function dosPuntos(){
+    const [i1,i2]=g.orden,A=g.unico?g.a0:g.ptr.get(i1),B=g.unico?g.ptr.get(i1):g.ptr.get(i2);
+    let a=aMundo(...A),b=aMundo(...B);const m=P.dos.modo;
+    if(P.dos.ajustar&&conRejilla(d)&&(m==='regla'||m==='medir')){a=ajustarRejilla(a,d);b=ajustarRejilla(b,d)}
+    return [a,b,A,B];
+  }
+  function dosInicio(){const [a,b]=dosPuntos();g.activo=true;g.pista=null;g.giro=0;g.ang0=g.angPrev=Math.atan2(b[1]-a[1],b[0]-a[0]);dosVivo()}
+  function dosVivo(){
+    const [a,b,A,B]=dosPuntos(),m=P.dos.modo,col=P.pluma.color,an=gruesoDos();
+    g.a=a;g.b=b;g.info=null;g.medida=null;
+    if(m==='regla'){g.vista=formaDirecta('linea',a,b,{color:col,ancho:an});medidaDe(a,b,...B)}
+    else if(m==='compas'){
+      const r=Math.hypot(b[0]-a[0],b[1]-a[1]),ang=Math.atan2(b[1]-a[1],b[0]-a[0]);let da=ang-g.angPrev;da=Math.atan2(Math.sin(da),Math.cos(da));g.giro+=da;g.angPrev=ang;
+      g.arco=Math.abs(g.giro)>=Math.PI/9&&Math.abs(g.giro)<Math.PI*2-.05;g.radio=r;
+      const pts=g.arco?arcoCompas(a,r,g.ang0,g.giro):arcoCompas(a,r);
+      g.vista=[{t:'trazo',id:'dos1',herr:'pluma',tipo:'boli',color:col,ancho:an,recto:true,pts:pts.map(p=>[p[0],p[1],.5])},{t:'trazo',id:'dos2',herr:'pluma',tipo:'boli',color:'#6b7280',ancho:1,recto:true,pts:[[a[0],a[1],.5],[b[0],b[1],.5]]}];
+      g.info=[`r = ${(r/CM).toFixed(1)} cm`,g.arco?`θ = ${textoAngulo(g.giro)}`:'Gira el segundo dedo para hacer un arco'];
+    }
+    else if(m==='medir'){g.res=medirDos(a,b,d);g.vista=objetosMedida(a,b,d,{color:col,ancho:an}).filter(o=>o.t==='trazo');g.info=lineasMedida(g.res)}
+    else if(m==='marco'){g.vista=marcoDos(a,b,{tipo:P.dos.marco,color:col,ancho:an,colorRes:P.resaltador.color});medidaDe(a,b,...B,'caja')}
+    else{   // 🌀 barrido: una línea cada «espaciado» px que se mueva cualquiera de los dos dedos
+      if(!g.ultA||Math.max(Math.hypot(A[0]-g.ultA[0],A[1]-g.ultA[1]),Math.hypot(B[0]-g.ultB[0],B[1]-g.ultB[1]))>=P.dos.espaciado){
+        if(g.segs.length<1500)g.segs.push([a,b]);g.ultA=[...A];g.ultB=[...B];if(!g.eje)g.eje=[(a[0]+b[0])/2,(a[1]+b[1])/2]}
+      g.vista=objetosBarrido([...g.segs,[a,b]],opcBarrido());g.info=[`🌀 ${g.segs.length} líneas`];
+    }
+    pintarVivo();
+  }
+  const opcBarrido=()=>({color:P.pluma.color,color2:P.dos.degradado?P.dos.color2:null,ancho:P.dos.ancho,simetria:P.dos.simetria,eje:g?.eje});
+  function dosMover(e,sx,sy){
+    if(!g.ptr.has(e.pointerId)||g.fin)return;
+    e.preventDefault();g.ptr.set(e.pointerId,[sx,sy]);
+    if(g.unico&&!g.activo){if(Math.hypot(sx-g.a0[0],sy-g.a0[1])<4)return;dosInicio();return}
+    if(g.activo)dosVivo();
+  }
+  function dosArriba(e){
+    if(!g.ptr.has(e.pointerId))return;
+    g.ptr.delete(e.pointerId);
+    if(!g.fin){g.fin=true;
+      if(g.activo)dosTerminar();
+      else aviso(g.unico?'✌️ Arrastra del primer punto al segundo.':'✌️ Pon dos dedos: uno en cada punto.',1500)}
+    if(!g.ptr.size){g=null;pintarVivo()}
+  }
+  function dosTerminar(){
+    const m=P.dos.modo,a=g.a,b=g.b,col=P.pluma.color,an=gruesoDos(),lejos=Math.hypot(b[0]-a[0],b[1]-a[1])*vista.z>8;
+    const listo=g.segs,vistaG=g;vistaG.vista=null;vistaG.info=null;vistaG.medida=null;
+    if(!lejos&&m!=='barrido'){pintarVivo();return}
+    let nuevos=[];
+    if(m==='regla')nuevos=formaDirecta('linea',a,b,{color:col,ancho:an});
+    else if(m==='compas'){const pts=vistaG.arco?arcoCompas(a,vistaG.radio,vistaG.ang0,vistaG.giro):arcoCompas(a,vistaG.radio);
+      nuevos=[{t:'trazo',id:nuevoIdObj(),herr:'pluma',tipo:'boli',color:col,ancho:an,recto:true,forma:vistaG.arco?'arco':'circulo',g:nuevoIdObj(),pts:pts.map(p=>[r2(p[0]),r2(p[1]),.5])}];
+      aviso(vistaG.arco?`🧭 Arco: r = ${(vistaG.radio/CM).toFixed(1)} cm · ${textoAngulo(vistaG.giro)}`:`🧭 Círculo: r = ${(vistaG.radio/CM).toFixed(1)} cm`,1800)}
+    else if(m==='medir'){medicion={a,b,res:vistaG.res,vista:objetosMedida(a,b,d,{color:col,ancho:an}).filter(o=>o.t==='trazo')};botones();pintarVivo();return}
+    else if(m==='marco')nuevos=marcoDos(a,b,{tipo:P.dos.marco,color:col,ancho:an,colorRes:P.resaltador.color});
+    else nuevos=objetosBarrido(listo.length?listo:[[a,b]],opcBarrido());
+    if(nuevos.length)aplicar([...objs,...nuevos]);pintarVivo();
+  }
+  // la animación de «¿Para qué sirve?»: rectas que van formando una parábola
+  const SVG_BARRIDO=`<svg class="dib-para-svg" viewBox="0 0 150 150" role="img" aria-label="Rectas entre dos ejes que forman una parábola"><path d="M10 6 V140 H146" fill="none" stroke="currentColor" stroke-width="2"/>${Array.from({length:10},(_,i)=>`<line x1="10" y1="${10+i*13}" x2="${23+i*13}" y2="140" style="animation-delay:${(i*.3).toFixed(1)}s"/>`).join('')}</svg>`;
+  function htmlDos(){
+    const p=P.dos,m=p.modo,ajustar=`<label class="dib-check"><input type="checkbox" data-dos-ajustar ${p.ajustar?'checked':''}> Ajustar los extremos a la cuadrícula</label>`;
+    const op={
+      regla:`${ajustar}<p class="nota">Un dedo en cada extremo: ves la línea, su largo y su ángulo; al soltar queda una sola línea recta.</p>`,
+      compas:`<p class="nota">El primer dedo es el centro y el segundo marca el radio: al soltar queda el círculo. Si giras el segundo dedo, queda solo el arco, con su ángulo en grados y radianes.</p>`,
+      medir:`${ajustar}<p class="nota">Dos puntos del plano: Δx, Δy, la pendiente m = Δy/Δx, la distancia, el punto medio y la ecuación de la recta. Luego, «📌 Dejar en la hoja».</p>${d.fondo!=='cartesiano'?'<button type="button" class="btn ghost btn-chico" data-d="dos-plano">⊹ Poner el plano cartesiano</button>':''}`,
+      marco:`<div class="segmentos" role="group" aria-label="Tipo de marco"><button type="button" data-dos-marco="marco" aria-pressed="${p.marco!=='resaltado'}">▭ Marco</button><button type="button" data-dos-marco="resaltado" aria-pressed="${p.marco==='resaltado'}">🖍️ Resaltado</button></div><p class="nota">Los dos dedos son esquinas opuestas: encierra o resalta una parte de tus apuntes o de una foto.</p>`,
+      barrido:`<label class="dib-rango">Una línea cada <input type="range" min="4" max="40" step="1" value="${p.espaciado}" data-dos-esp aria-label="Espaciado en píxeles"></label>
+<label class="dib-check"><input type="checkbox" data-dos-degradado ${p.degradado?'checked':''}> Degradado de color</label>${p.degradado?`<div class="dib-colores" role="group" aria-label="Color final del degradado">${PALETA.slice(1,8).map(([n,c])=>`<button type="button" class="dib-color" data-dos-color2="${c}" aria-label="Hasta ${esc(n)}" aria-pressed="${c===p.color2}" style="--c:${c}"></button>`).join('')}</div>`:''}
+<div class="segmentos" role="group" aria-label="Simetría">${[['no','Sin espejo'],['h','↔ Espejo'],['v','↕ Espejo']].map(([v,n])=>`<button type="button" data-dos-sim="${v}" aria-pressed="${p.simetria===v}">${n}</button>`).join('')}</div>
+<button type="button" class="btn ghost btn-chico" data-d="dos-parabola">📈 Ejemplo: parábola con rectas</button>
+<details class="dib-para"><summary>¿Para qué sirve?</summary>${SVG_BARRIDO}<ul class="nota">
+<li><b>Curvas con rectas</b>: unir los puntos de dos ejes forma una parábola (prueba el ejemplo).</li>
+<li><b>Área barrida</b>: barre un segmento bajo una curva y verás la integral como área.</li>
+<li><b>Rotación</b>: deja un dedo fijo y gira el otro: ves el ángulo barrido (radianes, círculo unitario).</li>
+<li><b>Arte y mapas de ideas</b>: fondos para portadas de apuntes o mapas mentales.</li></ul></details>`};
+    return `<div class="dib-formas" role="group" aria-label="Modo">${MODOS_DOS.map(([id,i,n])=>`<button type="button" data-dos-modo="${id}" aria-pressed="${m===id}"><span aria-hidden="true">${i}</span><small>${n}</small></button>`).join('')}</div>${op[m]}
+${colores(PALETA.slice(0,7),P.pluma.color)}<p class="nota">Mientras está activa, los dos dedos dibujan. El zoom, con + y −.</p><button type="button" class="btn ghost btn-chico" data-d="dos-salir">📐 Volver a Formas</button>`;
+  }
+  function parabolaEjemplo(){
+    const s=CM*.9,n=10,c=aMundo(W/2,H/2),x=c[0]-n*s/2,y=c[1]-n*s/2-20/vista.z;
+    aplicar([...objs,...parabolaConRectas(x,y,{n,s,color:P.pluma.color})]);cerrarPanel();
+    aviso('📈 Une 1 con 1, 2 con 2… (en 📏 Regla). Ya está hecha la primera recta.',3200);
+  }
+
   let herrAntes=null;
   const visible=o=>d.capas[capaDe(o)]!==false;
   function borrarEn(wx,wy){
@@ -697,6 +817,16 @@ ${inicio?`<label class="dib-check"><input type="checkbox" id="dp-pag"> Páginas 
     if(a==='borrar-todo'){cerrarPanel();borrarTodo();return}
     if(a==='pegar'){cerrarPanel();pegar();return}
     if(a==='regla'||a==='transp'){alternarGuia(a);return}
+    if(a==='dos'){elegir('dosdedos');return}
+    if(a==='dos-salir'){cerrarPanel();elegir('formas');return}
+    if(a==='zoom-mas'||a==='zoom-menos'){if(bloqueado)bloquear(false);zoomEn(W/2,H/2,vista.z*(a==='zoom-mas'?1.25:.8));return}
+    if(a==='dos-dejar'){if(medicion){aplicar([...objs,...objetosMedida(medicion.a,medicion.b,d,{color:P.pluma.color,ancho:gruesoDos()})]);medicion=null;botones();pintarVivo();aviso('📌 Medida en la hoja',1200)}return}
+    if(a==='dos-parabola'){parabolaEjemplo();return}
+    if(a==='dos-plano'){d.fondo='cartesiano';cambiado=true;pintarTodo();autoguardarYa();repintarPanel();return}
+    if(b.dataset.dosModo){P.dos.modo=b.dataset.dosModo;medicion=null;guardarPrefs(P);botones();repintarPanel();pintarVivo();return}
+    if(b.dataset.dosMarco){P.dos.marco=b.dataset.dosMarco;guardarPrefs(P);repintarPanel();return}
+    if(b.dataset.dosSim){P.dos.simetria=b.dataset.dosSim;guardarPrefs(P);repintarPanel();return}
+    if(b.dataset.dosColor2){P.dos.color2=b.dataset.dosColor2;guardarPrefs(P);repintarPanel();return}
     if(a==='formula'){cerrarPanel();editarFormula();return}
     if(a==='sel-borrar'){borrarSel();return}if(a==='sel-copiar'){copiarSel();return}
     if(a==='sel-dup'){const l=elegidos();pegar(24,24,l);return}
@@ -717,12 +847,15 @@ ${inicio?`<label class="dib-check"><input type="checkbox" id="dp-pag"> Páginas 
   f.addEventListener('input',e=>{const t=e.target;
     if(t.dataset.rango!==undefined&&panel){P[panel].ancho=+t.value;guardarPrefs(P)}
     if(t.dataset.gomaTam!==undefined){P.borrador.tam=+t.value;guardarPrefs(P)}
+    if(t.dataset.dosEsp!==undefined){P.dos.espaciado=+t.value;guardarPrefs(P)}
   });
   f.addEventListener('change',e=>{const t=e.target;
     if(t.dataset.propio!==undefined)usarColor(t.value);
     if(t.dataset.recta!==undefined){P.resaltador.recta=t.checked;guardarPrefs(P)}
     if(t.dataset.soloRes!==undefined){P.borrador.soloRes=t.checked;guardarPrefs(P)}
     if(t.dataset.inteligentes!==undefined){P.inteligentes=t.checked;guardarPrefs(P)}
+    if(t.dataset.dosAjustar!==undefined){P.dos.ajustar=t.checked;guardarPrefs(P)}
+    if(t.dataset.dosDegradado!==undefined){P.dos.degradado=t.checked;guardarPrefs(P);repintarPanel()}
     if(t.dataset.filas!==undefined){P.filas=Math.max(1,Math.min(20,+t.value||3));guardarPrefs(P)}
     if(t.dataset.cols!==undefined){P.cols=Math.max(1,Math.min(12,+t.value||3));guardarPrefs(P)}
     if(t.classList.contains('dib-camara')||t.classList.contains('dib-galeria')){insertarImagen(t.files?.[0]);t.value=''}
@@ -750,7 +883,7 @@ ${inicio?`<label class="dib-check"><input type="checkbox" id="dp-pag"> Páginas 
     if(e.key==='0'){e.preventDefault();ajustar('pantalla');return}
     if(e.key==='+'||e.key==='='){e.preventDefault();zoomEn(W/2,H/2,vista.z*1.25);return}
     if(e.key==='-'){e.preventDefault();zoomEn(W/2,H/2,vista.z/1.25);return}
-    const atajo={p:'pluma',r:'resaltador',e:'borrador',l:'lazo',f:'formas',t:'texto'}[kk];if(atajo){e.preventDefault();elegir(atajo)}
+    const atajo={p:'pluma',r:'resaltador',e:'borrador',l:'lazo',f:'formas',t:'texto',d:'dosdedos'}[kk];if(atajo){e.preventDefault();elegir(atajo)}
   }
   const teclaArriba=e=>{if(e.key===' '){espacio=false;botones()}};
   function zoomEn(sx,sy,z){if(bloqueado)return;const w=aMundo(sx,sy),zz=Math.min(ZOOM_MAX,Math.max(ZOOM_MIN,z));vista=limitar({z:zz,x:w[0]-sx/zz,y:w[1]-sy/zz});pintarTodo();mostrarZoom();verMapa()}
@@ -778,7 +911,7 @@ ${inicio?`<label class="dib-check"><input type="checkbox" id="dp-pag"> Páginas 
   }
   // para las pruebas (npm run dibujo): estado del editor sin tocar nada
   f.__dib={get objs(){return objs},get vista(){return {...vista}},get bloqueado(){return bloqueado},get temporal(){return temporal},get sel(){return sel?[...sel.ids]:[]},
-    get hist(){return hist.length},manijas:()=>sel?.manijas||null,get herr(){return herr},get lento(){return lento},regla:()=>regla,transp:()=>transp,cerrar,pintarAhora:()=>{sucioT=true;sucioV=true;cuadroAhora()},estado:()=>estadoActual(),ajustar};
+    get hist(){return hist.length},manijas:()=>sel?.manijas||null,get herr(){return herr},dos:()=>({...P.dos,medicion:medicion?.res||null}),get lento(){return lento},regla:()=>regla,transp:()=>transp,cerrar,pintarAhora:()=>{sucioT=true;sucioV=true;cuadroAhora()},estado:()=>estadoActual(),ajustar,irA};
 
   botones();medir();
   if(nuevo&&!objs.length)elegirPlantilla(true);

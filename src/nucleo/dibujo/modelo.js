@@ -277,6 +277,87 @@ export function formaDirecta(tipo,a,b,{color=TINTA,ancho=2.5,filas=3,cols=3}={})
 }
 
 /* ---------- íconos de red (SVG propio en trazos) para la plantilla de Ciberseguridad ---------- */
+/* ---------- ✌️ Dos dedos (PROMPT-DOS-DEDOS): regla, compás, medir, marco y barrido. Todo sale como objetos normales
+   (trazos y textos) con un grupo `g`: se deshace en un paso, el lazo lo toma entero y se ve nítido con zoom. ---------- */
+export const MODOS_DOS=[['regla','📏','Regla'],['compas','🧭','Compás'],['medir','📐','Medir'],['marco','▭','Marco'],['barrido','🌀','Barrido']];
+export const conRejilla=d=>['cuadricula','cartesiano','puntos'].includes(d?.fondo);
+// Al cruce más cercano de la cuadrícula de 5 mm (la misma del plano cartesiano), contado desde el origen del plano
+export function ajustarRejilla(p,d){const [ox,oy]=origenCartesiano(d);return [ox+Math.round((p[0]-ox)/CUADRO)*CUADRO,oy+Math.round((p[1]-oy)/CUADRO)*CUADRO]}
+// Del lienzo al plano cartesiano (1 unidad = 1 cm, y hacia arriba) y de vuelta
+export const aPlano=(p,d)=>{const [ox,oy]=origenCartesiano(d);return [(p[0]-ox)/CM,(oy-p[1])/CM]};
+export const dePlano=(q,d)=>{const [ox,oy]=origenCartesiano(d);return [ox+q[0]*CM,oy-q[1]*CM]};
+const n2=v=>{const r=Math.round(v*100)/100;return Object.is(r,-0)?0:r};
+export const numero=v=>String(n2(v)).replace('-','−');
+// 📐 Medir: Δx, Δy, pendiente, distancia, punto medio y la ecuación de la recta entre dos puntos del plano
+export function medirDos(a,b,d){
+  const [x1,y1]=aPlano(a,d),[x2,y2]=aPlano(b,d),dx=x2-x1,dy=y2-y1,vertical=Math.abs(dx)<1e-9;
+  const m=vertical?null:dy/dx,c=vertical?null:y1-m*x1;
+  const ecuacion=vertical?`x = ${numero(x1)}`:Math.abs(m)<1e-9?`y = ${numero(y1)}`
+    :`y = ${Math.abs(m-1)<1e-9?'':Math.abs(m+1)<1e-9?'−':numero(m)}x${Math.abs(c)<1e-9?'':c<0?` − ${numero(-c)}`:` + ${numero(c)}`}`;
+  return {p1:[n2(x1),n2(y1)],p2:[n2(x2),n2(y2)],dx:n2(dx),dy:n2(dy),m:m===null?null:n2(m),dist:n2(Math.hypot(dx,dy)),medio:[n2((x1+x2)/2),n2((y1+y2)/2)],ecuacion};
+}
+export const lineasMedida=r=>[`(${numero(r.p1[0])}, ${numero(r.p1[1])}) → (${numero(r.p2[0])}, ${numero(r.p2[1])})`,`Δx = ${numero(r.dx)}   Δy = ${numero(r.dy)}`,
+  `m = Δy / Δx = ${r.m===null?'no existe (vertical)':numero(r.m)}`,`d = √(Δx² + Δy²) = ${numero(r.dist)}`,`Punto medio: (${numero(r.medio[0])}, ${numero(r.medio[1])})`,r.ecuacion];
+const punto=(x,y,rad,color,g)=>({t:'trazo',id:nuevoIdObj(),herr:'pluma',tipo:'boli',color,ancho:rad,recto:true,forma:'circulo',g,pts:elipse(x,y,rad/2,rad/2,16).map(p=>[r2(p[0]),r2(p[1]),.5])});
+const etiqueta=(x,y,texto,tam,color,g)=>{const m=medidasTexto(texto,tam);return {t:'texto',id:nuevoIdObj(),x:r2(x),y:r2(y),w:r2(m.w),h:r2(m.h),texto,tam,color,g}};
+// «Dejar en la hoja»: el segmento, los catetos Δx y Δy, los dos puntos y las etiquetas
+export function objetosMedida(a,b,d,{color=TINTA,ancho=2}={}){
+  const g=nuevoIdObj(),r=medirDos(a,b,d),gris='#6b7280',esq=[b[0],a[1]];
+  const T=(pts,c=color,w=ancho)=>({t:'trazo',id:nuevoIdObj(),herr:'pluma',tipo:'boli',color:c,ancho:w,recto:true,forma:'linea',g,pts:pts.map(p=>[r2(p[0]),r2(p[1]),.5])});
+  const out=[T([a,esq],gris,1.2),T([esq,b],gris,1.2),T([a,b]),punto(a[0],a[1],6,color,g),punto(b[0],b[1],6,color,g)];
+  if(Math.abs(r.dx)>.2)out.push(etiqueta((a[0]+b[0])/2-14,a[1]+(b[1]<a[1]?6:-24),`Δx = ${numero(r.dx)}`,13,gris,g));
+  if(Math.abs(r.dy)>.2)out.push(etiqueta(b[0]+(b[0]>=a[0]?8:-78),(a[1]+b[1])/2-8,`Δy = ${numero(r.dy)}`,13,gris,g));
+  const x0=Math.max(a[0],b[0])+(Math.abs(r.dy)>.2&&b[0]>=a[0]?96:18),y0=Math.min(a[1],b[1]);   // a la derecha de «Δy = …»
+  lineasMedida(r).slice(2).forEach((t,i)=>out.push(etiqueta(x0,y0+i*20,t,14,color,g)));
+  return out;
+}
+// 🧭 Compás: círculo completo o arco desde el ángulo a0 (en el lienzo) recorriendo da (con signo)
+export function arcoCompas(c,rad,a0=0,da=Math.PI*2){
+  const n=Math.max(12,Math.ceil(Math.abs(da)/(Math.PI*2)*96)),pts=[];
+  for(let i=0;i<=n;i++){const a=a0+da*i/n;pts.push([c[0]+rad*Math.cos(a),c[1]+rad*Math.sin(a)])}
+  return pts;
+}
+// Ángulo en grados y radianes («90° = π/2 rad ≈ 1.57 rad»)
+export function textoAngulo(rad){
+  const a=Math.abs(rad),gr=Math.round(a*180/Math.PI),k=Math.round(a/(Math.PI/12));
+  let pi='';if(k&&Math.abs(a-k*Math.PI/12)<.02){const mcd=(x,y)=>y?mcd(y,x%y):x,m=mcd(k,12),nu=k/m,de=12/m;pi=`${nu===1?'':nu}π${de===1?'':'/'+de} rad ≈ `}
+  return `${gr}° = ${pi}${(Math.round(a*100)/100).toFixed(2)} rad`;
+}
+// ▭ Marco (rectángulo) o resaltado (un trazo de resaltador tan grueso como el rectángulo, detrás de la tinta)
+export function marcoDos(a,b,{tipo='marco',color=TINTA,ancho=2,colorRes='#facc15'}={}){
+  const x0=Math.min(a[0],b[0]),y0=Math.min(a[1],b[1]),x1=Math.max(a[0],b[0]),y1=Math.max(a[1],b[1]),w=x1-x0,h=y1-y0,g=nuevoIdObj();
+  if(tipo!=='resaltado')return [{t:'trazo',id:nuevoIdObj(),herr:'pluma',tipo:'boli',color,ancho,recto:true,forma:'rectangulo',g,pts:[[x0,y0],[x1,y0],[x1,y1],[x0,y1],[x0,y0]].map(p=>[r2(p[0]),r2(p[1]),.5])}];
+  const gr=Math.max(2,Math.min(w,h)),pts=w>=h?[[x0+gr/2,(y0+y1)/2],[Math.max(x0+gr/2,x1-gr/2),(y0+y1)/2]]:[[(x0+x1)/2,y0+gr/2],[(x0+x1)/2,Math.max(y0+gr/2,y1-gr/2)]];
+  return [{t:'trazo',id:nuevoIdObj(),herr:'resaltador',tipo:'boli',color:colorRes,ancho:r2(gr),recto:true,forma:'resaltado',g,pts:pts.map(p=>[r2(p[0]),r2(p[1]),.5])}];
+}
+// 🌀 Barrido: color a lo largo (degradado) y espejo
+export function colorEntre(c1,c2,t){
+  const h=c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16)),a=h(c1),b=h(c2);
+  return '#'+a.map((v,i)=>Math.round(v+(b[i]-v)*Math.max(0,Math.min(1,t))).toString(16).padStart(2,'0')).join('');
+}
+export function objetosBarrido(segs,{color=TINTA,color2=null,ancho=1,simetria='no',eje=null}={}){
+  const g=nuevoIdObj(),n=segs.length,out=[];
+  const T=(pts,c)=>({t:'trazo',id:nuevoIdObj(),herr:'pluma',tipo:'boli',color:c,ancho,recto:true,forma:'barrido',g,pts:pts.map(p=>[r2(p[0]),r2(p[1]),.5])});
+  segs.forEach((s,i)=>{const c=color2?colorEntre(color,color2,n>1?i/(n-1):0):color;out.push(T(s,c));
+    if(simetria==='h'&&eje)out.push(T(s.map(p=>[2*eje[0]-p[0],p[1]]),c));
+    if(simetria==='v'&&eje)out.push(T(s.map(p=>[p[0],2*eje[1]-p[1]]),c))});
+  return out;
+}
+// «Ejemplo: parábola con rectas» (curve stitching): dos ejes con n puntos numerados; unir el i de uno con el i del otro
+export function parabolaConRectas(x,y,{n=10,s=CM*.9,color=TINTA}={}){
+  const g=nuevoIdObj(),L=n*s,gris='#6b7280',out=[];
+  const T=(pts,c=color,w=2)=>({t:'trazo',id:nuevoIdObj(),herr:'pluma',tipo:'boli',color:c,ancho:w,recto:true,forma:'linea',g,pts:pts.map(p=>[r2(p[0]),r2(p[1]),.5])});
+  out.push(T([[x,y-s*.6],[x,y+L]]),T([[x,y+L],[x+L+s*.6,y+L]]));
+  for(let i=1;i<=n;i++){
+    const v=[x,y+(i-1)*s],h=[x+i*s,y+L];
+    out.push(punto(v[0],v[1],5,color,g),punto(h[0],h[1],5,color,g));
+    out.push(etiqueta(v[0]-(i<10?16:24),v[1]-9,String(i),12,gris,g),etiqueta(h[0]-(i<10?4:8),h[1]+6,String(i),12,gris,g));
+  }
+  out.push(etiqueta(x,y+L+30,'Une cada punto con el del mismo número en el otro eje: las rectas dibujan una parábola.',13,gris,g));
+  // el ejemplo resuelto con la primera recta, para que se entienda
+  out.push(T([[x,y],[x+s,y+L]],'#2563eb',1.4));
+  return out;
+}
 export function iconoRed(tipo,x,y,s=56,{color=TINTA,capa='fondo'}={}){
   const g=nuevoIdObj(),T=pts=>({t:'trazo',id:nuevoIdObj(),herr:'pluma',tipo:'boli',color,ancho:2.2,recto:true,g,capa,pts:pts.map(p=>[r2(x+p[0]*s),r2(y+p[1]*s),.5])});
   const caj=(a,b,c,d)=>[[a,b],[c,b],[c,d],[a,d],[a,b]];

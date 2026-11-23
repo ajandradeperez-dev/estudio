@@ -6,6 +6,7 @@
      (5 s de espera) y al volver la conexión. Sin conexión no se pierde nada: queda pendiente y se envía después.
    - Estado (para Perfil y la pantalla Cuenta): evento 'sync' en window; textoEstado() lo dice en una línea. */
 import {crearApiSync} from './api.js';
+import {esNativa,ESQUEMA_APP} from '../plataforma.js';
 import {crearMotor} from './motor.js';
 import {fusionarProgreso} from './fusionar.js';
 import {miEquipo,lapidas,ponerLapidas} from './local.js';
@@ -25,7 +26,8 @@ const escribir=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setIt
 export const cuenta=()=>leer(CUENTA);
 
 /* ---------- sesión ---------- */
-const volverA=()=>location.origin+location.pathname+'?cuenta=1';
+// en la app nativa, el enlace del correo vuelve a la app (io.github.ajandradeperez.estudio://auth): ver plataforma.js
+const volverA=()=>esNativa()?`${ESQUEMA_APP}://auth?cuenta=1`:location.origin+location.pathname+'?cuenta=1';
 const datosJWT=t=>{try{return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))}catch(e){return {}}};
 const guardarSesion=(t,refresh,expiraEn,extra={})=>{const j=datosJWT(t);if(!t||!j.sub)return false;
   escribir(CUENTA,{access_token:t,refresh_token:refresh,expira:Date.now()+(+expiraEn||3600)*1000,uid:j.sub,email:j.email||extra.email||''});return true};
@@ -33,9 +35,10 @@ const guardarSesion=(t,refresh,expiraEn,extra={})=>{const j=datosJWT(t);if(!t||!
 // ?cuenta=1#access_token=…&refresh_token=…&expires_in=…&type=signup|magiclink|recovery
 let nuevaContrasena=false;
 export const pideNuevaContrasena=()=>nuevaContrasena&&!!cuenta();
-export function recibirSesionCuenta(){
-  if(!/[?&]cuenta=1/.test(location.search)||!/access_token=/.test(location.hash))return false;
-  const q=new URLSearchParams(location.hash.slice(1));
+export function recibirSesionCuenta(url=location.href){
+  const u=String(url),hash=u.includes('#')?u.slice(u.indexOf('#')+1):'',busqueda=u.split('#')[0];
+  if(!/[?&]cuenta=1/.test(busqueda)||!/access_token=/.test(hash))return false;
+  const q=new URLSearchParams(hash);
   if(!guardarSesion(q.get('access_token'),q.get('refresh_token'),q.get('expires_in')))return false;
   if(q.get('type')==='recovery')nuevaContrasena=true;
   return true;

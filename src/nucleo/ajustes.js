@@ -1,6 +1,7 @@
 /* Ajustes del dispositivo (localStorage 'ciberlab-ajustes'): tema, sonidos, vibración y pantalla (tamaño del texto,
    dos paneles en horizontal y el ancho del panel de ayuda de la práctica).
    No forman parte del progreso: "Reiniciar progreso" no los toca. La clave de IA vive aparte ('ciberlab-ia'). */
+import {esNativa,vibrarNativo} from './plataforma.js';
 const CLAVE='ciberlab-ajustes';
 const TEMAS=['auto','light','dark'],TEXTOS=['normal','grande','muy-grande'];
 
@@ -22,4 +23,4 @@ export function aplicarTema(){
   if(a.paneles)delete r.dataset.paneles;else r.dataset.paneles='no';
 }
 // Vibración leve (si el dispositivo la tiene y el usuario no la apagó)
-export function vibrar(patron){if(ajustes().vibracion)try{navigator.vibrate?.(patron)}catch(e){}}
+export function vibrar(patron){if(!ajustes().vibracion)return;if(esNativa()){vibrarNativo(patron);return}try{navigator.vibrate?.(patron)}catch(e){}}

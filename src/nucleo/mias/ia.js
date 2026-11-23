@@ -5,6 +5,8 @@
      estricta (esquema.js). Lo generado se guarda en IndexedDB: se paga una vez y luego funciona sin conexión.
    - Las fotos solo se envían a la API del proveedor cuando el usuario toca el botón, comprimidas (lado mayor 1280 px). */
 import {esc} from '../../utilidades.js';
+import {esNativa} from '../plataforma.js';
+import {revisarRecordatorio} from '../app.js';
 import {aviso,confirmar,vacio} from '../ui.js';
 import {leerAjustes,pedirJSON,ErrorIA,costoUSD,nombreProveedor,iaDisponible} from '../ia.js';
 import {leerArchivo} from '../cuaderno/db.js';
@@ -198,5 +200,5 @@ ${disponible()?`<div class="chat-entrada"><textarea id="pq-texto" rows="2" place
 
 // Permiso para los avisos del examen (una semana y un día antes)
 export const S_EJERCICIO_PUBLICO=S_EJERCICIO;
-export async function pedirPermisoAvisos(){try{if('Notification' in window&&Notification.permission==='default')await Notification.requestPermission();
+export async function pedirPermisoAvisos(){if(esNativa()){revisarRecordatorio().catch(()=>{});return}try{if('Notification' in window&&Notification.permission==='default')await Notification.requestPermission();
   const reg=await navigator.serviceWorker.ready;if('periodicSync' in reg)await reg.periodicSync.register('recordatorio-racha',{minInterval:60*60*1000})}catch(e){}}

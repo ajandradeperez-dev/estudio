@@ -4,10 +4,15 @@
    importScripts en un worker clásico: por eso 0.29.5 (también es la que usa npm run python).
    Si un programa no termina (bucle infinito), la página termina este worker y crea otro (runner.js).
    Mensajes: {id, tipo:'cargar'|'correr', codigo, entrada:[líneas para input()]}. */
-const VERSION='0.29.5',BASE=`https://cdn.jsdelivr.net/pyodide/v${VERSION}/full/`;
+// En la app nativa Pyodide va dentro del APK (scripts/app/apk.mjs lo copia a pyodide/): funciona sin internet desde el inicio
+// (si el APK se armó sin Python, --sin-python, se usa jsDelivr como en la web)
+const VERSION='0.29.5',NATIVA=typeof __NATIVA__!=='undefined'&&__NATIVA__,CDN=`https://cdn.jsdelivr.net/pyodide/v${VERSION}/full/`;
 let listo=null;
 function cargar(){
-  if(!listo){importScripts(`${BASE}pyodide.js`);listo=self.loadPyodide({indexURL:BASE})}
+  if(!listo){let base=CDN;
+    if(NATIVA)try{const local=new URL('/pyodide/',self.location.origin).href;importScripts(`${local}pyodide.js`);base=local}catch(e){importScripts(`${CDN}pyodide.js`)}
+    else importScripts(`${CDN}pyodide.js`);
+    listo=self.loadPyodide({indexURL:base})}
   return listo;
 }
 self.onmessage=async e=>{

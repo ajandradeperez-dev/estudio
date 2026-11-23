@@ -1,6 +1,7 @@
 /* Pestaña Perfil: resumen de tu progreso (racha, XP, actividad, por materia), meta diaria, ajustes
    (tema, sonidos, vibración), Mis notas, la clave de IA y reiniciar. */
 import {materias,rutaMateria} from './materias.js';
+import {esNativa} from './plataforma.js';
 import {progreso,datosMateria,racha,estadoHoy,pendientes,cambiarMeta,reiniciarProgreso,hoy,sumarDias,METAS,minutosHablados,basicoRetirado,reactivarBasicos} from './progreso.js';
 import {htmlNivel} from './portada.js';
 import {barra,boton,confirmar} from './ui.js';
@@ -75,7 +76,7 @@ ${materias.filter(m=>!m.proximo).map(m=>{const d=datosMateria(p,m.id);
 <div class="ajuste"><span>📳 Vibración</span>${segmentos('vibracion',[[true,'Sí'],[false,'No']],a.vibracion)}</div>
 <div class="ajuste"><span>🔔 Recordatorio diario</span>${segmentos('recordatorio',[[true,'Sí'],[false,'No']],rec.activo)}</div>
 ${rec.activo?`<div class="ajuste"><label for="rec-hora">⏰ A qué hora</label><input type="time" id="rec-hora" class="hora" value="${esc(rec.hora)}"></div>`:''}
-<p class="nota" style="margin:8px 0 0">${soporteNotificaciones()?'Si a esa hora no cumpliste tu meta, te avisamos para no perder la racha. Con la app cerrada, el teléfono decide el momento exacto (puede llegar un poco después).':'Este navegador no permite notificaciones.'}</p>
+<p class="nota" style="margin:8px 0 0">${esNativa()?'Si a esa hora no has cumplido tu meta, te avisamos (también con la app cerrada). Si ya la cumpliste, ese día no suena.':soporteNotificaciones()?'Si a esa hora no cumpliste tu meta, te avisamos para no perder la racha. Con la app cerrada, el teléfono decide el momento exacto (puede llegar un poco después).':'Este navegador no permite notificaciones.'}</p>
 </div>
 
 <h2 id="perfil-ia">✨ Inteligencia artificial (opcional)</h2>

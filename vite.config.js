@@ -3,22 +3,25 @@ import {VitePWA} from 'vite-plugin-pwa';
 import {APP_NOMBRE,APP_DESCRIPCION,APP_COLOR} from './src/config.js';
 
 // En GitHub Pages la app vive en /<repositorio>/: el workflow pasa BASE_PATH. En local es '/'.
-const base=process.env.BASE_PATH||'/';
+// APP_NATIVA=1 (npm run build:app): la app Android nativa (Capacitor) lleva todo dentro del APK: base '/', sin service
+// worker de la PWA y en dist-app/ (no se mezcla con la web de dist/).
+const nativa=!!process.env.APP_NATIVA,base=nativa?'/':process.env.BASE_PATH||'/';
 
 export default defineConfig({
   base,
   // Versión visible en "Mi progreso" para saber cuál tienes instalada: el workflow pasa fecha + commit; en local, la fecha
-  define:{__VERSION__:JSON.stringify(process.env.APP_VERSION||new Date().toISOString().slice(0,16).replace('T',' '))},
+  define:{__VERSION__:JSON.stringify(process.env.APP_VERSION||new Date().toISOString().slice(0,16).replace('T',' ')),__NATIVA__:JSON.stringify(nativa)},
   // Puertos fijos: el progreso vive en localStorage, que depende del origen (incluido el puerto).
   // Si Vite cambiara de puerto al estar ocupado, la app abriría "vacía". Con strictPort falla en vez de cambiar.
   server:{port:5173,strictPort:true},
   // KaTeX va en el paquete principal (~570 KB, 186 KB comprimido) para funcionar sin conexión
-  build:{chunkSizeWarningLimit:800},
+  build:{chunkSizeWarningLimit:800,outDir:nativa?'dist-app':'dist'},
   preview:{port:4173,strictPort:true},
   plugins:[
   // index.html usa %APP_NOMBRE%, %APP_DESCRIPCION% y %APP_COLOR% (src/config.js)
   {name:'config-app',transformIndexHtml:h=>h.replaceAll('%APP_NOMBRE%',APP_NOMBRE).replaceAll('%APP_DESCRIPCION%',APP_DESCRIPCION).replaceAll('%APP_COLOR%',APP_COLOR)},
   VitePWA({
+    disable:nativa,
     // El service worker nuevo se activa solo; main.js decide cuándo recargar (onNeedReload) para no cortar un ejercicio
     registerType:'autoUpdate',
     injectRegister:false,

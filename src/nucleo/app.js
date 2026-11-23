@@ -4,6 +4,7 @@
    (public/sw-recordatorio.js) lo revisa con Periodic Background Sync cuando el navegador lo permite (Chrome/Android con la
    app instalada). El navegador decide cuándo despierta al service worker: la hora es aproximada. */
 import {esc} from '../utilidades.js';
+import {esNativa,programarAvisos} from './plataforma.js';
 import {APP_NOMBRE,APP_URL,APK_URL,REPO_URL,INVITACION} from '../config.js';
 import {areas,materias,rutaMateria} from './materias.js';
 import {progreso,cambiarMeta,METAS,estadoHoy,racha,hoy} from './progreso.js';
@@ -84,7 +85,18 @@ export function avisarVersionNueva(){
 /* ---------- recordatorio diario ---------- */
 const CACHE_REC='ciberlab-recordatorio',URL_REC='recordatorio.json';
 const minutos=h=>{const [a,b]=String(h).split(':').map(Number);return a*60+(b||0)};
-export const soporteNotificaciones=()=>'Notification' in window&&'serviceWorker' in navigator;
+export const soporteNotificaciones=()=>esNativa()||'Notification' in window&&'serviceWorker' in navigator;
+/* App nativa: los avisos se programan en Android (@capacitor/local-notifications) y suenan aunque la app esté cerrada.
+   Se reprograman cuando cambia algo (hora, meta cumplida hoy, racha o exámenes): si hoy ya cumpliste, el próximo es mañana. */
+let firmaAvisos='';
+async function avisosNativos(forzar=false){
+  const u=usuario(),p=progreso(),e=estadoHoy(p),r=racha(p);
+  const examenes=misMaterias().filter(m=>m.avisos).flatMap(m=>m.examenes.filter(x=>x.fecha>=hoy()).map(x=>({id:`${m.id}/${x.id}`,nombre:`${x.nombre} de ${m.nombre}`,fecha:x.fecha,ruta:`mias/${m.id}`})));
+  const diario={activo:u.recordatorio.activo,hora:u.recordatorio.hora,cumplidaHoy:e.ok,
+    titulo:r?`🔥 No pierdas tu racha de ${r} ${r===1?'día':'días'}`:'⏰ Hora de estudiar',cuerpo:`${u.nombre?u.nombre+', u':'U'}n ratito de estudio y cumples tu meta de hoy.`};
+  const firma=JSON.stringify({diario,examenes,dia:hoy()});if(firma===firmaAvisos&&!forzar)return true;
+  const ok=await programarAvisos({diario,examenes}).catch(()=>false);if(ok)firmaAvisos=firma;return ok;
+}
 // El service worker no puede leer localStorage: le dejamos el estado en la caché
 export async function sincronizarRecordatorio(){
   if(!('caches' in window))return;
@@ -100,6 +112,9 @@ export async function sincronizarRecordatorio(){
 }
 async function marcarNotificado(){try{const c=await caches.open(CACHE_REC),r=await c.match(URL_REC),x=r?await r.json():{};x.notificado=hoy();await c.put(URL_REC,new Response(JSON.stringify(x)))}catch(e){}}
 export async function activarRecordatorio(activo,hora=usuario().recordatorio.hora){
+  if(esNativa()){guardarUsuario({recordatorio:{activo,hora}});const ok=await avisosNativos(true);
+    if(activo&&!ok){aviso('Sin permiso para notificar: actívalo en Ajustes → Apps → Estudio+ → Notificaciones.',4000);guardarUsuario({recordatorio:{activo:false,hora}});return false}
+    return activo}
   if(activo){
     if(!soporteNotificaciones()){aviso('Este navegador no permite notificaciones.',3500);return false}
     const permiso=Notification.permission==='granted'?'granted':await Notification.requestPermission();
@@ -126,6 +141,7 @@ async function revisarExamenes(){
 }
 // Con la app abierta: a la hora elegida, si la meta de hoy no está cumplida, una notificación (una vez al día)
 export async function revisarRecordatorio(){
+  if(esNativa()){await avisosNativos();return}
   await revisarExamenes();
   const u=usuario();if(!u.recordatorio.activo||!soporteNotificaciones()||Notification.permission!=='granted')return;
   const ahora=new Date(),e=estadoHoy();if(e.ok||ahora.getHours()*60+ahora.getMinutes()<minutos(u.recordatorio.hora))return;

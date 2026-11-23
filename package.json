@@ -20,9 +20,12 @@
     "tablet": "node scripts/tablet.mjs",
     "ingles-nivel": "node scripts/ingles-nivel.mjs",
     "simulacros": "node scripts/simulacros.mjs",
-    "dibujo": "node scripts/dibujo.mjs"
+    "dibujo": "node scripts/dibujo.mjs",
+    "build:app": "node scripts/app/apk.mjs --solo-web",
+    "apk": "node scripts/app/apk.mjs"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.6.2",
     "@electric-sql/pglite": "0.5.8",
     "playwright-core": "1.64.0",
     "pyodide": "0.29.5",
@@ -30,6 +33,16 @@
     "vite-plugin-pwa": "^2.0.0"
   },
   "dependencies": {
+    "@capacitor-community/speech-recognition": "7.0.1",
+    "@capacitor-community/text-to-speech": "8.0.2",
+    "@capacitor/android": "8.6.2",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/core": "8.6.2",
+    "@capacitor/filesystem": "8.1.5",
+    "@capacitor/haptics": "8.0.2",
+    "@capacitor/keyboard": "8.0.6",
+    "@capacitor/local-notifications": "8.3.1",
+    "@capacitor/share": "8.0.3",
     "katex": "0.18.9",
     "qrcode-generator": "2.0.4",
     "tesseract.js": "7.0.0"

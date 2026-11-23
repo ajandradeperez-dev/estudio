@@ -7,14 +7,21 @@
    - escuchar({idioma 'en-US'|'en-GB', alParcial, maxSegundos, silencio, continuo}): resultados intermedios en vivo,
      corte por silencio (ms sin nada nuevo después de hablar) y por tiempo máximo; continuo junta varias frases (turno largo).
    - pronunciacionEstimada(): estimación 0–100 con la confianza del reconocedor y, si hay frase esperada, la comparación
-     palabra por palabra de pronunciacion.js. Es una aproximación: lo dicen las pantallas. */
+     palabra por palabra de pronunciacion.js. Es una aproximación: lo dicen las pantallas.
+   App nativa (Capacitor): el WebView de Android no tiene SpeechRecognition y puede no tener voces; ahí se usan los
+   plugins @capacitor-community/speech-recognition (resultados parciales, en-US/en-GB, permiso del micrófono) y
+   text-to-speech, con la misma interfaz: hablar(), escuchar(), callar(), detenerEscucha(). */
 import {esc} from '../utilidades.js';
 import {evaluar} from './pronunciacion.js';
+import {esNativa} from './plataforma.js';
+const nativa=esNativa();
+const TTS=()=>import('@capacitor-community/text-to-speech').then(m=>m.TextToSpeech);
+const SR=()=>import('@capacitor-community/speech-recognition').then(m=>m.SpeechRecognition);
 
 const Reconocedor=typeof window!=='undefined'?(window.SpeechRecognition||window.webkitSpeechRecognition):undefined;
 export const soporte={
-  hablar:typeof window!=='undefined'&&!!window.speechSynthesis&&'SpeechSynthesisUtterance' in window,
-  escuchar:!!Reconocedor
+  hablar:nativa||typeof window!=='undefined'&&!!window.speechSynthesis&&'SpeechSynthesisUtterance' in window,
+  escuchar:nativa||!!Reconocedor
 };
 export const AVISO_SIN_RECONOCIMIENTO='Tu navegador no reconoce la voz. Usa Chrome en Android (o la app) para hablar de verdad. Mientras tanto, puedes escribir tus respuestas.';
 export const AVISO_PRIVACIDAD='🔒 Tu voz no se guarda ni se sube: el reconocimiento la convierte en texto y a la IA solo se manda ese texto.';
@@ -44,6 +51,8 @@ export function vocesDialogo(){
 // idioma: 'en-US' (por defecto), 'en-GB' o 'es' · voz: 'a' / 'b' para distinguir a dos personas en un diálogo
 export function hablar(texto,{lento=false,idioma='en-US',voz=null}={}){
   if(!soporte.hablar||!texto)return Promise.resolve();
+  // app nativa: el motor de voz de Android (la segunda persona de un diálogo, con otro tono)
+  if(nativa)return TTS().then(t=>t.speak({text:texto,lang:idioma.startsWith('es')?'es-MX':idioma,rate:lento?0.75:1,pitch:voz==='b'?0.75:voz==='a'?1.1:1,queueStrategy:0})).catch(()=>{});
   return new Promise(res=>{
     try{
       speechSynthesis.cancel();
@@ -66,7 +75,7 @@ export async function hablarDialogo(lineas,{lento=false}={}){
   const mio=++turnoDialogo;
   for(const [quien,texto] of lineas){if(mio!==turnoDialogo)return;await hablar(texto,{lento,voz:quien==='B'?'b':quien==='A'?'a':null})}
 }
-export function callar(){turnoDialogo++;try{speechSynthesis.cancel()}catch(e){}}
+export function callar(){turnoDialogo++;if(nativa){TTS().then(t=>t.stop()).catch(()=>{});return}try{speechSynthesis.cancel()}catch(e){}}
 
 /* ---------- escuchar ---------- */
 const MENSAJES={
@@ -79,6 +88,10 @@ const MENSAJES={
   'aborted':'Se detuvo la escucha.',
   'sin-soporte':AVISO_SIN_RECONOCIMIENTO
 };
+if(nativa)Object.assign(MENSAJES,{
+  'not-allowed':'La app no tiene permiso para usar el micrófono. Actívalo en Ajustes → Apps → Estudio+ → Permisos → Micrófono, y vuelve a intentar.',
+  'sin-soporte':'Este teléfono no tiene reconocimiento de voz (instala o activa la app de Google). Mientras tanto, escribe tus respuestas.',
+  'network':'El reconocimiento de voz necesita internet en este teléfono. Revisa la conexión o escribe tu respuesta.'});
 export class ErrorVoz extends Error{constructor(codigo){super(MENSAJES[codigo]||'No se pudo escuchar. Intenta de nuevo o escribe tu respuesta.');this.codigo=codigo}}
 
 let activo=null;
@@ -87,6 +100,7 @@ let activo=null;
    silencio: ms sin resultados nuevos (después de empezar a hablar) para cortar · continuo: junta varias frases
    (turno largo de un examen) y solo corta por silencio, por tiempo máximo o al tocar otra vez. */
 export function escuchar({idioma='en-US',alternativas=3,alParcial,maxSegundos=15,silencio=0,continuo=false,alEstado}={}){
+  if(nativa)return escucharNativo({idioma,alternativas,alParcial,maxSegundos,silencio,continuo,alEstado});
   if(!Reconocedor)return Promise.reject(new ErrorVoz('sin-soporte'));
   detenerEscucha();
   return new Promise((res,rej)=>{
@@ -120,6 +134,35 @@ export function escuchar({idioma='en-US',alternativas=3,alParcial,maxSegundos=15
   });
 }
 export function detenerEscucha(){if(activo){try{activo.stop()}catch(e){}}}
+/* App nativa: el reconocedor de Android con resultados parciales. Se corta solo tras una pausa; en un turno largo
+   (continuo) se vuelve a abrir y se juntan las frases hasta el silencio pedido, el tiempo máximo o tocar otra vez. */
+async function escucharNativo({idioma,alternativas,alParcial,maxSegundos,silencio,continuo,alEstado}){
+  const r=await SR();
+  try{if(!(await r.available()).available)throw new ErrorVoz('sin-soporte')}catch(e){throw e instanceof ErrorVoz?e:new ErrorVoz('sin-soporte')}
+  let p=await r.checkPermissions().catch(()=>({}));
+  if(p.speechRecognition!=='granted')p=await r.requestPermissions().catch(()=>({}));
+  if(p.speechRecognition!=='granted')throw new ErrorVoz('not-allowed');
+  detenerEscucha();
+  return new Promise(async(res,rej)=>{
+    const inicio=Date.now(),frases=[];let ultimo=[],terminado=false,pedidoParar=false,mudo=null,manejadores=[];
+    const parar=()=>{pedidoParar=true;alEstado?.('procesando');r.stop().catch(()=>{})};
+    const tope=setTimeout(parar,maxSegundos*1000);
+    activo={stop:parar};
+    const cerrar=(fn,v)=>{if(terminado)return;terminado=true;clearTimeout(tope);clearTimeout(mudo);manejadores.forEach(h=>h.remove());if(activo?.stop===parar)activo=null;fn(v)};
+    const empezar=()=>r.start({language:idioma,maxResults:alternativas,partialResults:true,popup:false}).then(()=>alEstado?.('escuchando')).catch(e=>cerrar(rej,new ErrorVoz(/permission/i.test(e?.message)?'not-allowed':'no-speech')));
+    manejadores.push(await r.addListener('partialResults',d=>{ultimo=(d.matches||[]).filter(Boolean);alParcial?.([...frases,ultimo[0]||''].filter(Boolean).join(' '));
+      if(silencio){clearTimeout(mudo);mudo=setTimeout(parar,silencio)}}));
+    manejadores.push(await r.addListener('listeningState',d=>{
+      if(d.status!=='stopped')return;
+      if(ultimo[0])frases.push(ultimo[0]);
+      if(continuo&&!pedidoParar&&Date.now()-inicio<maxSegundos*1000){ultimo=[];empezar();return}
+      if(!frases.length)return cerrar(rej,new ErrorVoz('no-speech'));
+      const texto=frases.join(' '),alts=frases.length===1&&ultimo.length?ultimo.slice(0,alternativas).map((t,i)=>({transcripcion:t,confianza:i?0.6:0.85})):[{transcripcion:texto,confianza:0.85}];
+      cerrar(res,{transcripcion:texto,confianza:0.85,alternativas:alts,segundos:Math.max(1,Math.round((Date.now()-inicio)/1000))});
+    }));
+    empezar();
+  });
+}
 export const escuchando=()=>!!activo;
 
 /* Pronunciación estimada (0–100). Con frase esperada, la comparación palabra por palabra (evaluar); sin ella, solo la

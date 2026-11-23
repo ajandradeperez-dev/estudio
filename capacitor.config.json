@@ -1,0 +1,19 @@
+{
+  "appId": "io.github.ajandradeperez.estudio",
+  "appName": "Estudio+",
+  "webDir": "dist-app",
+  "android": {
+    "path": "android-app",
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "server": {
+    "androidScheme": "https",
+    "hostname": "localhost"
+  },
+  "plugins": {
+    "SplashScreen": {"launchShowDuration": 600, "backgroundColor": "#4652d0", "showSpinner": false},
+    "Keyboard": {"resize": "native", "resizeOnFullScreen": true}
+  }
+}

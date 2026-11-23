@@ -4,6 +4,7 @@
    abre el certificado interno (constancia de práctica de la app, SIN valor oficial: así lo dice la pantalla).
    Rutas: <materia>/examen-final y <materia>/certificado. */
 import {esc} from '../utilidades.js';
+import {imprimir} from './plataforma.js';
 import {crearSesion} from './sesion.js';
 import {crear} from './generadores/index.js';
 import {GENERADORES} from './generadores/index.js';
@@ -106,7 +107,7 @@ ${boton({texto:'Ir al examen final',go:`${rutaMateria(m)}/examen-final`,clase:'a
 <div class="row hoja-acciones" style="margin-top:12px">${boton({texto:'🖨️ Guardar en PDF',id:'cert-pdf',clase:'ghost'})}${boton({texto:'Volver',go:rutaMateria(m),clase:'ghost'})}</div></div>`;
     },
     alClic(t){
-      if(t.id==='cert-pdf'){document.body.classList.add('imprimiendo');const fin=()=>{document.body.classList.remove('imprimiendo');removeEventListener('afterprint',fin)};addEventListener('afterprint',fin);setTimeout(()=>{window.print();setTimeout(fin,1000)},100);return true}
+      if(t.id==='cert-pdf'){document.body.classList.add('imprimiendo');imprimir().then(()=>document.body.classList.remove('imprimiendo'));return true}
     }
   };
 }

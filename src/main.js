@@ -28,6 +28,7 @@ import {cerrarHoja,intro,boton,aviso} from './nucleo/ui.js';
 import {cerrarProcedimiento} from './nucleo/procedimiento.js';
 import {leccion,rutaLeccion} from './nucleo/materias.js';
 import {registerSW} from 'virtual:pwa-register';
+import {esNativa,instalarNativo,alTocarAviso} from './nucleo/plataforma.js';
 import {hablar} from './nucleo/voz.js';
 import {APP_NOMBRE} from './config.js';
 import {acerca,vistaBienvenida,tocaBienvenida,vigilarConexion,avisarVersionNueva,guardarRegistroSW,revisarRecordatorio,sincronizarRecordatorio} from './nucleo/app.js';
@@ -252,7 +253,8 @@ setInterval(()=>{if(document.visibilityState==='visible'&&Date.now()-ultimaAccio
 
 /* ---------- PWA: funciona sin internet y se actualiza sola ---------- */
 // El service worker nuevo toma el control solo (autoUpdate); en vez de recargar de golpe, aparece "Hay una versión nueva · Actualizar".
-registerSW({
+// (en la app nativa no hay service worker: todo va dentro del APK y se actualiza con un APK nuevo)
+if(!esNativa())registerSW({
   immediate:true,
   // Versión nueva ya activa: si la app está en segundo plano o en Aprender, se recarga sola (recarga controlada); si estás en
   // una lección u otra pantalla, aparece «Actualizar» para no cortarte, y se recarga sola la próxima vez que vuelvas a la app.
@@ -299,3 +301,11 @@ iniciarSync();if(conCuenta)entrarCuenta();
 addEventListener('datos-sincronizados',()=>{if(!cur?.v.inmersiva&&['portada','notas','mias','especial'].includes(cur?.tipo))pintar()});
 // Recordatorio diario: con la app abierta se revisa cada minuto y al volver a ella
 setInterval(revisarRecordatorio,60000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')revisarRecordatorio()});revisarRecordatorio();
+// 📱 App nativa (Capacitor): Atrás de Android, enlaces del correo (io.github.ajandradeperez.estudio://auth?cuenta=1#…),
+// tocar un aviso abre su pantalla, compartir/descargar con el menú de Android (plataforma.js)
+if(esNativa()){
+  instalarNativo({aviso});
+  addEventListener('enlace-app',e=>{if(recibirSesionCuenta(e.detail))entrarCuenta()});
+  alTocarAviso(ruta=>go(ruta||''));
+  addEventListener('app-vuelve',()=>revisarRecordatorio());
+}

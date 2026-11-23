@@ -28,3 +28,6 @@ capturas/
 
 # Videos de promoción y tutorial (npm run video): se generan, no se versionan
 videos/
+dist-app/
+EstudioPlus*.apk
+EstudioPlus*.aab

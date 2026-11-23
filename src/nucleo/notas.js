@@ -4,6 +4,7 @@
    Los datos viven en IndexedDB (cuaderno/db.js) y se cargan de forma asíncrona: la vista se pinta con lo que hay y
    se vuelve a pintar al terminar de cargar (evento 'repintar'). Todo texto del usuario pasa por esc() o por render(). */
 import {GENERADORES} from './generadores/index.js';
+import {imprimir} from './plataforma.js';
 import {esc} from '../utilidades.js';
 import {materias,materia as buscarMateria,tema as buscarTema,leccion,rutaLeccion,analizar} from './materias.js';
 import {progreso,responderRepaso,refTarjeta,idTarjeta} from './progreso.js';
@@ -664,8 +665,7 @@ ${modo==='tapar'?'<button type="button" class="btn ghost ancho" id="nota-destapa
       }
       if(b.id==='nota-pdf'){if(modo!=='leer'){soltar();await guardarYa();modo='leer';repintarV()}
         document.body.classList.add('imprimiendo');await cargarImagenes(document.querySelector('.nota-render'));
-        const fin=()=>{document.body.classList.remove('imprimiendo');removeEventListener('afterprint',fin)};addEventListener('afterprint',fin);
-        setTimeout(()=>{window.print();setTimeout(fin,1000)},100);return true}
+        await imprimir(n.titulo||'Nota');document.body.classList.remove('imprimiendo');return true}
       if(b.id==='nota-md'){await guardarYa();const t=await textoMarkdown();descargar(new Blob([t],{type:'text/markdown'}),`${(n.titulo||'nota').replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,60)||'nota'}.md`);return true}
       if(b.id==='nota-borrar'){
         soltar();clearTimeout(timer);if(pendiente){pendiente=false;n=await guardar(n)}
@@ -727,7 +727,7 @@ ${notas===null?'<p class="cargando">Leyendo tus notas</p>':`<article class="nota
     },
     async alClic(b,ir){
       if(b.id==='res-guardar'){const n=await crearNota({materia:mid,tema:tid,titulo:`Resumen: ${t.titulo}`,cuerpo:textoResumen().replace(/^# .*\n/,''),etiquetas:['resumen']});ir(`notas/n/${n.id}`);return true}
-      if(b.id==='nota-pdf'){document.body.classList.add('imprimiendo');const fin=()=>{document.body.classList.remove('imprimiendo');removeEventListener('afterprint',fin)};addEventListener('afterprint',fin);setTimeout(()=>{window.print();setTimeout(fin,1000)},100);return true}
+      if(b.id==='nota-pdf'){document.body.classList.add('imprimiendo');imprimir().then(()=>document.body.classList.remove('imprimiendo'));return true}
     }
   };
 }

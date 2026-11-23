@@ -335,6 +335,7 @@ export default {
 
 - Los textos son HTML escrito en el repositorio (contenido de confianza). Un fragmento de código largo va en `codigo:'…'` (se muestra escapado en un `<pre>`).
 - **Errores de dedo** (`casiIgual` en `comparar.js`, usado por `sesion.js` como segunda oportunidad): en respuestas en español hechas de palabras se acepta 1 letra cambiada, de más, de menos o volteada (2 en palabras de 10 letras o más), solo en palabras de 5 letras o más y con las dos primeras letras iguales; nunca con números, código, fórmulas de Excel, matrices, voz, preguntas en inglés (`lang:'en'`, materia `ingles` o `tolera:false`) ni si lo escrito se parece a un error típico. La hoja dice «✍️ Ojo con la ortografía: se escribe «…»». Las preguntas exponen sus respuestas en `aceptadas` (si no, se usa `respuesta`). `revisar` prueba casos que deben pasar (nomonal → nominal) y que no (asimétrico ≠ simétrico, mayor ≠ menor).
+- **Límites**: escríbelos siempre en KaTeX, `\(\lim_{x\to a} …\)`, nunca como texto («lím (x→0) de …») ni con `<sub>`. `nucleo/tex.js` (`prepararTex`, lo usan `formula.js` y el dibujo) pone el subíndice abajo (`\limits`) y separa la flecha del signo menos (si no, «x→−2» se lee «x→→2»); `revisar` lo comprueba en cada ejercicio generado y en las lecciones.
 - `completar` compara sin distinguir mayúsculas, acentos, espacios sobrantes, signos ¿? ni punto final, y las comas son opcionales. Los números se comparan por valor y aceptan `x = 6`, `6`, `+6`, `0,5` o `1/2`. Los superíndices valen como `^` (`x⁵` = `x^5`). Pon en `respuestas` todas las variantes correctas (la primera es la que se muestra como solución) y en `errores` las respuestas incorrectas típicas con su explicación.
 - **Matemáticas legibles en el teléfono**: notación Unicode y HTML simple, sin librerías (funciona sin conexión): `x²`, `x<sup>n</sup>`, `lím<sub>x→2</sub>`, `‖v‖`, `√`, `∫`, `ℝ³`, vectores en negrita (`<b>v</b>`). En las respuestas, el usuario escribe exponentes con `^` (`x^3/3 + C`) y vectores como `(5, −4)`: pon en `respuestas` las variantes razonables (`(5, −4)`, `5, −4`, `(1/5)x^5 + C`…). `npm run revisar` falla si un error típico coincide con una respuesta correcta.
 - Los ejercicios se guardan en el repaso por su posición global en la lección (ronda 1 seguida de ronda 2…): agrega ejercicios nuevos **al final de la última ronda** para no desfasar el repaso existente.
@@ -488,6 +489,8 @@ tenga Android. Mismo paquete `io.github.ajandradeperez.estudio` y la **misma lla
 - **Actualizaciones** (`actualizar-app.js`): al abrir (máximo 1 vez al día) y en Acerca de → «Buscar actualización», la
   última Release de GitHub; si es mayor que `App.getInfo().version`, «Versión X disponible» → «Descargar e instalar»
   (abre `EstudioPlus.apk` en el navegador; la primera vez explica «Instalar apps desconocidas»).
+- **Regla: cada cambio que afecte la app sale también en el APK** (la app nativa no lee GitHub Pages): versión siguiente
+  (2.0.1, 2.0.2…; `appVersionCode` 201, 202…), `npm run apk -- --aab` y su Release (`--latest`), además del push.
 - **Publicar una versión**: sube `appVersionCode`/`appVersionName`, `npm run apk -- --aab`, comprueba la firma
   (`apksigner verify --print-certs`, huella de `huella-sha256.txt`) y
   `gh release create v<versión> EstudioPlus.apk EstudioPlus.aab --latest` (mismo nombre de archivo: el enlace de Perfil

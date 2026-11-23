@@ -21,6 +21,24 @@ for(const id of readdirSync(dirAreas).sort()){
 const IDS_RESERVADOS=['l','ubicacion','repaso','progreso','notas','inicio','logros','perfil','cofre','jefe','retos','examen-final','certificado'];
 globalThis.localStorage??={getItem:()=>null,setItem(){},removeItem(){}};
 const {GENERADORES,BANCOS}=await import(pathToFileURL(join(raiz,'..','nucleo','generadores','index.js')).href);
+// Límites legibles (bug «lim x→→−2» con el subíndice al lado): \lim con el subíndice abajo, la flecha separada del signo
+// menos y nada de límites escritos como texto en un enunciado (lím (x→0) de …, lím<sub>…</sub>). Lo usan los generadores y las lecciones.
+const katexLim=(await import(pathToFileURL(join(raiz,'..','..','node_modules','katex','dist','katex.mjs')).href)).default;
+const {prepararTex}=await import(pathToFileURL(join(raiz,'..','nucleo','tex.js')).href);
+function malLimite(t,enunciado=false){
+  const s=String(t??''),fuera=s.replace(/\\\([\s\S]+?\\\)|\\\[[\s\S]+?\\\]/g,' ');
+  if(/l[ií]m\s*<sub>/i.test(s))return `límite con <sub> (el subíndice queda al lado): usa \\(\\lim_{x\\to a}\\) en «${s.slice(0,60)}»`;
+  if(/→\s*→/.test(fuera.replace(/<[^>]+>/g,'')))return `flecha doble en «${s.slice(0,60)}»`;
+  if(enunciado&&/(^|[^\p{L}])l[ií]m\s*(\(|_|\{|\p{L}\s*→)/u.test(fuera.replace(/<[^>]+>/g,'')))return `límite escrito como texto en el enunciado: usa \\(\\lim_{x\\to a}\\) en «${s.slice(0,60)}»`;
+  for(const m of s.matchAll(/\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]/g)){
+    const fx=prepararTex(m[1]||m[2]),n=(fx.match(/\\lim(?![a-zA-Z])/g)||[]).length;if(!n)continue;
+    let html='';try{html=katexLim.renderToString(fx,{throwOnError:false,strict:false,trust:c=>c.command==='\\htmlClass',macros:{'\\cambio':'\\htmlClass{cambio}{#1}'}})}catch(e){}
+    if((html.match(/op-limits/g)||[]).length<(fx.match(/\\lim(?![a-zA-Z])(?:\\limits)?\s*_/g)||[]).length||/\\nolimits/.test(fx))return `el subíndice del límite no queda abajo en «${fx.slice(0,60)}»`;
+    if(/\\to\s*[-−]/.test(fx))return `la flecha queda pegada al signo menos (se lee «→→») en «${fx.slice(0,60)}»`;
+  }
+  return null;
+}
+let limitesRevisados=0;
 const unidadesIngles=new Set((await import(pathToFileURL(join(raiz,'ingles','hablar','unidades.js')).href)).UNIDADES.map(u=>u.id));
 const sinGenerador=[];
 for(const materia of readdirSync(raiz).sort()){
@@ -87,6 +105,7 @@ for(const materia of readdirSync(raiz).sort()){
     const p=palabras((l.explicacion||[]).join(' '));
     if(p>MAX_PALABRAS)mal(donde,`la explicación tiene ${p} palabras (máximo ${MAX_PALABRAS})`);
     if(!l.ejemplos?.length)mal(donde,'faltan ejemplos');
+    {const m=[...(l.explicacion||[]),...(l.ejemplos||[]).flat()].map(x=>malLimite(x)).find(Boolean);if(m)mal(donde,m)}
     if(!Array.isArray(l.rondas)||l.rondas.length<2){mal(donde,'necesita al menos 2 rondas de ejercicios distintas (para repetir si no se domina)');continue}
     const vistas=new Set();
     l.rondas.forEach((ronda,r)=>{
@@ -96,6 +115,7 @@ for(const materia of readdirSync(raiz).sort()){
       if(prod/ronda.length<MIN_PRODUCCION)mal(d,`producción ${prod}/${ronda.length} (mínimo ${MIN_PRODUCCION*100}%)`);
       ronda.forEach((ej,i)=>{
         const e=`${d} ej. ${i+1}`,texto=ej.pregunta||ej.frente;
+        {const m=[ej.pregunta,ej.frente,...(ej.opciones||[])].map(x=>malLimite(x,true)).find(Boolean);if(m)mal(e,m)}
         if(vistas.has(texto))mal(e,'pregunta repetida en la lección: las rondas deben tener ejercicios distintos');
         vistas.add(texto);
         if(ej.tipo==='opcion'){
@@ -539,6 +559,7 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
         if(!(ps.length>=2&&ps.every(x=>x&&typeof x==='object'&&x.que&&x.como&&x.porque))&&!primero)primero='los pasos deben ser ≥ 2 objetos {que, como, porque}';
         else if(ult?.res===undefined||!(t==='escribir'&&!p.forma?p.verificar(ult.res):t==='escribir'?String(ult.res).length>0:plano(ult.res)===plano(p.respuesta)))if(!primero)primero=`el último paso no da la respuesta (res=${ult?.res}, respuesta=${p.respuesta})`;
         if(!GENERADORES[id].alternativa&&!primero)primero='falta la explicación alternativa (No entendí)';
+        if(!primero){const m=[p.enunciado,...(p.opciones||[])].map(x=>malLimite(x,true)).find(Boolean)||[...ps.flatMap(x=>[x.que,x.como,x.porque,x.ojo]),p.regla,p.pista,p.explicacion,p.pasoMal?.texto].map(x=>malLimite(x)).find(Boolean);if(m)primero=m;if(/\\lim(?![a-zA-Z])|l[ií]m\s*\(/.test(JSON.stringify([p.enunciado,ps])))limitesRevisados++}
         for(const x of [p.enunciado,p.respuesta,...ps.flatMap(x=>[x.que,x.como,x.porque,x.ojo]),p.regla,p.pista,p.explicacion,...(p.errores||[]).map(e=>e.por),p.pasoMal?.texto,...(p.opciones||[])].filter(Boolean))
           for(const fx of formulas(x))try{katex.renderToString(fx,{throwOnError:true,strict:false,trust:c=>c.command==='\\htmlClass',macros:{'\\cambio':'\\htmlClass{cambio}{#1}'}})}catch(e){if(!primero)primero=`fórmula inválida: ${fx.slice(0,60)}`}
       }
@@ -551,6 +572,7 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
   for(const [id,f] of Object.entries(BANCOS)){const l=f();if(!l.length||l.some(x=>!x.ref||!x.regla))mal(`banco ${id}`,'vacío o con ejercicios sin ref o sin regla')}
   if(sinPlantillas.size)avisos.push(`generadores de Matemáticas con menos de 3 plantillas por nivel: ${[...sinPlantillas].join(', ')}`);
   console.log(`generadores: ${Object.keys(GENERADORES).length} · ${total} ejercicios generados y verificados · ${Object.keys(BANCOS).length} bancos`);
+  console.log(`límites: ${limitesRevisados} ejercicios con límites, todos con el subíndice abajo y sin «→→»`);
 }
 // Definición de terminado (nucleo/terminado.js): estado de cada habilidad, tema y materia → src/contenido/estado.json (lo lee
 // la app) y src/contenido/PLAN.md (el árbol con referencias, estado y cobertura; se genera aquí). Falla si una habilidad

@@ -7,19 +7,21 @@ const NIV={1:['b1','b2','p1'],2:['b1','b2','p1','p2'],3:['p1','p2','a1'],4:['p1'
 const sg=x=>x<0?`− ${Math.abs(x)}`:`+ ${x}`;
 
 /* ---------- Límites al infinito y trigonométricos especiales ---------- */
+// coeficiente delante de x: 1 → «», −1 → «−»
+const co=k=>k===1?'':k===-1?'-':String(k);
 const limInf=crearGen({titulo:'Límites al infinito y trigonométricos especiales',niveles:NIV,
   explicacion:'Al infinito, en un cociente de polinomios manda el término de mayor grado: si los grados son iguales el límite es el cociente de los coeficientes principales; si el de abajo es mayor, da 0. Cerca de 0: lím sen x / x = 1, así que lím sen(kx)/x = k y lím (1 − cos x)/x² = 1/2.',
   alternativa:'Con x = 1 000 000, el 3x² de arriba aplasta al +5: lo que queda es «3x² entre 2x²», o sea 3/2. Y para ángulos muy chicos (en radianes), sen x es casi igual a x.',
   referencia:'Stewart, Cálculo 2.6 y 3.3 – Límites al infinito; límite de sen x / x',regla:'Grados iguales: cociente de coeficientes principales; grado de abajo mayor: 0. lím sen(kx)/x = k.',pista:'Divide todo entre la mayor potencia de x.',
   tarjetas:[['lím (x→∞) de un cociente de polinomios del mismo grado','El cociente de los coeficientes principales.'],['lím (x→0) sen x / x','1.'],['lím (x→0) (1 − cos x)/x²','1/2.']],
   plantillas:{
-    b1:{prof:'basico',f:(n,r)=>{const a=r.noCero(-9,9),b=r.noCero(-9,9),c=r.entero(1,9),d=r.entero(1,9),v=a/c;return prob({enunciado:`Calcula lím (x→∞) de (${a}x² ${sg(b)}) / (${c}x² ${sg(d)}). (fracción o decimal)`,v,dec:4,
+    b1:{prof:'basico',f:(n,r)=>{const a=r.noCero(-9,9),b=r.noCero(-9,9),c=r.entero(1,9),d=r.entero(1,9),v=a/c;return prob({enunciado:`Calcula \\(\\lim_{x\\to\\infty} \\dfrac{${co(a)}x^{2} ${sg(b)}}{${co(c)}x^{2} ${sg(d)}}\\). (fracción o decimal)`,v,dec:4,
       pasos:[paso('Divide entre x²',`(${a} ${sg(b)}/x²)/(${c} ${sg(d)}/x²)`,'Los términos /x² tienden a 0.'),final('Coeficientes principales',`${a}/${c} = ${marca(fmt(v,4))}`,'Mismo grado.')],errores:[[b/d,'Mandan los términos de mayor grado.'],[0,'Solo da 0 si el grado de abajo es mayor.']],comprobar:()=>cerca((a*1e8+b/1e8)/(c*1e8+d/1e8),v,1e-6)})}},
-    b2:{prof:'basico',f:(n,r)=>{const k=r.noCero(-9,9);return prob({enunciado:`Calcula lím (x→0) de sen(${k}x)/x.`,v:k,dec:4,
+    b2:{prof:'basico',f:(n,r)=>{const k=r.noCero(-9,9);return prob({enunciado:`Calcula \\(\\lim_{x\\to 0} \\dfrac{\\operatorname{sen}(${co(k)}x)}{x}\\).`,v:k,dec:4,
       pasos:[paso('Multiplica y divide entre '+k,`${k}·sen(${k}x)/(${k}x)`,'Forma sen u / u.'),final('sen u / u → 1',marca(k),'Límite especial.')],errores:[[1,'Falta el factor k.'],[1/k,'Es k, no 1/k.']],comprobar:()=>cerca(Math.sin(k*1e-6)/1e-6,k,1e-6)})}},
-    p1:{prof:'procedimiento',f:(n,r)=>{const a=r.noCero(-9,9),c=r.entero(1,9),m=r.entero(1,3),e=m+r.entero(1,2);return prob({enunciado:`Calcula lím (x→∞) de ${a}x^${m} / (${c}x^${e} + 1).`,v:0,dec:4,
+    p1:{prof:'procedimiento',f:(n,r)=>{const a=r.noCero(-9,9),c=r.entero(1,9),m=r.entero(1,3),e=m+r.entero(1,2);return prob({enunciado:`Calcula \\(\\lim_{x\\to\\infty} \\dfrac{${co(a)}${m===1?'x':`x^{${m}}`}}{${co(c)}x^{${e}} + 1}\\).`,v:0,dec:4,
       pasos:[paso('Compara grados',`arriba ${m}, abajo ${e}`,'El de abajo crece más rápido.'),final('Divide entre x^'+e,`→ 0/${c} = ${marca(0)}`,'Grado de abajo mayor.')],errores:[[a/c,'Solo si los grados son iguales.'],[Infinity,'Gana el denominador.']],comprobar:()=>Math.abs(a*1e4**m/(c*1e4**e+1))<1e-3})}},
-    p2:{prof:'procedimiento',f:(n,r)=>{const a=r.noCero(-9,9),b=r.noCero(1,9),v=a/b;return prob({enunciado:`Calcula lím (x→0) de sen(${a}x)/sen(${b}x). (fracción o decimal)`,v,dec:4,
+    p2:{prof:'procedimiento',f:(n,r)=>{const a=r.noCero(-9,9),b=r.noCero(1,9),v=a/b;return prob({enunciado:`Calcula \\(\\lim_{x\\to 0} \\dfrac{\\operatorname{sen}(${co(a)}x)}{\\operatorname{sen}(${co(b)}x)}\\). (fracción o decimal)`,v,dec:4,
       pasos:[paso('Divide arriba y abajo entre x',`[sen(${a}x)/x]/[sen(${b}x)/x]`,'Dos límites especiales.'),final('Cada uno',`${a}/${b} = ${marca(fmt(v,4))}`,'sen(kx)/x → k.')],errores:[[1,'Los coeficientes no se cancelan dentro del seno.'],[b/a,'Arriba va el de arriba.']],comprobar:()=>cerca(Math.sin(a*1e-6)/Math.sin(b*1e-6),v,1e-6)})}},
     a1:{prof:'aplicacion',f:(n,r)=>{const a=r.entero(5,50),b=r.entero(1,10);return prob({enunciado:`La concentración de un medicamento en la sangre es C(t) = ${a}t/(t + ${b}) mg/L. ¿A qué valor se acerca a largo plazo (t → ∞)?`,v:a,dec:2,unidad:'mg/L',
       pasos:[paso('Divide entre t',`${a}/(1 + ${b}/t)`,'b/t → 0.'),final('Límite',marca(a),'Nivel de saturación.')],errores:[[a/b,'Al infinito, b/t desaparece.'],[0,'Mismo grado arriba y abajo.']],comprobar:()=>cerca(a*1e9/(1e9+b),a,1e-6)})}},

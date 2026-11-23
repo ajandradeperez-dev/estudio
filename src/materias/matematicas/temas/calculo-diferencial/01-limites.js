@@ -1,7 +1,7 @@
 const R1='Si la función es continua en el punto (como los polinomios), el límite se calcula sustituyendo: lím x→a f(x) = f(a).';
 const R2='Si al sustituir sale 0/0, factoriza y simplifica antes de sustituir: 0/0 es una indeterminación, no el resultado.';
 const R3='Cuando x → ∞ en un cociente de polinomios mandan los términos de mayor grado; si arriba y abajo tienen el mismo grado, el límite es el cociente de sus coeficientes.';
-const lim=a=>`lím<sub>x→${a}</sub>`;
+const lim=a=>`\\(\\lim_{x\\to ${a==='∞'?'\\infty':a}}\\)`;
 
 export default {
   titulo:'Límites',

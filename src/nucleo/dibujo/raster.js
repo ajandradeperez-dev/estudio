@@ -3,6 +3,7 @@
    PDF. Si el navegador no lo permite, el lienzo escribe el LaTeX como texto. Y un PDF mínimo (una imagen JPEG por página). */
 import katex from 'katex';
 import {OPCIONES} from '../formula.js';
+import {prepararTex} from '../tex.js';
 
 let estilos=null;
 const aDataUrl=b=>new Promise((res,rej)=>{const f=new FileReader();f.onload=()=>res(f.result);f.onerror=rej;f.readAsDataURL(b)});
@@ -43,7 +44,7 @@ async function sePuede(img){
   return permite;
 }
 const formulas=new Map();
-const html=tex=>{try{return katex.renderToString(tex,{...OPCIONES,output:'html',displayMode:true})}catch(e){return null}};
+const html=tex=>{try{return katex.renderToString(prepararTex(tex),{...OPCIONES,output:'html',displayMode:true})}catch(e){return null}};
 /* Imagen de una fórmula: {img, w, h} (w y h en px CSS para tam px de letra). Se cachea por fórmula y color. */
 export function imagenFormula(tex,{tam=22,color='#1f2430'}={}){
   const clave=`${color}|${tam}|${tex}`;if(formulas.has(clave))return formulas.get(clave);

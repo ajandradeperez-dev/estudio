@@ -302,7 +302,7 @@ export default {
       envio:(n,r)=>{const x0=r.entero(2,6),m=r.entero(20,60),v=m*x0;return prob({enunciado:`Un envío cuesta ${m}x pesos hasta ${x0} kg y luego k + 10(x − ${x0}). ¿Qué valor de k evita un salto en x = ${x0}?`,v,dec:0,unidad:'pesos',
         pasos:[paso('Valor por la izquierda',`${m}·${x0} = ${m*x0}`,'Primera regla.'),final('Por la derecha debe dar lo mismo',`k + 0 = ${marca(v)}`,'Sin salto.')],
         errores:[[m,'Falta multiplicar por los kg.'],[m*x0+10,'En x = '+x0+' el segundo término vale 0.']],regla:'Sin salto: límite por la izquierda = límite por la derecha = f(a).',pista:'Evalúa ambas reglas en el punto.',comprobar:()=>v===m*x0})}}},
-  'cd/definicion':{tarjetas:T(['Definición de derivada','f′(a) = lím_{h→0} [f(a + h) − f(a)]/h.'],['Interpretación geométrica','Pendiente de la recta tangente en x = a.'],['Interpretación física','Razón de cambio instantánea (p. ej. velocidad).']),
+  'cd/definicion':{tarjetas:T(['Definición de derivada','f′(a) = lím (h→0) [f(a + h) − f(a)]/h.'],['Interpretación geométrica','Pendiente de la recta tangente en x = a.'],['Interpretación física','Razón de cambio instantánea (p. ej. velocidad).']),
     aplicaciones:{
       costo:(n,r)=>{const a=r.entero(1,5),b=r.entero(10,50),x=r.entero(10,100),v=2*a*x+b;return prob({enunciado:`El costo de producir x unidades es C(x) = ${a}x² + ${b}x. Con la definición de derivada, ¿cuál es el costo marginal C′(${x})?`,v,dec:0,unidad:'pesos por unidad',
         pasos:[paso('Cociente de diferencias',`[C(${x} + h) − C(${x})]/h = ${2*a*x}+${a}h + ${b}`,'Expande y cancela.'),final('h → 0',`C′(${x}) = ${marca(v)}`,'Costo marginal.')],
@@ -454,7 +454,7 @@ export default {
       arco:(n,r)=>{const a=r.entero(1,5),v=Math.asinh(1);return prob({enunciado:`Un cable cumple ∫₀^${a} dx/√(x² + ${a*a}). Usa x = ${a} tan θ. (4 decimales)`,v,dec:4,
         pasos:[paso('Sustitución',`x = ${a}tan θ, √(x² + ${a*a}) = ${a}sec θ`,'dx = '+a+'sec²θ dθ.'),final('∫sec θ dθ',`ln|sec θ + tan θ| de 0 a π/4 = ln(1 + √2) = ${marca(fmt(v,4))}`,'Resultado.')],
         errores:[[Math.PI/4,'Ese es el límite en θ, no la integral.'],[1,'∫sec θ no es tan θ.']],regla:'√(x² + a²): x = a tan θ.',pista:'∫sec θ = ln|sec θ + tan θ|.',comprobar:()=>cerca(simpson(x=>1/Math.sqrt(x*x+a*a),0,a),v)})}}},
-  'ci/impropias':{tarjetas:T(['Integral impropia','Límite de integrales: ∫ₐ^∞ f = lím_{t→∞} ∫ₐᵗ f.'],['Converge si…','el límite existe y es finito.'],['∫₁^∞ 1/xᵖ dx','Converge si p > 1 (vale 1/(p − 1)).']),
+  'ci/impropias':{tarjetas:T(['Integral impropia','Límite de integrales: ∫ₐ^∞ f = lím (t→∞) ∫ₐᵗ f.'],['Converge si…','el límite existe y es finito.'],['∫₁^∞ 1/xᵖ dx','Converge si p > 1 (vale 1/(p − 1)).']),
     aplicaciones:{
       prob:(n,r)=>{const l=r.elegir([0.5,1,2]),a=r.entero(1,4),v=Math.exp(-l*a);return prob({enunciado:`El tiempo de vida de un foco (en años) tiene densidad ${l}e^{−${l}t}. ¿Qué probabilidad hay de que dure más de ${a} años? (∫_${a}^∞) (4 decimales)`,v,dec:4,
         pasos:[paso('Antiderivada',`∫${l}e^{−${l}t} dt = −e^{−${l}t}`,'Exponencial.'),final('Límite',`0 − (−e^{−${l*a}}) = ${marca(fmt(v,4))}`,'Converge.')],

@@ -6,7 +6,7 @@
    - Las fotos solo se envían a la API del proveedor cuando el usuario toca el botón, comprimidas (lado mayor 1280 px). */
 import {esc} from '../../utilidades.js';
 import {aviso,confirmar,vacio} from '../ui.js';
-import {leerAjustes,pedirJSON,ErrorIA,costoUSD,nombreProveedor} from '../ia.js';
+import {leerAjustes,pedirJSON,ErrorIA,costoUSD,nombreProveedor,iaDisponible} from '../ia.js';
 import {leerArchivo} from '../cuaderno/db.js';
 import {render} from '../cuaderno/formato.js';
 import {tex} from '../formula.js';
@@ -18,7 +18,7 @@ import {normal} from './emparejar.js';
 import {miMateria,guardarGenerado,buscarTema} from './datos.js';
 
 export const MODELO_TEXTO='texto',MODELO_VISION='vision';   // niveles de nucleo/ia.js (el modelo concreto depende del proveedor)
-export const disponible=()=>!!leerAjustes().clave;
+export const disponible=()=>iaDisponible();
 export const SIN_CLAVE='Para usar ✨ necesitas tu propia clave de IA: la de Gemini es gratis con tu cuenta de Google (aistudio.google.com → Get API key) y se pega en Perfil → ✨ Inteligencia artificial. Se guarda solo en este teléfono. Sin clave, todo lo demás funciona igual.';
 
 /* ---------- costo estimado ---------- */

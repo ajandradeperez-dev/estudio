@@ -337,11 +337,58 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   if(ult.cuerpo.messages[0].content[0].type!=='image'||ult.cuerpo.output_config?.format?.type!=='json_schema')mal(e,'Claude: la imagen o el esquema no van en el formato de Anthropic');
   await IA.pedirJSON({system:'S',messages:[{role:'user',content:'x'}],schema:esquema});if(ult.cuerpo.model!=='claude-haiku-5-5')mal(e,'Claude: el texto no usa el modelo elegido');
   resp=()=>[429,{error:{message:'rate'}}];try{await IA.pedir({mensajes:[{role:'user',content:'x'}]});mal(e,'Claude: no falla con 429')}catch(x){if(x.codigo!=='429')mal(e,'Claude: 429 mal reportado')}
+  // Groq, OpenRouter y Mistral (API compatible con OpenAI), JSON por esquema o en el prompt, y 🔁 respaldo automático
+  {
+    const ok=(texto,extra={})=>[200,{choices:[{finish_reason:'stop',message:{content:texto}}],usage:{prompt_tokens:4,completion_tokens:2},...extra}];
+    for(const [p,clave,url,modelo] of [['groq','gsk_FALSA','https://api.groq.com/openai/v1/chat/completions','openai/gpt-oss-120b'],
+      ['openrouter','sk-or-FALSA','https://openrouter.ai/api/v1/chat/completions','google/gemma-4-31b-it:free'],['mistral','abcdefghijklmnopqrstuvwxyzABCDEF','https://api.mistral.ai/v1/chat/completions','mistral-small-latest']]){
+      if(!IA.pareceClave(p,clave)||IA.pareceClave(p,'AIzaFALSA'))mal(e,`${p}: reconoce mal su clave`);
+      IA.guardarAjustes({proveedor:p,clave});resp=()=>ok('{"explicacion":"Hola"}');
+      const r=await IA.pedir({sistema:'S',mensajes:[{role:'user',content:'Explica'}],esquemaJSON:esquema});
+      if(r?.explicacion!=='Hola'||ult.url!==url||ult.op.headers.authorization!==`Bearer ${clave}`||ult.cuerpo.model!==modelo)mal(e,`${p}: URL, clave Bearer, modelo o respuesta incorrectos`);
+      if(ult.cuerpo.messages[0].role!=='system'||ult.cuerpo.response_format?.type!=='json_schema'||!ult.cuerpo.response_format.json_schema?.schema)mal(e,`${p}: falta el mensaje de sistema o el esquema en response_format`);
+    }
+    if(!/:free$/.test(IA.PROVEEDORES.openrouter.texto)||!/:free$/.test(IA.PROVEEDORES.openrouter.vision))mal(e,'OpenRouter: un modelo que no es «:free»');
+    // imágenes en formato OpenAI (Mistral lee fotos; Groq no: se salta)
+    IA.guardarAjustes({proveedor:'mistral'});resp=()=>ok('{"explicacion":"Foto"}');
+    await IA.pedir({mensajes:[{role:'user',content:'Lee'}],imagenes:[img],esquemaJSON:esquema,nivel:'vision'});
+    if(ult.cuerpo.model!=='ministral-8b-latest'||ult.cuerpo.messages.at(-1).content[0].type!=='image_url'||!ult.cuerpo.messages.at(-1).content[0].image_url.url.startsWith('data:image/jpeg;base64,'))mal(e,'Mistral: la foto no va como image_url o no usa el modelo de visión');
+    // un modelo que no acepta el esquema: se pide en el prompt (json_object) y se valida la respuesta
+    IA.guardarAjustes({proveedor:'groq'});let n=0;
+    resp=u=>{n++;return u.cuerpo.response_format?.type==='json_schema'?[400,{error:{message:'response_format json_schema is not supported by this model'}}]:ok('Claro: {"explicacion":"Sí"}')};
+    const rp=await IA.pedir({sistema:'S',mensajes:[{role:'user',content:'x'}],esquemaJSON:esquema});
+    if(rp?.explicacion!=='Sí'||n!==2||ult.cuerpo.response_format?.type!=='json_object'||!/esquema JSON/.test(ult.cuerpo.messages[0].content))mal(e,'sin esquema en la API: no se pide el JSON en el prompt o no se lee');
+    resp=()=>ok('{"otra":"cosa"}');try{await IA.pedir({mensajes:[{role:'user',content:'x'}],esquemaJSON:esquema});mal(e,'un JSON que no cumple el esquema se acepta')}catch(x){if(x.codigo!=='json')mal(e,'JSON que no cumple: error equivocado')}
+    if(IA.validarEsquema({a:[1,'x']},{type:'object',required:['a'],properties:{a:{type:'array',items:{type:'number'}}}})===''||IA.validarEsquema({a:'v'},{type:'object',properties:{a:{enum:['v']}}})!=='')mal(e,'validarEsquema');
+    // errores: 401, 429 (también 200 con error de OpenRouter), 503
+    for(const [st,cu,codigo] of [[401,{error:{message:'Invalid API Key'}},'401'],[429,{error:{message:'rate'}},'429'],[200,{error:{code:429,message:'Rate limit'}},'429'],[503,{},'saturado']]){
+      IA.guardarAjustes({proveedor:'openrouter',respaldo:{activo:false}});resp=()=>[st,cu];
+      try{await IA.pedir({mensajes:[{role:'user',content:'x'}]});mal(e,`compatible: no falla con ${st}`)}catch(x){if(x.codigo!==codigo)mal(e,`compatible: ${st} mal reportado (${x.codigo})`)}}
+    // 🔁 respaldo: Gemini principal saturado → Groq, con aviso; con foto se salta Groq; 401 no pasa al siguiente
+    IA.guardarAjustes({proveedor:'gemini',clave:'AIzaPRUEBA',respaldo:{activo:true,orden:['gemini','groq','openrouter','mistral','claude']}});
+    const usados=[];resp=u=>{usados.push(u.url.includes('groq')?'groq':u.url.includes('openrouter')?'openrouter':u.url.includes('mistral')?'mistral':'gemini');
+      return u.url.includes('generativelanguage')?[503,{error:{status:'UNAVAILABLE'}}]:ok('hola')};
+    const rr=await IA.pedir({mensajes:[{role:'user',content:'x'}]});
+    if(rr!=='hola'||usados.join()!=='gemini,groq'||IA.ultimoRespaldo?.texto!=='Usando Groq (Gemini saturado)')mal(e,`respaldo: ${usados} · ${IA.ultimoRespaldo?.texto}`);
+    usados.length=0;await IA.pedir({mensajes:[{role:'user',content:'x'}],imagenes:[img],nivel:'vision'});
+    if(usados.join()!=='gemini,openrouter')mal(e,`respaldo con foto: debería saltarse Groq (${usados})`);
+    usados.length=0;resp=u=>{usados.push(u.url);return u.url.includes('generativelanguage')?[429,{error:{status:'RESOURCE_EXHAUSTED'}}]:[401,{error:{message:'bad'}}]};
+    try{await IA.pedir({mensajes:[{role:'user',content:'x'}]});mal(e,'respaldo: todos fallan y no avisa')}catch(x){if(x.codigo!=='429'||usados.length!==2)mal(e,`respaldo: con clave inválida en el respaldo debe parar y avisar el error del principal (${x.codigo}, ${usados.length})`)}
+    {const f0=globalThis.fetch;let k=0;globalThis.fetch=async(url,op)=>{k++;if(String(url).includes('generativelanguage'))throw new TypeError('Failed to fetch');return f0(url,op)};resp=()=>ok('ok');
+     const r3=await IA.pedir({mensajes:[{role:'user',content:'x'}]});if(r3!=='ok'||!/Gemini no responde/.test(IA.ultimoRespaldo.texto))mal(e,'respaldo: sin conexión con el principal no pasa al siguiente');globalThis.fetch=f0}
+    IA.guardarAjustes({respaldo:{activo:false}});usados.length=0;resp=u=>{usados.push(u.url);return [503,{}]};
+    try{await IA.pedir({mensajes:[{role:'user',content:'x'}]})}catch(x){}if(usados.length!==1)mal(e,'respaldo desactivado: igual usa otros proveedores');
+    IA.guardarAjustes({respaldo:{activo:true,usar:{groq:false}}});if(IA.cadenaProveedores().includes('groq')||IA.cadenaProveedores().includes('claude'))mal(e,'respaldo: usa un proveedor desmarcado o Claude (de pago) sin marcarlo');
+    // Probar una clave usa solo ese proveedor (sin respaldo)
+    usados.length=0;resp=u=>{usados.push(u.url);return ok('hola')};await IA.probarClave('mistral');if(usados.length!==1||!usados[0].includes('mistral'))mal(e,'Probar: no usa solo el proveedor elegido');
+    IA.guardarAjustes({respaldo:{activo:true,usar:{groq:true}}});
+    for(const k of ['groq','openrouter','mistral'])IA.borrarClave(k);
+  }
   // sin clave: mensaje que dice dónde ponerla
   IA.guardarAjustes({proveedor:'gemini',clave:''});try{await IA.pedir({mensajes:[{role:'user',content:'x'}]});mal(e,'sin clave no avisa')}catch(x){if(x.codigo!=='sin-clave')mal(e,'sin clave: error equivocado')}
   if(IA.costoUSD('texto',1e6,1e6)!==0)mal(e,'Gemini gratis no debería mostrar costo');
   globalThis.localStorage=antes.ls;globalThis.fetch=antes.f;
-  console.log('ia: Gemini y Claude con texto, imágenes y JSON, turnos, tokens, 429, clave inválida, respuesta cortada, clave vieja, claves AQ. y mensajes de «Probar» (respuestas y claves simuladas)');
+  console.log('ia: Gemini, Claude, Groq, OpenRouter (:free) y Mistral con texto, imágenes y JSON, turnos, tokens, 429, clave inválida, respuesta cortada, clave vieja, claves AQ., JSON con esquema o en el prompt, respaldo automático y mensajes de «Probar» (respuestas y claves simuladas)');
 }
 // 📚 Lectura: cada libro con licencia y atribución, sus capítulos en public/libros, y cada pregunta de comprensión con su
 // evidencia (frase que aparece tal cual en ese capítulo)

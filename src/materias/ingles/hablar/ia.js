@@ -11,7 +11,7 @@ import {soporte,hablar,htmlMic,htmlOir,htmlFraseEvaluada,escucharConBoton,AVISO_
 import {evaluar} from '../../../nucleo/pronunciacion.js';
 import {registrarEjercicio,registrarHabla,registrarSonidos,guardarFrase,programarRepaso,guardarNota,hoy,cambiarExtra,progreso,datosMateria,agregarTarjeta} from '../../../nucleo/progreso.js';
 import {SONIDOS} from '../errores-pronunciacion.js';
-import {leerAjustes,pedir,pedirJSON,nombreModelo} from '../../../nucleo/ia.js';
+import {pedir,pedirJSON,nombreModelo,iaDisponible} from '../../../nucleo/ia.js';
 import {nivelIngles} from './nivel.js';
 import {htmlCierre,xpHoy} from '../../../nucleo/cierre.js';
 import {premiarTurno,htmlPremio,terminarConversacion} from './juego.js';
@@ -66,7 +66,7 @@ export function vistaIA(){
   let st={fase:'elegir'};
   const ultimaIA=()=>st.log?.filter(m=>m.rol==='tutor').at(-1)?.data?.respuesta||'';
   function htmlElegir(){
-    const a=leerAjustes(),n=ajustesCharla().nivel||nivelIngles(),hs=historial();
+    const a={clave:iaDisponible()},n=ajustesCharla().nivel||nivelIngles(),hs=historial();
     return `${!a.clave?`<div class="card aviso"><h3>Falta tu clave de IA</h3><p>La conversación usa la IA con tu propia clave (Gemini es gratis con tu cuenta de Google). Mientras la consigues, practica con los <button class="enlace" data-go="estudio/ingles/hablar">diálogos guiados</button>, que funcionan sin IA.</p><button class="btn" data-go="ajustes-ia">✨ Configurar la IA</button></div>`
       :`<p class="nota">Modelo: ${esc(nombreModelo())} · máximo ${MAX_TURNOS} turnos. <button class="enlace" data-go="ajustes-ia">Ajustes</button></p>`}
 <p class="nota">${AVISO_PRIVACIDAD}</p>

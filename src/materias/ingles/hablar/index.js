@@ -15,7 +15,7 @@ import {FRASES} from './frases.js';
 import {sesionPronunciacion,itemsElegir} from './practica.js';
 import {vistaDialogo} from './dialogo.js';
 import {vistaIA} from './ia.js';
-import {leerAjustes} from '../../../nucleo/ia.js';
+import {iaDisponible} from '../../../nucleo/ia.js';
 import {nivelIngles} from './nivel.js';
 import {misionHabla,MISION} from '../../../nucleo/progreso.js';
 import {barra,intro} from '../../../nucleo/ui.js';
@@ -66,7 +66,7 @@ export const htmlMedallas=(p=progreso())=>{const ya=datosMateria(p,'ingles').ext
 const portada={
   titulo:'Hablar',
   vista(){
-    const p=progreso(),f=fuerzaSonidos(p),dl=datosMateria(p,'ingles').extra.dialogos||{},clave=!!leerAjustes().clave,act=unidadActual(p),combo=comboActual();
+    const p=progreso(),f=fuerzaSonidos(p),dl=datosMateria(p,'ingles').extra.dialogos||{},clave=iaDisponible(),act=unidadActual(p),combo=comboActual();
     return `
 <div class="hablar-cab"><h1>🎙️ Hablar</h1><button class="btn ghost btn-chico" id="hb-sonido" type="button" aria-pressed="${sonidoActivo()}">${sonidoActivo()?'🔊 Sonidos':'🔇 Sin sonidos'}</button></div>
 ${intro(`Hablar en voz alta es lo que más rápido te hace avanzar. Tu nivel: <b>${nivelIngles(p)}</b>${combo>=3?` · 🔥 combo ${combo}`:''}.`,['Cumple la misión del día: 20 frases o una conversación de 5 turnos.','Sigue tu unidad: escucha, frases, diálogos, fluidez y el jefe.','Toca el micrófono, habla y mira qué palabras salieron bien.','Sin micrófono también puedes responder escribiendo.'])}
@@ -169,7 +169,7 @@ export function recomendarIngles(p=progreso()){
   for(const [id,x] of Object.entries(fuerzaSonidos(p))){const s=sonido(id);
     if(s&&x.n>=5&&x.prom<0.8)c.push({regla:3,valor:x.prom,titulo:`Practicar ${s.nombre}`,porque:`${s.nombre} te cuesta (${pct(x.prom)} % reciente): 5 minutos de pares mínimos.`,ruta:`${RAIZ}/sonido/${id}`})}
   if(u)c.push({regla:6,titulo:`Jefe: ${u.titulo}`,porque:`Estás al día: vence al jefe de la unidad para abrir la siguiente (${u.tarea.charAt(0).toLowerCase()}${u.tarea.slice(1)})`,ruta:`${RAIZ}/jefe/${u.id}`});
-  if(leerAjustes().clave)c.push({regla:6,titulo:'Conversación libre con IA',porque:'Estás al día: practica una conversación libre con tu tutor IA.',ruta:`${RAIZ}/ia`});
+  if(iaDisponible())c.push({regla:6,titulo:'Conversación libre con IA',porque:'Estás al día: practica una conversación libre con tu tutor IA.',ruta:`${RAIZ}/ia`});
   return c;
 }
 

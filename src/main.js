@@ -187,6 +187,8 @@ window.addEventListener('popstate',e=>{
 });
 // El ← de las migas: un Atrás si hay una pantalla de la app debajo; si no (enlace directo sin toques), va al padre
 function atras(){if(pos()>0){registrar('back',{ruta:cur.ruta,nota:'← migas'});history.back()}else{const p=padreDe(cur);if(p!==null)go(p,{modo:'replace'})}}
+// 🔁 Respaldo de la IA: aviso discreto cuando responde otro proveedor («Usando Groq (Gemini saturado)»)
+addEventListener('ia-respaldo',e=>aviso(`🔁 ${e.detail?.texto||''}`,3000));
 // Navegación pedida por otros módulos: document.dispatchEvent(new CustomEvent('ir',{detail:'ruta'})) o {detail:{ruta, reemplazar:true}}
 document.addEventListener('ir',e=>{const d=e.detail;typeof d==='object'&&d?go(String(d.ruta||''),{modo:d.reemplazar?'replace':'push'}):go(String(d||''))});
 

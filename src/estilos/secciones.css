@@ -720,3 +720,16 @@ body{padding-top:var(--franja,0px)}
 .notas-herr .btn-chico{min-width:44px}
 .ed-bloques .katex{font-size:1.08em}
 @media (max-width:479px){.solo-ancho{display:none}}
+
+/* ✨ IA: orden del respaldo automático */
+.ia-orden{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:4px}
+.ia-orden-fila{display:flex;align-items:center;justify-content:space-between;gap:4px;border-top:1px solid var(--line);padding-top:4px}
+.ia-orden-fila .opcion-radio{flex:1 1 auto;min-width:0;flex-direction:row}
+.ia-orden-fila .row{flex:none;gap:0}
+.ia-check{position:relative;width:44px;height:44px;flex:none;display:grid;place-items:center}
+.ia-check input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.ia-check span{width:22px;height:22px;border-radius:6px;border:2px solid var(--line-2);background:var(--surface);display:grid;place-items:center;box-sizing:border-box;pointer-events:none}
+.ia-check input:checked+span{background:var(--primary);border-color:var(--primary)}
+.ia-check input:checked+span::after{content:"✓";color:var(--on-primary);font-weight:800;font-size:14px}
+.ia-check input:disabled+span{opacity:.5}
+.ia-check input:focus-visible+span{outline:3px solid var(--primary);outline-offset:2px}

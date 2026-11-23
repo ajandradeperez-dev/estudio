@@ -1,13 +1,13 @@
 /* "✨ Pregunta nueva con IA" (opcional): si hay clave de IA (Gemini o Claude) guardada en este dispositivo, pide un ejercicio
    para la habilidad y el nivel actuales, en el mismo formato que los generadores. Si no hay clave o falla, la sesión sigue
    con el generador local: la app funciona 100 % sin IA. La clave nunca sale de localStorage salvo hacia la API de su proveedor (ver nucleo/ia.js). */
-import {leerAjustes,pedirJSON} from './ia.js';
+import {leerAjustes,pedirJSON,iaDisponible} from './ia.js';
 import {crear} from './generadores/index.js';
 import {igualNum,equivalente,igualTexto,num} from './generadores/verificar.js';
 import {coincide} from './comparar.js';
 import {esc} from '../utilidades.js';
 
-export const iaDisponible=()=>!!leerAjustes().clave;
+export {iaDisponible};
 
 const ESQUEMA={type:'object',additionalProperties:false,required:['enunciado','respuestas','pasos','regla','pista'],properties:{
   enunciado:{type:'string',description:'La pregunta en español. Fórmulas en TeX entre \\( y \\).'},

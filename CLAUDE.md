@@ -128,8 +128,11 @@ src/
                           formato.js (marcas → HTML, sin DOM; tarjetas; deHtml() pasa pasos de la app a texto de nota),
                           notas.js (crear/guardar/borrar, copia de los resúmenes viejos, "📝 Guardar en mis notas" desde el estudio),
                           medios.js (comprimir y guardar fotos), editor-ui.js (teclado de fórmulas, visor, recortar y girar,
-                          crear tarjeta, bloque de dibujo), respaldo.js (exportar/importar TODO en .json, sin la clave de IA),
+                          crear tarjeta), respaldo.js (exportar/importar TODO en .json, sin la clave de IA),
                           foto.js ("📸 Foto a nota" y "🧠 Resuélvelo conmigo" con IA; sin clave, OCR local con Tesseract.js)
+    dibujo/               ✏️ Editor de dibujo del cuaderno (ver «✏️ Dibujo»): modelo.js (sin DOM: objetos, migración, historial,
+                          formas, plantillas, lazo, goma), pintar.js (canvas: trazos como Path2D, fondos, modo oscuro),
+                          raster.js (fórmulas y HTML como imagen con foreignObject, PDF mínimo), editor.js (pantalla completa)
     procedimiento.js      Pantalla "📖 Procedimiento": pasos revelables, lo que cambia resaltado, diagramas, 🔊 y 📝 por paso
     portada.js            Portada (áreas), página de área, de materia (temas), camino de un tema, migas y barra superior
     miprogreso.js         Pestaña Perfil: progreso, meta diaria y ajustes
@@ -366,10 +369,8 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 11`; los formatos 
   fija encima del teclado (`--teclado` con `visualViewport`) y el cursor nunca queda detrás (`visible()`); con ratón
   (`hover:hover and pointer:fine`) va arriba y fija. **∑** abre el teclado de símbolos (`SIMBOLOS`) en el teléfono; con
   teclado físico no se abre solo. **Bloques** con menú «⋮»: ↑ Subir, ↓ Bajar, 🗑️ Borrar (con Deshacer), en fotos ✂️
-  Recortar o girar (foto nueva, la vieja se borra si nadie la usa) y 💬 Pie; tocar una foto la amplía. **Dibujo** como
-  bloque dentro de la nota (`htmlDibujo`/`activarDibujo`): lápiz, borrador, 3 grosores, 4 colores, deshacer; un dedo
-  dibuja, dos desplazan; «✓ Listo» guarda un PNG con sus `trazos` en el archivo (así se vuelve a editar; los dibujos de
-  antes no tienen trazos). **👁️ Lectura**: sin herramientas, letra 18 px y fórmulas grandes; al seleccionar texto,
+  Recortar o girar (foto nueva, la vieja se borra si nadie la usa) y 💬 Pie; tocar una foto la amplía. **Dibujo**: se
+  abre a pantalla completa (ver «✏️ Dibujo»); en la nota queda su PNG y tocarlo lo vuelve a abrir. **👁️ Lectura**: sin herramientas, letra 18 px y fórmulas grandes; al seleccionar texto,
   «🃏 Crear tarjeta» (también en el editor) agrega `🃏 pregunta | respuesta` al final. **🧠 Repasar**: las tarjetas de la
   nota (pregunta → Mostrar respuesta → Otra vez / Bien / Fácil, que actualizan su repaso SM-2 con `idTarjeta`); sin
   tarjetas ofrece «Tapar las negritas». Guardado automático con «Guardado ✓». **Atajos**: Ctrl+B, Ctrl+I, Ctrl+Shift+8,
@@ -380,6 +381,31 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 11`; los formatos 
   fórmulas como texto corto con `formulaCorta`), chip de la materia con su color, fecha relativa e íconos 🖼️ 🃏; dos
   paneles en la laptop. `node scripts/cuaderno-capturas.mjs <carpeta>` toma las capturas del cuaderno (teléfono 360 y
   390, laptop 1366 y 1440, claro y oscuro, teclado abierto) con un informe de medidas.
+- **✏️ Dibujo** (`nucleo/dibujo/`, PROMPT-DIBUJO). Editor a pantalla completa (capa `.dibujo-fondo`; Atrás cierra primero
+  sus opciones, el texto o la selección —cada una con su entrada en el historial: un `.dib-marca` oculto— y después sale
+  guardando). **Formato** (archivo del cuaderno, campo `dibujo`, v2; ver el comentario de `modelo.js`): objetos
+  inmutables en coordenadas del lienzo (trazo, texto, fórmula, imagen, papel) + vista, bloqueo, fondo, capas y los últimos
+  100 cambios del historial (cada cambio = `diferencia(antes, después)`). Los dibujos de PROMPT-NOTAS (`trazos`) se migran
+  al abrirlos (`migrarDibujo`: la goma vieja recorta de verdad) y los de antes (solo PNG) quedan como imagen fija para
+  escribir encima; `revisar` y `npm run dibujo` lo prueban. Se guarda como archivo nuevo (PNG + vectores, el anterior se
+  borra si nadie lo usa) y mientras se dibuja hay un autoguardado `borrador-dibujo-<nota>` (no se sincroniza ni va al
+  respaldo) que la nota ofrece recuperar. **Gestos**: 1 dedo o S Pen dibuja; 2 dedos zoom (25–800 %) y mover; tocar con
+  2 deshace, con 3 rehace; doble toque con 2 ajusta o vuelve al 100 %; ratón: rueda, Ctrl + rueda, espacio + arrastrar,
+  «0». **🔒 Bloquear** (se recuerda por dibujo): 2 dedos solo deshacen; mantener 2 dedos 0,5 s desbloquea mientras se
+  mueven y se vuelve a bloquear al soltar (vibra); «Escribir y avanzar» (→). ✋ modo mano; con S Pen, el dedo mueve.
+  **Herramientas**: pluma (bolígrafo, fuente, lápiz; 5 grosores + deslizador; 10 colores, recientes, propio; 4
+  favoritas), resaltador (detrás de la tinta, línea recta), borrador de trazo o de precisión (solo resaltador, borrar
+  todo), lazo (mover, escalar, rotar, color, grosor, copiar, pegar, duplicar, borrar, ✨ pasar a texto o fórmula con
+  IA), formas inteligentes (mantener al final del trazo: línea, flecha, círculo, elipse, rectángulo, triángulo,
+  polígono) y de matemáticas (plano cartesiano, recta numérica, flechas, vector, llaves y corchetes, tabla, círculo
+  unitario), regla y transportador con medidas, texto, fórmulas KaTeX, imágenes (fijas para anotar encima, recortar),
+  fondos (liso, cuadrícula 5 mm, renglones, puntos, plano cartesiano, pentagrama), plantillas (Cornell, problema, mapa
+  mental, comparar, tabla de verdad, diagrama de red), capas (tinta, resaltado, fondo), modo práctica (papeles que se
+  tocan para ver), exportar PNG / PDF y compartir. Hoja que crece o páginas carta. Preferencias del dispositivo en
+  `ciberlab-dibujo`. **Rendimiento**: 3 canvas, solo lo visible, Path2D por objeto y, durante un gesto con muchos
+  trazos, la imagen ya pintada se mueve y al soltar se vuelve a pintar nítida (2000 trazos a más de 60 fps).
+  Desde un ejercicio, el ✏️ Borrador tiene «✏️ Resolver en el Cuaderno» (`resolverEnCuaderno`: el enunciado como imagen
+  fija arriba; se guarda en la nota del tema).
 - **Borrar notas**: «⋯ → 🗑️ Borrar la nota» en la cabecera de cada nota, «⋯ → 🗑️ Borrar» en cada nota de la lista y «☑️ Seleccionar» (contador «N seleccionadas» y Borrar) para varias. Siempre con el diálogo propio `confirmar()` (Atrás o Cancelar no borran) y luego «🗑️ Nota borrada · Deshacer» durante 8 s (`avisoAccion` en `ui.js`). `borrarNotas(lista)` (`cuaderno/notas.js`) borra de IndexedDB sus fotos y dibujos salvo los que use otra nota, sus tarjetas y repasos, el resumen del que salió y convierte en texto los enlaces `[…](#notas/n/<id>)` desde otras notas; devuelve una copia completa que `restaurarNotas` vuelve a poner tal cual (mismas fechas). `npm run cuaderno` lo prueba.
 - En Ciberseguridad, los casos del laboratorio y los escenarios de VPN se guardan por posición: agrégalos al final de sus listas en `datos/`.
 - Todo acceso a `localStorage` va en `try/catch` para que la app funcione aunque esté bloqueado.
@@ -510,7 +536,7 @@ Sin cuenta, cada dispositivo guarda lo suyo y se pasa con el respaldo; con cuent
 - **Botón Atrás** (Android, APK/TWA, PWA, laptop y el ← de las migas; `main.js`): el historial del navegador ES la pila de pantallas. **Una entrada por cada navegación que hace la persona**, con `pushState` síncrono dentro de su toque o clic (lleva la activación del usuario: Chrome en Android se salta con el botón Atrás las entradas agregadas sin ella, «history manipulation intervention»; por eso fallaron la «trampa» y el colchón de entradas). Navegaciones automáticas (rutas viejas, redirecciones, la vuelta de un enlace, el primer pintado) usan `replaceState`. **Sin entradas de relleno.**
   - `go(ruta,{modo})`: `'push'` (la persona navegó), `'replace'` (automático) o `'pop'` (Atrás: solo pinta). Salir de una práctica o capa a la misma ruta vuelve de un salto a su entrada (`desde`) en vez de agregar otra.
   - **popstate solo pinta** la ruta guardada en la entrada (`{app, i, ruta, inm?, capa?, desde?}`) o cierra las capas que ya no tienen entrada; nunca hace push ni replace (el diagnóstico lo marca con `enPop` y `npm run atras` lo comprueba).
-  - **Capas** (modal, hoja de feedback, procedimiento, dibujo, visor): un `MutationObserver` les da su propia entrada al aparecer (aparecen con un toque); Atrás las cierra; si se cierran con su botón, la app quita su entrada con `history.back()`.
+  - **Capas** (modal, hoja de feedback, procedimiento, dibujo, visor): un `MutationObserver` les da su propia entrada al aparecer (aparecen con un toque); Atrás las cierra; si se cierran con su botón, la app quita su entrada con `history.back()`. Si una capa se abre justo al cerrarse otra (un menú que abre otro), usa la entrada de la que se cerró (`replaceState`); si se abre o se cierra mientras va un regreso, espera a que termine (`capasEnEspera`, `quitarDespues`).
   - **Práctica** (vista inmersiva sobre la misma ruta): al empezarla con un toque se agrega una entrada; Atrás sale de ella (lo respondido ya quedó guardado).
   - **Enlace directo o recarga en una ruta profunda**: al **primer toque** se reconstruye la cadena de padres (`padreDe()`: lección → tema → materia → área → Aprender) con `pushState`, ya con activación. Antes del primer toque, un Atrás sale de la app (no se puede evitar sin entradas creadas por la persona).
   - **Portada de Aprender**: al primer toque queda una entrada «base» debajo; Atrás llega a ella y muestra «Toca otra vez para salir»; el siguiente cierra la app (en la laptop, sale de la página).
@@ -668,6 +694,7 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | PROMPT-TABLET · Tab S10: riel lateral, dos paneles, S Pen (borrador, presión, palma), atajos de teclado, Pantalla en Perfil, `npm run tablet`, APK 1.2.0 | ✅ terminado |
 | PROMPT-SIMULACROS-INGLES · motor de voz, 7 simulacros (escucha y habla con IA), conversación libre y prueba de nivel adaptativa | ✅ terminado |
 | PROMPT-NOTAS · Cuaderno para teclado y dedo: dibujo sin desfase (2b), lista nueva, editor por bloques en un solo modo, fórmulas en vivo, foto y dibujo como bloques, lectura, repasar y atajos | ✅ terminado |
+| PROMPT-DIBUJO · Dibujo del cuaderno como app de notas a mano: lienzo con zoom, bloqueo y desbloqueo temporal, herramientas, formas, fondos, plantillas, capas, modo práctica, PNG/PDF, migración | ✅ terminado |
 | P3b · Inglés: metas extra por nivel (lecturas, escuchas, diálogos, vocabulario con audio, escritura con rúbrica e IA) | ✅ terminado: A1, A2, B1 y B2 con 6 lecturas, 6 escuchas, 8 diálogos, 400 palabras con ejemplo y audio y 3 escritos con rúbrica cada uno (24 lecturas, 24 escuchas, 32 diálogos, 1600 palabras, 12 escritos). |
 | 4 · Inglés: completar A1 y A2, luego B1 | reemplazado por P3 y P6 |
 | 5 · Ciencia de datos: Descriptiva → Probabilidad → Python → resto | reemplazado por P3 y P6 |
@@ -696,6 +723,7 @@ npm run dev       # servidor de desarrollo: http://localhost:5173 (puerto fijo)
 npm run build     # genera dist/
 npm run preview   # sirve dist/ en http://localhost:4173 (puerto fijo)
 npm run revisar   # método, jerarquía, contenido de habla, migración del progreso, los 50 generadores y Mis materias (esquema, plan, fixtures) (~10 s)
+npm run dibujo    # ✏️ dibujo: gestos (zoom, mover, bloqueo y desbloqueo temporal, toques de 2 y 3 dedos), lazo, formas, goma, fondos, plantillas, PNG/PDF, migración, sincronización, 2000 trazos, tablet y laptop (capturas en capturas/dibujo/)
 npm run cuaderno  # cuaderno: notas viejas, editor (atajos, fórmula en vivo, foto, dibujo, mover bloques, guardado, teclado simulado), lectura, repasar, borrar (--capturas <dir> [--oscuro])
 npm run principiante # cada habilidad lista para un principiante: mini-lección, nivel 1, 3 pistas con datos, gemelo (--detalle)
 npm run python    # el curso de Python ejecutado en Pyodide: cada ejercicio generado y cada solución del laboratorio

@@ -654,6 +654,46 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
   if(F.formulaCorta('x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}')!=='x = (-b ± √(b²-4ac))/2a'||F.vistaPrevia('**a** $x^2$ ![f](img:z)\n🃏 q | r')!=='a x² q | r')mal(e,'vista previa de la lista (fórmulas como texto corto)');
   console.log('cuaderno: los bloques del editor conservan las notas viejas (imágenes, tarjetas, código, fórmulas)');
 }
+// Dibujos del cuaderno (PROMPT-DIBUJO): migración del formato viejo, historial, formas, borradores, lazo y transformar
+{
+  const M=await import(pathToFileURL(join(raiz,'..','nucleo','dibujo','modelo.js')).href),e='dibujos';
+  const linea=(x0,y0,x1,y1,n=20)=>Array.from({length:n+1},(_,i)=>[x0+(x1-x0)*i/n,y0+(y1-y0)*i/n,.5]);
+  // v1 (PROMPT-NOTAS): trazos en px CSS; la goma pintaba con el color del papel → ahora recorta el trazo
+  const viejo={id:'d1',tipo:'image/png',ancho:945,alto:630,trazos:[{herr:'lapiz',color:null,ancho:3.5,pen:false,puntos:linea(20,100,320,100)},
+    {herr:'lapiz',color:'#dc2626',ancho:2,pen:true,puntos:linea(20,200,300,220).map((p,i)=>[p[0],p[1],.2+i/40])},
+    {herr:'borrar',color:null,ancho:3,pen:false,puntos:[[170,60,.5],[170,140,.5]]}]};
+  const d=M.migrarDibujo(viejo),tr=d.objetos.filter(o=>o.t==='trazo');
+  if(d.v!==2||tr.length!==3)mal(e,`migrar v1: ${tr.length} trazos (se esperaban 3: la línea partida por la goma y el trazo rojo)`);
+  if(d.ancho!==360||d.alto!==240)mal(e,`migrar v1: el tamaño de la hoja (${d.ancho}×${d.alto}) no es el de entonces (360×240)`);
+  const rojo=tr.find(o=>o.color==='#dc2626');if(!rojo?.vari||rojo.pts.length!==21||rojo.pts[5][2]!==viejo.trazos[1].puntos[5][2])mal(e,'migrar v1: el trazo con presión del S Pen cambia');
+  if(tr.filter(o=>o.color===M.TINTA).some(o=>o.pts.some(p=>Math.abs(p[0]-170)<9)))mal(e,'migrar v1: la goma vieja no recorta lo que tapaba');
+  if(M.migrarDibujo({id:'x',blob:{}}).objetos.length!==0||M.migrarDibujo(null).v!==2)mal(e,'migrar un dibujo sin trazos (solo PNG)');
+  const otra=M.migrarDibujo({dibujo:JSON.parse(JSON.stringify(M.paraGuardar(d)))});
+  if(JSON.stringify(otra.objetos)!==JSON.stringify(d.objetos))mal(e,'guardar y volver a leer un dibujo v2 cambia sus objetos');
+  if(M.normalizarDibujo({objetos:[{t:'trazo',id:'a',ancho:2,pts:[[1,'x']]},{t:'imagen',id:'b'},{t:'texto',id:'c',x:1,y:2,tam:20,texto:'hola'}]}).objetos.length!==1)mal(e,'normalizar no descarta objetos inválidos');
+  // historial: diferencia ↔ aplicar ida y vuelta
+  const A=d.objetos,B=[...A.slice(1),{t:'texto',id:'t9',x:0,y:0,tam:20,texto:'x'}];B.splice(1,0,M.transformar(A[0],M.mMover(5,5)));
+  const op=M.diferencia(A,B);
+  if(JSON.stringify(M.aplicarOp(A,op))!==JSON.stringify(B)||JSON.stringify(M.aplicarOp(B,op,true))!==JSON.stringify(A))mal(e,'historial: deshacer y rehacer no devuelven lo mismo');
+  // formas inteligentes
+  const temblor=linea(0,0,200,30,40).map((p,i)=>[p[0],p[1]+Math.sin(i*1.7)*2,.5]),circ=Array.from({length:60},(_,i)=>{const a=i/59*Math.PI*2;return [100+50*Math.cos(a)+Math.sin(i)*2,100+50*Math.sin(a),.5]});
+  const cuad=[[0,0],[120,0],[120,120],[0,120],[0,1]].flatMap((q,i,l)=>i?linea(l[i-1][0],l[i-1][1],q[0],q[1],15).slice(1):[]);
+  const fl=[...linea(0,50,180,50,30),...linea(180,50,165,38,4).slice(1)];
+  const f1=M.reconocerForma(temblor),f2=M.reconocerForma(circ),f3=M.reconocerForma(cuad),f4=M.reconocerForma(fl);
+  if(f1?.forma!=='linea'||f1.pts.length!==2||f2?.forma!=='circulo'||f3?.forma!=='rectangulo'||f4?.forma!=='flecha')mal(e,`formas inteligentes: ${[f1,f2,f3,f4].map(f=>f?.forma)}`);
+  if(M.reconocerForma(Array.from({length:40},(_,i)=>[i*5,Math.sin(i/3)*40,.5])))mal(e,'formas inteligentes: una curva libre se convierte en forma');
+  for(const [id] of M.FORMAS){const o=M.formaDirecta(id,[10,10],[300,220]);if(!o.length||o.some(x=>!x.g)||new Set(o.map(x=>x.g)).size!==1)mal(e,`forma «${id}» sin piezas o sin grupo`)}
+  for(const [id] of M.PLANTILLAS)if(M.normalizarDibujo({objetos:M.plantilla(id).objetos}).objetos.length!==M.plantilla(id).objetos.length)mal(e,`plantilla «${id}» con objetos inválidos`);
+  // goma de precisión: parte un trazo; lazo y transformar
+  const t0={t:'trazo',id:'q',herr:'pluma',tipo:'boli',color:'#000',ancho:2,pts:linea(0,0,200,0,4)};
+  const piezas=M.recortarTrazo(t0,[[100,-20],[100,20]],6);if(piezas?.length!==2||M.recortarTrazo(t0,[[100,40],[120,40]],6)!==null)mal(e,'goma de precisión: no parte el trazo en dos o toca lo que no debe');
+  if(!M.enLazo([t0],[[-10,-10],[210,-10],[210,10],[-10,10]]).has('q')||M.enLazo([t0],[[-10,-10],[50,-10],[50,10],[-10,10]]).has('q'))mal(e,'lazo: selecciona mal');
+  const g2=M.transformar(t0,M.mEscalar(2,0,0));if(g2.pts[4][0]!==400||g2.ancho!==4)mal(e,'escalar un trazo');
+  const r2=M.transformar({t:'texto',id:'r',x:0,y:0,w:100,h:20,tam:20,texto:'a'},M.mRotar(Math.PI/2,50,10));if(Math.abs(r2.rot-Math.PI/2)>1e-3)mal(e,'rotar un texto');
+  const s=M.simplificar(linea(0,0,500,0,500));if(s.length!==2)mal(e,`simplificar una recta deja ${s.length} puntos`);
+  if(M.paginasPDF({...M.nuevoDibujo({ancho:400}),objetos:[{t:'trazo',id:'z',ancho:2,pts:[[0,0,.5],[10,1500,.5]]}]}).length<2)mal(e,'el PDF no reparte un dibujo largo en páginas');
+  console.log('dibujos: migración del formato viejo, historial, formas inteligentes y de matemáticas, plantillas, goma, lazo y PDF');
+}
 // Errores de dedo: se aceptan en palabras en español (nomonal → nominal) pero nunca cambian el sentido
 {
   const si=[['nomonal','nominal'],['Telent','Telnet'],['clasificacoin','clasificacion'],['simetrco','simetrico'],['deteccion y analissi','deteccion y analisis']];

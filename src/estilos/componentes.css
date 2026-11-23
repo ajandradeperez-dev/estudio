@@ -198,7 +198,7 @@ button{font:inherit}
 
 /* ---------- modal ---------- */
 .modal-fondo{position:fixed;inset:0;z-index:60;display:grid;place-items:end center;background:rgb(10 12 20 / .5);padding:var(--s4)}
-.modal{width:100%;max-width:420px;padding:var(--s6) var(--s5) var(--s5);border-radius:var(--r3);background:var(--surface);text-align:center;animation:entrar .2s ease-out}
+.modal{width:100%;max-width:420px;max-height:calc(100dvh - 32px);overflow-y:auto;box-sizing:border-box;padding:var(--s6) var(--s5) var(--s5);border-radius:var(--r3);background:var(--surface);text-align:center;animation:entrar .2s ease-out}
 .modal h2{margin:0 0 var(--s2)}
 .modal p{color:var(--muted)}
 .modal .pila{margin-top:var(--s4)}

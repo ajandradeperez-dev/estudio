@@ -12,11 +12,13 @@ import {tex,conFormulas} from './formula.js';
 import {soporte,escuchar} from './voz.js';
 import {crear} from './generadores/index.js';
 import {generadorDe} from './practica.js';
-import {todasLasNotas,leerNota,leerArchivo,guardarArchivo,borrarArchivo,nuevoId,enMemoria} from './cuaderno/db.js';
+import {todasLasNotas,leerNota,leerArchivo,guardarArchivo,borrarArchivo,nuevoId,enMemoria,leerBorradorDibujo,guardarBorradorDibujo,borrarBorradorDibujo} from './cuaderno/db.js';
 import {render,enLinea,alternarCasilla,tarjetasDe,imagenesDe,plano,normal,TARJETA,bloques,unirBloques,pieDe,vistaPrevia,tieneFormulas} from './cuaderno/formato.js';
 import {cuadernoDe,fechaCorta,guardar,crearNota,borrarNotas,restaurarNotas,sincronizarResumenes} from './cuaderno/notas.js';
 import {comprimirFoto,guardarImagen} from './cuaderno/medios.js';
-import {SIMBOLOS,htmlTecladoFormulas,abrirVisor,editarFoto,pedirTarjeta,htmlDibujo,activarDibujo,trazosLigeros} from './cuaderno/editor-ui.js';
+import {SIMBOLOS,htmlTecladoFormulas,abrirVisor,editarFoto,pedirTarjeta} from './cuaderno/editor-ui.js';
+import {abrirEditorDibujo} from './dibujo/editor.js';
+import {migrarDibujo,imagenesDibujo,nuevoIdObj} from './dibujo/modelo.js';
 import {archivoRespaldo,leerRespaldo,aplicarRespaldo,resumenRespaldo,resumenLocal,descargar} from './cuaderno/respaldo.js';
 import {misMaterias,recargarMias} from './mias/datos.js';
 import {vistaFoto} from './cuaderno/foto.js';
@@ -280,7 +282,7 @@ const altImagen=t=>t.match(/^!\[([^\]]*)\]/)?.[1]||'';
 
 function vistaEditor(id){
   let n=null,modo='editar',estado='',timer=null,pendiente=false,error='';
-  let bs=[],act=-1,cursor=null,tfx=false,dib=null,rep=null,urlsBloques=[];
+  let bs=[],act=-1,cursor=null,tfx=false,dib=false,rep=null,urlsBloques=[];
   const caja=()=>document.getElementById('ed-bloques');
   const ta=()=>document.querySelector('#ed-bloques .ed-texto');
   const ponerEstado=e=>{estado=e;const el=document.getElementById('nota-estado');if(el)el.textContent=e};
@@ -299,28 +301,25 @@ function vistaEditor(id){
   const conPrevia=t=>/\$/.test(t);
   const menuBloque=(i,siempre)=>`<button type="button" class="ed-bmenu${siempre?' siempre':''}" data-bmenu="${i}" aria-label="Opciones del bloque: mover o borrar">⋮</button>`;
   function htmlBloque(b,i){
-    if(dib?.i===i)return `<div class="ed-bloque ed-dibujo activo" data-i="${i}" data-tipo="dibujo">${htmlDibujo()}</div>`;
     if(i===act&&b.tipo!=='imagen'){
       const f=b.tipo==='formula';
       return `<div class="ed-bloque activo" data-i="${i}" data-tipo="${b.tipo}"><div class="ed-fila"><textarea class="ed-texto${f?' ed-formula':claseTexto(b.texto)}" rows="1" aria-label="${f?'Fórmula (LaTeX entre $$)':'Texto del bloque'}" spellcheck="${!f}">${esc(b.texto)}</textarea>${menuBloque(i,true)}</div>
 <div class="ed-previa nota-render" hidden aria-live="polite"></div></div>`;
     }
-    if(b.tipo==='imagen'){const pie=pieDe(altImagen(b.texto));
-      return `<div class="ed-bloque" data-i="${i}" data-tipo="imagen"><figure class="nota-fig"><button type="button" class="ed-img" data-ampliar="${i}" aria-label="Ampliar la foto"><img class="nota-img" data-img="${esc(idImagen(b.texto)||'')}" alt="${esc(pie||'Imagen de la nota')}"></button>${pie?`<figcaption>${esc(pie)}</figcaption>`:''}</figure>${menuBloque(i,true)}</div>`;
+    if(b.tipo==='imagen'){const pie=pieDe(altImagen(b.texto)),esDib=altImagen(b.texto)==='dibujo';
+      return `<div class="ed-bloque" data-i="${i}" data-tipo="imagen"><figure class="nota-fig"><button type="button" class="ed-img" data-ampliar="${i}" aria-label="${esDib?'Abrir el dibujo para editarlo':'Ampliar la foto'}"><img class="nota-img" data-img="${esc(idImagen(b.texto)||'')}" alt="${esc(pie||'Imagen de la nota')}"></button>${pie?`<figcaption>${esc(pie)}</figcaption>`:''}</figure>${menuBloque(i,true)}</div>`;
     }
     return `<div class="ed-bloque" data-i="${i}" data-tipo="${b.tipo}"><div class="ed-vista nota-render" data-editar="${i}">${render(b.texto,opcTex)||'<p class="nota">(vacío)</p>'}</div>${menuBloque(i,false)}</div>`;
   }
   const htmlBloques=()=>`${bs.map(htmlBloque).join('')}<button type="button" class="ed-final" id="ed-final" aria-label="Escribir al final de la nota">${bs.length?'':'Toca aquí para escribir. Usa la barra para títulos, listas, fórmulas y fotos.'}</button>`;
   function pintarBloques({foco=true}={}){
     const c=caja();if(!c)return;
-    if(dib?.l){dib.trazos=dib.l.trazos;dib.l.destruir();dib.l=null}
     c.innerHTML=htmlBloques();
     cargarImagenes(c);
     const t=ta();
     if(t){ajustar(t);if(foco){t.focus({preventScroll:true});const p=cursor??t.value.length;t.setSelectionRange(p[0]??p,p[1]??p);cursor=null;visible(t)}
       t.addEventListener('input',()=>escribir(t));t.addEventListener('keydown',e=>teclaTexto(e,t));t.addEventListener('select',()=>marcarSeleccion());
       t.addEventListener('keyup',()=>{marcarSeleccion();previa(t)});t.addEventListener('pointerup',()=>setTimeout(()=>{marcarSeleccion();previa(t)},0));previa(t)}
-    if(dib){const d=c.querySelector('.ed-dibujo');dib.l=activarDibujo(d,dib.trazos||[]);d.scrollIntoView({block:'nearest'})}
     marcarSeleccion();
   }
   const lineaCursor=t=>{const v=t.value,a=t.selectionStart,ini=v.lastIndexOf('\n',a-1)+1,fin=v.indexOf('\n',a);return v.slice(ini,fin<0?v.length:fin)};
@@ -363,7 +362,6 @@ function vistaEditor(id){
     act=-1;deBloques();
   }
   function activar(i,pos){
-    if(dib)terminarDibujo(true);
     if(i===act&&ta()){if(pos!=null){const t=ta();t.focus();t.setSelectionRange(pos,pos)}return}
     const id0=bs[i];soltar();i=bs.indexOf(id0);if(i<0)i=Math.min(bs.length-1,i);
     if(i<0||!bs[i]||bs[i].tipo==='imagen'){act=-1;pintarBloques();return}
@@ -412,24 +410,47 @@ function vistaEditor(id){
       caja()?.querySelector(`[data-i="${i}"]`)?.scrollIntoView({block:'nearest'});aviso(`📷 Foto guardada (${Math.round(img.blob.size/1024)} KB)`)}
     catch(e){aviso(e.message||'No se pudo guardar la foto.');ponerEstado('')}
   }
-  function nuevoDibujo(){const i=insertarBloque({tipo:'dibujo',texto:''});dib={i,nuevo:true,trazos:[]};pintarBloques({foco:false})}
-  async function editarDibujo(i){
-    const a=await leerArchivo(idImagen(bs[i].texto)).catch(()=>null);
-    if(!a?.trazos){aviso('Este dibujo es de antes: no se puede editar, pero puedes hacer uno nuevo.',3500);return}
-    soltar();dib={i,nuevo:false,trazos:a.trazos,viejo:a.id};pintarBloques({foco:false});
+  /* ✏️ Dibujo: editor a pantalla completa (dibujo/editor.js). Se guarda como un archivo nuevo (PNG para verlo en la nota +
+     el dibujo en vectores para volver a editarlo); el anterior se borra si nadie más lo usa. Mientras dibujas se guarda un
+     borrador cada pocos segundos: si la app se cierra de golpe, al volver a la nota se ofrece recuperarlo. */
+  async function abrirDibujo(i=null,{recuperado=null}={}){
+    if(dib||!n)return;dib=true;soltar();await guardarYa();
+    const a=i!==null?await leerArchivo(idImagen(bs[i]?.texto||'')).catch(()=>null):null,nuevas=[];
+    let dibujo=recuperado||(a?migrarDibujo(a):null);
+    // dibujo de antes de los vectores (solo PNG): queda como imagen fija para escribir encima
+    if(a&&!recuperado&&!a.dibujo&&!a.trazos&&a.blob){
+      const id=nuevoId(),ancho=Math.round(Math.min(720,a.ancho/Math.min(3,window.devicePixelRatio||1))),alto=Math.round(ancho*a.alto/a.ancho);
+      await guardarArchivo({id,nota:n.id,blob:a.blob,tipo:a.tipo||'image/png',ancho:a.ancho,alto:a.alto,creada:Date.now()});nuevas.push(id);
+      dibujo={...dibujo,ancho,alto,objetos:[{t:'imagen',id:nuevoIdObj(),x:0,y:0,w:ancho,h:alto,archivo:id,fija:true}]};
+    }
+    const para=a?.id||'nuevo';
+    const r=await abrirEditorDibujo({dibujo,titulo:n.titulo||'Dibujo',nuevo:!a&&!recuperado,
+      cargarImagen:async id=>(await leerArchivo(id).catch(()=>null))?.blob||null,
+      nuevaImagen:async img=>{const id=nuevoId();await guardarArchivo({id,nota:n.id,blob:img.blob,tipo:img.blob.type||'image/jpeg',ancho:img.ancho,alto:img.alto,creada:Date.now()});nuevas.push(id);return id},
+      autoguardar:x=>guardarBorradorDibujo({nota:n.id,para,dibujo:x}).catch(()=>{})});
+    dib=false;
+    try{
+      if(r.cambiado&&r.png){
+        const nuevo=nuevoId(),{blob,ancho,alto}=r.png;
+        await guardarArchivo({id:nuevo,nota:n.id,blob,tipo:'image/png',ancho,alto,creada:Date.now(),dibujo:r.dibujo});
+        const j=a?bs.findIndex(x=>idImagen(x.texto||'')===a.id):-1;
+        if(j>=0)bs[j]={tipo:'imagen',texto:`![dibujo](img:${nuevo})`};else insertarBloque({tipo:'imagen',texto:`![dibujo](img:${nuevo})`});
+        deBloques();await guardarYa();
+        if(a&&!(await imagenUsada(a.id,n.id,n.cuerpo)))await borrarArchivo(a.id).catch(()=>{});
+        aviso('✏️ Dibujo guardado');
+      }else if(r.cambiado&&a){const j=bs.findIndex(x=>idImagen(x.texto||'')===a.id);if(j>=0)borrarBloque(j)}
+      else if(r.vistaCambio&&a&&!nuevas.length)await guardarArchivo({...a,dibujo:r.dibujo});
+      // las imágenes que el dibujo ya no usa (ni puede devolver al deshacer)
+      const usadas=new Set(imagenesDibujo(r.dibujo)),antes=a?imagenesDibujo(migrarDibujo(a)):[];
+      for(const id of new Set([...antes,...nuevas]))if((!usadas.has(id)||!r.cambiado&&nuevas.includes(id))&&!(await imagenUsada(id,n.id,n.cuerpo)))await borrarArchivo(id).catch(()=>{});
+    }catch(e){aviso('No se pudo guardar el dibujo.')}
+    await borrarBorradorDibujo(n.id).catch(()=>{});
+    pintarBloques({foco:false});
   }
-  // ✓ Listo (guardar=true) o Cancelar: el dibujo se guarda como PNG + sus trazos (para volver a editarlo)
-  async function terminarDibujo(guardarlo){
-    const d=dib;if(!d)return;dib=null;const l=d.l;
-    if(guardarlo&&l?.usado){
-      try{const {blob,ancho,alto}=await l.aBlob(),nuevo=nuevoId();
-        await guardarArchivo({id:nuevo,nota:n.id,blob,tipo:'image/png',ancho,alto,creada:Date.now(),trazos:trazosLigeros(l.trazos)});
-        bs[d.i]={tipo:'imagen',texto:`![dibujo](img:${nuevo})`};deBloques();
-        if(d.viejo&&!(await imagenUsada(d.viejo,n.id,n.cuerpo)))await borrarArchivo(d.viejo).catch(()=>{});
-        aviso('✏️ Dibujo guardado')}
-      catch(e){aviso('No se pudo guardar el dibujo.')}
-    }else if(d.nuevo){bs.splice(d.i,1);deBloques()}
-    l?.destruir();pintarBloques({foco:act>=0});
+  async function ofrecerBorrador(){
+    const b=await leerBorradorDibujo(n.id).catch(()=>null);if(!b?.dibujo)return;
+    const i=b.para==='nuevo'?null:bs.findIndex(x=>idImagen(x.texto||'')===b.para);
+    avisoAccion('✏️ Hay un dibujo sin guardar','Recuperar',()=>abrirDibujo(i===-1?null:i,{recuperado:b.dibujo}),10000);
   }
   async function recortar(i){
     const a=await leerArchivo(idImagen(bs[i].texto)).catch(()=>null);if(!a?.blob)return;
@@ -438,16 +459,16 @@ function vistaEditor(id){
     if(!(await imagenUsada(viejo,n.id,n.cuerpo)))await borrarArchivo(viejo).catch(()=>{});
     pintarBloques({foco:false});aviso('✂️ Foto actualizada');
   }
-  async function ampliar(i){const a=await leerArchivo(idImagen(bs[i]?.texto||'')).catch(()=>null);if(!a?.blob)return;
+  async function ampliar(i){if(altImagen(bs[i]?.texto||'')==='dibujo'){abrirDibujo(i);return}const a=await leerArchivo(idImagen(bs[i]?.texto||'')).catch(()=>null);if(!a?.blob)return;
     const u=URL.createObjectURL(a.blob);urlsBloques.push(u);abrirVisor(u,pieDe(altImagen(bs[i].texto)))}
   async function menuDe(i){
     const b=bs[i];if(!b)return;const img=b.tipo==='imagen',a=img?await leerArchivo(idImagen(b.texto)).catch(()=>null):null;
     const ops=[...(i>0?[['subir','↑ Subir']]:[]),...(i<bs.length-1?[['bajar','↓ Bajar']]:[]),
-      ...(img?(a?.trazos?[['dibujo','✏️ Editar el dibujo']]:a?.tipo==='image/png'&&altImagen(b.texto)==='dibujo'?[]:[['recortar','✂️ Recortar o girar'],['pie','💬 Pie de foto']]):[['editar',b.tipo==='formula'?'∑ Editar la fórmula':'✏️ Editar']]),
+      ...(img?(a?.dibujo||a?.trazos||altImagen(b.texto)==='dibujo'?[['dibujo','✏️ Editar el dibujo']]:[['recortar','✂️ Recortar o girar'],['pie','💬 Pie de foto']]):[['editar',b.tipo==='formula'?'∑ Editar la fórmula':'✏️ Editar']]),
       ['borrar','🗑️ Borrar el bloque','peligro-texto']];
-    const r=await menuAcciones({titulo:img?(a?.trazos?'Dibujo':'Foto'):b.tipo==='formula'?'Fórmula':'Bloque de texto',opciones:ops});
+    const r=await menuAcciones({titulo:img?(a?.dibujo||a?.trazos||altImagen(b.texto)==='dibujo'?'Dibujo':'Foto'):b.tipo==='formula'?'Fórmula':'Bloque de texto',opciones:ops});
     if(r==='subir')mover(i,-1);if(r==='bajar')mover(i,1);if(r==='borrar')borrarBloque(i);if(r==='editar')activar(i);
-    if(r==='dibujo')editarDibujo(i);if(r==='recortar')recortar(i);
+    if(r==='dibujo')abrirDibujo(i);if(r==='recortar')recortar(i);
     if(r==='pie'){const p=await pedirPie(pieDe(altImagen(b.texto)));if(p!==null){bs[i]={tipo:'imagen',texto:b.texto.replace(/^!\[[^\]]*\]/,`![${p||'foto'}]`)};deBloques();pintarBloques({foco:false})}}
   }
   /* ---- 🃏 tarjeta desde lo seleccionado ---- */
@@ -473,8 +494,8 @@ function vistaEditor(id){
       fbloque:()=>{const i=insertarBloque({tipo:'formula',texto:'$$ x^2 $$'});act=i;cursor=[3,6];pintarBloques();if(!usaTeclado()){tfx=true;pintarTfx()}},
       titulo:()=>prefijo('## '),lista:()=>prefijo('- '),numerada:()=>prefijo('1. '),casilla:()=>prefijo('- [ ] '),cita:()=>prefijo('> '),tarjeta:tarjetaLinea,
       imagen:async()=>{const r=await menuAcciones({titulo:'Agregar a la nota',opciones:[['camara','📷 Tomar foto'],['galeria','🖼️ Foto de la galería'],['dibujo','✏️ Dibujo']]});
-        if(r==='camara')document.getElementById('nota-camara').click();if(r==='galeria')document.getElementById('nota-galeria').click();if(r==='dibujo')nuevoDibujo()},
-      camara:()=>document.getElementById('nota-camara').click(),galeria:()=>document.getElementById('nota-galeria').click(),dibujo:nuevoDibujo,
+        if(r==='camara')document.getElementById('nota-camara').click();if(r==='galeria')document.getElementById('nota-galeria').click();if(r==='dibujo')abrirDibujo()},
+      camara:()=>document.getElementById('nota-camara').click(),galeria:()=>document.getElementById('nota-galeria').click(),dibujo:()=>abrirDibujo(),
       mas:async()=>{const r=await menuAcciones({titulo:'Más formato',opciones:MAS});if(r)accion(r,boton)},
       'dictar-es':()=>dictar('es-MX',boton),'dictar-en':()=>dictar('en-US',boton),
       enlace:async()=>{const x=await elegirLeccion();if(x)insertar(`[${x.l.titulo}](#${rutaLeccion(x.m,x.l)})`)}};
@@ -516,7 +537,6 @@ ${rep.ver?`<div class="ed-calif" role="group" aria-label="¿Qué tan bien la rec
     if(e.altKey&&(e.key==='ArrowUp'||e.key==='ArrowDown')&&act>=0){hecho();mover(act,e.key==='ArrowUp'?-1:1);return}
     if(e.key==='Escape'&&!document.querySelector('#procedimiento')){
       if(tfx){hecho();tfx=false;pintarTfx();return}
-      if(dib){hecho();terminarDibujo(true);return}
       if(act>=0){hecho();soltar();pintarBloques({foco:false});return}
       if(!enCampo||enCampo.id==='nota-titulo'){hecho();guardarYa().then(()=>document.dispatchEvent(new CustomEvent('ir',{detail:'notas'})))}
     }
@@ -530,13 +550,13 @@ ${rep.ver?`<div class="ed-calif" role="group" aria-label="¿Qué tan bien la rec
   return {
     titulo:'Nota',
     alEntrar(){
-      modo='editar';n=null;error='';bs=[];act=-1;dib=null;rep=null;tfx=false;document.body.classList.add('editando-nota');
+      modo='editar';n=null;error='';bs=[];act=-1;dib=false;rep=null;tfx=false;document.body.classList.add('editando-nota');
       if(!cache)todasLasNotas().then(l=>{cache=cache||l;pintarLado()}).catch(()=>{});
-      leerNota(id).then(x=>{if(!x)error='Esa nota no existe (quizá la borraste).';n=x||null;if(n){bs=bloques(n.cuerpo);if(!bs.length&&!n.titulo){}}repintar()}).catch(()=>{error='No se pudo abrir la nota.';repintar()});
+      leerNota(id).then(x=>{if(!x)error='Esa nota no existe (quizá la borraste).';n=x||null;if(n){bs=bloques(n.cuerpo);ofrecerBorrador()}repintar()}).catch(()=>{error='No se pudo abrir la nota.';repintar()});
       window.visualViewport?.addEventListener('resize',teclado);window.visualViewport?.addEventListener('scroll',teclado);
       document.addEventListener('selectionchange',alSel);teclasNotas=teclas;
     },
-    alSalir(){if(dib?.l?.usado)terminarDibujo(true);else if(dib)dib.l?.destruir();soltar();guardarYa();document.body.classList.remove('editando-nota','con-tfx');document.documentElement.style.removeProperty('--teclado');
+    alSalir(){soltar();guardarYa();document.body.classList.remove('editando-nota','con-tfx');document.documentElement.style.removeProperty('--teclado');
       window.visualViewport?.removeEventListener('resize',teclado);window.visualViewport?.removeEventListener('scroll',teclado);document.removeEventListener('selectionchange',alSel);teclasNotas=null;
       urls.forEach(u=>URL.revokeObjectURL(u));urls=[];urlsBloques.forEach(u=>URL.revokeObjectURL(u));urlsBloques=[]},
     vista(){
@@ -610,7 +630,7 @@ ${modo==='tapar'?'<button type="button" class="btn ghost ancho" id="nota-destapa
       if(b.id==='nota-nueva'){await guardarYa();await nuevaNota(ir);return true}
       if(!n)return;
       if(b.id==='nota-leer'||b.id==='nota-editar'||b.id==='nota-repasar'||b.id==='rep-tapar'){
-        if(dib)await terminarDibujo(true);soltar();await guardarYa();
+        soltar();await guardarYa();
         modo=b.id==='nota-leer'?'leer':b.id==='nota-editar'?'editar':b.id==='rep-tapar'?'tapar':modo==='repasar'?'editar':'repasar';rep=null;tfx=false;repintarV();window.scrollTo(0,0);return true}
       if(b.id==='rep-mostrar'){rep.ver=true;repintarV();return true}
       if(b.dataset.calif){calificar(+b.dataset.calif);return true}
@@ -623,8 +643,6 @@ ${modo==='tapar'?'<button type="button" class="btn ghost ancho" id="nota-destapa
       if(b.id==='nota-destapar'){document.querySelectorAll('.tapada').forEach(x=>x.classList.add('vista'));return true}
       if(b.dataset.bmenu!==undefined){menuDe(+b.dataset.bmenu);return true}
       if(b.dataset.ampliar!==undefined){ampliar(+b.dataset.ampliar);return true}
-      if(b.dataset.dib==='listo'){terminarDibujo(true);return true}
-      if(b.dataset.dib==='cancelar'){terminarDibujo(false);return true}
       if(b.dataset.fmt==='tarjeta-sel'){tarjetaDeSeleccion();return true}
       if(b.dataset.fmt){await accion(b.dataset.fmt,b);return true}
       if(b.id==='nota-mas'){

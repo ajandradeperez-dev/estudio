@@ -19,7 +19,8 @@
     "libros": "node scripts/libros.mjs",
     "tablet": "node scripts/tablet.mjs",
     "ingles-nivel": "node scripts/ingles-nivel.mjs",
-    "simulacros": "node scripts/simulacros.mjs"
+    "simulacros": "node scripts/simulacros.mjs",
+    "dibujo": "node scripts/dibujo.mjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",

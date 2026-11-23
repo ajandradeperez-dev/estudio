@@ -2,7 +2,7 @@
    Editor (PROMPT-NOTAS): notas viejas que se ven y se editan igual, crear y escribir, guardado automático, la lista que
    sigue sola con Enter, fórmula con vista previa en vivo y que se edita al tocarla, la barra (negrita, casilla, Σ con su
    teclado de símbolos), teclado simulado (la barra y el cursor no quedan tapados), foto (a lo ancho, ampliar, pie,
-   girar), bloque de dibujo (un dedo dibuja, dos desplazan, colores, grosores, deshacer, editar), mover y borrar bloques
+   girar), dibujo (abrir el editor, dibujar, guardar y volver a editarlo; el resto en npm run dibujo), mover y borrar bloques
    con Deshacer, modo lectura, tarjeta desde lo seleccionado, Repasar; en la laptop Ctrl+N, Ctrl+B, Ctrl+Shift+8,
    Ctrl+M, Esc, Ctrl+K, Espacio y 1–3, la barra arriba, dos paneles y ≤ ~75 caracteres por línea. Sin scroll de lado y
    con toques ≥ 44 px en el teléfono.
@@ -40,7 +40,7 @@ const leerDb=(p,fn,arg)=>p.evaluate(async([fn,arg])=>{
   const out=await (new Function('tx','arg',`return (${fn})(tx,arg)`))(tx,arg);d.close();return out;
 },[fn.toString(),arg]);
 const notaDe=(p,id)=>leerDb(p,(tx,id)=>tx('notas','readonly',s=>s.get(id)),id);
-const archivoDe=(p,id)=>leerDb(p,(tx,id)=>tx('archivos','readonly',s=>s.get(id)).then(a=>a?{id:a.id,tipo:a.tipo,trazos:a.trazos?.length||0}:null),id);
+const archivoDe=(p,id)=>leerDb(p,(tx,id)=>tx('archivos','readonly',s=>s.get(id)).then(a=>a?{id:a.id,tipo:a.tipo,trazos:a.dibujo?.objetos.length||0}:null),id);
 const idNota=p=>decodeURIComponent(new URL(p.url()).hash.slice(1)).split('/')[2];
 // comprobaciones de diseño: sin scroll de lado, toques ≥ 44 px en el teléfono
 async function diseno(p,que,tel){
@@ -61,11 +61,9 @@ async function diseno(p,que,tel){
   if(tel)check(!r.chicos.length,`${que}: toques de 44 px o más${r.chicos.length?' — chicos: '+r.chicos.join(', '):''}`);
 }
 // un trazo con Pointer Events sobre el lienzo del bloque de dibujo
-const trazo=(p,{tipo='touch',id=7,x0=30,y0=40,pasos=12}={})=>p.evaluate(([tipo,id,x0,y0,pasos])=>{const cv=document.querySelector('.ed-lienzo'),r=cv.getBoundingClientRect();
+const trazo=(p,{tipo='touch',id=7,x0=30,y0=40,pasos=12}={})=>p.evaluate(([tipo,id,x0,y0,pasos])=>{const cv=document.querySelector('.dib-cvivo'),r=cv.getBoundingClientRect();
   const ev=(t,x,y)=>cv.dispatchEvent(new PointerEvent(t,{bubbles:true,cancelable:true,pointerId:id,pointerType:tipo,pressure:t==='pointerup'?0:.5,buttons:t==='pointerup'?0:1,button:t==='pointermove'?-1:0,clientX:r.left+x,clientY:r.top+y,isPrimary:true}));
   ev('pointerdown',x0,y0);for(let i=1;i<=pasos;i++)ev('pointermove',x0+i*10,y0+i*4);ev('pointerup',x0+pasos*10,y0+pasos*4)},[tipo,id,x0,y0,pasos]);
-const tinta=p=>p.evaluate(()=>{const cv=document.querySelector('.ed-lienzo');if(!cv)return -1;const d=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data;let n=0;
-  for(let i=0;i<d.length;i+=16)if(d[i]+d[i+1]+d[i+2]<600)n++;return n});
 
 async function editorTelefono(b){
   console.log('--- editor en el teléfono (360 px)');
@@ -162,26 +160,14 @@ async function editorTelefono(b){
   check(idGirada&&idGirada!==idFoto&&!(await archivoDe(p,idFoto)),'foto: girar guarda una nueva y borra la anterior (conserva el pie)');
   const dimG=await leerDb(p,(tx,id)=>tx('archivos','readonly',s=>s.get(id)).then(a=>[a.ancho,a.alto]),idGirada);
   check(dimG[0]===200&&dimG[1]===300,`foto: girada 90° (${dimG.join('×')})`);
-  // dibujo: bloque dentro de la nota; un dedo dibuja, dos desplazan; Listo guarda PNG + trazos
-  await p.click('[data-fmt="imagen"]');await p.waitForTimeout(250);await p.click('.modal [data-r="dibujo"]');await p.waitForTimeout(500);
-  check(await p.locator('.ed-dibujo .ed-lienzo').count()===1&&await p.locator('.dibujo-fondo').count()===0,'dibujo: es un bloque dentro de la nota (no pantalla completa)');
-  check(await p.locator('.ed-dibujo [data-dibc]').count()===4&&await p.locator('.ed-dibujo [data-dibg]').count()===3,'dibujo: 4 colores y 3 grosores');
-  await trazo(p);const t1=await tinta(p);check(t1>0,'dibujo: un dedo dibuja');
-  await p.click('[data-dibc="#dc2626"]');await p.click('[data-dibg="7"]');await trazo(p,{y0:120});const t2=await tinta(p);
-  check(t2>t1,'dibujo: otro color y grosor');
-  await p.click('[data-dib="deshacer"]');await p.waitForTimeout(100);check(await tinta(p)===t1,'dibujo: deshacer');
-  const y0=await p.evaluate(()=>scrollY);
-  await p.evaluate(()=>{const cv=document.querySelector('.ed-lienzo'),r=cv.getBoundingClientRect();
-    const ev=(t,id,x,y)=>cv.dispatchEvent(new PointerEvent(t,{bubbles:true,cancelable:true,pointerId:id,pointerType:'touch',buttons:t==='pointerup'?0:1,clientX:r.left+x,clientY:r.top+y,isPrimary:id===11}));
-    ev('pointerdown',11,100,200);ev('pointerdown',12,160,200);for(let i=1;i<=8;i++){ev('pointermove',11,100,200-i*15);ev('pointermove',12,160,200-i*15)}ev('pointerup',11,100,80);ev('pointerup',12,160,80)});
-  await p.waitForTimeout(150);
-  check(await tinta(p)===t1,'dibujo: dos dedos no dibujan');
-  check(await p.evaluate(()=>scrollY)>y0,'dibujo: dos dedos desplazan la nota');
-  await diseno(p,'bloque de dibujo (360)',true);
-  await foto(p,'editor-dibujo');
-  await p.click('[data-dib="listo"]');await p.waitForTimeout(1200);
+  // dibujo: editor a pantalla completa (lo prueba a fondo npm run dibujo); «Listo» guarda PNG + el dibujo en vectores
+  await p.click('[data-fmt="imagen"]');await p.waitForTimeout(250);await p.click('.modal [data-r="dibujo"]');await p.waitForTimeout(700);
+  check(await p.locator('.dib').count()===1,'dibujo: abre el editor a pantalla completa');
+  await p.click('.modal [data-x]');await p.waitForTimeout(300);
+  await trazo(p);check((await p.evaluate(()=>document.querySelector('.dib').__dib.objs.length))===1,'dibujo: un dedo dibuja');
+  await p.click('[data-d="listo"]');await p.waitForTimeout(1500);
   const nd=await notaDe(p,id),idDib=nd.cuerpo.match(/!\[dibujo\]\(img:([\w-]+)\)/)?.[1],aDib=idDib&&await archivoDe(p,idDib);
-  check(aDib&&aDib.tipo==='image/png'&&aDib.trazos===1,'dibujo: «Listo» lo guarda como PNG con sus trazos');
+  check(aDib&&aDib.tipo==='image/png'&&aDib.trazos===1,'dibujo: «Listo» lo guarda como PNG con el dibujo en vectores');
   // mover bloques: el dibujo sube; borrar y deshacer
   const orden=c=>c.indexOf(`img:${idDib}`)<c.indexOf(`img:${idGirada}`);
   check(!orden(nd.cuerpo),'el dibujo quedó después de la foto');
@@ -195,9 +181,9 @@ async function editorTelefono(b){
   check((await notaDe(p,id)).cuerpo.includes(`img:${idDib}`),'«Deshacer» devuelve el bloque');
   // editar el dibujo guardado
   const iDib3=+(await p.locator(`.ed-bloque:has(img[data-img="${idDib}"])`).getAttribute('data-i'));
-  await p.click(`[data-bmenu="${iDib3}"]`);await p.waitForTimeout(250);await p.click('.modal [data-r="dibujo"]');await p.waitForTimeout(500);
-  check(await tinta(p)>0,'dibujo: «Editar el dibujo» lo abre con sus trazos');
-  await trazo(p,{y0:160});await p.click('[data-dib="listo"]');await p.waitForTimeout(1200);
+  await p.click(`[data-bmenu="${iDib3}"]`);await p.waitForTimeout(250);await p.click('.modal [data-r="dibujo"]');await p.waitForTimeout(800);
+  check((await p.evaluate(()=>document.querySelector('.dib')?.__dib.objs.length))===1,'dibujo: «Editar el dibujo» lo abre con sus trazos');
+  await trazo(p,{y0:160});await p.click('[data-d="listo"]');await p.waitForTimeout(1500);
   const idDib4=(await notaDe(p,id)).cuerpo.match(/!\[dibujo\]\(img:([\w-]+)\)/)?.[1];
   check(idDib4!==idDib&&(await archivoDe(p,idDib4))?.trazos===2&&!(await archivoDe(p,idDib)),'dibujo editado: se guarda con 2 trazos y se borra el anterior');
   await diseno(p,'editor (360)',true);

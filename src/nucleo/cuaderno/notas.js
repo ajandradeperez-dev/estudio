@@ -1,6 +1,6 @@
 /* Datos del cuaderno: crear, guardar y borrar notas; cuaderno (área → materia → tema) de cada una; copia de los resúmenes
    viejos de "Mis notas" (progreso.notas, que se conservan tal cual) y "📝 Guardar en mis notas" desde el estudio. */
-import {todasLasNotas,leerNota,guardarNota,borrarNotaDb,borrarArchivo,todosLosArchivos,guardarArchivo,pedirPersistencia,nuevoId} from './db.js';
+import {todasLasNotas,leerNota,guardarNota,borrarNotaDb,borrarArchivo,todosLosArchivos,guardarArchivo,pedirPersistencia,nuevoId,borrarBorradorDibujo,leerArchivo} from './db.js';
 import {tarjetasDe,imagenesDe,deHtml} from './formato.js';
 import {guardarImagen} from './medios.js';
 import {progreso,sincronizarTarjetas,borrarTarjetasDe,borrarNota,hoy,instantaneaNota,restaurarInstantaneaNota} from '../progreso.js';
@@ -47,7 +47,7 @@ export async function borrarNotas(lista){
   for(const n of lista){const clave=n.origen?.startsWith('resumen:')?n.origen.slice(8):null;copia.progreso.push(instantaneaNota(n.id,clave))}
   for(const a of archivos)await borrarArchivo(a.id).catch(()=>{});
   for(const n of lista){
-    await borrarNotaDb(n.id);borrarTarjetasDe(n.id);
+    await borrarNotaDb(n.id);await borrarBorradorDibujo(n.id).catch(()=>{});borrarTarjetasDe(n.id);
     if(n.origen?.startsWith('resumen:'))borrarNota(n.origen.slice(8));
   }
   for(const o of restantes){let c=o.cuerpo||'';for(const id of ids)c=c.replace(enlaceA(id),'$1');
@@ -98,6 +98,27 @@ export async function agregarImagenAlTema(donde,img,texto){
   return agregarAlTema(donde,`${texto}
 
 ${marca}`);
+}
+/* «✏️ Resolver en el Cuaderno» (desde un ejercicio): abre el editor de dibujo con el enunciado arriba como imagen fija; al
+   terminar, el dibujo queda en la nota del tema (con su texto) y se puede volver a editar desde ahí. */
+export async function resolverEnCuaderno(donde,enunciadoHtml,texto){
+  const [{abrirEditorDibujo},{htmlAPng},M]=await Promise.all([import('../dibujo/editor.js'),import('../dibujo/raster.js'),import('../dibujo/modelo.js')]);
+  const m=buscarMateria(donde.materia),h=m&&donde.habilidad&&leccion(m,donde.habilidad),t=h?.tema&&buscarTema(m,h.tema),nota=`tema-${m?.id||'general'}-${t?.id||'general'}`;
+  const ancho=Math.round(Math.min(720,Math.max(320,innerWidth-16))),d=M.nuevoDibujo({ancho,fondo:'cuadricula'}),nuevas=[];
+  const guardarImg=async img=>{const id=nuevoId();await guardarArchivo({id,nota,blob:img.blob,tipo:img.blob.type||'image/png',ancho:img.ancho,alto:img.alto,creada:Date.now()});nuevas.push(id);return id};
+  const png=await htmlAPng(enunciadoHtml,{ancho:Math.min(ancho-32,560)}).catch(()=>null);
+  if(png){const id=await guardarImg(png);d.objetos.push({t:'imagen',id:M.nuevoIdObj(),x:16,y:16,w:png.w,h:png.h,archivo:id,fija:true,capa:'fondo'})}
+  else d.objetos.push({t:'texto',id:M.nuevoIdObj(),x:16,y:16,...M.medidasTexto(texto.slice(0,80),17),texto:texto.slice(0,80),tam:17,color:M.TINTA,capa:'fondo'});
+  d.historial=[];
+  const r=await abrirEditorDibujo({dibujo:d,titulo:h?.titulo||'Resolver',cargarImagen:async id=>(await leerArchivo(id).catch(()=>null))?.blob||null,nuevaImagen:guardarImg});
+  const usadas=new Set(M.imagenesDibujo(r.dibujo));
+  if(!r.cambiado||!r.png){for(const id of nuevas)await borrarArchivo(id).catch(()=>{});return null}
+  for(const id of nuevas)if(!usadas.has(id))await borrarArchivo(id).catch(()=>{});
+  const id=nuevoId();await guardarArchivo({id,nota,blob:r.png.blob,tipo:'image/png',ancho:r.png.ancho,alto:r.png.alto,creada:Date.now(),dibujo:r.dibujo});
+  return agregarAlTema(donde,`### ✏️ Resuelto a mano · ${new Date().toLocaleDateString('es',{day:'numeric',month:'short'})}
+${texto.slice(0,200)}
+
+![dibujo](img:${id})`);
 }
 const cabecera=(p,{materia,habilidad})=>{const m=buscarMateria(materia),h=m&&habilidad&&leccion(m,habilidad);
   return {m,h,titulo:`## ${h?h.titulo:p.contexto||'Ejercicio'} · ${new Date().toLocaleDateString('es',{day:'numeric',month:'short'})}`,

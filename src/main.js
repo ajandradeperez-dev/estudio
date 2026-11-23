@@ -146,22 +146,32 @@ function cerrarElemento(el){
   if(el.id==='hoja'){cerrarHoja();return}
   el.remove();
 }
+const capasEnEspera=[],quitarDespues=[],quitadas=new Set();
+function empujarCapa(n){const e=est()||{};empujar(cur.ruta,{capa:+n.dataset.capa,inm:e.inm,desde:e.desde??e.i??0})}
 new MutationObserver(cambios=>{
   for(const c of cambios){
     for(const n of c.addedNodes){if(n.nodeType!==1||!n.matches(SELECTOR_CAPA)||n.dataset.capa)continue;
       n.dataset.capa=String(++capaN);
-      if(!enPop){const e=est()||{};empujar(cur.ruta,{capa:capaN,inm:e.inm,desde:e.desde??e.i??0})}}
+      // si hay un regreso en camino (otra capa que se acaba de cerrar), su entrada se agrega cuando termine
+      if(!enPop){
+        // otra capa se acaba de cerrar y su entrada sigue arriba (un menú que abre otro): la nueva usa esa entrada
+        const e=est();if(e?.capa&&quitadas.has(e.capa)){quitadas.delete(e.capa);try{history.replaceState({...e,capa:+n.dataset.capa},'',location.href)}catch(x){}continue}
+        if(traversando)capasEnEspera.push(n);else empujarCapa(n)}}
     for(const n of c.removedNodes){if(n.nodeType!==1||!n.dataset?.capa||n.dataset.sinVolver)continue;
       // cerrada con su propio botón: se quita su entrada (si sigue siendo la de arriba y no hay ya un regreso en camino,
       // p. ej. «Salir» de la práctica, que vuelve de un salto a la pantalla de abajo)
-      const id=+n.dataset.capa;
-      setTimeout(()=>{if(!traversando&&!enPop&&est()?.capa===id){traversando=true;ignorarPop++;registrar('back',{ruta:cur.ruta,nota:'cerrar capa'});history.back()}},0);}
+      const id=+n.dataset.capa;quitadas.add(id);
+      // (si ya hay un regreso en camino, este se hace cuando termine; si no, su entrada quedaría colgada)
+      setTimeout(()=>{quitadas.delete(id);if(enPop)return;if(traversando){quitarDespues.push(id);return}if(est()?.capa===id){traversando=true;ignorarPop++;registrar('back',{ruta:cur.ruta,nota:'cerrar capa'});history.back()}},0);}
   }
 }).observe(document.body,{childList:true});
 
 window.addEventListener('popstate',e=>{
   registrar('popstate',{ruta:e.state?.ruta,nota:ignorarPop?'propio':''});
-  if(ignorarPop){ignorarPop--;traversando=false;if(colaIr){const r=colaIr;colaIr=null;go(r)}return}
+  if(ignorarPop){ignorarPop--;traversando=false;if(colaIr){const r=colaIr;colaIr=null;go(r)}
+    const pend=quitarDespues.indexOf(est()?.capa);
+    if(pend>=0){quitarDespues.splice(pend,1);traversando=true;ignorarPop++;registrar('back',{ruta:cur.ruta,nota:'cerrar capa'});history.back();return}
+    quitarDespues.length=0;for(const n of capasEnEspera.splice(0))if(n.isConnected)empujarCapa(n);return}
   const s=e.state&&e.state.app?e.state:null;
   enPop=true;
   try{

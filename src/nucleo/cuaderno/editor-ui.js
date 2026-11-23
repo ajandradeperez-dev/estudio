@@ -1,8 +1,6 @@
-/* Piezas del editor del cuaderno (notas.js): teclado de fórmulas, visor de fotos, recortar y girar, «🃏 Crear tarjeta»
-   y el bloque de dibujo dentro de la nota (dedo y ratón: lápiz, borrador, 3 grosores, 4 colores, deshacer; un dedo
-   dibuja y dos desplazan; el S Pen sigue igual que en nucleo/lienzo.js). */
+/* Piezas del editor del cuaderno (notas.js): teclado de fórmulas, visor de fotos, recortar y girar y «🃏 Crear tarjeta».
+   El dibujo tiene su propio editor a pantalla completa: nucleo/dibujo/editor.js. */
 import {esc} from '../../utilidades.js';
-import {crearLienzo} from '../lienzo.js';
 
 /* ---------- Σ teclado de fórmulas: [lo que se ve, lo que se escribe, dónde queda el cursor (desde el final)] ---------- */
 export const SIMBOLOS=[['√','\\sqrt{}',1],['x²','^2',0],['xⁿ','^{}',1],['a/b','\\frac{}{}',3],['∫','\\int ',0],['Σ','\\sum ',0],['π','\\pi ',0],
@@ -79,28 +77,3 @@ export function pedirTarjeta(respuesta=''){
     document.body.appendChild(f);f.querySelector('#tj-q').focus();
   });
 }
-
-/* ---------- ✏️ bloque de dibujo dentro de la nota ---------- */
-export const COLORES=[['Negro','#1f2430'],['Azul','#2563eb'],['Rojo','#dc2626'],['Verde','#15803d']];
-export const GROSORES=[['Fino',2],['Medio',3.5],['Grueso',7]];
-export const htmlDibujo=()=>`<div class="ed-dib-barra" role="toolbar" aria-label="Herramientas de dibujo">
-<span class="segmentos" role="group" aria-label="Herramienta"><button type="button" data-dib="lapiz" aria-pressed="true" aria-label="Lápiz">✏️</button><button type="button" data-dib="borrar" aria-pressed="false" aria-label="Borrador">🧽</button></span>
-<span class="segmentos" role="group" aria-label="Grosor">${GROSORES.map(([n,g],i)=>`<button type="button" data-dibg="${g}" aria-pressed="${i===1}" aria-label="${n}"><span class="dibujo-grosor" style="--g:${Math.round(g*1.6)}px"></span></button>`).join('')}</span>
-<span class="dibujo-colores" role="group" aria-label="Color">${COLORES.map(([n,c],i)=>`<button type="button" class="color" data-dibc="${c}" aria-label="${n}" aria-pressed="${i===0}" style="--c:${c}"></button>`).join('')}</span>
-<button type="button" class="btn-icono" data-dib="deshacer" aria-label="Deshacer" title="Deshacer (Ctrl+Z)">↩️</button></div>
-<canvas class="ed-lienzo" aria-label="Lienzo: dibuja con un dedo, el ratón o el lápiz; con dos dedos te mueves por la nota"></canvas>
-<div class="row ed-dib-pie"><span class="nota">Un dedo dibuja · dos dedos se desplazan</span><button type="button" class="btn ghost btn-chico" data-dib="cancelar">Cancelar</button><button type="button" class="btn btn-chico" data-dib="listo">✓ Listo</button></div>`;
-// Activa el lienzo de un bloque de dibujo; los trazos son los del dibujo que se edita (o vacíos)
-export function activarDibujo(caja,trazos=[]){
-  const cv=caja.querySelector('.ed-lienzo'),l=crearLienzo(cv,{trazos:trazos.map(t=>({...t,puntos:t.puntos.map(p=>[...p])}))});l.grosor(3.5);
-  const marcar=(sel,b)=>caja.querySelectorAll(sel).forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
-  caja.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
-    if(b.dataset.dib==='lapiz'||b.dataset.dib==='borrar'){l.herramienta(b.dataset.dib);marcar('[data-dib="lapiz"],[data-dib="borrar"]',b)}
-    if(b.dataset.dib==='deshacer')l.deshacer();
-    if(b.dataset.dibg){l.grosor(+b.dataset.dibg);marcar('[data-dibg]',b)}
-    if(b.dataset.dibc){l.color(b.dataset.dibc);marcar('[data-dibc]',b);marcar('[data-dib="lapiz"],[data-dib="borrar"]',caja.querySelector('[data-dib="lapiz"]'))}
-  });
-  return l;
-}
-// Trazos más livianos para guardar (un decimal)
-export const trazosLigeros=ts=>ts.map(t=>({...t,puntos:t.puntos.map(p=>p.map(v=>Math.round(v*10)/10))}));

@@ -25,7 +25,7 @@ import {soporte,htmlMic,htmlOir,htmlFraseEvaluada,escucharConBoton,hablar} from 
 import {evaluarHablar,META_PRONUNCIACION} from './ejercicios.js';
 import {registrarHabla,registrarSonidos} from './progreso.js';
 import {sonar} from './sonido.js';
-import {agregarAlTema,agregarImagenAlTema,bloqueProcedimiento,bloqueError} from './cuaderno/notas.js';
+import {agregarAlTema,agregarImagenAlTema,bloqueProcedimiento,bloqueError,resolverEnCuaderno} from './cuaderno/notas.js';
 import {crearLienzo,papelTema,tintaTema} from './lienzo.js';
 import {iaDisponible,pedir} from './ia.js';
 import {htmlPaso,normalPaso,textoPlano,abrirProcedimiento,cerrarProcedimiento} from './procedimiento.js';
@@ -274,7 +274,7 @@ ${abajo}${panel&&st.panelOculto?'<div class="row solo-dos" style="margin-top:12p
   const claveBorrador=()=>`${st.i}:${String(st.actual?.enunciado||'').slice(0,120)}`;
   const htmlBorrador=()=>`<section class="ses-borrador" aria-label="Borrador"><div class="row ses-borrador-barra"><span class="segmentos" role="group" aria-label="Herramienta"><button type="button" data-borr="lapiz" aria-pressed="${st.borrador.herr!=='borrar'}" aria-label="Lápiz">✏️</button><button type="button" data-borr="borrar" aria-pressed="${st.borrador.herr==='borrar'}" aria-label="Goma">🧽</button></span>
 <button type="button" class="btn-icono" data-borr="deshacer" aria-label="Deshacer">↩️</button><button type="button" class="btn-icono" data-borr="rehacer" aria-label="Rehacer">↪️</button>
-<button type="button" class="btn ghost btn-chico" data-borr="limpiar">Limpiar</button><button type="button" class="btn ghost btn-chico" data-borr="guardar">📝 Guardar en el Cuaderno</button></div>
+<button type="button" class="btn ghost btn-chico" data-borr="limpiar">Limpiar</button><button type="button" class="btn ghost btn-chico" data-borr="guardar">📝 Guardar en el Cuaderno</button><button type="button" class="btn ghost btn-chico" data-borr="resolver">✏️ Resolver en el Cuaderno</button></div>
 <canvas class="borrador-lienzo" aria-label="Lienzo del borrador: dibuja con el dedo o con el lápiz"></canvas>
 ${iaDisponible()&&st.fase==='pregunta'&&(st.actual.tipo||'escribir')==='escribir'&&!st.actual.forma?`<div class="row" style="margin-top:8px"><button type="button" class="btn ghost btn-chico" data-borr="leer"${st.borrador.leyendo?' disabled':''}>${st.borrador.leyendo?'Leyendo tu letra…':'✍️ Escribir con el lápiz'}</button><span class="nota">Escribe la respuesta en el borrador y la IA la pasa a texto para que la revises.</span></div>`:''}</section>`;
   let lienzo=null;
@@ -415,6 +415,11 @@ ${st.noseSeguidos>=2&&cfg.minileccion?`<p class="hoja-linea">¿Lo vemos desde el
       if(t.dataset.borr){const a=t.dataset.borr;
         if(a==='lapiz'||a==='borrar'){st.borrador.herr=a;lienzo?.herramienta(a);document.querySelectorAll('[data-borr="lapiz"],[data-borr="borrar"]').forEach(x=>x.setAttribute('aria-pressed',String(x===t)));return true}
         if(a==='deshacer')lienzo?.deshacer();if(a==='rehacer')lienzo?.rehacer();if(a==='limpiar')lienzo?.limpiar();
+        if(a==='resolver'){const p=st.fase!=='pregunta'&&st.historial.at(-1)?st.historial.at(-1).p:st.actual,d=dondeDe(p);
+          if(!d.materia){aviso('Este ejercicio no tiene un cuaderno donde guardarlo.');return true}
+          const html=document.querySelector('#vista .pregunta')?.innerHTML||conFormulas(p.enunciado||'');
+          try{const n=await resolverEnCuaderno(d,html,textoPlano(p.enunciado||''));if(n)aviso(`📝 Guardado en «${n.titulo}»`)}catch(e){aviso('No se pudo abrir el dibujo.')}
+          return true}
         if(a==='guardar'){const p=st.fase!=='pregunta'&&st.historial.at(-1)?st.historial.at(-1).p:st.actual,d=dondeDe(p);
           if(!lienzo?.usado){aviso('El borrador está vacío.');return true}
           if(!d.materia){aviso('Este ejercicio no tiene un cuaderno donde guardarlo.');return true}

@@ -1,7 +1,9 @@
 /* Almacenamiento del cuaderno en IndexedDB ('ciberlab-notas'): localStorage no alcanza para fotos y dibujos.
    - notas:    {id, titulo, cuerpo, materia, tema, etiquetas:[], fijada, creada, editada (ms), origen?, origenFecha?}
                origen 'resumen:<materia>/<habilidad>' = copia de un resumen de "Mis notas" (progreso.notas)
-   - archivos: {id, nota, blob, tipo, ancho, alto, creada}   fotos (JPEG comprimido) y dibujos (PNG)
+   - archivos: {id, nota, blob, tipo, ancho, alto, creada, dibujo?}   fotos (JPEG comprimido) y dibujos (PNG + `dibujo`, los
+               vectores para volver a editarlo: dibujo/modelo.js). 'borrador-dibujo-<nota>' es el autoguardado de un dibujo
+               abierto (sin blob): no se sincroniza ni va al respaldo, y todosLosArchivos() no lo devuelve.
    - materias: materias propias ("🎓 Mis materias", ver mias/esquema.js)   (desde la versión 2)
    - generados: bancos generados con IA por tema, id '<materia>/<tema>'    (desde la versión 2)
    Si IndexedDB no está disponible (modo privado estricto), todo vive en memoria mientras la app esté abierta.
@@ -44,7 +46,11 @@ export const borrarNotaDb=id=>op('notas','readwrite',(s,m)=>s?s.delete(id):void 
 export const leerArchivo=id=>op('archivos','readonly',(s,m)=>s?s.get(id):m.get(id));
 export const guardarArchivo=a=>op('archivos','readwrite',(s,m)=>s?s.put(a):void m.set(a.id,a));
 export const borrarArchivo=id=>op('archivos','readwrite',(s,m)=>s?s.delete(id):void m.delete(id));
-export const todosLosArchivos=()=>op('archivos','readonly',(s,m)=>s?s.getAll():lista(m));
+export const todosLosArchivos=()=>op('archivos','readonly',(s,m)=>s?s.getAll():lista(m)).then(l=>(l||[]).filter(a=>!a.borrador));
+const BORRADOR='borrador-dibujo-';
+export const leerBorradorDibujo=nota=>leerArchivo(BORRADOR+nota);
+export const guardarBorradorDibujo=({nota,para,dibujo})=>guardarArchivo({id:BORRADOR+nota,borrador:true,nota,para,dibujo,fecha:Date.now()});
+export const borrarBorradorDibujo=nota=>borrarArchivo(BORRADOR+nota);
 export const todasLasMaterias=()=>op('materias','readonly',(s,m)=>s?s.getAll():lista(m));
 export const guardarMateriaDb=x=>op('materias','readwrite',(s,m)=>s?s.put(x):void m.set(x.id,x));
 export const borrarMateriaDb=id=>op('materias','readwrite',(s,m)=>s?s.delete(id):void m.delete(id));

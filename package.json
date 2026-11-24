@@ -21,12 +21,14 @@
     "ingles-nivel": "node scripts/ingles-nivel.mjs",
     "simulacros": "node scripts/simulacros.mjs",
     "dibujo": "node scripts/dibujo.mjs",
+    "video": "node scripts/video/video.mjs",
     "build:app": "node scripts/app/apk.mjs --solo-web",
     "apk": "node scripts/app/apk.mjs"
   },
   "devDependencies": {
     "@capacitor/cli": "8.6.2",
     "@electric-sql/pglite": "0.5.8",
+    "ffmpeg-static": "5.3.0",
     "playwright-core": "1.64.0",
     "pyodide": "0.29.5",
     "vite": "^8.3.4",

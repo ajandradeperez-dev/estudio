@@ -609,6 +609,21 @@ Sin cuenta, cada dispositivo guarda lo suyo y se pasa con el respaldo; con cuent
 - **Pantalla de práctica**: siempre con `crearSesion()` (una pregunta por pantalla, ✕, barra de progreso, "Comprobar" abajo, hoja verde o roja con la respuesta correcta, el porqué, el error típico y la regla). No escribas pantallas de ejercicios a mano.
 - El laboratorio de incidentes es **defensivo**: identificar ataques y elegir respuestas, nunca enseñar a ejecutarlos.
 
+## 🎬 Videos de promoción y tutorial (`scripts/video/`, PROMPT-VIDEO)
+
+`npm run video` graba la app REAL y monta tres videos en `videos/` (no va a git): `estudio-plus-promo-9x16.mp4` (~34 s),
+`estudio-plus-tutorial-9x16.mp4` y `-16x9.mp4` (~2 min, 10 capítulos), `miniatura.png`, `portada-9x16.png` y
+`subtitulos-*.srt`. Opciones: `--solo promo|tutorial`, `--escena N` (vuelve a grabar solo esa), `--sin-voz`,
+`--musica ruta.mp3`, `--sin-musica`, `--solo-montar`. Después de cambiar la app basta con volver a correrlo.
+- `guion.mjs`: cada escena con su título, la voz (también los subtítulos) y lo que hace (tocar, escribir letra por letra,
+  dibujar); `dur` en la promo acelera la grabación para caber. `demo.mjs`: perfil falso «Alex» (racha 12, XP inventada,
+  notas de ejemplo) y respuestas fijas de la IA simulada; no hay sesión de Supabase y toda petición externa se bloquea.
+- `grabar.mjs`: teléfono 412 × 915 con capturas seguidas a escala 1,75 (la transmisión de Chrome da solo 412 px) y laptop
+  1920 × 1080 con `Page.startScreencast`; un círculo marca cada toque (inyectado, la app no cambia).
+- `montar.mjs`: ffmpeg de `ffmpeg-static` (dependencia de desarrollo); voz de Windows en español (System.Speech, «Microsoft
+  Sabina»); títulos, marco del teléfono, subtítulos e «IA (demo)» como PNG desde HTML; zoom suave, fundidos de 0,3 s,
+  música sintetizada que baja con la voz y `loudnorm`. Deja un cuadro cada 3 s en `videos/revision/` para revisarlo.
+
 ## 📱 Tablet, S Pen, teclado y DeX (`estilos/tablet.css`, `nucleo/lienzo.js`, `nucleo/atajos.js`)
 
 Pensado para la Galaxy Tab S10 (FE, S10+, Ultra), pantalla dividida, ventana flotante y Samsung DeX; el teléfono no cambia.
@@ -757,6 +772,7 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | PROMPT-SIMULACROS-INGLES · motor de voz, 7 simulacros (escucha y habla con IA), conversación libre y prueba de nivel adaptativa | ✅ terminado |
 | PROMPT-NOTAS · Cuaderno para teclado y dedo: dibujo sin desfase (2b), lista nueva, editor por bloques en un solo modo, fórmulas en vivo, foto y dibujo como bloques, lectura, repasar y atajos | ✅ terminado |
 | PROMPT-DIBUJO · Dibujo del cuaderno como app de notas a mano: lienzo con zoom, bloqueo y desbloqueo temporal, herramientas, formas, fondos, plantillas, capas, modo práctica, PNG/PDF, migración | ✅ terminado |
+| PROMPT-VIDEO · promo de 34 s y tutorial de ~2 min (vertical y horizontal) con `npm run video` | ✅ terminado |
 | Límites legibles (2.0.1) y PROMPT-DOS-DEDOS · ✌️ regla, compás, medir, marco y barrido (2.0.2) | ✅ terminado |
 | P3b · Inglés: metas extra por nivel (lecturas, escuchas, diálogos, vocabulario con audio, escritura con rúbrica e IA) | ✅ terminado: A1, A2, B1 y B2 con 6 lecturas, 6 escuchas, 8 diálogos, 400 palabras con ejemplo y audio y 3 escritos con rúbrica cada uno (24 lecturas, 24 escuchas, 32 diálogos, 1600 palabras, 12 escritos). |
 | 4 · Inglés: completar A1 y A2, luego B1 | reemplazado por P3 y P6 |
@@ -786,6 +802,7 @@ npm run dev       # servidor de desarrollo: http://localhost:5173 (puerto fijo)
 npm run build     # genera dist/
 npm run preview   # sirve dist/ en http://localhost:4173 (puerto fijo)
 npm run revisar   # método, jerarquía, contenido de habla, migración del progreso, los 50 generadores y Mis materias (esquema, plan, fixtures) (~10 s)
+npm run video     # 🎬 promo y tutorial con la app real (videos/; --solo promo, --escena N, --sin-voz)
 npm run dibujo    # ✏️ dibujo (y ✌️ Dos dedos): gestos (zoom, mover, bloqueo y desbloqueo temporal, toques de 2 y 3 dedos), lazo, formas, goma, fondos, plantillas, PNG/PDF, migración, sincronización, 2000 trazos, tablet y laptop (capturas en capturas/dibujo/)
 npm run cuaderno  # cuaderno: notas viejas, editor (atajos, fórmula en vivo, foto, dibujo, mover bloques, guardado, teclado simulado), lectura, repasar, borrar (--capturas <dir> [--oscuro])
 npm run principiante # cada habilidad lista para un principiante: mini-lección, nivel 1, 3 pistas con datos, gemelo (--detalle)

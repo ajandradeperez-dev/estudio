@@ -758,3 +758,37 @@ body{padding-top:var(--franja,0px)}
 .aviso-app-x{position:absolute;top:6px;right:6px}
 .ini-principal{flex-direction:column;gap:2px}
 .ini-principal small{display:block;font-size:13px;font-weight:600;opacity:.9;color:inherit}
+
+/* ▦ Matrices (PROMPT-PLANOS-MATRICES): diálogo de tamaño, teclado propio y panel de operaciones de renglón */
+.mtz-dlg{max-width:min(520px,calc(100vw - 24px))}
+.mtz-rejilla{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;max-width:320px;margin:4px 0 10px;touch-action:none}
+.mtz-c{aspect-ratio:1;min-height:36px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);cursor:pointer;padding:0}
+.mtz-c.on{background:var(--primary-soft,#dbeafe);border-color:var(--primary)}
+.mtz-rapidos{flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.mtz-dlg .segmentos{display:flex;flex-wrap:wrap;margin:6px 0}
+.mtz-celdas{display:grid;grid-template-columns:repeat(var(--cols),minmax(44px,1fr));gap:4px;margin:8px 0;max-width:100%;overflow-x:auto}
+.mtz-celdas input{min-height:44px;min-width:0;box-sizing:border-box;width:100%;padding:4px;text-align:center;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit}
+.mtz-celdas input.tras-linea{border-left:3px solid var(--ink)}
+.mtz-sistema textarea{width:100%;box-sizing:border-box;min-height:96px;font-family:var(--f-mono,monospace);border:1px solid var(--line-2);border-radius:10px;padding:8px;background:var(--surface);color:var(--ink)}
+.mtz-sistema summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
+.mtz-tec{position:absolute;left:0;right:0;bottom:0;z-index:5;box-sizing:border-box;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line-2);box-shadow:0 -4px 16px rgba(0,0,0,.16)}
+.mtz-tec[hidden]{display:none}
+.mtz-tec-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:36px;padding:0 2px 4px;font-size:.95rem}
+.mtz-tec-donde{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.mtz-tec-teclas{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;max-width:560px;margin:0 auto}
+.mtz-tec-teclas button{min-height:46px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface-2,#f1f5f9);color:var(--ink);font-size:1.15rem;cursor:pointer;padding:0;touch-action:manipulation}
+.mtz-tec-teclas .mtz-t-acc{font-size:.85rem;background:var(--surface)}
+.mtz-tec-teclas .mtz-t-listo{grid-column:span 3;background:var(--primary);color:var(--on-primary);border-color:transparent;font-weight:600}
+.mtz-ren-fila{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mtz-ren-fila>span{min-width:54px;color:var(--muted);font-size:.9rem}
+.mtz-ren-fila .chip{min-width:52px;justify-content:center}
+.mtz-ren-fila .chip[aria-pressed="true"]{background:var(--primary);color:var(--on-primary)}
+.mtz-k{display:inline-flex;align-items:center;justify-content:center;min-width:64px;min-height:40px;padding:0 10px;border:2px solid var(--primary);border-radius:10px;font-size:1.15rem}
+.mtz-mini{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:6px 0}
+.mtz-mini button{min-height:44px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface-2,#f1f5f9);color:var(--ink);font-size:1.05rem;cursor:pointer;padding:0}
+.mtz-not-caja{margin:8px 0;font-size:1.05rem}
+.dib-opc .btn.ancho{width:100%;margin-top:6px}
+@media (min-width:600px),(hover:hover) and (pointer:fine){.mtz-tec{left:50%;right:auto;transform:translateX(-50%);width:min(560px,100%);border:1px solid var(--line-2);border-radius:16px 16px 0 0}}
+.dib-plantillas-mat{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+.dib-pl-mat{display:flex;flex-direction:column;gap:4px}
+.dib-plantillas .dib-pl-mat .btn-chico{min-height:44px;flex-direction:row}

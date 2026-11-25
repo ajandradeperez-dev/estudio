@@ -769,6 +769,29 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
     if(Math.abs(u[0]-3)>1e-9||Math.abs(u[1]-2)>1e-9)mal(e,'plano: lo anclado no conserva sus coordenadas al cambiar el rango');
     if(PL.tramosFuncion(a,'1/x').length!==2||PL.tramosFuncion(a,'x^2-4').length!==1||PL.funcionDe('2*)')!==null)mal(e,'plano: funciones mal graficadas o expresión inválida aceptada')}
   console.log('dibujos: migración del formato viejo, historial, formas inteligentes y de matemáticas, plantillas, goma, lazo y PDF');
+  // ▦ matrices con fracciones exactas: operaciones de renglón, Gauss-Jordan, determinante, inversa, LaTeX y leer un sistema
+  {const MX=await import(pathToFileURL(join(raiz,'..','nucleo','matrices.js')).href),MZ=await import(pathToFileURL(join(raiz,'..','nucleo','dibujo','matriz.js')).href);
+    const AL=await import(pathToFileURL(join(raiz,'..','nucleo','generadores','algebra-lineal.js')).href),e2='matrices';
+    const EJ=[['1','3','3','2'],['2','3','9','4'],['2','4','2','4']],M=MX.deTextos(EJ);
+    const r2=MX.aplicarOp(M,{tipo:'sumar',i:1,j:0,k:MX.F(-2)});if(MX.aTextos(r2)[1].join(' ')!=='0 −3 3 0')mal(e2,'R₂ → R₂ − 2R₁ no da [0 −3 3 | 0]');
+    if(MX.notacion({tipo:'sumar',i:1,j:0,k:MX.F(-2)})!=='R₂ → R₂ − 2R₁'||MX.notacion({tipo:'multiplicar',i:1,k:MX.F(1,2)})!=='R₂ → (1/2)R₂'||MX.notacion({tipo:'intercambiar',i:0,j:1})!=='R₁ ↔ R₂')mal(e2,'notación de las operaciones de renglón');
+    if(MX.aTextos(MX.aplicarOp(M,{tipo:'multiplicar',i:0,k:MX.F(1,2)}))[0].join(' ')!=='1/2 3/2 3/2 1')mal(e2,'las fracciones no quedan exactas');
+    const s=MX.solucion(M);if(s.tipo!=='unica'||!M.every(f=>MX.iguales(f.slice(0,3).reduce((a,c,j)=>MX.suma(a,MX.mult(c,s.valores[j])),MX.CERO),f[3])))mal(e2,'la solución del sistema de ejemplo no cumple las ecuaciones');
+    if(!MX.esReducida(MX.gaussJordan(M,3).M,3))mal(e2,'Gauss-Jordan no llega a la escalonada reducida');
+    if(MX.solucion(MX.deTextos([['1','1','2'],['2','2','5']])).tipo!=='ninguna'||MX.solucion(MX.deTextos([['1','1','2'],['2','2','4']])).tipo!=='infinitas')mal(e2,'sistemas sin solución o con infinitas soluciones');
+    // contra el motor de Álgebra lineal (det3 de los generadores) en 200 matrices al azar
+    let sem=7;const az=()=>{sem=(sem*16807)%2147483647;return sem%11-5};
+    for(let n=0;n<200;n++){const A=Array.from({length:3},()=>Array.from({length:3},az)),d=MX.det(MX.deTextos(A.map(f=>f.map(String))));
+      if(MX.valor(d)!==AL.det3(A)){mal(e2,`det distinto de det3 en ${JSON.stringify(A)}`);break}
+      if(!MX.esCero(d)){const I=MX.producto(MX.deTextos(A.map(f=>f.map(String))),MX.inversa(MX.deTextos(A.map(f=>f.map(String)))).inversa);if(!I.every((f,i)=>f.every((x,j)=>MX.iguales(x,i===j?MX.UNO:MX.CERO)))){mal(e2,`A·A⁻¹ ≠ I en ${JSON.stringify(A)}`);break}}}
+    const lt=MX.aLatex(EJ,{paren:'[]',aumentada:3});try{katexLim.renderToString(lt,{throwOnError:true})}catch(x){mal(e2,'el LaTeX de la matriz no compila: '+lt)}
+    for(const p of ['[]','()','||','{}','']){const t=MX.aLatex([['1','−1/2'],['0','3']],{paren:p});try{katexLim.renderToString(t,{throwOnError:true})}catch(x){mal(e2,'LaTeX '+p)}const v=MX.deLatex(t);if(!v||v.paren!==p||v.celdas[0][1]!=='−1/2')mal(e2,`de LaTeX a celdas (${p})`)}
+    const sis=MX.leerSistema('x + 3y + 3z = 2\n2x + 3y + 9z = 4\n2x + 4y + 2z = 4');if(!sis||JSON.stringify(MX.aTextos(sis.M))!==JSON.stringify(EJ))mal(e2,'pegar un sistema no arma la matriz aumentada');
+    if(JSON.stringify(MX.aTextos(MX.leerSistema('2x - z = 1\ny + z = 0').M))!==JSON.stringify([['2','0','−1','1'],['0','1','1','0']]))mal(e2,'pegar un sistema: falta poner 0 en las variables que no aparecen');
+    const o=MZ.nuevaMatriz(0,0,3,4,{celdas:EJ,aumentada:3});if(!(o.w>0&&o.h>0)||!MZ.matrizValida(o)||JSON.stringify(MZ.celdaEn(o,...MZ.cajaCelda(o,2,3).slice(0,2).map(v=>v+2)))!=='[2,3]')mal(e2,'medidas o celdas de la matriz del dibujo');
+    const Mod=await import(pathToFileURL(join(raiz,'..','nucleo','dibujo','modelo.js')).href),dib=Mod.normalizarDibujo({objetos:[o,{...o,id:'x',celdas:[[1]]}]});
+    if(dib.objetos.length!==1||dib.objetos[0].t!=='matriz')mal(e2,'normalizar: la matriz válida se conserva y la rota se descarta');
+    console.log('matrices: operaciones de renglón exactas, Gauss-Jordan, det (= det3) e inversa en 200 matrices, LaTeX ↔ celdas y pegar un sistema');}
 }
 // Errores de dedo: se aceptan en palabras en español (nomonal → nominal) pero nunca cambian el sentido
 {

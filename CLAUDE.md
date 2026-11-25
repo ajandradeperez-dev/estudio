@@ -417,7 +417,30 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 11`; los formatos 
   dibuja dentro se ancla (`ancla` = `pid`, fijo; el `id` cambia en cada versión) y se transforma con el plano (`matrizPlano`
   conserva sus coordenadas del plano; «⇱ Soltar del plano» lo separa). El fondo «plano cartesiano» se ajusta (`d.cartesiano`:
   origen, unidad, paso; ⋯ → «Ajustar el plano de fondo», «Convertir en plano editable»). Los planos viejos de 📐 (grupo de
-  trazos con `forma:'plano'`) se convierten al abrirlos (`migrarPlanosViejos`, mismo tamaño y escala).
+  trazos con `forma:'plano'`) se convierten al abrirlos (`migrarPlanosViejos`, mismo tamaño y escala).
+  **▦ Matrices** (PROMPT-PLANOS-MATRICES, `dibujo/matriz.js` el objeto y su pintado, `dibujo/matriz-ui.js` la interfaz,
+  `nucleo/matrices.js` las cuentas con **fracciones exactas** y `nucleo/matriz-dialogo.js` el diálogo): botón ▦ en la barra y
+  en 📐. Objeto `t:'matriz'` {`mid` fijo, filas, cols, celdas (texto), aumentada (columna antes de la línea), paren `[]`/`()`/
+  `{}`/`||`/sin, alinear, tam, prefijo (`~`, `Aᵀ =`…), notas (la operación a la derecha de cada renglón), esperado/marcas
+  («Lo hago yo»), ops, de}. Diálogo: cuadrícula táctil 6×6, 2×2, 3×3, 3×4 y 4×5 aumentadas, identidad, paréntesis y «📋 Pegar
+  un sistema» (`leerSistema`). Al insertarla, la primera celda queda activa con un **teclado propio** (`.mtz-tec`: 0–9, −, ., /,
+  x y z a b, ⌫, Ant., Sig., ✓ Listo; nunca tapa la celda activa); con teclado físico Tab/Enter, Shift+Tab, flechas y Esc.
+  Escribir los números es UN paso del historial (`paso` en el editor). Tocar la matriz la elige (✏️ ⇄ 🧮 ⚙️ TeX 🔒 ⧉ 🗑️); elegida
+  o 🔒 fija, tocar una celda la edita. **⇄ Operación de renglón** (panel): intercambiar, multiplicar, sumar un múltiplo; los
+  renglones se tocan en la matriz o con chips y el número con un mini teclado; varias en un paso; «💡 Siguiente paso
+  sugerido» (`sugerencia`). **🧮 Calcular por mí** crea la matriz siguiente con `~` (al lado o abajo) y resalta lo que
+  cambió; **✍️ Lo hago yo** (por defecto) la crea con los renglones que cambian vacíos, ✓ Revisar marca verde/rojo con pista
+  (`pistaCelda`) y «👁️ Mostrar la respuesta» pide confirmar. Al llegar a la escalonada (reducida), aviso y «Ver la solución»
+  (única, ninguna o infinitas con parámetro). 🧮: determinante (y paso a paso, Sarrus/cofactores), transpuesta, inversa
+  (también paso a paso con [A | I]), rango, solución; dos matrices elegidas: ＋ y ×. Lo escrito a mano dentro queda anclado
+  (`ancla` = `mid`); «✨ Pasar a números» y «▦ Convertir en matriz editable» (las llaves y corchetes viejos de 📐) leen con IA
+  opcional y siempre muestran el resultado para confirmar. En el cuaderno, Σ → «▦ Matriz» escribe el LaTeX (`aLatex`:
+  bmatrix, pmatrix, vmatrix, Bmatrix o array con `|`) y tocar esa fórmula la vuelve a abrir (`deLatex`). `revisar` compara
+  `det` con `det3` de Álgebra lineal y prueba A·A⁻¹ = I en 200 matrices.
+  **🧮 Plantillas de matemáticas** (sección «Para matemáticas» del selector, cada una con «Ejemplo»): Gauss-Jordan (3×4
+  aumentada y columna de operaciones; ejemplo [1 3 3 | 2] [2 3 9 | 4] [2 4 2 | 4]), Graficar una función (plano −10 a 10 y
+  tabla de valores), Pendiente y recta (A y B arrastrables y el objeto `pendiente` del plano: m, d y ecuación en vivo) y
+  Sistema 2×2 gráfico (dos rectas, su intersección y su matriz aumentada).
   **✌️ Dos dedos** (PROMPT-DOS-DEDOS; en 📐 Formas → «✌️ Dos dedos», o la tecla D): la única herramienta en la que dos
   dedos dibujan (se elige a propósito; mientras está activa el zoom va con los botones + y −, y el botón 📐 muestra ✌️).
   Modos (`P.dos.modo`): 📏 regla (una línea entre los dedos, con largo y ángulo; ajuste a la cuadrícula opcional), 🧭
@@ -769,6 +792,7 @@ Se trabaja por bloques (cada uno: `npm run revisar`, build, commit y push). **Si
 | P2 · Matemáticas: Álgebra → Precálculo → Álgebra lineal → Cálculo diferencial → Cálculo integral → Trigonometría → Prealgebra | ✅ terminado: **Matemáticas 88/88 habilidades ✅, 7 temas ✅ y materia ✅**. 31 generadores nuevos (`mat-nuevos1/2/3.js`, 6 plantillas cada uno: 2 básicas, 2 de procedimiento, 2 de aplicación), tarjetas y aplicaciones para las 57 viejas (`extensiones/matematicas.js` vía `extender()`), escenario y simulacro de Precálculo (`escenarios-mat.js`) y simulacros con todas las habilidades de cada tema |
 | P3 · Inglés A1 → A2 → B1 → B2 + simulacros + prueba de nivel | ✅ Definición de terminado: **Inglés 66/66 habilidades ✅, 5 temas ✅ (Hablar y escuchar es de herramientas) y materia ✅**. 56 generadores nuevos con 6 plantillas (`ingles-a1.js`, `ingles-a1b.js`, `ingles-a2.js`, `ingles-b1.js`, `ingles-b2.js`, base en `extensiones/ingles-base.js`), los 10 viejos mejorados sin perder claves de retiro (`ingles-mejoras.js` con `mejorar()`), prueba de nivel y simulacros «estilo» A2 Key/B1/B2 (`examenes-en.js`, no oficiales) y un escenario + simulacro por nivel (`escenarios-en.js`). 🟡 **Metas extra del PROMPT pendientes (P3b)**: lecturas graduadas A1 4, A2 3, B1 3, B2 0 de 6 por nivel; escuchas: las 6 de Hablar (no 6 por nivel); diálogos guiados: 10 en total (meta 8 por nivel); vocabulario con audio: ~48 chunks + bancos (meta 400 por nivel); escritura con rúbrica: no hay (las respuestas se comparan con variantes fijas); los simulacros no tienen escucha ni habla con IA |
 | P3b · Inglés: metas extra por nivel (lecturas, escuchas, diálogos, vocabulario con audio, rúbrica de escritura con IA opcional) | ✅ terminado (ver la fila de abajo) |
+| PROMPT-PLANOS-MATRICES · 📈 plano cartesiano editable (2.0.4), ▦ matrices con operaciones de renglón y 🧮 plantillas de matemáticas (2.0.5) | ✅ terminado |
 | P4 · Ciberseguridad: Redes → Firewalls → Cripto y VPN → Security+ → escenarios | ✅ terminado: **Ciberseguridad 55/55 habilidades ✅, 6 temas ✅ (Escenarios y herramientas es de herramientas) y materia ✅**. 37 generadores nuevos de texto en español con 6 plantillas (`ciber-redes.js`, `ciber-fw-vpn.js`, `ciber-defensa.js`, tipos de plantilla `KES` en `extensiones/ingles-base.js`), 12 generadores viejos mejorados con `mejorar()` y tarjetas para 6 más (`ciber-mejoras.js`, `extCiber`), «Respuesta a incidentes» y «Preguntas de seguridad» con generador además de su banco, laboratorio de incidentes de 10 a 20 casos (agregados al final), y escenarios + simulacros en todos los temas (`escenarios-ciber.js`: oficina nueva, red lenta, pyme y plan de respuesta). Conceptual y defensivo: lo de cada marca va como «concepto general» |
 | P5 · Excel alineado a MO-200 + examen final | ✅ terminado: **Excel 29/29 habilidades ✅, 11 temas ✅ (Escenarios y herramientas es de herramientas) y materia ✅**. Los 25 generadores de fórmulas se conservan como plantilla `orig` (verifican por resultado) y suman plantillas de concepto y de caso con `mejorar()` (`excel-mejoras.js`); 4 habilidades nuevas (hojas y libros, rangos con nombre, tablas, formato de gráficos). Escenario + simulacro en cada tema (`excel-escenarios2.js`: cotización con IVA, nómina, boleta, región, consulta de inventario y clientes verificados por resultado; libro, pedidos, gráficos y atajos como decisiones) y el escenario de oficina «Control de asistencia». La mini hoja tiene columnas A–H: un destino fuera de ese rango da #¡REF! |
 | P6 · Ciencia de datos: Descriptiva → Probabilidad → Inferencia → Python → ML → proyecto | ✅ terminado: **Ciencia de datos 44/44 habilidades ✅, 5 temas ✅ y materia ✅**. 36 generadores nuevos (`datos-est.js`: tipos de variables, muestreo, frecuencias, histogramas, correlación, conteo, Bayes, variables aleatorias, binomial, Poisson, normal y límite central, con Φ(z) de Abramowitz-Stegun comprobada integrando con Simpson; `datos-inf.js`: distribución muestral, intervalos, pruebas z/t, valor p y errores, chi-cuadrada, regresión simple y múltiple y 8 de ML; `datos-py.js`: Python, pandas y gráficas) y los 8 viejos mejorados con `mejorar()`; escenario + simulacro por tema (`escenarios-datos.js`) y el proyecto integrador «¿qué clientes se van?» en ML. Se corrigió un error típico de `ml/metricas` que no se detectaba a sí mismo |
@@ -816,7 +840,7 @@ npm run build     # genera dist/
 npm run preview   # sirve dist/ en http://localhost:4173 (puerto fijo)
 npm run revisar   # método, jerarquía, contenido de habla, migración del progreso, los 50 generadores y Mis materias (esquema, plan, fixtures) (~10 s)
 npm run video     # 🎬 promo y tutorial con la app real (videos/; --solo promo, --escena N, --sin-voz)
-npm run dibujo    # ✏️ dibujo (y ✌️ Dos dedos): gestos (zoom, mover, bloqueo y desbloqueo temporal, toques de 2 y 3 dedos), lazo, formas, goma, fondos, plantillas, PNG/PDF, migración, sincronización, 2000 trazos, tablet y laptop (capturas en capturas/dibujo/)
+npm run dibujo    # ✏️ dibujo (✌️ Dos dedos, 📈 plano editable, ▦ matrices y plantillas de matemáticas): gestos (zoom, mover, bloqueo y desbloqueo temporal, toques de 2 y 3 dedos), lazo, formas, goma, fondos, plantillas, PNG/PDF, migración, sincronización, 2000 trazos, tablet y laptop (capturas en capturas/dibujo/)
 npm run cuaderno  # cuaderno: notas viejas, editor (atajos, fórmula en vivo, foto, dibujo, mover bloques, guardado, teclado simulado), lectura, repasar, borrar (--capturas <dir> [--oscuro])
 npm run principiante # cada habilidad lista para un principiante: mini-lección, nivel 1, 3 pistas con datos, gemelo (--detalle)
 npm run python    # el curso de Python ejecutado en Pyodide: cada ejercicio generado y cada solución del laboratorio

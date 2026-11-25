@@ -136,6 +136,13 @@ async function editorTelefono(b){
   await p.click('[data-tfx="0"]');await p.waitForTimeout(700);
   check((await notaDe(p,id)).cuerpo.includes('\\sqrt{}'),'teclado de fórmulas: √ escribe \\sqrt{}');
   await diseno(p,'editor con símbolos (360)',true);
+  // ▦ Matriz: tamaño, paréntesis y celdas en una cuadrícula → LaTeX correcto (nadie escribe & ni \\)
+  await p.keyboard.press('End');await p.keyboard.press('Enter');
+  await p.click('#ed-tfx [aria-label="Escribir ▦ Matriz"]');await p.waitForTimeout(250);
+  await diseno(p,'▦ matriz en el cuaderno (360)',true);
+  for(const [c,v] of [['0-0','1'],['0-1','-1/2'],['1-0','0'],['1-1','3']])await p.fill(`.modal [data-cel="${c}"]`,v);
+  await p.click('.modal button[type="submit"]');await p.waitForTimeout(800);
+  check((await notaDe(p,id)).cuerpo.includes('\\begin{bmatrix} 1 & -\\frac{1}{2} \\\\ 0 & 3 \\end{bmatrix}'),'Σ → ▦ Matriz escribe el LaTeX (bmatrix con la fracción)');
   await p.click('[data-tfx="cerrar"]');
   // foto: bloque a lo ancho, tocar amplía, recortar o girar y pie
   const png=await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=300;c.height=200;const x=c.getContext('2d');x.fillStyle='#3b82f6';x.fillRect(0,0,300,200);

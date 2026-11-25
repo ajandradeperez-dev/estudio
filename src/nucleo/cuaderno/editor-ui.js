@@ -6,7 +6,7 @@ import {esc} from '../../utilidades.js';
 export const SIMBOLOS=[['√','\\sqrt{}',1],['x²','^2',0],['xⁿ','^{}',1],['a/b','\\frac{}{}',3],['∫','\\int ',0],['Σ','\\sum ',0],['π','\\pi ',0],
   ['≤','\\le ',0],['≥','\\ge ',0],['≠','\\ne ',0],['→','\\to ',0],['±','\\pm ',0],['·','\\cdot ',0],['∞','\\infty ',0],['α','\\alpha ',0],['β','\\beta ',0],
   ['θ','\\theta ',0],['λ','\\lambda ',0],['μ','\\mu ',0],['σ','\\sigma ',0],['Δ','\\Delta ',0],['x₁','_{}',1],['lím','\\lim_{x \\to }',1],
-  ['( )','\\left(  \\right)',8],['[2×2]','\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}',0]];
+  ['( )','\\left(  \\right)',8],['▦ Matriz','matriz',0]];
 export const htmlTecladoFormulas=()=>`<div class="ed-tfx" id="ed-tfx" role="group" aria-label="Símbolos para fórmulas">${SIMBOLOS.map(([v],i)=>`<button type="button" data-tfx="${i}" aria-label="Escribir ${esc(v)}">${esc(v)}</button>`).join('')}<button type="button" data-tfx="cerrar" aria-label="Cerrar los símbolos">✕</button></div>`;
 
 /* ---------- visor: la foto en grande (tocar para ampliar; Atrás o tocar fuera la cierra) ---------- */

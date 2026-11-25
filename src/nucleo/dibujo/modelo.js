@@ -13,7 +13,8 @@
    capa: 'tinta' (por defecto), 'resaltado' (el resaltador, detrás de la tinta) o 'fondo' (imágenes y plantillas).
    Formato anterior (v1): el archivo traía `trazos:[{herr:'lapiz'|'borrar', color, ancho, pen, puntos}]`; migrarDibujo() lo
    convierte (la goma de entonces pintaba con el color del papel: ahora recorta de verdad los trazos que tapaba). */
-import {planoValido,limpiarPlano,migrarPlanosViejos,planoDesdeCaja,aPlanoDe,planoEn} from './plano.js';
+import {planoValido,limpiarPlano,migrarPlanosViejos,planoDesdeCaja,aPlanoDe,planoEn,nuevoPlano} from './plano.js';
+import {matrizValida,limpiarMatriz,nuevaMatriz} from './matriz.js';
 export const VERSION_DIBUJO=2;
 export const PAGINA={w:816,h:1056,hueco:28};        // carta a 96 px por pulgada
 export const CM=37.8,CUADRO=CM/2;                    // 1 cm y la cuadrícula de 5 mm
@@ -135,7 +136,7 @@ export function enLazo(objs,poly,filtro=()=>true){
 }
 // Una forma de matemáticas (plano, tabla…) se selecciona completa: sus piezas comparten g
 export function conGrupos(objs,ids){
-  const gs=new Set(objs.filter(o=>ids.has(o.id)&&o.g).map(o=>o.g)),ps=new Set(objs.filter(o=>ids.has(o.id)&&o.t==='plano').map(o=>o.pid));
+  const gs=new Set(objs.filter(o=>ids.has(o.id)&&o.g).map(o=>o.g)),ps=new Set(objs.filter(o=>ids.has(o.id)&&(o.t==='plano'||o.t==='matriz')).map(o=>o.t==='plano'?o.pid:o.mid));
   if(!gs.size&&!ps.size)return ids;
   // con un plano va lo que está anclado a él (se mueve y se escala con el plano)
   const r=new Set(ids);for(const o of objs)if(o.g&&gs.has(o.g)||o.ancla&&ps.has(o.ancla))r.add(o.id);return r;
@@ -153,7 +154,7 @@ export function transformar(o,m,{mismoId=false}={}){
   const k=caja(o),w0=o.w??k[2]-k[0],h0=o.h??k[3]-k[1],[cx,cy]=aplicarM(m,o.x+w0/2,o.y+h0/2),w=w0*s,h=h0*s;
   const r={...o,id,x:r2(cx-w/2),y:r2(cy-h/2),w:r2(w),h:r2(h)};
   if(o.tam)r.tam=r2(o.tam*s);
-  if(o.t!=='papel'&&o.t!=='plano'){const rot=(o.rot||0)+Math.atan2(m[1],m[0]);if(Math.abs(rot)>1e-3)r.rot=Math.round(rot*1e4)/1e4;else delete r.rot}
+  if(o.t!=='papel'&&o.t!=='plano'&&o.t!=='matriz'){const rot=(o.rot||0)+Math.atan2(m[1],m[0]);if(Math.abs(rot)>1e-3)r.rot=Math.round(rot*1e4)/1e4;else delete r.rot}
   return r;
 }
 
@@ -381,8 +382,11 @@ export function iconoRed(tipo,x,y,s=56,{color=TINTA,capa='fondo'}={}){
 
 /* ---------- plantillas al crear un dibujo ---------- */
 export const PLANTILLAS=[['blanco','⬜','En blanco','liso'],['cuadricula','▦','Cuadrícula','cuadricula'],['cornell','📒','Notas Cornell','renglones'],['problema','🧮','Resolver un problema','cuadricula'],
-  ['mapa','🧠','Mapa mental','liso'],['comparar','⚖️','Comparar dos cosas','renglones'],['verdad','🔣','Tabla de verdad','liso'],['red','🖧','Diagrama de red','puntos']];
-export function plantilla(id,ancho=720){
+  ['mapa','🧠','Mapa mental','liso'],['comparar','⚖️','Comparar dos cosas','renglones'],['verdad','🔣','Tabla de verdad','liso'],['red','🖧','Diagrama de red','puntos'],
+  ['gauss','▦','Gauss-Jordan','liso',true],['funcion','📈','Graficar una función','liso',true],['pendiente','📏','Pendiente y recta','liso',true],['sistema2','✖️','Sistema 2×2 gráfico','liso',true]];
+// El sistema de ejemplo de las plantillas de matemáticas (el de la captura de Angel)
+export const SISTEMA_EJEMPLO=[['1','3','3','2'],['2','3','9','4'],['2','4','2','4']];
+export function plantilla(id,ancho=720,{ejemplo=false}={}){
   const W=ancho,H=Math.round(W*1.3),fondo=(PLANTILLAS.find(p=>p[0]===id)||PLANTILLAS[0])[3],color='#475569';
   const T=(pts,g)=>({t:'trazo',id:nuevoIdObj(),herr:'pluma',tipo:'boli',color,ancho:2,recto:true,capa:'fondo',g,pts:pts.map(p=>[r2(p[0]),r2(p[1]),.5])});
   const X=(x,y,texto,tam=18,centro=false)=>{const m=medidasTexto(texto,tam);return {t:'texto',id:nuevoIdObj(),x:r2(centro?x-m.w/2:x),y:r2(y),w:r2(m.w),h:r2(m.h),texto,tam,color,capa:'fondo'}};
@@ -401,6 +405,25 @@ export function plantilla(id,ancho=720){
     for(let j=0;j<=cols.length;j++)o.push(T([[x0+j*cw,y0],[x0+j*cw,y0+(filas.length+1)*rh]],g));
     cols.forEach((c,j)=>o.push(X(x0+j*cw+cw/2,y0+12,c,16,true)));
     filas.forEach((f,i)=>f.forEach((v,j)=>o.push(X(x0+j*cw+cw/2,y0+(i+1)*rh+12,v,16,true))))}
+  /* ---------- plantillas de matemáticas (PROMPT-PLANOS-MATRICES, parte 3): objetos editables, no dibujos ---------- */
+  const nota=(x,y,t,tam=15)=>({...X(x,y,t,tam),capa:'tinta',color:'#64748b'});
+  if(id==='gauss'){o.push(X(m,m,'Gauss-Jordan',20),nota(m,58,'Toca la matriz → ⇄ Operación de renglón (✍️ Lo hago yo o 🧮 Calcular por mí).',13));
+    const mz=nuevaMatriz(m+8,96,3,4,{celdas:ejemplo?SISTEMA_EJEMPLO.map(f=>f.slice()):undefined,aumentada:3,tam:26});o.push(mz);
+    const xo=Math.max(mz.x+mz.w+40,W*.58);o.push(T([[xo-12,90],[xo-12,H*.6]]),X(xo,92,'Operaciones',15));
+    if(ejemplo)o.push(nota(m,mz.y+mz.h+16,'x + 3y + 3z = 2  ·  2x + 3y + 9z = 4  ·  2x + 4y + 2z = 4',13))}
+  if(id==='funcion'){const s=Math.min(W*.62,W-2*m-170),pl=nuevoPlano(m,70,s,s,{objetos:ejemplo?[{k:'funcion',id:nuevoIdObj(),expr:'x^2 - 4',color:'#2563eb'}]:[]});
+    o.push(X(m,m,'Graficar una función',20),pl,nota(m,70+s+10,'Toca el plano → ➕ Agregar → 📈 Función y escribe, por ejemplo, x^2 - 4.',13));
+    const xs=[-3,-2,-1,0,1,2,3],fx=x=>x*x-4;
+    o.push(nuevaMatriz(m+s+24,70,8,2,{celdas:[['x','y'],...xs.map(x=>ejemplo?[String(x),String(fx(x))]:[String(x),''])],paren:'',alinear:'centro',tam:20}),X(m+s+30,48,'Tabla de valores',14))}
+  if(id==='pendiente'){const s=Math.min(W-2*m,560),a={k:'punto',id:nuevoIdObj(),x:1,y:2,nombre:'A',color:'#dc2626'},b={k:'punto',id:nuevoIdObj(),x:4,y:8,nombre:'B',color:'#dc2626'};
+    o.push(X(m,m,'Pendiente y recta',20),nuevoPlano(m,70,s,s,{objetos:[{k:'pendiente',id:nuevoIdObj(),pa:a.id,pb:b.id,color:'#2563eb'},a,b]}),
+      nota(m,70+s+10,'Arrastra A y B: m, la distancia y la ecuación cambian en vivo.',13))}
+  if(id==='sistema2'){const s=Math.min(W*.6,W-2*m-180);
+    const objs2=ejemplo?[{k:'funcion',id:nuevoIdObj(),expr:'-x + 5',color:'#2563eb'},{k:'funcion',id:nuevoIdObj(),expr:'2x - 1',color:'#dc2626'},{k:'punto',id:nuevoIdObj(),x:2,y:3,nombre:'P',color:'#15803d'}]:[];
+    o.push(X(m,m,'Sistema 2×2 gráfico',20),nuevoPlano(m,70,s,s,{objetos:objs2}),
+      nuevaMatriz(m+s+28,90,2,3,{celdas:ejemplo?[['1','1','5'],['−2','1','−1']]:undefined,aumentada:2,tam:24}),
+      nota(m+s+28,60,ejemplo?'x + y = 5 · −2x + y = −1':'Escribe el sistema en la matriz',13),
+      nota(m,70+s+10,ejemplo?'Las rectas se cortan en P(2, 3): la solución es x = 2, y = 3.':'Agrega las dos rectas (➕ Función) y el punto donde se cortan.',13))}
   if(id==='red'){const s=58,y=110;o.push(X(m,m,'Diagrama de red',20));
     o.push(...iconoRed('nube',W/2-s/2,y-40,s),...iconoRed('router',W/2-s/2,y+80,s),...iconoRed('switch',W/2-s/2,y+200,s),
       ...iconoRed('pc',W*.18-s/2,y+330,s),...iconoRed('pc',W/2-s/2,y+330,s),...iconoRed('servidor',W*.82-s/2,y+330,s));
@@ -418,12 +441,13 @@ function objetoValido(o){
   if(o.t==='imagen')return typeof o.archivo==='string'&&num(o.x)&&num(o.y)&&num(o.w)&&num(o.h);
   if(o.t==='papel')return num(o.x)&&num(o.y)&&num(o.w)&&num(o.h);
   if(o.t==='plano')return planoValido(o);
+  if(o.t==='matriz')return matrizValida(o);
   return false;
 }
 // Lo que llega de otro dispositivo, del respaldo o de una versión vieja: se limpia sin perder lo válido
 export function normalizarDibujo(d){
   const base=nuevoDibujo({ancho:num(d?.ancho)?d.ancho:720,modo:d?.modo==='paginas'?'paginas':'crece',fondo:FONDOS.some(f=>f[0]===d?.fondo)?d.fondo:'liso'});
-  base.objetos=(Array.isArray(d?.objetos)?d.objetos:[]).filter(objetoValido).map(o=>o.t==='trazo'?{...o,color:COLOR.test(o.color||'')?o.color:TINTA}:o.t==='plano'?limpiarPlano(o):o);
+  base.objetos=(Array.isArray(d?.objetos)?d.objetos:[]).filter(objetoValido).map(o=>o.t==='trazo'?{...o,color:COLOR.test(o.color||'')?o.color:TINTA}:o.t==='plano'?limpiarPlano(o):o.t==='matriz'?limpiarMatriz(o):o);
   if(num(d?.alto))base.alto=d.alto;
   if(d?.vista&&num(d.vista.x)&&num(d.vista.y)&&num(d.vista.z))base.vista={x:d.vista.x,y:d.vista.y,z:Math.min(ZOOM_MAX,Math.max(ZOOM_MIN,d.vista.z))};
   base.bloqueado=!!d?.bloqueado;base.practica=!!d?.practica;

@@ -5,6 +5,7 @@
    - Modo oscuro: la tinta oscura se ve clara (sin cambiar el color guardado) y el fondo usa líneas tenues.
    - Orden: fondo e imágenes → resaltador (detrás) → tinta, textos y fórmulas → papeles del modo práctica. */
 import {caja,cruzan,capaDe,anchoEn,PAGINA,CUADRO,CM,origenCartesiano,unidadCartesiano,pasoCartesiano} from './modelo.js';
+import {dibujarMatriz} from './matriz.js';
 import {aLienzo,kx,ky,ejes,marcas,textoMarca,numero,tramosFuncion,rectaEnRango,ecuacionRecta,ecuacionCirculo,nombrePunto} from './plano.js';
 
 const caminos=new WeakMap();
@@ -84,6 +85,7 @@ export function pintarObjeto(x,o,{vista,oscuro=false,imagen,formula}={}){
   if(o.t==='trazo')return pintarTrazo(x,o,{oscuro,z});
   if(o.t==='texto')return pintarTexto(x,o,oscuro);
   if(o.t==='plano')return pintarPlano(x,o,{oscuro});
+  if(o.t==='matriz')return dibujarMatriz(x,o,{col:colorVisible(o.color||'#1f2430',oscuro),gris:oscuro?'#94a3b8':'#64748b',oscuro});
   if(o.t==='imagen'){const b=imagen?.(o.archivo);pintarCaja(x,o,()=>{if(b)x.drawImage(b,o.x,o.y,o.w,o.h);else{x.fillStyle=oscuro?'#2a2f3a':'#eef0f4';x.fillRect(o.x,o.y,o.w,o.h)}});return}
   if(o.t==='formula'){const f=formula?.(o,oscuro);pintarCaja(x,o,()=>{
     if(f?.img)x.drawImage(f.img,o.x,o.y,o.w,o.h);
@@ -145,6 +147,10 @@ export function pintarPlano(x,p,{oscuro=false}={}){
       if(o.k==='medida'){const dx=o.b[0]-o.a[0],dy=o.b[1]-o.a[1],ls=[`Δx = ${numero(dx)}  Δy = ${numero(dy)}`,`m = ${Math.abs(dx)<1e-9?'—':numero(dy/dx)}`,`d = ${numero(Math.hypot(dx,dy))}`,ecuacionRecta(o.a,o.b)];
         ls.forEach((t,i)=>etiquetaP(x,t,Math.max(A[0],B[0])+10,Math.min(A[1],B[1])+i*16+12,{col,oscuro}))}
       for(const P of o.k==='vector'?[A]:[A,B]){x.beginPath();x.arc(P[0],P[1],3.2,0,Math.PI*2);x.fill()}}
+    if(o.k==='pendiente'){const a=p.objetos.find(q=>q.id===o.pa),b=p.objetos.find(q=>q.id===o.pb);if(a&&b){const A=[a.x,a.y],B=[b.x,b.y],q=rectaEnRango(p,A,B);
+      if(q){const [P,Q]=q.map(z=>aLienzo(p,z));x.beginPath();x.moveTo(...P);x.lineTo(...Q);x.stroke()}
+      const dx=B[0]-A[0],dy=B[1]-A[1],ls=[`m = Δy/Δx = ${numero(dy)}/${numero(dx)}${Math.abs(dx)<1e-9?'':` = ${numero(dy/dx)}`}`,`d(${a.nombre||'A'}, ${b.nombre||'B'}) = ${numero(Math.hypot(dx,dy))}`,ecuacionRecta(A,B)];
+      ls.forEach((t,i)=>etiquetaP(x,t,p.x+8,p.y+16+i*17,{col,oscuro}))}}
     if(o.k==='circulo'){const [cx,cy]=aLienzo(p,o.c);x.beginPath();x.ellipse(cx,cy,o.r*kx(p),o.r*ky(p),0,0,Math.PI*2);x.stroke();x.beginPath();x.arc(cx,cy,2.6,0,Math.PI*2);x.fill();
       if(p.ecuaciones)etiquetaP(x,ecuacionCirculo(o.c,o.r),cx+o.r*kx(p)*.72+4,cy-o.r*ky(p)*.72-2,{col,oscuro})}
     if(o.k==='tabla'){const ps=o.pts.map(q=>aLienzo(p,q));if(o.unir&&ps.length>1){x.beginPath();ps.forEach((q,i)=>i?x.lineTo(...q):x.moveTo(...q));x.stroke()}

@@ -18,6 +18,8 @@ import {render,enLinea,alternarCasilla,tarjetasDe,imagenesDe,plano,normal,TARJET
 import {cuadernoDe,fechaCorta,guardar,crearNota,borrarNotas,restaurarNotas,sincronizarResumenes} from './cuaderno/notas.js';
 import {comprimirFoto,guardarImagen} from './cuaderno/medios.js';
 import {SIMBOLOS,htmlTecladoFormulas,abrirVisor,editarFoto,pedirTarjeta} from './cuaderno/editor-ui.js';
+import {dialogoMatriz} from './matriz-dialogo.js';
+import {aLatex,deLatex} from './matrices.js';
 import {abrirEditorDibujo} from './dibujo/editor.js';
 import {migrarDibujo,imagenesDibujo,nuevoIdObj} from './dibujo/modelo.js';
 import {archivoRespaldo,leerRespaldo,aplicarRespaldo,resumenRespaldo,resumenLocal,descargar} from './cuaderno/respaldo.js';
@@ -602,9 +604,12 @@ ${modo==='tapar'?'<button type="button" class="btn ghost ancho" id="nota-destapa
       for(const idInp of ['nota-camara','nota-galeria'])document.getElementById(idInp)?.addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';foto(f)});
       // la barra y los símbolos no le quitan el foco al texto (así el teclado del teléfono no se cierra)
       for(const s of ['.ed-barra','#ed-tfx'])document.querySelector(s)?.addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault()});
-      document.getElementById('ed-tfx')?.addEventListener('click',e=>{const b=e.target.closest('[data-tfx]');if(!b)return;
+      document.getElementById('ed-tfx')?.addEventListener('click',async e=>{const b=e.target.closest('[data-tfx]');if(!b)return;
         if(b.dataset.tfx==='cerrar'){tfx=false;pintarTfx();return}
-        const [,txt,atras]=SIMBOLOS[+b.dataset.tfx],t=bloqueTexto();const v=t.value,a=t.selectionStart;
+        let [,txt,atras]=SIMBOLOS[+b.dataset.tfx],t=bloqueTexto();const v=t.value,a=t.selectionStart,b0=t.selectionEnd;
+        // ▦ Matriz: tamaño, paréntesis y celdas en una cuadrícula; se escribe el LaTeX (nadie escribe & ni \ a mano)
+        if(txt==='matriz'){const r=await dialogoMatriz({titulo:'▦ Matriz',inicial:{celdas:[['',''],['','']],paren:'[]',aumentada:null},sistema:true});if(!r)return;
+          txt=aLatex(r.celdas,{paren:r.paren,aumentada:r.aumentada});const t3=ta();if(!t3)return;t3.focus();t3.setSelectionRange(a,b0)}
         if(bs[act]?.tipo!=='formula'&&(v.slice(0,a).match(/\$/g)||[]).length%2===0){envolver('$','$','');}
         const t2=ta(),p=t2.selectionStart;t2.setRangeText(txt,p,t2.selectionEnd,'end');const q=t2.selectionStart-atras;t2.setSelectionRange(q,q);escribir(t2)});
       // tocar un bloque formateado lo edita, con el cursor cerca de donde se tocó (o dentro de la fórmula tocada)
@@ -614,7 +619,10 @@ ${modo==='tapar'?'<button type="button" class="btn ghost ancho" id="nota-destapa
         if(v){const i=+v.dataset.editar,f=bs[i]?.texto||'';
           const k=e.target.closest('.katex');if(k){const todas=[...v.querySelectorAll('.katex')].filter(x=>!x.closest('.katex-display'));const nIdx=todas.indexOf(k);
             const ms=[...f.matchAll(/\$\$?([^$]+)\$\$?/g)];const m=bs[i].tipo==='formula'?ms[0]:ms.filter(x=>!x[0].startsWith('$$'))[nIdx]||ms[0];
-            if(m){const ini=m.index+(m[0].startsWith('$$')?2:1);activar(i,ini);const t=ta();t?.setSelectionRange(ini,ini+m[1].length);return}}
+            if(m){const ini=m.index+(m[0].startsWith('$$')?2:1);activar(i,ini);const t=ta();t?.setSelectionRange(ini,ini+m[1].length);
+              // una matriz se vuelve a abrir en su cuadrícula para editarla
+              const mz=deLatex(m[1]);if(mz){dialogoMatriz({titulo:'▦ Editar la matriz',inicial:mz,boton:'Guardar'}).then(r=>{const t2=ta();if(!r||!t2)return;t2.focus();t2.setRangeText(aLatex(r.celdas,{paren:r.paren,aumentada:r.aumentada}),ini,ini+m[1].length,'end');escribir(t2)})}
+              return}}
           activar(i,cursorDesde(e,f));return}
       });
       caja()?.addEventListener('click',e=>{if(e.target.closest('#ed-final')){

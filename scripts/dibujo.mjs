@@ -126,7 +126,7 @@ try{
   await p.click('#nota-nueva-vacia');await p.waitForTimeout(700);
   await p.fill('#nota-titulo','Física: tiro parabólico');await p.waitForTimeout(200);
   await p.click('[data-fmt="imagen"]');await p.waitForTimeout(250);await p.click('.modal [data-r="dibujo"]');await p.waitForTimeout(700);
-  check(await p.locator('.dib').count()===1&&await p.locator('.modal .dib-plantillas [data-pl]').count()===8,'abrir: pantalla completa con las 8 plantillas al crear');
+  check(await p.locator('.dib').count()===1&&await p.locator('.modal .dib-plantillas [data-pl]:not([data-ej])').count()===12&&await p.locator('.modal [data-pl][data-ej]').count()===4,'abrir: pantalla completa con las 12 plantillas al crear (4 de matemáticas con «Ejemplo»)');
   await p.screenshot({path:join(CAP,'plantillas-claro.png')});
   await diseno(p,'plantillas (360)');
   await p.click('.modal [data-x]');await p.waitForTimeout(300);
@@ -427,6 +427,97 @@ try{
   await ctx.close();
 }
 
+/* ================= ▦ matrices (PROMPT-PLANOS-MATRICES, parte 2) ================= */
+{
+  console.log('--- ▦ matrices');
+  const MX=await import(pathToFileURL(join(raiz,'src','nucleo','matrices.js')).href);
+  const AL=await import(pathToFileURL(join(raiz,'src','nucleo','generadores','algebra-lineal.js')).href);
+  const katex=(await import(pathToFileURL(join(raiz,'node_modules','katex','dist','katex.mjs')).href)).default;
+  const EJ=[['1','3','3','2'],['2','3','9','4'],['2','4','2','4']];
+  const mat=(p,mid)=>D(p,`d.objs.find(o=>o.t==="matriz"&&o.mid===${JSON.stringify(mid)})`);
+  const ultima=p=>D(p,'d.objs.filter(o=>o.t==="matriz").at(-1)');
+  const tapa=p=>p.evaluate(()=>{const d=document.querySelector('.dib').__dib,c=d.celdaActiva(),t=document.querySelector('.mtz-tec');if(!c||!t||t.hidden)return null;
+    const a=document.querySelector('.dib-area').getBoundingClientRect(),r=t.getBoundingClientRect();return {abajo:a.top+c[3],tec:r.top,arriba:a.top+c[1],area:a.top}});
+  const aviso=p=>p.evaluate(()=>document.getElementById('aviso')?.textContent||'');
+  for(const [nombre,vp,extra] of [['teléfono 360',{width:360,height:800},{deviceScaleFactor:2.625,isMobile:true,hasTouch:true}],['teléfono 412',{width:412,height:915},{deviceScaleFactor:2.625,isMobile:true,hasTouch:true}],
+    ['Tab S10 (800 × 1280)',{width:800,height:1280},{deviceScaleFactor:2,isMobile:true,hasTouch:true}],['laptop 1366',{width:1366,height:768},{deviceScaleFactor:1}]]){
+    for(const oscuro of [false,true]){
+      const ctx=await nuevoContexto({viewport:vp,...extra},{oscuro});const p=await ctx.newPage(),err=[];p.on('pageerror',e=>err.push(e.message));
+      await abrirNuevo(p);const sufijo=`${vp.width}-${oscuro?'oscuro':'claro'}`,et=`${nombre}${oscuro?' (oscuro)':''}`;
+      // ▦ en la barra: tamaño 3×4 aumentada
+      await p.click('[data-d="mz-insertar"]');await p.waitForTimeout(200);
+      if(!oscuro&&nombre==='teléfono 360'){await diseno(p,'▦ diálogo de la matriz (360)');await p.screenshot({path:join(CAP,'matriz-dialogo.png')})}
+      await p.click('.modal [data-rap="3-4a"]');await p.click('.modal button[type="submit"]');await p.waitForTimeout(250);
+      let o=await ultima(p);
+      check(o&&o.filas===3&&o.cols===4&&o.aumentada===3&&o.paren==='[]',`${et}: ▦ inserta una 3×4 aumentada con [ ]`);
+      check(await D(p,'d.mtz.editando?.i')===0&&await p.locator('.mtz-tec:not([hidden])').count()===1,`${et}: la primera celda queda activa con el teclado numérico`);
+      // llenar: el renglón 1 con el teclado propio y el resto con el teclado físico (Tab)
+      for(const v of EJ[0]){await p.click(`.mtz-tec [data-mt="${v}"]`);await p.click('.mtz-tec [data-mt="sig"]')}
+      const t=await tapa(p);check(t&&t.abajo<=t.tec+1&&t.arriba>=t.area-1,`${et}: el teclado no tapa la celda activa`);
+      await p.screenshot({path:join(CAP,`matriz-teclado-${sufijo}.png`)});
+      if(!oscuro)await diseno(p,`teclado de la matriz (${nombre})`);
+      for(const v of EJ.slice(1).flat()){await p.keyboard.type(v);await p.keyboard.press('Tab')}await p.waitForTimeout(150);
+      o=await ultima(p);
+      check(JSON.stringify(o.celdas)===JSON.stringify(EJ)&&!(await D(p,'d.mtz.editando')),`${et}: llena con el teclado numérico y con Tab (${JSON.stringify(o.celdas)})`);
+      check(await D(p,'d.hist')===2,`${et}: insertar y escribir los números son dos pasos del historial (${await D(p,'d.hist')})`);
+      await pintar(p);await p.screenshot({path:join(CAP,`matriz-${sufijo}.png`)});
+      if(nombre!=='teléfono 360'||oscuro){check(!err.length,`${et}: sin errores de JavaScript`+(err.length?': '+err.slice(0,2).join(' | '):''));await ctx.close();continue}
+
+      // ⇄ R₂ → R₂ − 2R₁ con «Calcular por mí», eligiendo en el panel
+      await p.click('.dib-selbar [data-d="mz-renglon"]');await p.waitForTimeout(150);
+      await diseno(p,'⇄ panel de operación de renglón (360)');await p.screenshot({path:join(CAP,'matriz-renglon.png')});
+      for(const s of ['[data-mz-modo="calc"]','[data-mz-tipo="sumar"]','[data-mz-i="1"]','[data-mz-j="0"]','[data-mz-k="±"]','[data-mz-k="2"]'])await p.click('.dib-opc '+s);
+      check((await p.textContent('.mtz-not')).trim()==='R₂ → R₂ − 2R₁','la operación se escribe con la notación estándar: R₂ → R₂ − 2R₁');
+      const h0=await D(p,'d.hist');await p.click('.dib-opc [data-d="mz-aplicar"]');await p.waitForTimeout(200);
+      const src=await mat(p,o.mid),n1=await ultima(p);
+      check(n1.mid!==o.mid&&n1.prefijo==='~'&&JSON.stringify(n1.celdas[1])===JSON.stringify(['0','−3','3','0']),`🧮 Calcular por mí: R₂ queda [0 −3 3 | 0] (${JSON.stringify(n1.celdas[1])})`);
+      check(src.notas[1]==='R₂ → R₂ − 2R₁'&&(n1.x>=src.x+src.w-1||n1.y>=src.y+src.h-1),'la operación se anota a la derecha del renglón y la matriz siguiente va al lado (o abajo)');
+      await pintar(p);await p.screenshot({path:join(CAP,'matriz-calculada.png')});
+      await p.click('[data-d="deshacer"]');await p.waitForTimeout(150);
+      check(await D(p,'d.hist')===h0&&!(await D(p,`d.objs.some(o=>o.mid===${JSON.stringify(n1.mid)})`))&&!(await mat(p,o.mid)).notas.some(Boolean),'↶ Deshacer quita el paso completo (la matriz nueva y la anotación)');
+      // ✍️ Lo hago yo: una celda bien y una mal
+      await p.evaluate(mid=>document.querySelector('.dib').__dib.mtz.aplicarOps(mid,[{tipo:'sumar',i:1,j:0,k:-2}],'yo'),o.mid);await p.waitForTimeout(150);
+      const y1=await ultima(p);check(y1.esperado&&y1.celdas[1].every(c=>!c)&&JSON.stringify(y1.celdas[0])===JSON.stringify(EJ[0]),'✍️ Lo hago yo: la matriz siguiente sale con R₂ vacío (los demás copiados) y la operación anotada');
+      check(JSON.stringify(await D(p,'[d.mtz.editando?.i,d.mtz.editando?.j]'))==='[1,0]','✍️ la primera celda vacía queda activa');
+      await p.click('.mtz-tec [data-mt="0"]');await p.click('.mtz-tec [data-mt="sig"]');await p.click('.mtz-tec [data-mt="5"]');
+      await p.click('.mtz-tec [data-mt="revisar"]');await p.waitForTimeout(150);
+      const y2=await mat(p,y1.mid),av=await aviso(p);
+      check(y2.marcas?.[1]?.[0]==='ok'&&y2.marcas?.[1]?.[1]==='mal'&&av.includes('3 − 2·3'),`✓ Revisar marca bien la correcta y mal la incorrecta, con pista (${av})`);
+      await pintar(p);await p.screenshot({path:join(CAP,'matriz-revisar.png')});
+      await p.click('.mtz-tec [data-mt="listo"]');
+      // Gauss-Jordan completo con «Calcular por mí» siguiendo el paso sugerido: la solución coincide con la exacta
+      let m=o.mid,pasos=0;
+      while(pasos<20){const M=MX.deTextos((await mat(p,m)).celdas),op=MX.sugerencia(M,3);if(!op)break;
+        await p.evaluate(([mid,op])=>document.querySelector('.dib').__dib.mtz.aplicarOps(mid,[op],'calc'),[m,{...op,k:op.k?MX.texto(op.k).replace('−','-'):undefined}]);
+        m=(await ultima(p)).mid;pasos++}
+      const fin=MX.deTextos((await mat(p,m)).celdas),sol=MX.solucion(MX.deTextos(EJ));
+      const A=EJ.map(f=>f.slice(0,3).map(Number)),b=EJ.map(f=>+f[3]),x=sol.valores?.map(MX.valor);
+      check(MX.esReducida(fin,3)&&sol.tipo==='unica'&&fin.every((f,i)=>MX.iguales(f[3],sol.valores[i]))&&A.every((f,i)=>Math.abs(f.reduce((s,a,j)=>s+a*x[j],0)-b[i])<1e-12),
+        `escalonada reducida en ${pasos} pasos: ${sol.texto} (comprobada sustituyendo en el sistema)`);
+      check((await aviso(p)).includes('escalonada reducida'),'al llegar a la escalonada reducida, un aviso lo dice y ofrece la solución');
+      await pintar(p);await p.screenshot({path:join(CAP,'matriz-gauss-jordan.png')});
+      // determinante (mismo resultado que el generador de Álgebra lineal) y fracciones exactas
+      const Mdet=EJ.map(f=>f.slice(0,3));check(MX.texto(MX.det(MX.deTextos(Mdet)))===String(AL.det3(Mdet.map(f=>f.map(Number)))),`det [[1,3,3],[2,3,9],[2,4,2]] = ${MX.texto(MX.det(MX.deTextos(Mdet)))} (igual que det3 de Álgebra lineal)`);
+      await p.evaluate(mid=>document.querySelector('.dib').__dib.mtz.aplicarOps(mid,[{tipo:'multiplicar',i:0,k:'1/2'}],'calc'),o.mid);
+      const fr1=await ultima(p);check(JSON.stringify(fr1.celdas[0])===JSON.stringify(['1/2','3/2','3/2','1']),`fracciones exactas: ½R₁ = ${JSON.stringify(fr1.celdas[0])} (nunca 0.5)`);
+      await pintar(p);await p.screenshot({path:join(CAP,'matriz-fracciones.png')});
+      // pegar un sistema arma la aumentada
+      await p.click('[data-d="mz-insertar"]');await p.waitForTimeout(150);await p.click('.modal .mtz-sistema summary');
+      await p.fill('.modal [data-sis]','x + 3y + 3z = 2\n2x + 3y + 9z = 4\n2x + 4y + 2z = 4');await p.click('.modal button[type="submit"]');await p.waitForTimeout(200);
+      const ps=await ultima(p);check(JSON.stringify(ps.celdas)===JSON.stringify(EJ)&&ps.aumentada===3,`📋 pegar el sistema arma la matriz aumentada (${JSON.stringify(ps.celdas)})`);
+      // LaTeX que KaTeX dibuja sin error
+      const tex=await D(p,`d.mtz.copiarLatex(${JSON.stringify(ps.mid)})`);let okTex=true;try{katex.renderToString(tex,{throwOnError:true})}catch(e){okTex=false}
+      check(okTex&&tex.includes('{ccc|c}'),`«Copiar como LaTeX» compila en KaTeX: ${tex}`);
+      // la matriz se guarda como objeto y vuelve igual (sincroniza y entra al respaldo como el resto del dibujo)
+      const Mod=await import(pathToFileURL(join(raiz,'src','nucleo','dibujo','modelo.js')).href),est=await D(p,'d.estado()');
+      const vuelta=Mod.normalizarDibujo(JSON.parse(JSON.stringify(Mod.paraGuardar(est))));
+      check(vuelta.objetos.filter(q=>q.t==='matriz').length===est.objetos.filter(q=>q.t==='matriz').length,'las matrices se guardan como objetos (paraGuardar → normalizar) sin perder ninguna');
+      check(!err.length,'sin errores de JavaScript'+(err.length?': '+err.slice(0,2).join(' | '):''));
+      await ctx.close();
+    }
+  }
+}
+
 /* ================= desde un ejercicio y ✨ pasar a texto (IA simulada) ================= */
 {
   console.log('--- «✏️ Resolver en el Cuaderno» y ✨ pasar a texto');
@@ -506,6 +597,49 @@ try{
   check(await p.locator('.dib').count()===0,'«Descartar los cambios» cierra sin guardar');
   check(!err.length,'sin errores de JavaScript'+(err.length?': '+err.slice(0,2).join(' | '):''));
   await ctx.close();
+}
+
+/* ================= 🧮 plantillas de matemáticas (PROMPT-PLANOS-MATRICES, parte 3) ================= */
+{
+  console.log('--- 🧮 plantillas de matemáticas');
+  const MX=await import(pathToFileURL(join(raiz,'src','nucleo','matrices.js')).href),PL=await import(pathToFileURL(join(raiz,'src','nucleo','dibujo','plano.js')).href);
+  const EJ=[['1','3','3','2'],['2','3','9','4'],['2','4','2','4']];
+  for(const oscuro of [false,true]){
+    const ctx=await nuevoContexto({viewport:{width:360,height:800},deviceScaleFactor:2.625,isMobile:true,hasTouch:true},{oscuro}),nom=oscuro?'oscuro':'claro';
+    const p=await ctx.newPage(),err=[];p.on('pageerror',e=>err.push(e.message));
+    const abrir=async(id,ej)=>{await p.goto(BASE+'#notas');await p.waitForTimeout(700);await p.click('#nota-nueva-vacia, #nota-nueva');await p.waitForTimeout(700);
+      await p.click('[data-fmt="imagen"]');await p.waitForTimeout(250);await p.click('.modal [data-r="dibujo"]');await p.waitForTimeout(700);
+      if(id==='dialogo')return;await p.click(`.modal [data-pl="${id}"]${ej?'[data-ej]':':not([data-ej])'}`);await p.waitForTimeout(500)};
+    const salir=async()=>{await p.click('[data-d="mas"]');await p.waitForTimeout(250);await p.click('.modal [data-r="descartar"]');await p.waitForTimeout(250);if(await p.locator('.modal [data-r="1"]').count())await p.click('.modal [data-r="1"]');await p.waitForTimeout(700)};
+    if(!oscuro){await abrir('dialogo');await diseno(p,'plantillas con «Para matemáticas» (360)');await p.screenshot({path:join(CAP,'plantillas-mat.png')});await p.click('.modal [data-x]');await p.waitForTimeout(300);await salir()}
+    // Gauss-Jordan: vacía y con el ejemplo de la captura
+    await abrir('gauss',false);let m=await D(p,'d.objs.find(o=>o.t==="matriz")');
+    check(m&&m.filas===3&&m.cols===4&&m.aumentada===3&&m.celdas.flat().every(c=>!c),`Gauss-Jordan (${nom}): matriz aumentada 3×4 vacía y columna de operaciones`);
+    await salir();await abrir('gauss',true);m=await D(p,'d.objs.find(o=>o.t==="matriz")');
+    check(JSON.stringify(m?.celdas)===JSON.stringify(EJ),'Gauss-Jordan · Ejemplo: el sistema [1 3 3 | 2] [2 3 9 | 4] [2 4 2 | 4]');
+    await pintar(p);await p.screenshot({path:join(CAP,`plantilla-gauss-${nom}.png`)});await salir();
+    // Graficar una función: plano de −10 a 10, la función y su tabla de valores
+    await abrir('funcion',true);let pl=await D(p,'d.objs.find(o=>o.t==="plano")'),tb=await D(p,'d.objs.find(o=>o.t==="matriz")');
+    check(pl&&pl.xMin===-10&&pl.xMax===10&&pl.objetos.some(o=>o.k==='funcion'&&o.expr==='x^2 - 4')&&tb?.celdas[1].join(',')==='-3,5','Graficar una función: plano de −10 a 10 con y = x² − 4 y su tabla de valores');
+    await pintar(p);await p.screenshot({path:join(CAP,`plantilla-funcion-${nom}.png`)});await salir();
+    // Pendiente y recta: dos puntos que se arrastran; m, d y la ecuación salen de los puntos
+    await abrir('pendiente',false);pl=await D(p,'d.objs.find(o=>o.t==="plano")');
+    const pe=pl?.objetos.find(o=>o.k==='pendiente'),B=pl?.objetos.find(o=>o.nombre==='B');
+    check(pe&&B&&pl.objetos.some(o=>o.id===pe.pa)&&pe.pb===B.id,'Pendiente y recta: A y B en el plano y la recta con m, d y ecuación');
+    if(pl&&B){await p.evaluate(()=>document.querySelector('.dib').__dib.irA({z:1,x:0,y:0}));await p.evaluate(pid=>document.querySelector('.dib').__dib.modoPlano(pid,'punto'),pl.pid);
+      const q0=PL.aLienzo(pl,[B.x,B.y]),q1=PL.aLienzo(pl,[4,5]);await gesto(p,linea(1,q0[0],q0[1],q1[0],q1[1],{n:8}));
+      const pl2=await D(p,'d.objs.find(o=>o.t==="plano")'),B2=pl2.objetos.find(o=>o.nombre==='B');
+      check(B2?.x===4&&B2?.y===5&&pl2.objetos.some(o=>o.k==='pendiente'),`arrastrar B la mueve a (4, 5) y la recta la sigue (ahora ${PL.ecuacionRecta([1,2],[4,5])})`)}
+    await pintar(p);await p.screenshot({path:join(CAP,`plantilla-pendiente-${nom}.png`)});await salir();
+    // Sistema 2×2 gráfico: dos rectas que se cortan en el punto que resuelve la matriz aumentada
+    await abrir('sistema2',true);pl=await D(p,'d.objs.find(o=>o.t==="plano")');m=await D(p,'d.objs.find(o=>o.t==="matriz")');
+    const P=pl?.objetos.find(o=>o.k==='punto'),fs=pl?.objetos.filter(o=>o.k==='funcion')||[],s=m&&MX.solucion(MX.deTextos(m.celdas));
+    check(P&&fs.length===2&&fs.every(f=>Math.abs(PL.funcionDe(f.expr)(P.x)-P.y)<1e-9)&&s?.tipo==='unica'&&MX.valor(s.valores[0])===P.x&&MX.valor(s.valores[1])===P.y,
+      `Sistema 2×2: las dos rectas pasan por P(${P?.x}, ${P?.y}) y es la solución de su matriz aumentada (${s?.texto})`);
+    await pintar(p);await p.screenshot({path:join(CAP,`plantilla-sistema2-${nom}.png`)});await salir();
+    check(!err.length,'sin errores de JavaScript'+(err.length?': '+err.slice(0,2).join(' | '):''));
+    await ctx.close();
+  }
 }
 
 /* ================= plantillas y capturas en oscuro ================= */

@@ -37,7 +37,8 @@ export function igualar(p){
 }
 const OBJ={punto:o=>num(o.x)&&num(o.y),funcion:o=>typeof o.expr==='string',recta:o=>par(o.a)&&par(o.b),segmento:o=>par(o.a)&&par(o.b),vector:o=>par(o.a)&&par(o.b),
   circulo:o=>par(o.c)&&num(o.r)&&o.r>0,tabla:o=>Array.isArray(o.pts)&&o.pts.every(par),region:o=>typeof o.expr==='string'&&num(o.a)&&num(o.b),
-  desigualdad:o=>typeof o.expr==='string'&&['>','>=','<','<='].includes(o.op),medida:o=>par(o.a)&&par(o.b)};
+  desigualdad:o=>typeof o.expr==='string'&&['>','>=','<','<='].includes(o.op),medida:o=>par(o.a)&&par(o.b),
+  pendiente:o=>typeof o.pa==='string'&&typeof o.pb==='string'};   // recta por dos puntos del plano (sus id) con m, d y la ecuación en vivo
 const par=v=>Array.isArray(v)&&num(v[0])&&num(v[1]);
 export function planoValido(o){
   return ['x','y','w','h','xMin','xMax','yMin','yMax','pasoX','pasoY'].every(k=>num(o[k]))&&o.w>0&&o.h>0&&o.xMax>o.xMin&&o.yMax>o.yMin&&o.pasoX>0&&o.pasoY>0&&typeof o.pid==='string';

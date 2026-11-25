@@ -17,6 +17,8 @@
      mueve; ⚙️ Ajustes en vivo, ➕ Agregar punto, función, recta, segmento, vector, circunferencia, tabla, área y desigualdad,
      🔒 Fijar, ⧉ y 🗑️). Lo que se dibuja dentro queda anclado (`ancla`) y se mueve, escala y reacomoda con él. Con ✋ y
      «Mover la vista del plano», un dedo mueve el rango y dos lo acercan. Dos toques en un número del extremo lo editan.
+   - ▦ Matrices (matriz-ui.js): ▦ en la barra o en 📐; teclado numérico propio (o Tab en la laptop), ⇄ operaciones de
+     renglón («🧮 Calcular por mí» o «✍️ Lo hago yo» con ✓ Revisar), determinante, inversa, rango, suma y producto, LaTeX.
    - ✋ Modo mano: un dedo mueve. Con el S Pen («Solo el lápiz dibuja»), el lápiz dibuja y el dedo mueve.
    - Herramientas: pluma (bolígrafo, fuente, lápiz), resaltador (detrás de la tinta), borrador (de trazo o de precisión),
      lazo (mover, escalar, rotar, color, grosor, copiar, duplicar, borrar, ✨ pasar a texto), formas (inteligentes al
@@ -43,6 +45,7 @@ import {imagenFormula,medirFormula,pdfDePaginas} from './raster.js';
 import {nuevoPlano,igualar,matrizPlano,planoEn,dentroPlano,aPlanoDe,aLienzo,anclable,objetoPlanoEn,limitesEn,ajustarAPaso,siguienteNombre,nombrePunto,
   ecuacionRecta,ecuacionCirculo,expresionValida,rangoDeObjetos,PRESETS,COLORES_PLANO,kx,ky,numero as numeroP} from './plano.js';
 import {num} from '../generadores/verificar.js';
+import {crearMatrices} from './matriz-ui.js';
 
 export const PALETA=[['Negro','#1f2430'],['Azul','#2563eb'],['Rojo','#dc2626'],['Verde','#15803d'],['Morado','#7c3aed'],['Naranja','#ea580c'],['Gris','#6b7280'],
   ['Amarillo','#facc15'],['Verde claro','#4ade80'],['Rosa','#f472b6']];
@@ -72,6 +75,7 @@ export function abrirEditorDibujo({dibujo,titulo='Dibujo',nuevo=false,cargarImag
   let herr='pluma',vista={x:0,y:0,z:1},W=0,H=0,k=1,oscuro=esOscuro(),bloqueado=d.bloqueado,temporal=false,mano=false,practica=!!d.practica,revelados=new Set();
   let sel=null,g=null,ocultos=null,lapizVisto=false,lapizActivo=false,espacio=false,regla=null,transp=null,panel=null,editando=null,ultimoTap=null,tieneVista=false;
   const toques=new Map(),imagenes=new Map(),formulas=new Map();
+  let M=null;   // ▦ matrices (matriz-ui.js): se crea al final, cuando ya existen las funciones que usa
 
   /* ---------- DOM ---------- */
   const f=document.createElement('div');f.className='dibujo-fondo dib';f.setAttribute('role','dialog');f.setAttribute('aria-modal','true');f.setAttribute('aria-label',`Dibujo: ${titulo}`);
@@ -85,7 +89,7 @@ export function abrirEditorDibujo({dibujo,titulo='Dibujo',nuevo=false,cargarImag
 <div class="dib-zoombtns" role="group" aria-label="Zoom" hidden><button type="button" data-d="zoom-menos" aria-label="Alejar">−</button><button type="button" data-d="zoom-mas" aria-label="Acercar">＋</button></div>
 <button type="button" class="btn btn-chico dib-dejar" data-d="dos-dejar" hidden>📌 Dejar en la hoja</button><div class="dib-opc" role="dialog" aria-label="Opciones de la herramienta" hidden></div></div>
 <nav class="dib-barra" aria-label="Herramientas de dibujo"><div class="dib-fila dib-herrs" role="toolbar" aria-label="Herramienta">${HERR.map(([h,i,n])=>bot(`h-${h}`,i,n,` data-herr="${h}" aria-pressed="${h==='pluma'}"`)).join('')}${bot('contraer','▾','Contraer la barra',' class="dib-contraer"')}</div>
-<div class="dib-fila dib-acc" role="toolbar" aria-label="Acciones">${bot('deshacer','↶','Deshacer (Ctrl+Z)')}${bot('rehacer','↷','Rehacer (Ctrl+Y)')}${bot('bloquear','🔓','Bloquear la vista',' aria-pressed="false" class="dib-candado"')}${bot('mano','✋','Modo mano: un dedo mueve',' aria-pressed="false" class="dib-mano"')}<span class="dib-favs"></span></div></nav>
+<div class="dib-fila dib-acc" role="toolbar" aria-label="Acciones">${bot('deshacer','↶','Deshacer (Ctrl+Z)')}${bot('rehacer','↷','Rehacer (Ctrl+Y)')}${bot('bloquear','🔓','Bloquear la vista',' aria-pressed="false" class="dib-candado"')}${bot('mano','✋','Modo mano: un dedo mueve',' aria-pressed="false" class="dib-mano"')}${bot('mz-insertar','▦','Insertar una matriz',' class="dib-matriz"')}<span class="dib-favs"></span></div></nav>
 <input type="file" accept="image/*" capture="environment" class="dib-camara" hidden><input type="file" accept="image/*" class="dib-galeria" hidden>`;
   const $=s=>f.querySelector(s),area=$('.dib-area'),cF=$('.dib-cfondo'),cT=$('.dib-ctinta'),cV=$('.dib-cvivo'),mapa=$('.dib-mapa');
   const xF=cF.getContext('2d'),xT=cT.getContext('2d'),xV=cV.getContext('2d');
@@ -97,7 +101,7 @@ export function abrirEditorDibujo({dibujo,titulo='Dibujo',nuevo=false,cargarImag
     marca.innerHTML='<button type="button" data-d="cancelar"></button>';marca.firstChild.addEventListener('click',()=>{const c=marcaCb;marca?.remove();marca=null;marcaCb=null;c?.()});document.body.appendChild(marca)}
   function quitarMarca(){if(!marca)return Promise.resolve();marca.remove();marca=null;marcaCb=null;
     return new Promise(r=>{let ok=false;const fin=()=>{if(ok)return;ok=true;removeEventListener('popstate',fin);setTimeout(r,0)};addEventListener('popstate',fin);setTimeout(fin,400)})}
-  const marcaSiHace=()=>{if(sel||panel||editando)abrirMarca(()=>{if(editando)terminarTexto();if(panel)cerrarPanel(false);if(sel)limpiarSel(false)});else quitarMarca()};
+  const marcaSiHace=()=>{if(sel||panel||editando||M?.editando)abrirMarca(()=>{if(M?.editando)M.terminar(true);if(editando)terminarTexto();if(panel)cerrarPanel(false);if(sel)limpiarSel(false)});else quitarMarca()};
 
   /* ---------- vista ---------- */
   const anchoP=()=>anchoPagina(d),dd=()=>({...d,objetos:objs});
@@ -169,6 +173,7 @@ export function abrirEditorDibujo({dibujo,titulo='Dibujo',nuevo=false,cargarImag
     if(g?.lazo){x.setLineDash([6,5]);x.strokeStyle=css('--primary')||'#2563eb';x.lineWidth=1.6;x.beginPath();g.lazo.forEach((p,i)=>{const [a,b]=aPantalla(p[0],p[1]);i?x.lineTo(a,b):x.moveTo(a,b)});x.stroke();x.setLineDash([])}
     if(g?.rect){const [a,b]=aPantalla(g.rect[0],g.rect[1]),[c,e]=aPantalla(g.rect[2],g.rect[3]);x.setLineDash([5,4]);x.strokeStyle='#64748b';x.lineWidth=1.2;x.strokeRect(Math.min(a,c),Math.min(b,e),Math.abs(c-a),Math.abs(e-b));x.setLineDash([])}
     if(sel&&!g?.sel)pintarSeleccion(x);
+    M?.pintarVivo(x,css('--primary')||'#2563eb');
     if(g?.sel)pintarSeleccion(x,g.m);
     if(g?.goma){const [a,b]=g.goma;x.strokeStyle=oscuro?'#e5e7eb':'#334155';x.lineWidth=1.2;x.beginPath();x.arc(a,b,g.radioPx,0,Math.PI*2);x.stroke()}
     if(!g?.dos&&medicion&&herr==='dosdedos'){x.setTransform(k*vista.z,0,0,k*vista.z,-vista.x*vista.z*k,-vista.y*vista.z*k);for(const o of medicion.vista)pintarObjeto(x,o,{vista,oscuro});x.setTransform(k,0,0,k,0,0)}
@@ -235,8 +240,8 @@ export function abrirEditorDibujo({dibujo,titulo='Dibujo',nuevo=false,cargarImag
   let autoTimer=0;
   function tocar(){version++;cambiado=true;pintarTodo();botones();clearTimeout(autoTimer);autoTimer=setTimeout(autoguardarYa,1500);estado('Sin guardar…')}
   function aplicar(nuevos){nuevos=anclar(objs,nuevos);const op=diferencia(objs,nuevos);if(!op)return false;objs=nuevos;hist.push(op);rehacerPila.length=0;tocar();return true}
-  function deshacer(){const op=hist.pop();if(!op){aviso('No hay nada que deshacer.',1200);return false}objs=aplicarOp(objs,op,true);rehacerPila.push(op);if(sel)limpiarSel();tocar();return true}
-  function rehacer(){const op=rehacerPila.pop();if(!op)return false;objs=aplicarOp(objs,op);hist.push(op);if(sel)limpiarSel();tocar();return true}
+  function deshacer(){M?.terminar();const op=hist.pop();if(!op){aviso('No hay nada que deshacer.',1200);return false}objs=aplicarOp(objs,op,true);rehacerPila.push(op);if(sel)limpiarSel();tocar();return true}
+  function rehacer(){M?.terminar();const op=rehacerPila.pop();if(!op)return false;objs=aplicarOp(objs,op);hist.push(op);if(sel)limpiarSel();tocar();return true}
   const estadoActual=()=>({...d,objetos:objs,historial:hist,vista:{...vista},bloqueado,practica});
   function autoguardarYa(){clearTimeout(autoTimer);if(!autoguardar||cerrado)return;try{autoguardar(paraGuardar(estadoActual()));estado('Guardado ✓')}catch(e){}}
   const estado=t=>{const e=$('.dib-estado');if(e)e.textContent=t};
@@ -260,7 +265,7 @@ export function abrirEditorDibujo({dibujo,titulo='Dibujo',nuevo=false,cargarImag
   function elegir(h){
     if(h==='formas'&&herr==='dosdedos'){abrirPanel('dosdedos');return}
     if(h===herr&&h!=='papel'){abrirPanel(h);return}
-    medicion=null;modoPlano=null;herr=h;cerrarPanel();if(sel&&!['lazo'].includes(h))limpiarSel();botones();
+    M?.terminar();medicion=null;modoPlano=null;herr=h;cerrarPanel();if(sel&&!['lazo'].includes(h))limpiarSel();botones();
     if(h==='formas')aviso(`📐 ${FORMAS.find(x=>x[0]===P.forma)?.[2]||'Línea'}: arrastra para dibujarla. Toca 📐 otra vez para elegir otra.`,2200);
     if(h==='dosdedos'){abrirPanel('dosdedos');
       if(!P.dos.visto){P.dos.visto=true;guardarPrefs(P);aviso('✌️ Con esta herramienta los dos dedos dibujan. Para el zoom usa + y −, o elige otra herramienta.',4200)}}
@@ -284,17 +289,19 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
     if(h==='formas')return `<label class="dib-check"><input type="checkbox" data-inteligentes ${P.inteligentes?'checked':''}> Formas inteligentes: mantén quieto al final del trazo</label>
 <div class="dib-formas" role="group" aria-label="Forma">${FORMAS.map(([id,i,n])=>`<button type="button" data-forma="${id}" aria-pressed="${P.forma===id}" aria-label="${n}" title="${n}"><span aria-hidden="true">${i}</span><small>${n}</small></button>`).join('')}</div>
 <div class="row dib-tabla"><label>Filas <input type="number" min="1" max="20" value="${P.filas}" data-filas></label><label>Columnas <input type="number" min="1" max="12" value="${P.cols}" data-cols></label></div>
+<button type="button" class="btn ghost btn-chico" data-d="mz-insertar">▦ Matriz con números (y operaciones de renglón)</button>
 <button type="button" class="btn ghost btn-chico" data-d="dos">✌️ Dos dedos: regla, compás, medir, marco y barrido</button>
 <div class="row"><button type="button" class="btn ghost btn-chico" data-d="regla" aria-pressed="${!!regla}">📏 Regla</button><button type="button" class="btn ghost btn-chico" data-d="transp" aria-pressed="${!!transp}">◠ Transportador</button></div>`;
     if(h==='dosdedos')return htmlDos();
+    if(h.startsWith('mz-'))return M.htmlPanel(h);
     if(h==='plano')return htmlPlanoPanel();
     if(h==='fondoPlano')return htmlFondoPlano();
     if(h==='texto'){const p=P.texto;return `<div class="segmentos" role="group" aria-label="Tamaño de letra">${[14,20,28,40].map(t=>`<button type="button" data-tam="${t}" aria-pressed="${p.tam===t}">${t}</button>`).join('')}</div>${colores(PALETA.slice(0,7),p.color)}
 <div class="row"><button type="button" class="btn ghost btn-chico" data-d="formula">Σ Fórmula</button><span class="nota">Toca el lienzo para escribir.</span></div>`}
     return '';
   }
-  function abrirPanel(h){const p=$('.dib-opc');if(panel===h){cerrarPanel();return}panel=h;p.innerHTML=`<div class="dib-opc-cab"><b>${h==='dosdedos'?'✌️ Dos dedos':h==='plano'?'⚙️ Plano cartesiano':h==='fondoPlano'?'⊹ Plano de fondo':HERR.find(x=>x[0]===h)?.[2]||''}</b><button type="button" class="btn-icono" data-d="opc-cerrar" aria-label="Cerrar las opciones">✕</button></div>${htmlPanel(h)}`;p.hidden=false;marcaSiHace()}
-  function cerrarPanel(marcar=true){if(!panel)return;panel=null;ajustePlano=null;$('.dib-opc').hidden=true;if(marcar)marcaSiHace()}
+  function abrirPanel(h){const p=$('.dib-opc');if(panel===h){cerrarPanel();return}panel=h;p.innerHTML=`<div class="dib-opc-cab"><b>${h.startsWith('mz-')?M.titulo(h):h==='dosdedos'?'✌️ Dos dedos':h==='plano'?'⚙️ Plano cartesiano':h==='fondoPlano'?'⊹ Plano de fondo':HERR.find(x=>x[0]===h)?.[2]||''}</b><button type="button" class="btn-icono" data-d="opc-cerrar" aria-label="Cerrar las opciones">✕</button></div>${htmlPanel(h)}`;p.hidden=false;marcaSiHace()}
+  function cerrarPanel(marcar=true){if(!panel)return;M?.alCerrarPanel(panel);panel=null;ajustePlano=null;$('.dib-opc').hidden=true;if(marcar)marcaSiHace()}
   const repintarPanel=()=>{if(panel){const h=panel;panel=null;abrirPanel(h)}};
   function usarColor(c){
     if(sel)return cambiarSel(o=>o.t==='trazo'||o.t==='texto'||o.t==='formula'?{...o,color:c}:o);
@@ -308,12 +315,13 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
   function limpiarSel(marcar=true){if(!sel)return;sel=null;$('.dib-selbar').hidden=true;pintarVivo();if(marcar)marcaSiHace()}
   const elegidos=()=>sel?objs.filter(o=>sel.ids.has(o.id)):[];
   function barraSel(){
-    const os=elegidos(),b=$('.dib-selbar'),uno=os.length===1?os[0]:null,img=uno?.t==='imagen',pl=planoSel();
+    const os=elegidos(),b=$('.dib-selbar'),uno=os.length===1?os[0]:null,img=uno?.t==='imagen',pl=planoSel(),mb=M?.barra();
+    if(mb){b.innerHTML=mb.map(([d2,i,n])=>`<button type="button" data-d="${d2}" aria-label="${n}" title="${n}">${i}</button>`).join('');b.hidden=false;return}
     if(pl){b.innerHTML=[['plano-ajustes','⚙️','Ajustes del plano'],['plano-agregar','➕','Agregar al plano'],['plano-fijar',pl.fijo?'🔒':'🔓',pl.fijo?'Soltar el plano (se puede mover)':'Fijar el plano'],['sel-dup','⧉','Duplicar'],['sel-borrar','🗑️','Borrar']]
       .map(([d2,i,n])=>`<button type="button" data-d="${d2}" aria-label="${n}" title="${n}">${i}</button>`).join('');b.hidden=false;return}
     b.innerHTML=[['sel-color','🎨','Color'],['sel-grosor','≡','Grosor'],['sel-dup','⧉','Duplicar'],['sel-copiar','📋','Copiar'],
       ...(uno&&(uno.t==='texto'||uno.t==='formula')?[['sel-editar','✏️','Editar']]:[]),...(img?[['sel-fijar',uno.fija?'📌':'📍',uno.fija?'Soltar la imagen':'Fijar la imagen'],['sel-recortar','✂️','Recortar']]:[]),
-      ...(os.some(o=>o.t==='trazo')?[['sel-ia','✨','Pasar a texto o fórmula (IA)']]:[]),...(os.some(o=>o.ancla)&&!os.some(o=>o.t==='plano')?[['sel-soltar','⇱','Soltar del plano']]:[]),['sel-borrar','🗑️','Borrar']]
+      ...(M?.esLlaveVieja(os)?[['mz-convertir','▦','Convertir en matriz editable']]:[]),...(os.some(o=>o.t==='trazo')?[['sel-ia','✨','Pasar a texto o fórmula (IA)']]:[]),...(os.some(o=>o.ancla)&&!os.some(o=>o.t==='plano')?[['sel-soltar','⇱','Soltar del plano']]:[]),['sel-borrar','🗑️','Borrar']]
       .map(([d2,i,n])=>`<button type="button" data-d="${d2}" aria-label="${n}" title="${n}">${i}</button>`).join('');
     b.hidden=false;
   }
@@ -321,13 +329,14 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
     const ids=new Set();const nuevos=objs.map(o=>{if(!sel.ids.has(o.id))return o;const n=fn(o);if(n===o){ids.add(o.id);return o}const r={...n,id:nuevoIdObj()};ids.add(r.id);return r});
     aplicar(nuevos);sel={ids};pintarVivo();barraSel();
   }
-  function transformarSel(m){const ids=new Set();const nuevos=objs.map(o=>{if(!sel.ids.has(o.id))return o;const r=transformar(o,m);ids.add(r.id);return r});aplicar(nuevos);sel={ids};barraSel()}
+  function transformarSel(m){const ids=new Set(),fijas=new Set(objs.filter(o=>o.t==='matriz'&&o.fijo&&sel.ids.has(o.id)).map(o=>o.mid));const nuevos=objs.map(o=>{if(!sel.ids.has(o.id))return o;if(o.t==='matriz'&&o.fijo||fijas.has(o.ancla)){ids.add(o.id);return o}const r=transformar(o,m);ids.add(r.id);return r});aplicar(nuevos);sel={ids};barraSel()}
   function borrarSel(){const n=elegidos().length;aplicar(objs.filter(o=>!sel.ids.has(o.id)));limpiarSel();avisoAccion(`🗑️ ${n===1?'Borrado':`${n} borrados`}`,'Deshacer',()=>deshacer(),6000)}
   function copiarSel(){portapapeles=elegidos().map(o=>JSON.parse(JSON.stringify(o)));aviso('📋 Copiado',1200)}
   function pegar(dx=24,dy=24,lista=portapapeles){
     if(!lista.length)return;const c=cajaDe(lista),gs=new Map(),centro=aMundo(W/2,H/2);
     const m=sel||!c?mMover(dx,dy):mMover(centro[0]-(c[0]+c[2])/2,centro[1]-(c[1]+c[3])/2);
-    const nuevos=lista.map(o=>{const r=transformar(o,m);if(o.g){if(!gs.has(o.g))gs.set(o.g,nuevoIdObj());r.g=gs.get(o.g)}if(r.t==='plano')r.pid='p'+nuevoIdObj();return r});
+    const anc=new Map();for(const o of lista){if(o.t==='plano')anc.set(o.pid,'p'+nuevoIdObj());if(o.t==='matriz')anc.set(o.mid,'m'+nuevoIdObj())}
+    const nuevos=lista.map(o=>{const r=transformar(o,m);if(o.g){if(!gs.has(o.g))gs.set(o.g,nuevoIdObj());r.g=gs.get(o.g)}if(r.t==='plano')r.pid=anc.get(o.pid);if(r.t==='matriz')r.mid=anc.get(o.mid);if(o.ancla&&anc.has(o.ancla))r.ancla=anc.get(o.ancla);return r});
     aplicar([...objs,...nuevos]);seleccionar(new Set(nuevos.map(o=>o.id)));
   }
 
@@ -342,6 +351,7 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
   function abajo(e){
     if(e.target!==cV)return;
     if(editando){terminarTexto();if(e.pointerType!=='pen')return}
+    if(M&&(e.pointerType!=='touch'||toques.size===0)&&!(e.pointerType==='mouse'&&e.button!==0)&&herr!=='dosdedos'){const [X,Y]=aMundo(...posDe(e));if(M.abajo(X,Y)){e.preventDefault();return}}
     if(panel)cerrarPanel();
     e.preventDefault();try{cV.setPointerCapture(e.pointerId)}catch(x){}
     const [sx,sy]=posDe(e);
@@ -537,10 +547,12 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
       const o={...objetoNuevo(x.planoNuevo,x.a,x.b,pl),id:nuevoIdObj()};cambiarPlano(pl,{objetos:[...pl.objetos,o]},{fusionar:false});return}
     if(x.sel==='lado'){if(x.nuevo){const {x:a,y:b,w,h}=x.nuevo;cambiarPlano(x.p0,{x:a,y:b,w,h},{fusionar:false})}pintarTodo();return}
     if(x.sel==='toque'||x.sel==='mover'&&!x.m&&x.plano){pintarTodo();tocarEnPlano(x.plano,...x.iniPx);return}
+    if(x.sel==='mover'&&(!x.m||Math.hypot(x.m[4],x.m[5])*vista.z<5)&&M.matrizEn(...x.ini)){pintarTodo();M.toque(...x.ini);return}
     if(x.sel){if(x.m)transformarSel(x.m);pintarTodo();return}
     if(x.guia){pintarVivo();return}
     if(x.trazo){
       const t=x.trazo;
+      if(!x.pen&&x.largoPx<6&&!x.forma&&M.toque(t.pts[0][0],t.pts[0][1])){pintarVivo();return}
       if(!x.pen&&x.largoPx<6&&!x.forma){const pl=planoEn(objs,t.pts[0][0],t.pts[0][1]);
         if(pl&&visible(pl)){seleccionar(conGrupos(objs,new Set([pl.id])));toquePlano={t:performance.now(),sx:x.inicioPx[0],sy:x.inicioPx[1]};pintarVivo();return}}
       if(!t.recto)t.pts=simplificar(t.pts,Math.min(.5,.35/vista.z));
@@ -560,6 +572,7 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
       const nuevos=formaDirecta(x.forma,a,b,{color:P.pluma.color,ancho:Math.max(1.5,P.pluma.ancho),filas:P.filas,cols:P.cols});
       aplicar([...objs,...nuevos]);pintarVivo();return;
     }
+    if(x.texto&&M.toque(x.texto[0],x.texto[1]))return;
     if(x.texto){const o=objetoEn(objs,x.texto[0],x.texto[1],6/vista.z,o=>o.t==='texto'||o.t==='formula');
       if(o?.t==='formula')editarFormula(o);else editarTexto(o||null,x.texto);return}
   }
@@ -593,10 +606,10 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
   }
   // Lo que se dibuja, escribe o se mueve dentro de un plano queda anclado a él (y se suelta si sale)
   function anclar(antes,nuevos){
-    const planos=nuevos.filter(o=>o.t==='plano');if(!planos.length&&!nuevos.some(o=>o.ancla))return nuevos;
+    const planos=nuevos.filter(o=>o.t==='plano'),mats=nuevos.filter(o=>o.t==='matriz');if(!planos.length&&!mats.length&&!nuevos.some(o=>o.ancla))return nuevos;
     const ya=new Set(antes.map(o=>o.id));
     for(const o of nuevos){if(ya.has(o.id)||!anclable(o)||o.suelto)continue;
-      const c=caja(o),pl=planoEn(planos,(c[0]+c[2])/2,(c[1]+c[3])/2);if(pl)o.ancla=pl.pid;else delete o.ancla}
+      const c=caja(o),cx=(c[0]+c[2])/2,cy=(c[1]+c[3])/2,mz=mats.findLast(m=>cx>=m.x&&cx<=m.x+m.w&&cy>=m.y&&cy<=m.y+m.h),pl=planoEn(planos,cx,cy);if(mz)o.ancla=mz.mid;else if(pl)o.ancla=pl.pid;else delete o.ancla}
     return nuevos;
   }
   const colorSiguiente=p=>COLORES_PLANO[p.objetos.filter(o=>o.k!=='punto').length%COLORES_PLANO.length];
@@ -606,7 +619,7 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
     if(o.k==='recta')return `⟷ ${ecuacionRecta(o.a,o.b)}`;if(o.k==='segmento')return `／ Segmento (${numero(o.a[0])}, ${numero(o.a[1])}) – (${numero(o.b[0])}, ${numero(o.b[1])})`;
     if(o.k==='vector')return `↗ Vector (${numero(o.b[0]-o.a[0])}, ${numero(o.b[1]-o.a[1])})`;if(o.k==='circulo')return `◯ ${ecuacionCirculo(o.c,o.r)}`;
     if(o.k==='tabla')return `🔢 Tabla (${o.pts.length} puntos)`;if(o.k==='region')return `▨ Área bajo ${o.expr} de ${numero(o.a)} a ${numero(o.b)}`;
-    if(o.k==='desigualdad')return `≥ y ${o.op.replace('>=','≥').replace('<=','≤')} ${o.expr}`;return `📐 Medida`;
+    if(o.k==='desigualdad')return `≥ y ${o.op.replace('>=','≥').replace('<=','≤')} ${o.expr}`;if(o.k==='pendiente')return '📏 Pendiente, distancia y ecuación (en vivo)';return `📐 Medida`;
   }
   // Un diálogo pequeño con campos (texto, número, área de texto o casilla) → {id: valor} o null
   function pedirCampos(titulo2,campos,{ayuda='',validar=()=>null}={}){
@@ -1014,16 +1027,17 @@ ${[['inteligentes','Formas inteligentes (mantén quieto al final del trazo)'],['
     return new Promise(res=>{
       const m=document.createElement('div');m.className='modal-fondo';
       m.innerHTML=`<div class="modal modal-ancho" role="dialog" aria-modal="true" aria-labelledby="dp-t"><h2 id="dp-t" style="margin-top:0">${inicio?'Nuevo dibujo':'🧩 Plantilla'}</h2>
-<div class="dib-plantillas">${PLANTILLAS.map(([id,i,n])=>`<button type="button" data-pl="${id}"><span aria-hidden="true">${i}</span>${n}</button>`).join('')}</div>
+<div class="dib-plantillas">${PLANTILLAS.filter(p=>!p[4]).map(([id,i,n])=>`<button type="button" data-pl="${id}"><span aria-hidden="true">${i}</span>${n}</button>`).join('')}</div>
+<h3 class="dib-opc-sub">Para matemáticas</h3><div class="dib-plantillas dib-plantillas-mat">${PLANTILLAS.filter(p=>p[4]).map(([id,i,n])=>`<div class="dib-pl-mat"><button type="button" data-pl="${id}"><span aria-hidden="true">${i}</span>${n}</button><button type="button" class="btn ghost btn-chico" data-pl="${id}" data-ej aria-label="${n} con ejemplo">Ejemplo</button></div>`).join('')}</div>
 ${inicio?`<label class="dib-check"><input type="checkbox" id="dp-pag"> Páginas tamaño carta (en vez de una hoja que crece)</label>`:'<p class="nota">La plantilla se agrega a lo que ya tienes (Deshacer la quita).</p>'}
 <div class="row" style="margin-top:8px"><button type="button" class="btn ghost ancho" data-x>${inicio?'Empezar en blanco':'Cancelar'}</button></div></div>`;
       const cerrar2=v=>{m.remove();res(v)};
-      m.addEventListener('click',e=>{const b=e.target.closest('[data-pl]');if(b){const pag=m.querySelector('#dp-pag')?.checked;if(pag)d.modo='paginas';usarPlantilla(b.dataset.pl);cerrar2(true);return}if(e.target===m||e.target.closest('[data-x]')){if(m.querySelector('#dp-pag')?.checked){d.modo='paginas';ajustar('ancho')}cerrar2(false)}});
+      m.addEventListener('click',e=>{const b=e.target.closest('[data-pl]');if(b){const pag=m.querySelector('#dp-pag')?.checked;if(pag)d.modo='paginas';usarPlantilla(b.dataset.pl,b.dataset.ej!==undefined);cerrar2(true);return}if(e.target===m||e.target.closest('[data-x]')){if(m.querySelector('#dp-pag')?.checked){d.modo='paginas';ajustar('ancho')}cerrar2(false)}});
       m.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();cerrar2(false)}});document.body.appendChild(m);m.querySelector('[data-pl]').focus();
     });
   }
-  function usarPlantilla(id){
-    const p=plantilla(id,anchoP()),dy=objs.length?(cajaDe(objs)?.[3]||0)+40:0;
+  function usarPlantilla(id,ejemplo=false){
+    const p=plantilla(id,anchoP(),{ejemplo}),dy=objs.length?(cajaDe(objs)?.[3]||0)+40:0;
     if(!objs.length||id==='blanco'||id==='cuadricula')d.fondo=p.fondo;
     aplicar([...objs,...p.objetos.map(o=>dy?transformar(o,mMover(0,dy),{mismoId:true}):o)]);ajustar('ancho');if(dy)irA({...vista,y:dy-20});
   }
@@ -1031,6 +1045,7 @@ ${inicio?`<label class="dib-check"><input type="checkbox" id="dp-pag"> Páginas 
   /* ---------- clics y teclas ---------- */
   f.addEventListener('click',async e=>{
     const b=e.target.closest('button');if(!b||!f.contains(b))return;const a=b.dataset.d;
+    if((a?.startsWith('mz-')||Object.keys(b.dataset).some(k=>k.startsWith('mz')))&&await M.click(a,b))return;
     if(b.dataset.herr){elegir(b.dataset.herr);return}
     if(a==='listo'||a==='cancelar'){cerrar(true);return}
     if(a==='deshacer'){deshacer();return}if(a==='rehacer'){rehacer();return}
@@ -1097,6 +1112,7 @@ ${inicio?`<label class="dib-check"><input type="checkbox" id="dp-pag"> Páginas 
     if(t.dataset.fp==='unidad')fondoPlano({unidad:+t.value});
   });
   f.addEventListener('change',e=>{const t=e.target;
+    if(M.cambioSelect(t))return;
     if(t.dataset.propio!==undefined)usarColor(t.value);
     if(t.dataset.recta!==undefined){P.resaltador.recta=t.checked;guardarPrefs(P)}
     if(t.dataset.soloRes!==undefined){P.borrador.soloRes=t.checked;guardarPrefs(P)}
@@ -1121,6 +1137,7 @@ ${inicio?`<label class="dib-check"><input type="checkbox" id="dp-pag"> Páginas 
   function tecla(e){
     if(cerrado||document.querySelector('.modal-fondo'))return;
     if(e.target.closest?.('.dib-txt'))return;
+    if(M.tecla(e)){e.stopPropagation();return}
     const ctrl=e.ctrlKey||e.metaKey,kk=e.key.toLowerCase();
     if(ctrl&&kk==='z'){e.preventDefault();e.stopPropagation();e.shiftKey?rehacer():deshacer();return}
     if(ctrl&&kk==='y'){e.preventDefault();e.stopPropagation();rehacer();return}
@@ -1149,6 +1166,7 @@ ${inicio?`<label class="dib-check"><input type="checkbox" id="dp-pag"> Páginas 
   /* ---------- cerrar ---------- */
   async function cerrar(guardar){
     if(cerrado)return;
+    M.terminar();
     if(editando)terminarTexto();
     cerrado=true;clearTimeout(autoTimer);
     if(marca)await quitarMarca();
@@ -1161,7 +1179,14 @@ ${inicio?`<label class="dib-check"><input type="checkbox" id="dp-pag"> Páginas 
     resolver({dibujo:final,cambiado:guardar&&cambiado,vistaCambio,png});
   }
   // para las pruebas (npm run dibujo): estado del editor sin tocar nada
-  f.__dib={get objs(){return objs},get vista(){return {...vista}},get bloqueado(){return bloqueado},get temporal(){return temporal},get sel(){return sel?[...sel.ids]:[]},
+  /* ---------- ▦ matrices (matriz-ui.js) ---------- */
+  let pasoU=null;   // varios cambios seguidos (escribir los números) cuentan como UN paso del historial
+  const paso={iniciar(){pasoU={base:objs,op:null}},terminar(){pasoU=null},
+    cambiar(nuevos){if(!pasoU){aplicar(nuevos);return}nuevos=anclar(objs,nuevos);if(pasoU.op&&hist.at(-1)===pasoU.op)hist.pop();const op=diferencia(pasoU.base,nuevos);objs=nuevos;pasoU.op=op;if(op){hist.push(op);rehacerPila.length=0}tocar()}};
+  M=crearMatrices({f,area,objs:()=>objs,aplicar,paso,vista:()=>vista,W:()=>W,H:()=>H,irA,aMundo,aPantalla,pintarVivo,
+    seleccionar:ids=>seleccionar(ids),limpiarSel:()=>limpiarSel(),selIds:()=>sel?.ids||null,conGrupos:ids=>conGrupos(objs,ids),abrirPanel,cerrarPanel:()=>cerrarPanel(),repintarPanel,panel:()=>panel,
+    P,guardarPrefs:()=>guardarPrefs(P),anchoP,renderRegion,estado,marca:()=>marcaSiHace()});
+  f.__dib={get mtz(){return M},celdaActiva:()=>{const e=M.editando,o=e&&M.matrizDe(e.mid);if(!o)return null;const c=M.cajaCelda(o,e.i,e.j),[a,b]=aPantalla(c[0],c[1]),[x2,y2]=aPantalla(c[2],c[3]);return [a,b,x2,y2]},get objs(){return objs},get vista(){return {...vista}},get bloqueado(){return bloqueado},get temporal(){return temporal},get sel(){return sel?[...sel.ids]:[]},
     get hist(){return hist.length},manijas:()=>sel?.manijas||null,get herr(){return herr},dos:()=>({...P.dos,medicion:medicion?.res||null}),plano:()=>planoSel(),cambiarPlano:(pid,c)=>cambiarPlano(planoDe(pid),c,{fusionar:false}),
     modoPlano:(pid,k)=>{modoPlano={k,pid};herr='plano';limpiarSel();botones()},agregarObjetoPlano:(pid,o)=>conObjeto(planoDe(pid),{id:nuevoIdObj(),color:'#2563eb',...o}),get lento(){return lento},regla:()=>regla,transp:()=>transp,cerrar,pintarAhora:()=>{sucioT=true;sucioV=true;cuadroAhora()},estado:()=>estadoActual(),ajustar,irA};
 

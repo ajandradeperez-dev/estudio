@@ -405,6 +405,19 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 11`; los formatos 
   tocan para ver), exportar PNG / PDF y compartir. Hoja que crece o páginas carta. Preferencias del dispositivo en
   `ciberlab-dibujo`. **Rendimiento**: 3 canvas, solo lo visible, Path2D por objeto y, durante un gesto con muchos
   trazos, la imagen ya pintada se mueve y al soltar se vuelve a pintar nítida (2000 trazos a más de 60 fps).
+  **📈 Plano cartesiano editable** (PROMPT-PLANOS-MATRICES, `dibujo/plano.js`; 📐 → Plano cartesiano): un objeto `t:'plano'` con
+  posición, tamaño, rango (`xMin…yMax`), pasos (también π/2), número cada n marcas, cuadrícula (no, principal, + secundaria),
+  misma escala en x y y (por defecto), nombres de los ejes, flechas, origen, estilo (centrado, 1er cuadrante, ejes al borde),
+  color, grosor, 🔒 fijo y `objetos` matemáticos exactos en coordenadas del plano: punto (se ajusta a la cuadrícula y se
+  arrastra, etiqueta «A(2, 3)»), función (`compilar` de los generadores, nunca eval; las asíntotas no se unen), recta,
+  segmento, vector, circunferencia, tabla de valores, área bajo la curva, desigualdad (punteada si es estricta) y la medida
+  de ✌️ Medir. Tocarlo lo elige: 8 asas cambian el tamaño (el rango se mantiene), arrastrar lo mueve, barra ⚙️ ➕ 🔒 ⧉ 🗑️.
+  ⚙️ Ajustes (panel con rangos rápidos y «Ajustar a lo dibujado», en vivo y como UN paso del historial). Dos toques en un
+  número del extremo lo editan. Con ✋ y «Mover la vista del plano», un dedo mueve el rango y dos lo acercan. Lo que se
+  dibuja dentro se ancla (`ancla` = `pid`, fijo; el `id` cambia en cada versión) y se transforma con el plano (`matrizPlano`
+  conserva sus coordenadas del plano; «⇱ Soltar del plano» lo separa). El fondo «plano cartesiano» se ajusta (`d.cartesiano`:
+  origen, unidad, paso; ⋯ → «Ajustar el plano de fondo», «Convertir en plano editable»). Los planos viejos de 📐 (grupo de
+  trazos con `forma:'plano'`) se convierten al abrirlos (`migrarPlanosViejos`, mismo tamaño y escala).
   **✌️ Dos dedos** (PROMPT-DOS-DEDOS; en 📐 Formas → «✌️ Dos dedos», o la tecla D): la única herramienta en la que dos
   dedos dibujan (se elige a propósito; mientras está activa el zoom va con los botones + y −, y el botón 📐 muestra ✌️).
   Modos (`P.dos.modo`): 📏 regla (una línea entre los dedos, con largo y ángulo; ajuste a la cuadrícula opcional), 🧭

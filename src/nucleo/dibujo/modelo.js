@@ -13,6 +13,7 @@
    capa: 'tinta' (por defecto), 'resaltado' (el resaltador, detrás de la tinta) o 'fondo' (imágenes y plantillas).
    Formato anterior (v1): el archivo traía `trazos:[{herr:'lapiz'|'borrar', color, ancho, pen, puntos}]`; migrarDibujo() lo
    convierte (la goma de entonces pintaba con el color del papel: ahora recorta de verdad los trazos que tapaba). */
+import {planoValido,limpiarPlano,migrarPlanosViejos,planoDesdeCaja,aPlanoDe,planoEn} from './plano.js';
 export const VERSION_DIBUJO=2;
 export const PAGINA={w:816,h:1056,hueco:28};        // carta a 96 px por pulgada
 export const CM=37.8,CUADRO=CM/2;                    // 1 cm y la cuadrícula de 5 mm
@@ -20,7 +21,7 @@ export const ZOOM_MIN=.25,ZOOM_MAX=8,MAX_HISTORIAL=100;
 export const TINTA='#1f2430';
 let cuenta=0;
 export const nuevoIdObj=()=>`o${Date.now().toString(36)}${(cuenta++).toString(36)}${Math.random().toString(36).slice(2,5)}`;
-export const capaDe=o=>o.capa||(o.t==='trazo'&&o.herr==='resaltador'?'resaltado':o.t==='imagen'?'fondo':'tinta');
+export const capaDe=o=>o.capa||(o.t==='trazo'&&o.herr==='resaltador'?'resaltado':o.t==='imagen'||o.t==='plano'?'fondo':'tinta');
 const num=v=>typeof v==='number'&&Number.isFinite(v);
 const r2=v=>Math.round(v*100)/100;
 
@@ -134,8 +135,10 @@ export function enLazo(objs,poly,filtro=()=>true){
 }
 // Una forma de matemáticas (plano, tabla…) se selecciona completa: sus piezas comparten g
 export function conGrupos(objs,ids){
-  const gs=new Set(objs.filter(o=>ids.has(o.id)&&o.g).map(o=>o.g));if(!gs.size)return ids;
-  const r=new Set(ids);for(const o of objs)if(o.g&&gs.has(o.g))r.add(o.id);return r;
+  const gs=new Set(objs.filter(o=>ids.has(o.id)&&o.g).map(o=>o.g)),ps=new Set(objs.filter(o=>ids.has(o.id)&&o.t==='plano').map(o=>o.pid));
+  if(!gs.size&&!ps.size)return ids;
+  // con un plano va lo que está anclado a él (se mueve y se escala con el plano)
+  const r=new Set(ids);for(const o of objs)if(o.g&&gs.has(o.g)||o.ancla&&ps.has(o.ancla))r.add(o.id);return r;
 }
 
 /* ---------- transformar (mover, escalar, rotar) ---------- */
@@ -150,7 +153,7 @@ export function transformar(o,m,{mismoId=false}={}){
   const k=caja(o),w0=o.w??k[2]-k[0],h0=o.h??k[3]-k[1],[cx,cy]=aplicarM(m,o.x+w0/2,o.y+h0/2),w=w0*s,h=h0*s;
   const r={...o,id,x:r2(cx-w/2),y:r2(cy-h/2),w:r2(w),h:r2(h)};
   if(o.tam)r.tam=r2(o.tam*s);
-  if(o.t!=='papel'){const rot=(o.rot||0)+Math.atan2(m[1],m[0]);if(Math.abs(rot)>1e-3)r.rot=Math.round(rot*1e4)/1e4;else delete r.rot}
+  if(o.t!=='papel'&&o.t!=='plano'){const rot=(o.rot||0)+Math.atan2(m[1],m[0]);if(Math.abs(rot)>1e-3)r.rot=Math.round(rot*1e4)/1e4;else delete r.rot}
   return r;
 }
 
@@ -255,7 +258,8 @@ export function formaDirecta(tipo,a,b,{color=TINTA,ancho=2.5,filas=3,cols=3}={})
       for(let i=-n;i<=n;i++){const x=cx+i*u;r.push(T([[x,yy-6],[x,yy+6]],{ancho:Math.max(1.2,ancho*.6)}));r.push(X(x,yy+9,String(i),12))}
       return r;
     }
-    case 'plano':{
+    case 'plano':return [{...planoDesdeCaja(x0,y0,w,h,{color,ancho}),g}];
+    case 'planoViejo':{
       const n=Math.max(2,Math.min(10,Math.round(Math.min(w,h)/2/28))),u=Math.min(w,h)/2/(n+.6),r=[T(flecha([cx,cy],[x1,cy],ancho)),T(flecha([cx,cy],[x0,cy],ancho).slice(0,2)),T(flecha([cx,cy],[cx,y0],ancho)),T(flecha([cx,cy],[cx,y1],ancho).slice(0,2))];
       for(let i=-n;i<=n;i++){if(!i)continue;const x=cx+i*u,y=cy+i*u,fino=Math.max(1.2,ancho*.6);
         r.push(T([[x,cy-5],[x,cy+5]],{ancho:fino}),T([[cx-5,y],[cx+5,y]],{ancho:fino}));
@@ -282,15 +286,17 @@ export function formaDirecta(tipo,a,b,{color=TINTA,ancho=2.5,filas=3,cols=3}={})
 export const MODOS_DOS=[['regla','📏','Regla'],['compas','🧭','Compás'],['medir','📐','Medir'],['marco','▭','Marco'],['barrido','🌀','Barrido']];
 export const conRejilla=d=>['cuadricula','cartesiano','puntos'].includes(d?.fondo);
 // Al cruce más cercano de la cuadrícula de 5 mm (la misma del plano cartesiano), contado desde el origen del plano
-export function ajustarRejilla(p,d){const [ox,oy]=origenCartesiano(d);return [ox+Math.round((p[0]-ox)/CUADRO)*CUADRO,oy+Math.round((p[1]-oy)/CUADRO)*CUADRO]}
+export function ajustarRejilla(p,d){const [ox,oy]=origenCartesiano(d),c=d?.cartesiano?unidadCartesiano(d)/2:CUADRO;return [ox+Math.round((p[0]-ox)/c)*c,oy+Math.round((p[1]-oy)/c)*c]}
 // Del lienzo al plano cartesiano (1 unidad = 1 cm, y hacia arriba) y de vuelta
-export const aPlano=(p,d)=>{const [ox,oy]=origenCartesiano(d);return [(p[0]-ox)/CM,(oy-p[1])/CM]};
-export const dePlano=(q,d)=>{const [ox,oy]=origenCartesiano(d);return [ox+q[0]*CM,oy-q[1]*CM]};
+// (si el punto cae en un 📈 plano editable, sus coordenadas son las de ese plano)
+export const aPlano=(p,d)=>{const pl=d?.objetos&&planoEn(d.objetos,p[0],p[1]);if(pl)return aPlanoDe(pl,p);const [ox,oy]=origenCartesiano(d),u=unidadCartesiano(d);return [(p[0]-ox)/u,(oy-p[1])/u]};
+export const dePlano=(q,d)=>{const [ox,oy]=origenCartesiano(d),u=unidadCartesiano(d);return [ox+q[0]*u,oy-q[1]*u]};
 const n2=v=>{const r=Math.round(v*100)/100;return Object.is(r,-0)?0:r};
 export const numero=v=>String(n2(v)).replace('-','−');
 // 📐 Medir: Δx, Δy, pendiente, distancia, punto medio y la ecuación de la recta entre dos puntos del plano
 export function medirDos(a,b,d){
-  const [x1,y1]=aPlano(a,d),[x2,y2]=aPlano(b,d),dx=x2-x1,dy=y2-y1,vertical=Math.abs(dx)<1e-9;
+  const pl=d?.objetos&&planoEn(d.objetos,a[0],a[1]),cv=q=>pl?aPlanoDe(pl,q):aPlano(q,{...d,objetos:null});
+  const [x1,y1]=cv(a),[x2,y2]=cv(b),dx=x2-x1,dy=y2-y1,vertical=Math.abs(dx)<1e-9;
   const m=vertical?null:dy/dx,c=vertical?null:y1-m*x1;
   const ecuacion=vertical?`x = ${numero(x1)}`:Math.abs(m)<1e-9?`y = ${numero(y1)}`
     :`y = ${Math.abs(m-1)<1e-9?'':Math.abs(m+1)<1e-9?'−':numero(m)}x${Math.abs(c)<1e-9?'':c<0?` − ${numero(-c)}`:` + ${numero(c)}`}`;
@@ -411,17 +417,22 @@ function objetoValido(o){
   if(o.t==='formula')return typeof o.tex==='string'&&num(o.x)&&num(o.y)&&num(o.w)&&num(o.h);
   if(o.t==='imagen')return typeof o.archivo==='string'&&num(o.x)&&num(o.y)&&num(o.w)&&num(o.h);
   if(o.t==='papel')return num(o.x)&&num(o.y)&&num(o.w)&&num(o.h);
+  if(o.t==='plano')return planoValido(o);
   return false;
 }
 // Lo que llega de otro dispositivo, del respaldo o de una versión vieja: se limpia sin perder lo válido
 export function normalizarDibujo(d){
   const base=nuevoDibujo({ancho:num(d?.ancho)?d.ancho:720,modo:d?.modo==='paginas'?'paginas':'crece',fondo:FONDOS.some(f=>f[0]===d?.fondo)?d.fondo:'liso'});
-  base.objetos=(Array.isArray(d?.objetos)?d.objetos:[]).filter(objetoValido).map(o=>o.t==='trazo'?{...o,color:COLOR.test(o.color||'')?o.color:TINTA}:o);
+  base.objetos=(Array.isArray(d?.objetos)?d.objetos:[]).filter(objetoValido).map(o=>o.t==='trazo'?{...o,color:COLOR.test(o.color||'')?o.color:TINTA}:o.t==='plano'?limpiarPlano(o):o);
   if(num(d?.alto))base.alto=d.alto;
   if(d?.vista&&num(d.vista.x)&&num(d.vista.y)&&num(d.vista.z))base.vista={x:d.vista.x,y:d.vista.y,z:Math.min(ZOOM_MAX,Math.max(ZOOM_MIN,d.vista.z))};
   base.bloqueado=!!d?.bloqueado;base.practica=!!d?.practica;
   if(d?.capas)for(const k of ['tinta','resaltado','fondo'])base.capas[k]=d.capas[k]!==false;
   base.historial=(Array.isArray(d?.historial)?d.historial:[]).filter(op=>op&&Array.isArray(op.q)&&Array.isArray(op.p)).slice(-MAX_HISTORIAL);
+  if(d?.cartesiano&&num(d.cartesiano.ox)&&num(d.cartesiano.oy)&&num(d.cartesiano.unidad)&&d.cartesiano.unidad>0)base.cartesiano={ox:d.cartesiano.ox,oy:d.cartesiano.oy,unidad:d.cartesiano.unidad,paso:num(d.cartesiano.paso)&&d.cartesiano.paso>0?d.cartesiano.paso:1};
+  // planos viejos de 📐 → plano editable (y fuera del historial los cambios que los tocaban)
+  const mg=migrarPlanosViejos(base.objetos);
+  if(mg.quitados){base.objetos=mg.objs;base.historial=base.historial.filter(op=>![...op.q,...op.p].some(([,o])=>mg.quitados.has(o?.id)))}
   return base;
 }
 /* Un archivo de dibujo del cuaderno (v1 con `trazos` o v2 con `dibujo`) → dibujo v2. Los dibujos de antes de PROMPT-NOTAS
@@ -445,7 +456,8 @@ export function migrarDibujo(a){
 }
 export const FONDOS=[['liso','⬜','Liso'],['cuadricula','▦','Cuadrícula (5 mm)'],['renglones','☰','Renglones'],['puntos','⠿','Puntos'],['cartesiano','⊹','Plano cartesiano'],['pentagrama','𝄞','Pentagrama']];
 // Origen del plano cartesiano de fondo (centro de la primera página o del ancho)
-export const origenCartesiano=d=>d.modo==='paginas'?[PAGINA.w/2,PAGINA.h/2]:[Math.round(d.ancho/2/CM)*CM,Math.round(Math.max(8,(d.alto||d.ancho*.8)/2/CM))*CM];
+export const unidadCartesiano=d=>d.cartesiano?.unidad||CM,pasoCartesiano=d=>d.cartesiano?.paso||1;
+export const origenCartesiano=d=>d.cartesiano?[d.cartesiano.ox,d.cartesiano.oy]:d.modo==='paginas'?[PAGINA.w/2,PAGINA.h/2]:[Math.round(d.ancho/2/CM)*CM,Math.round(Math.max(8,(d.alto||d.ancho*.8)/2/CM))*CM];
 export const anchoPagina=d=>d.modo==='paginas'?PAGINA.w:d.ancho;
 // Lo que se ve en la nota y se exporta: [x0, y0, x1, y1] (páginas: hasta la última con algo)
 export function region(d,{min=0}={}){

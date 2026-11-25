@@ -12,6 +12,8 @@
    - rendimiento: 2000 trazos y el zoom sigue fluido (tiempo por cuadro);
    - ✌️ Dos dedos: apagada no dibuja; regla (1 línea), compás (radio y arco), medir (m = 2 de (1, 2) a (3, 6)), marco,
      barrido (espaciado, un paso para deshacer), ratón y el ejemplo de la parábola; el ✏️ Borrador viejo no une los dedos;
+   - 📈 plano editable: insertar, anclar un trazo, rango 0–20, asa de tamaño, mover, ⚙️ Ajustes en un paso, y = x² − 4 (corta
+     en ±2), 1/x sin línea vertical, punto A(2, 3) que se arrastra y la migración del plano viejo;
    - tablet (barra a un lado) y laptop (barra arriba, Ctrl + rueda, espacio + arrastrar, «0»).
    Capturas en claro y oscuro en capturas/dibujo/. Compila, levanta `vite preview` en el puerto 4799 y lo apaga al terminar. */
 import {existsSync,mkdirSync} from 'node:fs';
@@ -209,7 +211,7 @@ try{
   await p.click('[data-herr="formas"]');await p.click('[data-herr="formas"]');await p.waitForTimeout(200);
   await p.screenshot({path:join(CAP,'formas-claro.png')});await diseno(p,'opciones de formas (360)');
   await p.click('[data-forma="plano"]');const nP=(await D(p)).n;await gesto(p,linea(1,60,180,300,400,{n:10}));
-  check((await D(p)).n-nP>12&&await D(p,'new Set(d.objs.slice(-10).map(o=>o.g)).size')===1,'📐 plano cartesiano: ejes, marcas y números agrupados');
+  check((await D(p)).n-nP===1&&await D(p,'d.objs.at(-1).t')==='plano','📐 plano cartesiano: un solo objeto editable (ejes, marcas y números juntos)');
   // fondo: cuadrícula y plano cartesiano
   for(const [fondo,et] of [['cuadricula','cuadrícula'],['cartesiano','plano cartesiano']]){
     await p.click('[data-d="mas"]');await p.waitForTimeout(250);await p.click('.modal [data-r="fondo"]');await p.waitForTimeout(250);await p.click(`.modal [data-r="${fondo}"]`);await p.waitForTimeout(300);
@@ -345,6 +347,83 @@ try{
   await ev([['pointerdown',1,40,60],...Array.from({length:10},(_,i)=>['pointermove',1,40+i*12,60+i*3]),['pointerup',1,160,90]]);await q.waitForTimeout(100);
   const t1=await tintaB();await ev([['pointerdown',1,60,80],['pointerdown',2,120,80],['pointerup',1,60,80],['pointerup',2,120,80]]);await q.waitForTimeout(100);
   check(t1>0&&await tintaB()===0,'✏️ Borrador: un dedo dibuja y tocar con dos deshace');
+  await ctx.close();
+}
+
+/* ================= 📈 plano cartesiano editable (PROMPT-PLANOS-MATRICES, parte 1) ================= */
+{
+  console.log('--- 📈 plano cartesiano editable');
+  const PL=await import(pathToFileURL(join(raiz,'src','nucleo','dibujo','plano.js')).href);
+  const ctx=await nuevoContexto({viewport:{width:360,height:800},deviceScaleFactor:2.625,isMobile:true,hasTouch:true});
+  const p=await ctx.newPage(),err=[];p.on('pageerror',e=>err.push(e.message));
+  await abrirNuevo(p);await p.evaluate(()=>document.querySelector('.dib').__dib.irA({z:1,x:0,y:0}));
+  // insertar desde 📐 Formas → Plano cartesiano
+  await p.click('[data-herr="formas"]');await p.click('[data-herr="formas"]');await p.waitForTimeout(150);
+  await p.click('.dib-opc [data-forma="plano"]');await p.waitForTimeout(150);
+  await gesto(p,linea(1,30,100,330,400,{n:8}));
+  let pl=await D(p,'d.objs.find(o=>o.t==="plano")');
+  check(pl&&pl.w>=290&&pl.h>=290&&Math.abs((pl.xMax-pl.xMin)/pl.w-(pl.yMax-pl.yMin)/pl.h)<1e-6,'📐 → Plano cartesiano: un objeto plano con su rango (misma escala en x y y)');
+  // un trazo dentro queda anclado
+  await p.click('[data-herr="pluma"]');await gesto(p,linea(1,200,180,250,220,{n:8}));
+  let tr=await D(p,'d.objs.filter(o=>o.t==="trazo").at(-1)');
+  check(tr?.ancla===pl.pid,'lo que se dibuja dentro queda anclado al plano');
+  const enPl=(pl,q)=>PL.aPlanoDe(pl,q);const u0=enPl(pl,tr.pts[0]);
+  // tocar el plano lo elige (con lo anclado) y muestra su barra
+  await gesto(p,[['pointerdown',1,80,350],['pointerup',1,80,350]]);await p.waitForTimeout(150);
+  check(!!(await D(p,'d.plano()'))&&await p.locator('.dib-selbar [data-d="plano-ajustes"]').count()===1&&(await D(p,'d.sel.length'))===2,'tocar el plano lo elige junto con lo anclado: ⚙️ ➕ 🔒 ⧉ 🗑️');
+  await p.screenshot({path:join(CAP,'plano-elegido.png')});
+  // cambiar el rango a 0–20: el trazo conserva sus coordenadas del plano
+  await p.evaluate(pid=>document.querySelector('.dib').__dib.cambiarPlano(pid,{xMin:0,xMax:20,yMin:0,yMax:20,estilo:'cuadrante'}),pl.pid);
+  pl=await D(p,'d.objs.find(o=>o.t==="plano")');tr=await D(p,'d.objs.filter(o=>o.t==="trazo").at(-1)');
+  const u1=enPl(pl,tr.pts[0]);
+  check(pl.xMin===0&&pl.xMax===20&&Math.abs(u1[0]-u0[0])<.05&&Math.abs(u1[1]-u0[1])<.05,`rango 0–20: el trazo anclado se queda en sus coordenadas del plano (${u0.map(v=>v.toFixed(2))} → ${u1.map(v=>v.toFixed(2))})`);
+  // tamaño con el asa de la esquina: el trazo se escala con el plano
+  await pintar(p);await p.waitForTimeout(100);
+  const esq=await D(p,'(()=>{const m=d.manijas();return m?.lados?.find(l=>l[0]==="se")})()');
+  if(esq)await gesto(p,linea(1,esq[1],esq[2],esq[1]-80,esq[2]-80,{n:8}));
+  const pl2=await D(p,'d.objs.find(o=>o.t==="plano")'),tr2=await D(p,'d.objs.filter(o=>o.t==="trazo").at(-1)'),u2=enPl(pl2,tr2.pts[0]);
+  check(!!esq&&pl2.w<pl.w-60&&Math.abs(u2[0]-u0[0])<.05&&Math.abs(u2[1]-u0[1])<.05,'asa de la esquina: el plano se hace más chico y el trazo se escala con él');
+  // moverlo: arrastrar dentro del plano elegido
+  await pintar(p);await p.waitForTimeout(200);await gesto(p,linea(1,120,300,150,340,{n:8}));
+  const pl3=await D(p,'d.objs.find(o=>o.t==="plano")'),tr3=await D(p,'d.objs.filter(o=>o.t==="trazo").at(-1)');
+  check(Math.abs(pl3.x-pl2.x-30)<1&&Math.abs(pl3.y-pl2.y-40)<1&&Math.abs(tr3.pts[0][0]-tr2.pts[0][0]-30)<1,`arrastrar el plano lo mueve con lo anclado (${JSON.stringify([pl2.x,pl2.y,pl2.w,pl2.h,pl3.x,pl3.y,await D(p,"d.sel.length")])})`);
+  // ⚙️ Ajustes: el panel con los rangos rápidos y un paso del historial
+  const h0=await D(p,'d.hist');await p.click('.dib-selbar [data-d="plano-ajustes"]');await p.waitForTimeout(200);
+  check(await p.locator('.dib-opc [data-pl-preset]').count()===4,'⚙️ Ajustes: rangos rápidos (−10 a 10, −5 a 5, 1er cuadrante, trigonometría)');
+  await diseno(p,'⚙️ Ajustes del plano (360)');await p.screenshot({path:join(CAP,'plano-ajustes.png')});
+  await p.click('.dib-opc [data-pl-preset="5"]');await p.fill('.dib-opc [data-pl="xMax"]','6');await p.waitForTimeout(100);
+  pl=await D(p,'d.objs.find(o=>o.t==="plano")');
+  check(pl.xMin===-5&&pl.xMax===6&&(await D(p,'d.hist'))===h0+1,'los cambios se ven en vivo y cuentan como un solo paso para deshacer');
+  await p.click('[data-d="opc-cerrar"]');
+  // gráfica de x² − 4: corta el eje x en ±2
+  await p.evaluate(pid=>document.querySelector('.dib').__dib.cambiarPlano(pid,{xMin:-5,xMax:5,yMin:-5,yMax:5,estilo:'centrado',igual:true}),pl.pid);
+  await p.evaluate(pid=>document.querySelector('.dib').__dib.agregarObjetoPlano(pid,{k:'funcion',expr:'x^2 - 4',color:'#2563eb'}),pl.pid);
+  pl=await D(p,'d.objs.find(o=>o.t==="plano")');await p.evaluate(()=>document.querySelector('.dib').__dib.irA({z:1,x:0,y:0}));await pintar(p);
+  const azul=(q,r=4)=>p.evaluate(([x,y,r])=>{const cv=document.querySelector('.dib-ctinta'),cf=document.querySelector('.dib-cfondo'),k=cv.width/cv.clientWidth;let n=0;
+    for(const c of [cv,cf]){const dd=c.getContext('2d').getImageData(Math.round((x-r)*k),Math.round((y-r)*k),Math.round(2*r*k),Math.round(2*r*k)).data;for(let i=0;i<dd.length;i+=4)if(dd[i+3]>100&&dd[i+2]>170&&dd[i]<110&&dd[i+1]<150)n++}return n},[q[0],q[1],r]);
+  const pant=q=>{const w=PL.aLienzo(pl,q);return w};   // vista 100 % en (0, 0): lienzo = pantalla
+  const c2=await azul(pant([2,0])),cm2=await azul(pant([-2,0])),c0=await azul(pant([0,-4])),fuera=await azul(pant([1,0]));
+  check(c2>0&&cm2>0&&c0>0&&fuera===0,`y = x² − 4 corta el eje x en ±2 y pasa por (0, −4) (píxeles: ${c2}, ${cm2}, ${c0}; en (1, 0): ${fuera})`);
+  // 1/x: sin la línea vertical en x = 0
+  await p.evaluate(pid=>{const d=document.querySelector('.dib').__dib,pl=d.objs.find(o=>o.t==='plano');d.cambiarPlano(pid,{objetos:[{k:'funcion',id:'f1',expr:'1/x',color:'#2563eb'}]})},pl.pid);
+  await pintar(p);pl=await D(p,'d.objs.find(o=>o.t==="plano")');
+  let vert=0;for(let v=-3;v<=3;v+=.5)vert+=await azul(pant([0,v]),1.2);
+  check(vert===0&&await azul(pant([1,1]))>0&&await azul(pant([-1,-1]))>0,`1/x: dos ramas sin la línea vertical en x = 0 (píxeles en x = 0: ${vert})`);
+  await p.screenshot({path:join(CAP,'plano-funcion.png')});
+  // punto ajustado a la cuadrícula: A(2, 3)
+  await p.evaluate(pid=>document.querySelector('.dib').__dib.modoPlano(pid,'punto'),pl.pid);
+  const q=pant([2.2,2.8]);await gesto(p,[['pointerdown',1,q[0],q[1]],['pointerup',1,q[0],q[1]]]);
+  pl=await D(p,'d.objs.find(o=>o.t==="plano")');const pt=pl.objetos.find(o=>o.k==='punto');
+  check(pt&&pt.x===2&&pt.y===3&&pt.nombre==='A'&&PL.nombrePunto(pt)==='A(2, 3)','📍 un punto se ajusta a la cuadrícula: A(2, 3)');
+  // arrastrarlo actualiza su etiqueta
+  const q2=pant([2,3]),q3=pant([4,-1]);await gesto(p,linea(1,q2[0],q2[1],q3[0],q3[1],{n:8}));
+  pl=await D(p,'d.objs.find(o=>o.t==="plano")');check(pl.objetos.find(o=>o.k==='punto')?.x===4&&pl.objetos.find(o=>o.k==='punto')?.y===-1,'arrastrar el punto lo mueve: A(4, −1)');
+  await pintar(p);await p.screenshot({path:join(CAP,'plano-punto.png')});
+  check(!err.length,'sin errores de JavaScript'+(err.length?': '+err.slice(0,2).join(' | '):''));
+  // un plano viejo (el grupo de trazos de antes) se convierte al objeto nuevo del mismo tamaño
+  const M=await import(pathToFileURL(join(raiz,'src','nucleo','dibujo','modelo.js')).href);
+  const viejo=M.formaDirecta('planoViejo',[0,0],[300,240]).map(o=>({...o,forma:'plano'})),mg=M.normalizarDibujo({objetos:viejo});
+  check(mg.objetos.length===1&&mg.objetos[0].t==='plano'&&mg.objetos[0].w===300&&mg.objetos[0].h===240,'un plano viejo se migra al objeto nuevo con su tamaño');
   await ctx.close();
 }
 

@@ -4,7 +4,8 @@
    - Grosor variable (lápiz con presión o pluma fuente): el contorno se calcula una vez y se rellena.
    - Modo oscuro: la tinta oscura se ve clara (sin cambiar el color guardado) y el fondo usa líneas tenues.
    - Orden: fondo e imágenes → resaltador (detrás) → tinta, textos y fórmulas → papeles del modo práctica. */
-import {caja,cruzan,capaDe,anchoEn,PAGINA,CUADRO,CM,origenCartesiano} from './modelo.js';
+import {caja,cruzan,capaDe,anchoEn,PAGINA,CUADRO,CM,origenCartesiano,unidadCartesiano,pasoCartesiano} from './modelo.js';
+import {aLienzo,kx,ky,ejes,marcas,textoMarca,numero,tramosFuncion,rectaEnRango,ecuacionRecta,ecuacionCirculo,nombrePunto} from './plano.js';
 
 const caminos=new WeakMap();
 function contorno(o){
@@ -82,10 +83,79 @@ export function pintarObjeto(x,o,{vista,oscuro=false,imagen,formula}={}){
   const z=vista?.z||1;
   if(o.t==='trazo')return pintarTrazo(x,o,{oscuro,z});
   if(o.t==='texto')return pintarTexto(x,o,oscuro);
+  if(o.t==='plano')return pintarPlano(x,o,{oscuro});
   if(o.t==='imagen'){const b=imagen?.(o.archivo);pintarCaja(x,o,()=>{if(b)x.drawImage(b,o.x,o.y,o.w,o.h);else{x.fillStyle=oscuro?'#2a2f3a':'#eef0f4';x.fillRect(o.x,o.y,o.w,o.h)}});return}
   if(o.t==='formula'){const f=formula?.(o,oscuro);pintarCaja(x,o,()=>{
     if(f?.img)x.drawImage(f.img,o.x,o.y,o.w,o.h);
     else{x.fillStyle=colorVisible(o.color||'#1f2430',oscuro);x.font=`italic ${o.tam||22}px "Times New Roman",serif`;x.textBaseline='top';x.fillText(o.tex,o.x,o.y)}});}
+}
+/* ---------- 📈 plano cartesiano editable (plano.js): cuadrícula, ejes, números y sus objetos matemáticos ---------- */
+const tramosCache=new WeakMap();
+function tramosDe(p,o){let m=tramosCache.get(p);if(!m){m=new Map();tramosCache.set(p,m)}const k=o.id+'|'+o.expr+'|'+(o.a??'')+'|'+(o.b??'');if(!m.has(k))m.set(k,o.k==='region'?tramosFuncion(p,o.expr,{desde:Math.max(p.xMin,Math.min(o.a,o.b)),hasta:Math.min(p.xMax,Math.max(o.a,o.b))}):tramosFuncion(p,o.expr));return m.get(k)}
+function flechaP(x,a,b,t){const an=Math.atan2(b[1]-a[1],b[0]-a[0]);x.beginPath();x.moveTo(b[0],b[1]);x.lineTo(b[0]-t*Math.cos(an-.45),b[1]-t*Math.sin(an-.45));x.moveTo(b[0],b[1]);x.lineTo(b[0]-t*Math.cos(an+.45),b[1]-t*Math.sin(an+.45));x.stroke()}
+function etiquetaP(x,t,X,Y,{col,oscuro,tam=12,al='left',base='bottom'}={}){
+  x.font=`600 ${tam}px system-ui,-apple-system,"Segoe UI",sans-serif`;x.textAlign=al;x.textBaseline=base;
+  x.lineWidth=3;x.strokeStyle=oscuro?'rgba(20,24,32,.85)':'rgba(255,255,255,.9)';x.lineJoin='round';x.strokeText(t,X,Y);x.fillStyle=col;x.fillText(t,X,Y);
+}
+export function pintarPlano(x,p,{oscuro=false}={}){
+  const tinta=colorVisible(p.color||'#1f2430',oscuro),fina=oscuro?'rgba(180,190,210,.22)':'rgba(70,82,110,.18)',muyFina=oscuro?'rgba(180,190,210,.1)':'rgba(70,82,110,.08)';
+  const {yEjeX,xEjeY}=ejes(p),[ex0,eY]=aLienzo(p,[p.xMin,yEjeX]),[eX,ey0]=aLienzo(p,[xEjeY,p.yMax]),K=Math.min(kx(p),ky(p));
+  x.save();x.beginPath();x.rect(p.x-1,p.y-1,p.w+2,p.h+2);x.clip();x.lineCap='round';
+  // cuadrícula
+  if(p.rejilla!=='no'){
+    if(p.rejilla==='secundaria'){x.strokeStyle=muyFina;x.lineWidth=.6;x.beginPath();
+      for(const m of marcas(p.xMin,p.xMax,p.pasoX/5)){const [X]=aLienzo(p,[m.v,0]);x.moveTo(X,p.y);x.lineTo(X,p.y+p.h)}
+      for(const m of marcas(p.yMin,p.yMax,p.pasoY/5)){const [,Y]=aLienzo(p,[0,m.v]);x.moveTo(p.x,Y);x.lineTo(p.x+p.w,Y)}x.stroke()}
+    x.strokeStyle=fina;x.lineWidth=.9;x.beginPath();
+    for(const m of marcas(p.xMin,p.xMax,p.pasoX)){const [X]=aLienzo(p,[m.v,0]);x.moveTo(X,p.y);x.lineTo(X,p.y+p.h)}
+    for(const m of marcas(p.yMin,p.yMax,p.pasoY)){const [,Y]=aLienzo(p,[0,m.v]);x.moveTo(p.x,Y);x.lineTo(p.x+p.w,Y)}x.stroke();
+  }
+  // objetos que van debajo de los ejes: regiones y desigualdades
+  for(const o of p.objetos){const col=o.color||'#2563eb';
+    if(o.k==='region'){for(const t of tramosDe(p,o)){const [,Y0]=aLienzo(p,[0,0]);x.beginPath();x.moveTo(t[0][0],Y0);t.forEach(q=>x.lineTo(q[0],q[1]));x.lineTo(t.at(-1)[0],Y0);x.closePath();x.globalAlpha=.25;x.fillStyle=col;x.fill();x.globalAlpha=1}}
+    if(o.k==='desigualdad'){const arriba=o.op[0]==='>';x.save();x.globalAlpha=.16;x.fillStyle=col;
+      for(const t of tramosDe(p,o)){x.beginPath();x.moveTo(t[0][0],arriba?p.y:p.y+p.h);t.forEach(q=>x.lineTo(q[0],q[1]));x.lineTo(t.at(-1)[0],arriba?p.y:p.y+p.h);x.closePath();x.fill()}x.restore()}
+  }
+  // ejes, marcas y números
+  x.strokeStyle=tinta;x.fillStyle=tinta;x.lineWidth=p.ancho||1.6;x.beginPath();x.moveTo(p.x,eY);x.lineTo(p.x+p.w,eY);x.moveTo(eX,p.y);x.lineTo(eX,p.y+p.h);x.stroke();
+  if(p.flechas){flechaP(x,[p.x,eY],[p.x+p.w-1,eY],9);flechaP(x,[eX,p.y+p.h],[eX,p.y+1],9)}
+  const tam=Math.max(9,Math.min(13,K*.42,p.w/28));x.font=`${tam}px system-ui,-apple-system,"Segoe UI",sans-serif`;x.lineWidth=Math.max(1,(p.ancho||1.6)*.7);
+  const cada=Math.max(1,p.numCada|0);
+  x.textAlign='center';x.textBaseline='top';x.beginPath();
+  for(const m of marcas(p.xMin,p.xMax,p.pasoX)){const [X]=aLienzo(p,[m.v,0]);if(Math.abs(m.v-xEjeY)<1e-9||X>p.x+p.w-14)continue;x.moveTo(X,eY-4);x.lineTo(X,eY+4);if(m.i%cada===0)x.fillText(textoMarca(m.v,p.pasoX),X,eY+6)}
+  x.textAlign='right';x.textBaseline='middle';
+  for(const m of marcas(p.yMin,p.yMax,p.pasoY)){const [,Y]=aLienzo(p,[0,m.v]);if(Math.abs(m.v-yEjeX)<1e-9||Y<p.y+14)continue;x.moveTo(eX-4,Y);x.lineTo(eX+4,Y);if(m.i%cada===0)x.fillText(textoMarca(m.v,p.pasoY),eX-6,Y)}
+  x.stroke();
+  if(p.origen&&xEjeY===0&&yEjeX===0){x.textAlign='right';x.textBaseline='top';x.fillText('0',eX-4,eY+4)}
+  x.font=`italic 600 ${tam+3}px "Times New Roman",serif`;x.textAlign='right';x.textBaseline='bottom';x.fillText(p.ejeX||'x',p.x+p.w-4,eY-6);
+  x.textAlign='left';x.textBaseline='top';x.fillText(p.ejeY||'y',eX+8,p.y+2);
+  // objetos matemáticos
+  for(const o of p.objetos){const col=colorVisible(o.color||'#2563eb',oscuro),lw=Math.max(1.8,(p.ancho||1.6)*1.3);x.strokeStyle=col;x.fillStyle=col;x.lineWidth=lw;x.setLineDash([]);
+    if(o.k==='funcion'||o.k==='desigualdad'||o.k==='region'){
+      if(o.k==='desigualdad'&&o.op.length===1)x.setLineDash([7,5]);
+      const ts=tramosDe(p,o);for(const t of ts){x.beginPath();t.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));x.stroke()}x.setLineDash([]);
+      if(p.ecuaciones&&o.k!=='region'){const ult=ts.flatMap(t=>t).filter(q=>q[1]>p.y+16&&q[1]<p.y+p.h-6).at(-1);
+        if(ult)etiquetaP(x,o.k==='funcion'?`y = ${o.expr.replace(/^\s*y\s*=\s*/,'')}`:`y ${o.op.replace('>=','≥').replace('<=','≤')} ${o.expr}`,Math.min(ult[0],p.x+p.w-6),ult[1]-6,{col,oscuro,al:'right'})}
+    }
+    if(o.k==='recta'){const q=rectaEnRango(p,o.a,o.b);if(q){const [A,B]=q.map(z=>aLienzo(p,z));x.beginPath();x.moveTo(...A);x.lineTo(...B);x.stroke();
+      if(p.ecuaciones){const m=aLienzo(p,[(o.a[0]+o.b[0])/2,(o.a[1]+o.b[1])/2]);etiquetaP(x,ecuacionRecta(o.a,o.b),m[0]+8,m[1]-8,{col,oscuro})}}}
+    if(o.k==='segmento'||o.k==='vector'||o.k==='medida'){const A=aLienzo(p,o.a),B=aLienzo(p,o.b);
+      if(o.k==='medida'){x.save();x.strokeStyle=oscuro?'#94a3b8':'#6b7280';x.lineWidth=1.2;x.setLineDash([4,4]);const E=aLienzo(p,[o.b[0],o.a[1]]);x.beginPath();x.moveTo(...A);x.lineTo(...E);x.lineTo(...B);x.stroke();x.restore()}
+      x.beginPath();x.moveTo(...A);x.lineTo(...B);x.stroke();if(o.k==='vector')flechaP(x,A,B,11);
+      if(o.k==='medida'){const dx=o.b[0]-o.a[0],dy=o.b[1]-o.a[1],ls=[`Δx = ${numero(dx)}  Δy = ${numero(dy)}`,`m = ${Math.abs(dx)<1e-9?'—':numero(dy/dx)}`,`d = ${numero(Math.hypot(dx,dy))}`,ecuacionRecta(o.a,o.b)];
+        ls.forEach((t,i)=>etiquetaP(x,t,Math.max(A[0],B[0])+10,Math.min(A[1],B[1])+i*16+12,{col,oscuro}))}
+      for(const P of o.k==='vector'?[A]:[A,B]){x.beginPath();x.arc(P[0],P[1],3.2,0,Math.PI*2);x.fill()}}
+    if(o.k==='circulo'){const [cx,cy]=aLienzo(p,o.c);x.beginPath();x.ellipse(cx,cy,o.r*kx(p),o.r*ky(p),0,0,Math.PI*2);x.stroke();x.beginPath();x.arc(cx,cy,2.6,0,Math.PI*2);x.fill();
+      if(p.ecuaciones)etiquetaP(x,ecuacionCirculo(o.c,o.r),cx+o.r*kx(p)*.72+4,cy-o.r*ky(p)*.72-2,{col,oscuro})}
+    if(o.k==='tabla'){const ps=o.pts.map(q=>aLienzo(p,q));if(o.unir&&ps.length>1){x.beginPath();ps.forEach((q,i)=>i?x.lineTo(...q):x.moveTo(...q));x.stroke()}
+      for(const q of ps){x.beginPath();x.arc(q[0],q[1],4,0,Math.PI*2);x.fill()}}
+  }
+  // puntos encima de todo, con su etiqueta A(2, 3)
+  for(const o of p.objetos)if(o.k==='punto'){const col=colorVisible(o.color||'#dc2626',oscuro),[X,Y]=aLienzo(p,[o.x,o.y]);
+    x.fillStyle=col;x.beginPath();x.arc(X,Y,5,0,Math.PI*2);x.fill();x.lineWidth=1.5;x.strokeStyle=oscuro?'#141820':'#fff';x.stroke();
+    const t=nombrePunto(o,p);x.font='600 12px system-ui,-apple-system,"Segoe UI",sans-serif';const izq=X+8+x.measureText(t).width>p.x+p.w-2;
+    etiquetaP(x,t,izq?X-8:X+8,Y-6<p.y+14?Y+18:Y-6,{col,oscuro,al:izq?'right':'left'})}
+  x.restore();
 }
 function pintarPapel(x,o,{practica,revelado,oscuro,z}){
   x.save();
@@ -132,10 +202,16 @@ function patron(x,d,zona,vis,z,oscuro){
   if(tipo==='pentagrama'){x.strokeStyle=fuerte;x.lineWidth=1/z;x.beginPath();
     for(let g=Math.floor((a[1]-zona[1])/96);zona[1]+g*96<=a[3];g++)for(let l=0;l<5;l++){const y=zona[1]+g*96+40+l*9;x.moveTo(a[0],y);x.lineTo(a[2],y)}x.stroke()}
   if(tipo==='cartesiano'){
-    const [ox,oy]=origenCartesiano(d);lineas(CUADRO,'h',fina);lineas(CUADRO,'v',fina);
+    // con el origen, la unidad y el paso propios del dibujo (se ajustan en «Fondo → Ajustar el plano de fondo»)
+    const [ox,oy]=origenCartesiano(d),U=unidadCartesiano(d),paso=pasoCartesiano(d);let c=U/2;while(c*z<6)c*=2;
+    x.strokeStyle=fina;x.lineWidth=1/z;x.beginPath();
+    for(let i=Math.ceil((a[0]-ox)/c);ox+i*c<=a[2];i++){x.moveTo(ox+i*c,a[1]);x.lineTo(ox+i*c,a[3])}
+    for(let j=Math.ceil((a[1]-oy)/c);oy+j*c<=a[3];j++){x.moveTo(a[0],oy+j*c);x.lineTo(a[2],oy+j*c)}x.stroke();
     x.strokeStyle=oscuro?'rgba(200,210,230,.6)':'rgba(40,50,70,.55)';x.lineWidth=1.6/z;x.beginPath();x.moveTo(a[0],oy);x.lineTo(a[2],oy);x.moveTo(ox,a[1]);x.lineTo(ox,a[3]);x.stroke();
-    if(CM*z>=18){x.fillStyle=oscuro?'rgba(200,210,230,.75)':'rgba(40,50,70,.7)';x.font=`${11/z}px system-ui,sans-serif`;x.textAlign='center';x.textBaseline='top';
-      for(let i=Math.ceil((a[0]-ox)/CM);ox+i*CM<=a[2];i++)if(i)x.fillText(String(i),ox+i*CM,oy+3/z);
-      x.textAlign='right';x.textBaseline='middle';for(let j=Math.ceil((a[1]-oy)/CM);oy+j*CM<=a[3];j++)if(j)x.fillText(String(-j),ox-4/z,oy+j*CM)}
+    const L=U*paso;
+    if(L*z>=18){x.fillStyle=oscuro?'rgba(200,210,230,.75)':'rgba(40,50,70,.7)';x.font=`${11/z}px system-ui,sans-serif`;x.textAlign='center';x.textBaseline='top';
+      for(let i=Math.ceil((a[0]-ox)/L);ox+i*L<=a[2];i++)if(i)x.fillText(numero(i*paso),ox+i*L,oy+3/z);
+      x.textAlign='right';x.textBaseline='middle';for(let j=Math.ceil((a[1]-oy)/L);oy+j*L<=a[3];j++)if(j)x.fillText(numero(-j*paso),ox-4/z,oy+j*L)}
   }
+
 }

@@ -13,6 +13,10 @@
      (pendiente, distancia, punto medio y ecuación en el plano; «Dejar en la hoja»), ▭ marco o resaltado y 🌀 barrido
      (una línea entre los dedos cada tantos px, con degradado y espejo; todo es un solo grupo). Con ratón o lápiz solo:
      presionar = punto A, arrastrar = punto B; lápiz + dedo también. El zoom, con + y −.
+   - 📈 Plano cartesiano editable (📐 → Plano cartesiano; plano.js): tocarlo lo elige (asas para el tamaño, arrastrar lo
+     mueve; ⚙️ Ajustes en vivo, ➕ Agregar punto, función, recta, segmento, vector, circunferencia, tabla, área y desigualdad,
+     🔒 Fijar, ⧉ y 🗑️). Lo que se dibuja dentro queda anclado (`ancla`) y se mueve, escala y reacomoda con él. Con ✋ y
+     «Mover la vista del plano», un dedo mueve el rango y dos lo acercan. Dos toques en un número del extremo lo editan.
    - ✋ Modo mano: un dedo mueve. Con el S Pen («Solo el lápiz dibuja»), el lápiz dibuja y el dedo mueve.
    - Herramientas: pluma (bolígrafo, fuente, lápiz), resaltador (detrás de la tinta), borrador (de trazo o de precisión),
      lazo (mover, escalar, rotar, color, grosor, copiar, duplicar, borrar, ✨ pasar a texto), formas (inteligentes al
@@ -32,9 +36,13 @@ import {SIMBOLOS} from '../cuaderno/editor-ui.js';
 import {normalizarDibujo,nuevoIdObj,caja,cajaDe,cajaPuntos,tocaObjeto,objetoEn,simplificar,recortarTrazo,borrarCon,enLazo,conGrupos,
   transformar,mMover,mEscalar,mRotar,aplicarM,diferencia,aplicarOp,reconocerForma,formaDirecta,FORMAS,plantilla,PLANTILLAS,FONDOS,
   region,paginasPDF,anchoPagina,paraGuardar,medidasTexto,distSeg,capaDe,PAGINA,CM,ZOOM_MIN,ZOOM_MAX,TINTA,
-  MODOS_DOS,conRejilla,ajustarRejilla,medirDos,lineasMedida,objetosMedida,arcoCompas,textoAngulo,marcoDos,objetosBarrido,parabolaConRectas,numero} from './modelo.js';
+  MODOS_DOS,conRejilla,ajustarRejilla,medirDos,lineasMedida,objetosMedida,arcoCompas,textoAngulo,marcoDos,objetosBarrido,parabolaConRectas,numero,
+  origenCartesiano,unidadCartesiano,pasoCartesiano} from './modelo.js';
 import {pintarObjetos,pintarFondo,pintarObjeto,pintarTrazo,colorVisible,rgb} from './pintar.js';
 import {imagenFormula,medirFormula,pdfDePaginas} from './raster.js';
+import {nuevoPlano,igualar,matrizPlano,planoEn,dentroPlano,aPlanoDe,aLienzo,anclable,objetoPlanoEn,limitesEn,ajustarAPaso,siguienteNombre,nombrePunto,
+  ecuacionRecta,ecuacionCirculo,expresionValida,rangoDeObjetos,PRESETS,COLORES_PLANO,kx,ky,numero as numeroP} from './plano.js';
+import {num} from '../generadores/verificar.js';
 
 export const PALETA=[['Negro','#1f2430'],['Azul','#2563eb'],['Rojo','#dc2626'],['Verde','#15803d'],['Morado','#7c3aed'],['Naranja','#ea580c'],['Gris','#6b7280'],
   ['Amarillo','#facc15'],['Verde claro','#4ade80'],['Rosa','#f472b6']];
@@ -174,6 +182,7 @@ export function abrirEditorDibujo({dibujo,titulo='Dibujo',nuevo=false,cargarImag
   }
   function cajaSel(m){const os=objs.filter(o=>sel.ids.has(o.id));const c=cajaDe(m?os.map(o=>transformar(o,m,{mismoId:true})):os);return c}
   function pintarSeleccion(x,m){
+    const pl=!m&&planoSel();if(pl){pintarSelPlano(x,pl);return}
     const c=cajaSel(m);if(!c)return;const [a,b]=aPantalla(c[0],c[1]),[e,h]=aPantalla(c[2],c[3]),col=css('--primary')||'#2563eb';
     x.setLineDash([6,4]);x.strokeStyle=col;x.lineWidth=1.5;x.strokeRect(a-6,b-6,e-a+12,h-b+12);x.setLineDash([]);
     x.fillStyle='#fff';x.strokeStyle=col;x.lineWidth=2;
@@ -181,6 +190,13 @@ export function abrirEditorDibujo({dibujo,titulo='Dibujo',nuevo=false,cargarImag
     x.beginPath();x.moveTo((a+e)/2,b-6);x.lineTo((a+e)/2,b-26);x.stroke();x.beginPath();x.arc((a+e)/2,b-34,9,0,Math.PI*2);x.fill();x.stroke();   // rotar
     x.fillStyle=col;x.font='13px system-ui';x.textAlign='center';x.textBaseline='middle';x.fillText('⟳',(a+e)/2,b-33);x.textAlign='start';x.textBaseline='alphabetic';
     sel.manijas={escalar:[e+6,h+6],rotar:[(a+e)/2,b-34],caja:[a-6,b-6,e+6,h+6],centro:[(c[0]+c[2])/2,(c[1]+c[3])/2],esquina:[c[0],c[1]]};
+  }
+  function pintarSelPlano(x,p){
+    const [a,b]=aPantalla(p.x,p.y),[e,h]=aPantalla(p.x+p.w,p.y+p.h),col=css('--primary')||'#2563eb';
+    x.setLineDash([6,4]);x.strokeStyle=col;x.lineWidth=1.5;x.strokeRect(a,b,e-a,h-b);x.setLineDash([]);
+    const L=[['nw',a,b],['n',(a+e)/2,b],['ne',e,b],['e',e,(b+h)/2],['se',e,h],['s',(a+e)/2,h],['sw',a,h],['w',a,(b+h)/2]];
+    if(!p.fijo)for(const [,X,Y] of L){x.fillStyle='#fff';x.strokeStyle=col;x.lineWidth=2;x.fillRect(X-7,Y-7,14,14);x.strokeRect(X-7,Y-7,14,14)}
+    sel.manijas={plano:true,lados:p.fijo?[]:L,caja:[a,b,e,h],centro:[p.x+p.w/2,p.y+p.h/2],esquina:[p.x,p.y]};
   }
   // 📏 Regla: borde en (x, y) con ángulo; cuerpo hacia un lado, de 54 px en pantalla; marcas en cm
   function pintarRegla(x){
@@ -218,7 +234,7 @@ export function abrirEditorDibujo({dibujo,titulo='Dibujo',nuevo=false,cargarImag
   /* ---------- historial ---------- */
   let autoTimer=0;
   function tocar(){version++;cambiado=true;pintarTodo();botones();clearTimeout(autoTimer);autoTimer=setTimeout(autoguardarYa,1500);estado('Sin guardar…')}
-  function aplicar(nuevos){const op=diferencia(objs,nuevos);if(!op)return false;objs=nuevos;hist.push(op);rehacerPila.length=0;tocar();return true}
+  function aplicar(nuevos){nuevos=anclar(objs,nuevos);const op=diferencia(objs,nuevos);if(!op)return false;objs=nuevos;hist.push(op);rehacerPila.length=0;tocar();return true}
   function deshacer(){const op=hist.pop();if(!op){aviso('No hay nada que deshacer.',1200);return false}objs=aplicarOp(objs,op,true);rehacerPila.push(op);if(sel)limpiarSel();tocar();return true}
   function rehacer(){const op=rehacerPila.pop();if(!op)return false;objs=aplicarOp(objs,op);hist.push(op);if(sel)limpiarSel();tocar();return true}
   const estadoActual=()=>({...d,objetos:objs,historial:hist,vista:{...vista},bloqueado,practica});
@@ -244,7 +260,7 @@ export function abrirEditorDibujo({dibujo,titulo='Dibujo',nuevo=false,cargarImag
   function elegir(h){
     if(h==='formas'&&herr==='dosdedos'){abrirPanel('dosdedos');return}
     if(h===herr&&h!=='papel'){abrirPanel(h);return}
-    medicion=null;herr=h;cerrarPanel();if(sel&&!['lazo'].includes(h))limpiarSel();botones();
+    medicion=null;modoPlano=null;herr=h;cerrarPanel();if(sel&&!['lazo'].includes(h))limpiarSel();botones();
     if(h==='formas')aviso(`📐 ${FORMAS.find(x=>x[0]===P.forma)?.[2]||'Línea'}: arrastra para dibujarla. Toca 📐 otra vez para elegir otra.`,2200);
     if(h==='dosdedos'){abrirPanel('dosdedos');
       if(!P.dos.visto){P.dos.visto=true;guardarPrefs(P);aviso('✌️ Con esta herramienta los dos dedos dibujan. Para el zoom usa + y −, o elige otra herramienta.',4200)}}
@@ -271,12 +287,14 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
 <button type="button" class="btn ghost btn-chico" data-d="dos">✌️ Dos dedos: regla, compás, medir, marco y barrido</button>
 <div class="row"><button type="button" class="btn ghost btn-chico" data-d="regla" aria-pressed="${!!regla}">📏 Regla</button><button type="button" class="btn ghost btn-chico" data-d="transp" aria-pressed="${!!transp}">◠ Transportador</button></div>`;
     if(h==='dosdedos')return htmlDos();
+    if(h==='plano')return htmlPlanoPanel();
+    if(h==='fondoPlano')return htmlFondoPlano();
     if(h==='texto'){const p=P.texto;return `<div class="segmentos" role="group" aria-label="Tamaño de letra">${[14,20,28,40].map(t=>`<button type="button" data-tam="${t}" aria-pressed="${p.tam===t}">${t}</button>`).join('')}</div>${colores(PALETA.slice(0,7),p.color)}
 <div class="row"><button type="button" class="btn ghost btn-chico" data-d="formula">Σ Fórmula</button><span class="nota">Toca el lienzo para escribir.</span></div>`}
     return '';
   }
-  function abrirPanel(h){const p=$('.dib-opc');if(panel===h){cerrarPanel();return}panel=h;p.innerHTML=`<div class="dib-opc-cab"><b>${h==='dosdedos'?'✌️ Dos dedos':HERR.find(x=>x[0]===h)?.[2]||''}</b><button type="button" class="btn-icono" data-d="opc-cerrar" aria-label="Cerrar las opciones">✕</button></div>${htmlPanel(h)}`;p.hidden=false;marcaSiHace()}
-  function cerrarPanel(marcar=true){if(!panel)return;panel=null;$('.dib-opc').hidden=true;if(marcar)marcaSiHace()}
+  function abrirPanel(h){const p=$('.dib-opc');if(panel===h){cerrarPanel();return}panel=h;p.innerHTML=`<div class="dib-opc-cab"><b>${h==='dosdedos'?'✌️ Dos dedos':h==='plano'?'⚙️ Plano cartesiano':h==='fondoPlano'?'⊹ Plano de fondo':HERR.find(x=>x[0]===h)?.[2]||''}</b><button type="button" class="btn-icono" data-d="opc-cerrar" aria-label="Cerrar las opciones">✕</button></div>${htmlPanel(h)}`;p.hidden=false;marcaSiHace()}
+  function cerrarPanel(marcar=true){if(!panel)return;panel=null;ajustePlano=null;$('.dib-opc').hidden=true;if(marcar)marcaSiHace()}
   const repintarPanel=()=>{if(panel){const h=panel;panel=null;abrirPanel(h)}};
   function usarColor(c){
     if(sel)return cambiarSel(o=>o.t==='trazo'||o.t==='texto'||o.t==='formula'?{...o,color:c}:o);
@@ -290,10 +308,12 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
   function limpiarSel(marcar=true){if(!sel)return;sel=null;$('.dib-selbar').hidden=true;pintarVivo();if(marcar)marcaSiHace()}
   const elegidos=()=>sel?objs.filter(o=>sel.ids.has(o.id)):[];
   function barraSel(){
-    const os=elegidos(),b=$('.dib-selbar'),uno=os.length===1?os[0]:null,img=uno?.t==='imagen';
+    const os=elegidos(),b=$('.dib-selbar'),uno=os.length===1?os[0]:null,img=uno?.t==='imagen',pl=planoSel();
+    if(pl){b.innerHTML=[['plano-ajustes','⚙️','Ajustes del plano'],['plano-agregar','➕','Agregar al plano'],['plano-fijar',pl.fijo?'🔒':'🔓',pl.fijo?'Soltar el plano (se puede mover)':'Fijar el plano'],['sel-dup','⧉','Duplicar'],['sel-borrar','🗑️','Borrar']]
+      .map(([d2,i,n])=>`<button type="button" data-d="${d2}" aria-label="${n}" title="${n}">${i}</button>`).join('');b.hidden=false;return}
     b.innerHTML=[['sel-color','🎨','Color'],['sel-grosor','≡','Grosor'],['sel-dup','⧉','Duplicar'],['sel-copiar','📋','Copiar'],
       ...(uno&&(uno.t==='texto'||uno.t==='formula')?[['sel-editar','✏️','Editar']]:[]),...(img?[['sel-fijar',uno.fija?'📌':'📍',uno.fija?'Soltar la imagen':'Fijar la imagen'],['sel-recortar','✂️','Recortar']]:[]),
-      ...(os.some(o=>o.t==='trazo')?[['sel-ia','✨','Pasar a texto o fórmula (IA)']]:[]),['sel-borrar','🗑️','Borrar']]
+      ...(os.some(o=>o.t==='trazo')?[['sel-ia','✨','Pasar a texto o fórmula (IA)']]:[]),...(os.some(o=>o.ancla)&&!os.some(o=>o.t==='plano')?[['sel-soltar','⇱','Soltar del plano']]:[]),['sel-borrar','🗑️','Borrar']]
       .map(([d2,i,n])=>`<button type="button" data-d="${d2}" aria-label="${n}" title="${n}">${i}</button>`).join('');
     b.hidden=false;
   }
@@ -307,7 +327,7 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
   function pegar(dx=24,dy=24,lista=portapapeles){
     if(!lista.length)return;const c=cajaDe(lista),gs=new Map(),centro=aMundo(W/2,H/2);
     const m=sel||!c?mMover(dx,dy):mMover(centro[0]-(c[0]+c[2])/2,centro[1]-(c[1]+c[3])/2);
-    const nuevos=lista.map(o=>{const r=transformar(o,m);if(o.g){if(!gs.has(o.g))gs.set(o.g,nuevoIdObj());r.g=gs.get(o.g)}return r});
+    const nuevos=lista.map(o=>{const r=transformar(o,m);if(o.g){if(!gs.has(o.g))gs.set(o.g,nuevoIdObj());r.g=gs.get(o.g)}if(r.t==='plano')r.pid='p'+nuevoIdObj();return r});
     aplicar([...objs,...nuevos]);seleccionar(new Set(nuevos.map(o=>o.id)));
   }
 
@@ -327,10 +347,12 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
     const [sx,sy]=posDe(e);
     // ✌️ Dos dedos: cualquier puntero (dedo, lápiz o ratón) marca un punto; nada de zoom ni deshacer con dos dedos
     if(herr==='dosdedos'&&!(e.pointerType==='mouse'&&(e.button!==0||espacio))&&(!g||g.dos)){if(e.pointerType==='pen')lapizVisto=true;dosAbajo(e,sx,sy);return}
+    if(moverOrigen&&(e.pointerType!=='touch'||toques.size===0)){g={id:e.pointerId,origen:true};fondoPlano({ox:Math.round(aMundo(sx,sy)[0]),oy:Math.round(aMundo(sx,sy)[1])});return}
     if(e.pointerType==='pen'){lapizVisto=true;lapizActivo=true;if(g&&g.dedos){cancelarGesto()}}
     if(e.pointerType==='touch'){
       if(lapizActivo)return;   // la palma mientras escribes con el lápiz
       toques.set(e.pointerId,{x:sx,y:sy,x0:sx,y0:sy});const n=toques.size;
+      if(n===1&&mano){const pl=planoEn(objs,...aMundo(sx,sy));if(pl?.moverVista&&!pl.fijo){g={dedos:true,tipo:'planoVista',id:e.pointerId,pl,ini:[sx,sy]};return}}
       if(n===1){if(dedoMueve()){g={dedos:true,tipo:'mover',id:e.pointerId,ultimo:[sx,sy],gesto:true};fotoGesto();return}herrAbajo(e,sx,sy);if(g)g.dedos=true;return}
       if(n===2){cancelarHerr();iniciarDos();return}
       if(n===3){cancelarGesto();g={dedos:true,tipo:'tres',t0:performance.now()};return}
@@ -344,6 +366,8 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
     const c=centro(),enRegla=regla&&cercaRegla(...aMundo(...c))||transp&&cercaTransp(...aMundo(...c));
     g={dedos:true,tipo:'dos',t0:performance.now(),c0:c,d0:separacion(),a0:anguloDedos(),v0:{...vista},guia:enRegla?(regla&&cercaRegla(...aMundo(...c))?'regla':'transp'):null,gesto:!bloqueado&&!enRegla};
     if(g.guia)g.guia0={...(g.guia==='regla'?regla:transp)};
+    if(mano&&!g.guia){const [a,b]=[...toques.values()],pa=planoEn(objs,...aMundo(a.x,a.y)),pb=planoEn(objs,...aMundo(b.x,b.y));
+      if(pa&&pa===pb&&pa.moverVista&&!pa.fijo){g.gesto=false;g.planoZoom=pa}}
     if(g.gesto)fotoGesto();
     if(bloqueado&&!g.guia)g.timer=setTimeout(()=>{if(g?.tipo==='dos'&&!movidos()){temporal=true;g.temporal=true;g.gesto=true;g.c0=centro();g.d0=separacion();g.v0={...vista};fotoGesto();vibrar([12]);botones()}},500);
   }
@@ -358,6 +382,9 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
     if(e.pointerType==='touch'&&lapizActivo)return;
     if(!g||g.id!==e.pointerId)return;
     e.preventDefault();
+    if(g.origen){fondoPlano({ox:Math.round(aMundo(sx,sy)[0]),oy:Math.round(aMundo(sx,sy)[1])});return}
+    if(g.tipo==='planoVista'){const p=g.pl,du=-(sx-g.ini[0])/vista.z/kx(p),dv=(sy-g.ini[1])/vista.z/ky(p);
+      g.n={...p,id:'vista',xMin:p.xMin+du,xMax:p.xMax+du,yMin:p.yMin+dv,yMax:p.yMax+dv};g.vista=conPlano(objs.filter(o=>o===p||o.ancla===p.pid),p,g.n);g.ocultar=new Set(objs.filter(o=>o===p||o.ancla===p.pid).map(o=>o.id));pintarTodo();return}
     if(g.tipo==='mover'){if(bloqueado&&!temporal)return;const dx=sx-g.ultimo[0],dy=sy-g.ultimo[1];g.ultimo=[sx,sy];vista=limitar({...vista,x:vista.x-dx/vista.z,y:vista.y-dy/vista.z});pintarTodo();verMapa();return}
     herrMover(e,sx,sy);
   }
@@ -366,6 +393,9 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
     if(!g.movido&&movidos()){g.movido=true;if(!g.temporal)clearTimeout(g.timer)}
     if(g.guia){const gu=g.guia==='regla'?regla:transp,[a,b]=aMundo(...g.c0),[a2,b2]=aMundo(...c),da=anguloDedos()-g.a0;
       Object.assign(gu,{x:g.guia0.x+(a2-a),y:g.guia0.y+(b2-b),ang:g.guia0.ang+da});pintarVivo();return}
+    if(g.planoZoom){const p=g.planoZoom,s=Math.max(.05,separacion()/g.d0),[u,v]=aPlanoDe(p,aMundo(...g.c0));
+      g.n={...p,id:'vista',xMin:u+(p.xMin-u)/s,xMax:u+(p.xMax-u)/s,yMin:v+(p.yMin-v)/s,yMax:v+(p.yMax-v)/s};
+      g.vista=conPlano(objs.filter(o=>o===p||o.ancla===p.pid),p,g.n);g.ocultar=new Set(objs.filter(o=>o===p||o.ancla===p.pid).map(o=>o.id));pintarTodo();return}
     if(!g.gesto)return;
     const z=Math.min(ZOOM_MAX,Math.max(ZOOM_MIN,g.v0.z*separacion()/g.d0)),wx=g.v0.x+g.c0[0]/g.v0.z,wy=g.v0.y+g.c0[1]/g.v0.z;
     vista=limitar({z,x:wx-c[0]/z,y:wy-c[1]/z});pintarTodo();mostrarZoom();verMapa();
@@ -379,7 +409,8 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
         if(toques.size)return;   // queda un dedo: espera a que se suelten todos
         clearTimeout(g.timer);const toque=!g.temporal&&!g.movido&&performance.now()-g.t0<320;
         if(g.temporal){temporal=false;vibrar([10]);botones()}
-        const eraGesto=g.gesto;g=null;if(eraGesto){foto=null;pintarTodo()}
+        const eraGesto=g.gesto,pz=g.planoZoom&&g.n?[g.planoZoom,g.n]:null;g=null;if(eraGesto){foto=null;pintarTodo()}
+        if(pz){const {xMin,xMax,yMin,yMax}=pz[1];cambiarPlano(pz[0],{xMin,xMax,yMin,yMax,igual:false},{fusionar:false});return}
         if(toque)tocarDos();return;
       }
       if(g?.tipo==='tres'){if(!toques.size){const ok=performance.now()-g.t0<400;g=null;ultimoTap=null;if(ok){rehacer()&&aviso('↷ Rehecho',900)}}return}
@@ -387,6 +418,8 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
     }
     if(!g||g.id!==e.pointerId)return;
     if(g.tipo==='mover'){g=null;foto=null;pintarTodo();return}
+    if(g.origen){g=null;moverOrigen=false;autoguardarYa();aviso('📍 Origen en su lugar',1000);return}
+    if(g.tipo==='planoVista'){const x=g;g=null;if(x.n){const {xMin,xMax,yMin,yMax}=x.n;cambiarPlano(x.pl,{xMin,xMax,yMin,yMax},{fusionar:false})}else pintarTodo();return}
     herrArriba(e);
   }
   // Toque con 2 dedos: deshacer; doble toque: ajustar a la pantalla o volver al 100 % (y se devuelve lo deshecho)
@@ -407,6 +440,18 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
   function herrAbajo(e,sx,sy){
     const [wx,wy]=aMundo(sx,sy),r=10/vista.z;
     // selección: manijas, mover o salir
+    if(sel&&sel.manijas?.plano){const mm=sel.manijas,pl=planoSel();
+      const lado=mm.lados.find(([,X,Y])=>Math.hypot(sx-X,sy-Y)<24);
+      if(pl&&lado){g={id:e.pointerId,sel:'lado',lado:lado[0],p0:pl,ini:[wx,wy],ocultar:sel.ids};pintarTodo();return}
+      if(pl&&sx>=mm.caja[0]-6&&sx<=mm.caja[2]+6&&sy>=mm.caja[1]-6&&sy<=mm.caja[3]+6){
+        g=pl.fijo?{id:e.pointerId,sel:'toque',plano:pl,iniPx:[sx,sy]}:{id:e.pointerId,sel:'mover',ini:[wx,wy],m:null,ocultar:sel.ids,plano:pl,iniPx:[sx,sy]};pintarTodo();return}
+    }
+    if(herr==='plano'&&modoPlano){const pl=planoDe(modoPlano.pid);
+      if(!pl){modoPlano=null;herr='pluma';botones()}
+      else{if(!dentroPlano(pl,wx,wy)){aviso('Toca dentro del plano (o elige ✏️ para escribir).',1400);return}
+        const ex=objetoPlanoEn(pl,wx,wy,14/vista.z),q=enPaso(pl,wx,wy);
+        if(ex?.k==='punto'){g={id:e.pointerId,planoMover:ex,pl,iniPx:[sx,sy]};return}
+        g={id:e.pointerId,planoNuevo:modoPlano.k,pl,a:q,b:q};g.vista=[{...pl,id:'vista',objetos:[...pl.objetos,objetoNuevo(g.planoNuevo,q,q,pl)]}];g.ocultar=new Set([pl.id]);pintarTodo();return}}
     if(sel){const mm=sel.manijas;
       if(mm&&Math.hypot(sx-mm.rotar[0],sy-mm.rotar[1])<24){g={id:e.pointerId,sel:'rotar',ini:[wx,wy],m:null,ocultar:sel.ids};pintarTodo();return}
       if(mm&&Math.hypot(sx-mm.escalar[0],sy-mm.escalar[1])<24){g={id:e.pointerId,sel:'escalar',ini:[wx,wy],m:null,ocultar:sel.ids};pintarTodo();return}
@@ -425,7 +470,7 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
       if(regla&&cercaRegla(wx,wy))g.enRegla=true;
       if(transp&&Math.hypot(wx-transp.x,wy-transp.y)<22/vista.z)g.enTransp=true;
       // toque largo sin moverse sobre algo: lo selecciona
-      g.largo=setTimeout(()=>{if(!g?.trazo||g.largoPx>6)return;const o=objetoEn(objs,wx,wy,r,o=>o.t!=='papel'&&visible(o));
+      g.largo=setTimeout(()=>{if(!g?.trazo||g.largoPx>6)return;const o=objetoEn(objs,wx,wy,r,o=>o.t!=='papel'&&o.t!=='plano'&&visible(o))||objetoEn(objs,wx,wy,r,o=>o.t==='plano'&&visible(o));
         if(o){const id=g.id;g=null;pintarVivo();vibrar([15]);seleccionar(conGrupos(objs,new Set([o.id])));g={id,tipo:'fin2'}}},520);
       pintarVivo();return;
     }
@@ -437,6 +482,14 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
   }
   function herrMover(e,sx,sy){
     const [wx,wy]=aMundo(sx,sy);
+    if(g.planoMover||g.planoNuevo){const pl=g.pl,q=enPaso(pl,wx,wy);
+      if(g.planoMover){g.movido=g.movido||Math.hypot(sx-g.iniPx[0],sy-g.iniPx[1])>4;g.nuevo={...g.planoMover,x:q[0],y:q[1]};g.vista=[{...pl,id:'vista',objetos:pl.objetos.map(o=>o.id===g.nuevo.id?g.nuevo:o)}];g.medida=nombrePunto(g.nuevo);g.medidaEn=[sx,sy]}
+      else{g.b=q;g.vista=[{...pl,id:'vista',objetos:[...pl.objetos,objetoNuevo(g.planoNuevo,g.a,g.b,pl)]}];if(g.planoNuevo==='punto'){g.a=q;g.vista=[{...pl,id:'vista',objetos:[...pl.objetos,objetoNuevo('punto',q,q,pl)]}]}}
+      g.ocultar=new Set([pl.id]);pintarTodo();return}
+    if(g.sel==='lado'){const p=g.p0,dx=wx-g.ini[0],dy=wy-g.ini[1],mn=60/vista.z;let x0=p.x,y0=p.y,x1=p.x+p.w,y1=p.y+p.h;
+      if(g.lado.includes('w'))x0=Math.min(x1-mn,x0+dx);if(g.lado.includes('e'))x1=Math.max(x0+mn,x1+dx);if(g.lado.includes('n'))y0=Math.min(y1-mn,y0+dy);if(g.lado.includes('s'))y1=Math.max(y0+mn,y1+dy);
+      g.nuevo=igualar({...p,id:'vista',x:x0,y:y0,w:x1-x0,h:y1-y0});g.vista=conPlano(objs.filter(o=>sel.ids.has(o.id)),p,g.nuevo);
+      g.medida=`${numeroP(g.nuevo.xMin)} ≤ x ≤ ${numeroP(g.nuevo.xMax)}`;g.medidaEn=[sx,sy];pintarTodo();return}
     if(g.sel){const [x0,y0]=g.ini;
       if(g.sel==='mover')g.m=mMover(wx-x0,wy-y0);
       else{const mm=sel.manijas,c=mm.centro;
@@ -478,10 +531,19 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
   }
   function herrArriba(){
     const x=g;g=null;ultimoTap=null;clearTimeout(x.quieto);clearTimeout(x.largo);
+    if(x.planoMover){if(x.movido&&x.nuevo){const pl=planoDe(x.pl.pid);if(pl)cambiarPlano(pl,{objetos:pl.objetos.map(o=>o.id===x.nuevo.id?x.nuevo:o)},{fusionar:false})}else{pintarTodo();menuObjetoPlano(x.pl,x.planoMover)}return}
+    if(x.planoNuevo){const pl=planoDe(x.pl.pid);pintarTodo();if(!pl)return;
+      if(x.planoNuevo!=='punto'&&Math.hypot(x.b[0]-x.a[0],x.b[1]-x.a[1])<1e-9){aviso(x.planoNuevo==='circulo'?'Arrastra del centro hacia afuera.':'Arrastra del primer punto al segundo.',1400);return}
+      const o={...objetoNuevo(x.planoNuevo,x.a,x.b,pl),id:nuevoIdObj()};cambiarPlano(pl,{objetos:[...pl.objetos,o]},{fusionar:false});return}
+    if(x.sel==='lado'){if(x.nuevo){const {x:a,y:b,w,h}=x.nuevo;cambiarPlano(x.p0,{x:a,y:b,w,h},{fusionar:false})}pintarTodo();return}
+    if(x.sel==='toque'||x.sel==='mover'&&!x.m&&x.plano){pintarTodo();tocarEnPlano(x.plano,...x.iniPx);return}
     if(x.sel){if(x.m)transformarSel(x.m);pintarTodo();return}
     if(x.guia){pintarVivo();return}
     if(x.trazo){
-      const t=x.trazo;if(!t.recto)t.pts=simplificar(t.pts,Math.min(.5,.35/vista.z));
+      const t=x.trazo;
+      if(!x.pen&&x.largoPx<6&&!x.forma){const pl=planoEn(objs,t.pts[0][0],t.pts[0][1]);
+        if(pl&&visible(pl)){seleccionar(conGrupos(objs,new Set([pl.id])));toquePlano={t:performance.now(),sx:x.inicioPx[0],sy:x.inicioPx[1]};pintarVivo();return}}
+      if(!t.recto)t.pts=simplificar(t.pts,Math.min(.5,.35/vista.z));
       if(t.vari&&!x.pen&&t.pts.length<3)t.pts=t.pts.map(p=>[p[0],p[1],.6]);
       aplicar([...objs,t]);pintarVivo();return;
     }
@@ -501,6 +563,171 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
     if(x.texto){const o=objetoEn(objs,x.texto[0],x.texto[1],6/vista.z,o=>o.t==='texto'||o.t==='formula');
       if(o?.t==='formula')editarFormula(o);else editarTexto(o||null,x.texto);return}
   }
+  /* ---------- 📈 plano cartesiano editable (plano.js) ---------- */
+  let modoPlano=null,ajustePlano=null,toquePlano=null,avisoRango=false,moverOrigen=false,planoPanel=null;
+  const planoDe=pid=>objs.find(o=>o.t==='plano'&&o.pid===pid);
+  // ¿la selección es un plano (con lo anclado a él)?
+  function planoSel(){
+    if(!sel)return null;const ps=objs.filter(o=>sel.ids.has(o.id)&&o.t==='plano');if(ps.length!==1)return null;const p=ps[0];
+    return objs.every(o=>!sel.ids.has(o.id)||o===p||o.ancla===p.pid)?p:null;
+  }
+  // La lista con la nueva versión de un plano: lo anclado se mueve, escala o reacomoda con él (conserva sus coordenadas del plano)
+  function conPlano(lista,viejo,nuevo){
+    const m=matrizPlano(viejo,nuevo),cambia=m.some((v,i)=>Math.abs(v-[1,0,0,1,0,0][i])>1e-9);
+    return lista.map(o=>o===viejo?nuevo:cambia&&o.ancla===viejo.pid?transformar(o,m):o);
+  }
+  function cambiarPlano(p,cambios,{fusionar=!!ajustePlano}={}){
+    const n=igualar({...p,...cambios,id:nuevoIdObj()});
+    const geo=['x','y','w','h'].some(k=>k in cambios),rango=!geo&&['xMin','xMax','yMin','yMax'].some(k=>Math.abs(n[k]-p[k])>1e-9);
+    if(rango&&!avisoRango&&objs.some(o=>o.ancla===p.pid&&o.t==='trazo')){avisoRango=true;aviso('Tus trazos a mano se ajustaron al nuevo rango.',2400)}
+    const eraSel=sel?.ids.has(p.id),nuevos=conPlano(objs,p,n);
+    if(fusionar&&ajustePlano)fusionarPaso(nuevos);else aplicar(nuevos);
+    if(eraSel){sel={ids:conGrupos(objs,new Set([n.id]))};barraSel()}
+    pintarVivo();return n;
+  }
+  // Los cambios de ⚙️ Ajustes cuentan como UN paso del historial (se ven en vivo)
+  function fusionarPaso(nuevos){
+    nuevos=anclar(objs,nuevos);
+    if(ajustePlano.op&&hist.at(-1)===ajustePlano.op)hist.pop();
+    const op=diferencia(ajustePlano.base,nuevos);objs=nuevos;ajustePlano.op=op;if(op){hist.push(op);rehacerPila.length=0}tocar();
+  }
+  // Lo que se dibuja, escribe o se mueve dentro de un plano queda anclado a él (y se suelta si sale)
+  function anclar(antes,nuevos){
+    const planos=nuevos.filter(o=>o.t==='plano');if(!planos.length&&!nuevos.some(o=>o.ancla))return nuevos;
+    const ya=new Set(antes.map(o=>o.id));
+    for(const o of nuevos){if(ya.has(o.id)||!anclable(o)||o.suelto)continue;
+      const c=caja(o),pl=planoEn(planos,(c[0]+c[2])/2,(c[1]+c[3])/2);if(pl)o.ancla=pl.pid;else delete o.ancla}
+    return nuevos;
+  }
+  const colorSiguiente=p=>COLORES_PLANO[p.objetos.filter(o=>o.k!=='punto').length%COLORES_PLANO.length];
+  const conObjeto=(p,o)=>cambiarPlano(p,{objetos:[...p.objetos,o]});
+  function describir(o){
+    if(o.k==='punto')return `📍 ${nombrePunto(o)}`;if(o.k==='funcion')return `📈 y = ${o.expr.replace(/^\s*y\s*=\s*/,'')}`;
+    if(o.k==='recta')return `⟷ ${ecuacionRecta(o.a,o.b)}`;if(o.k==='segmento')return `／ Segmento (${numero(o.a[0])}, ${numero(o.a[1])}) – (${numero(o.b[0])}, ${numero(o.b[1])})`;
+    if(o.k==='vector')return `↗ Vector (${numero(o.b[0]-o.a[0])}, ${numero(o.b[1]-o.a[1])})`;if(o.k==='circulo')return `◯ ${ecuacionCirculo(o.c,o.r)}`;
+    if(o.k==='tabla')return `🔢 Tabla (${o.pts.length} puntos)`;if(o.k==='region')return `▨ Área bajo ${o.expr} de ${numero(o.a)} a ${numero(o.b)}`;
+    if(o.k==='desigualdad')return `≥ y ${o.op.replace('>=','≥').replace('<=','≤')} ${o.expr}`;return `📐 Medida`;
+  }
+  // Un diálogo pequeño con campos (texto, número, área de texto o casilla) → {id: valor} o null
+  function pedirCampos(titulo2,campos,{ayuda='',validar=()=>null}={}){
+    return new Promise(res=>{
+      const m=document.createElement('div');m.className='modal-fondo';
+      m.innerHTML=`<form class="modal" role="dialog" aria-modal="true" aria-labelledby="pc-t"><h2 id="pc-t" style="margin-top:0">${titulo2}</h2>${ayuda?`<p class="nota">${ayuda}</p>`:''}
+${campos.map(c=>c.tipo==='check'?`<label class="dib-check"><input type="checkbox" data-c="${c.id}" ${c.valor?'checked':''}> ${esc(c.etiqueta)}</label>`
+  :c.tipo==='area'?`<label class="campo">${esc(c.etiqueta)}<textarea data-c="${c.id}" rows="5" spellcheck="false" placeholder="${esc(c.ph||'')}">${esc(c.valor??'')}</textarea></label>`
+  :`<label class="campo">${esc(c.etiqueta)}<input data-c="${c.id}" autocomplete="off" spellcheck="false" inputmode="${c.tipo==='num'?'decimal':'text'}" value="${esc(c.valor??'')}" placeholder="${esc(c.ph||'')}"></label>`).join('')}
+${campos.some(c=>c.chips)?`<div class="row dib-chips">${campos.find(c=>c.chips).chips.map(t=>`<button type="button" class="chip" data-chip="${esc(t)}">${esc(t)}</button>`).join('')}</div>`:''}
+<p class="nota pc-error" role="alert" style="color:var(--bad)"></p><div class="row"><button type="button" class="btn ghost" data-r="0">Cancelar</button><button type="submit" class="btn">Listo</button></div></form>`;
+      const valores=()=>Object.fromEntries(campos.map(c=>{const e=m.querySelector(`[data-c="${c.id}"]`);return [c.id,c.tipo==='check'?e.checked:e.value.trim()]}));
+      const cerrar=v=>{m.remove();res(v)};
+      m.addEventListener('click',e=>{if(e.target.closest('[data-r="0"]')||e.target===m)cerrar(null);const ch=e.target.closest('[data-chip]');if(ch){const i=m.querySelector('[data-c]');i.value=ch.dataset.chip;i.focus()}});
+      m.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();cerrar(null)}});
+      m.querySelector('form').addEventListener('submit',e=>{e.preventDefault();const v=valores(),err=validar(v);if(err){m.querySelector('.pc-error').textContent=err;return}cerrar(v)});
+      document.body.appendChild(m);m.querySelector('[data-c]')?.focus();
+    });
+  }
+  const numDe=t=>{const v=num(String(t).replace(/π/g,'pi'));return Number.isFinite(v)?v:NaN};
+  async function pedirFuncion(valor=''){
+    const v=await pedirCampos('📈 Función',[{id:'expr',etiqueta:'y =',valor,ph:'x^2 - 4',chips:['x^2 - 4','2x + 1','sin(x)','sqrt(x)','1/x','abs(x)','e^x','ln(x)']}],
+      {ayuda:'Escribe con ^ las potencias. Funciones: sin, cos, tan, sqrt, abs, ln, log, e^x.',validar:v=>expresionValida(v.expr)?null:'No entiendo esa expresión. Ejemplo: 2x + 1'});
+    return v?.expr.replace(/^\s*(y|f\s*\(\s*x\s*\))\s*=\s*/i,'')||null;
+  }
+  async function agregarAlPlano(p){
+    const r=await menuAcciones({titulo:'➕ Agregar al plano',opciones:[['punto','📍 Punto'],['funcion','📈 Función'],['recta','⟷ Recta por dos puntos'],['segmento','／ Segmento'],['vector','↗ Vector'],
+      ['circulo','◯ Circunferencia'],['tabla','🔢 Tabla de valores'],['region','▨ Sombrear el área bajo una curva'],['desigualdad','≥ Desigualdad']]});
+    if(!r)return;
+    if(['punto','recta','segmento','vector','circulo'].includes(r)){modoPlano={k:r,pid:p.pid};herr='plano';limpiarSel();cerrarPanel();botones();
+      aviso({punto:'📍 Toca dentro del plano para poner el punto (se ajusta a la cuadrícula).',circulo:'◯ Arrastra del centro hacia afuera.'}[r]||'Arrastra del primer punto al segundo.',2600);return}
+    if(r==='funcion'){const e=await pedirFuncion();if(e)conObjeto(planoDe(p.pid),{k:'funcion',id:nuevoIdObj(),expr:e,color:colorSiguiente(p)});return}
+    if(r==='tabla'){const v=await pedirCampos('🔢 Tabla de valores',[{id:'t',tipo:'area',etiqueta:'Un renglón por punto: x, y',ph:'-2, 4\n-1, 1\n0, 0\n1, 1\n2, 4'},{id:'unir',tipo:'check',etiqueta:'Unir los puntos',valor:true}],
+        {validar:v=>leerTabla(v.t).length?null:'Escribe al menos un renglón «x, y».'});
+      if(v)conObjeto(planoDe(p.pid),{k:'tabla',id:nuevoIdObj(),pts:leerTabla(v.t),unir:v.unir,color:colorSiguiente(p)});return}
+    if(r==='region'){const f0=p.objetos.find(o=>o.k==='funcion');
+      const v=await pedirCampos('▨ Área bajo la curva',[{id:'expr',etiqueta:'y =',valor:f0?.expr||'x^2',ph:'x^2'},{id:'a',etiqueta:'Desde x =',valor:'0',tipo:'num'},{id:'b',etiqueta:'Hasta x =',valor:'2',tipo:'num'}],
+        {ayuda:'La integral definida es el área entre la curva y el eje x.',validar:v=>!expresionValida(v.expr)?'No entiendo esa expresión.':!Number.isFinite(numDe(v.a))||!Number.isFinite(numDe(v.b))?'Escribe los dos límites.':null});
+      if(v)conObjeto(planoDe(p.pid),{k:'region',id:nuevoIdObj(),expr:v.expr,a:numDe(v.a),b:numDe(v.b),color:colorSiguiente(p)});return}
+    if(r==='desigualdad'){const v=await pedirCampos('≥ Desigualdad',[{id:'t',etiqueta:'Desigualdad',valor:'y > 2x + 1',ph:'y > 2x + 1'}],
+        {ayuda:'Con > o < la línea es punteada (no entra); con ≥ o ≤, continua.',validar:v=>leerDesigualdad(v.t)?null:'Escribe algo como «y > 2x + 1» o «y ≤ x^2».'});
+      const d2=v&&leerDesigualdad(v.t);if(d2)conObjeto(planoDe(p.pid),{k:'desigualdad',id:nuevoIdObj(),...d2,color:colorSiguiente(p)});return}
+  }
+  const leerTabla=t=>String(t||'').split(/\n/).map(l=>l.replace(/[()]/g,'').split(/[,;\t ]+/).filter(Boolean).map(numDe)).filter(q=>q.length>=2&&q.every(Number.isFinite)).map(q=>[q[0],q[1]]);
+  function leerDesigualdad(t){const m=String(t||'').replace(/≥/g,'>=').replace(/≤/g,'<=').match(/^\s*y\s*(>=|<=|>|<)\s*(.+)$/i);return m&&expresionValida(m[2])?{op:m[1],expr:m[2].trim()}:null}
+  async function menuObjetoPlano(p,o){
+    const r=await menuAcciones({titulo:describir(o),opciones:[...(o.k==='funcion'||o.k==='desigualdad'||o.k==='region'||o.k==='punto'||o.k==='circulo'?[['editar','✏️ Editar']]:[]),['color','🎨 Cambiar el color'],['borrar','🗑️ Borrar','peligro-texto']]});
+    if(!r)return;const p2=planoDe(p.pid);if(!p2)return;const cambiar=n=>cambiarPlano(p2,{objetos:p2.objetos.map(x=>x.id===o.id?n:x)});
+    if(r==='borrar'){cambiarPlano(p2,{objetos:p2.objetos.filter(x=>x.id!==o.id)});return}
+    if(r==='color'){const c=await menuAcciones({titulo:'Color',opciones:PALETA.slice(0,7).map(([n,c])=>[c,`<span class="dib-punto" style="--c:${c}"></span> ${n}`])});if(c)cambiar({...o,color:c});return}
+    if(o.k==='funcion'){const e=await pedirFuncion(o.expr);if(e)cambiar({...o,expr:e});return}
+    if(o.k==='desigualdad'){const v=await pedirCampos('≥ Desigualdad',[{id:'t',etiqueta:'Desigualdad',valor:`y ${o.op} ${o.expr}`}],{validar:v=>leerDesigualdad(v.t)?null:'Escribe algo como «y > 2x + 1».'});if(v)cambiar({...o,...leerDesigualdad(v.t)});return}
+    if(o.k==='region'){const v=await pedirCampos('▨ Área bajo la curva',[{id:'expr',etiqueta:'y =',valor:o.expr},{id:'a',etiqueta:'Desde x =',valor:numero(o.a),tipo:'num'},{id:'b',etiqueta:'Hasta x =',valor:numero(o.b),tipo:'num'}],
+      {validar:v=>expresionValida(v.expr)&&Number.isFinite(numDe(v.a))&&Number.isFinite(numDe(v.b))?null:'Revisa la función y los límites.'});if(v)cambiar({...o,expr:v.expr,a:numDe(v.a),b:numDe(v.b)});return}
+    if(o.k==='punto'){const v=await pedirCampos(`📍 Punto ${o.nombre}`,[{id:'n',etiqueta:'Nombre',valor:o.nombre},{id:'x',etiqueta:'x =',valor:numero(o.x),tipo:'num'},{id:'y',etiqueta:'y =',valor:numero(o.y),tipo:'num'}],
+      {validar:v=>Number.isFinite(numDe(v.x))&&Number.isFinite(numDe(v.y))?null:'Escribe x e y.'});if(v)cambiar({...o,nombre:v.n.slice(0,3)||o.nombre,x:numDe(v.x),y:numDe(v.y)});return}
+    if(o.k==='circulo'){const v=await pedirCampos('◯ Circunferencia',[{id:'h',etiqueta:'Centro x =',valor:numero(o.c[0]),tipo:'num'},{id:'k',etiqueta:'Centro y =',valor:numero(o.c[1]),tipo:'num'},{id:'r',etiqueta:'Radio =',valor:numero(o.r),tipo:'num'}],
+      {validar:v=>[v.h,v.k,v.r].every(t=>Number.isFinite(numDe(t)))&&numDe(v.r)>0?null:'Revisa el centro y el radio.'});if(v)cambiar({...o,c:[numDe(v.h),numDe(v.k)],r:numDe(v.r)});return}
+  }
+  async function editarLimite(p,campo){
+    const v=await pedirCampos(`Límite: ${campo}`,[{id:'v',etiqueta:`${campo} =`,valor:numero(p[campo]),tipo:'num'}],
+      {validar:v=>{const n=numDe(v.v);if(!Number.isFinite(n))return 'Escribe un número.';const q={...p,[campo]:n};return q.xMax>q.xMin&&q.yMax>q.yMin?null:'El mínimo tiene que ser menor que el máximo.'}});
+    if(v){const p2=planoDe(p.pid);if(p2)cambiarPlano(p2,{[campo]:numDe(v.v),...(campo[0]==='y'?{igual:false}:{})})}
+  }
+  // Un toque dentro del plano elegido: un objeto matemático abre su menú; dos toques en un número de los extremos lo editan
+  function tocarEnPlano(p,sx,sy){
+    const [X,Y]=aMundo(sx,sy),o=objetoPlanoEn(p,X,Y,12/vista.z),ahora=performance.now();
+    if(o){toquePlano=null;menuObjetoPlano(p,o);return}
+    if(toquePlano&&ahora-toquePlano.t<450&&Math.hypot(sx-toquePlano.sx,sy-toquePlano.sy)<30){
+      toquePlano=null;const l=limitesEn(p).map(q=>({...q,d:Math.hypot(q.x-X,q.y-Y)*vista.z})).sort((a,b)=>a.d-b.d)[0];
+      if(l&&l.d<34){editarLimite(p,l.campo);return}}
+    toquePlano={t:ahora,sx,sy};
+  }
+  // Vista previa al mover un punto o dibujar un objeto nuevo
+  function objetoNuevo(k,a,b,p){
+    const c=colorSiguiente(p);
+    if(k==='punto')return {k,id:'nuevo',x:a[0],y:a[1],nombre:siguienteNombre(p),color:'#dc2626'};
+    if(k==='circulo')return {k,id:'nuevo',c:a,r:Math.hypot(b[0]-a[0],b[1]-a[1]),color:c};
+    return {k,id:'nuevo',a,b,color:c};
+  }
+  const enPaso=(p,X,Y)=>{const u=aPlanoDe(p,[X,Y]);return P.planoAjustar===false?u.map(v=>Math.round(v*100)/100):ajustarAPaso(p,u)};
+  function abrirPanelPlano(p){planoPanel=p.pid;if(panel==='plano'){repintarPanel();return}abrirPanel('plano');ajustePlano={base:objs,op:null}}
+  function htmlPlanoPanel(){
+    const p=planoDe(planoPanel);if(!p)return '<p class="nota">El plano ya no existe.</p>';
+    const pasos=[['0.25','0,25'],['0.5','0,5'],['1','1'],['2','2'],['5','5'],['10','10'],[String(Math.PI/4),'π/4'],[String(Math.PI/2),'π/2'],[String(Math.PI),'π']];
+    const selPaso=k=>`<select data-pl="${k}" aria-label="Paso en ${k==='pasoX'?'x':'y'}">${pasos.map(([v,n])=>`<option value="${v}" ${Math.abs(+v-p[k])<1e-9?'selected':''}>${n}</option>`).join('')}${pasos.some(([v])=>Math.abs(+v-p[k])<1e-9)?'':`<option selected value="${p[k]}">${numero(p[k])}</option>`}</select>`;
+    const campo=(k,n)=>`<label>${n}<input data-pl="${k}" inputmode="decimal" value="${numero(p[k])}" aria-label="${n}"></label>`;
+    const seg=(attr,lista,act)=>`<div class="segmentos" role="group">${lista.map(([v,n])=>`<button type="button" ${attr}="${v}" aria-pressed="${act===v}">${n}</button>`).join('')}</div>`;
+    return `<div class="dib-presets">${PRESETS.map(([id,n])=>`<button type="button" class="btn ghost btn-chico" data-pl-preset="${id}">${n}</button>`).join('')}<button type="button" class="btn ghost btn-chico" data-d="pl-ajustar">⤢ Ajustar a lo dibujado</button></div>
+<div class="dib-rango4">${campo('xMin','x mín')}${campo('xMax','x máx')}${campo('yMin','y mín')}${campo('yMax','y máx')}</div>
+<div class="dib-rango4"><label>Paso x ${selPaso('pasoX')}</label><label>Paso y ${selPaso('pasoY')}</label><label>Número cada <select data-pl="numCada">${[1,2,5].map(n=>`<option ${p.numCada===n?'selected':''}>${n}</option>`).join('')}</select></label></div>
+${seg('data-pl-rejilla',[['no','Sin cuadrícula'],['principal','Cuadrícula'],['secundaria','+ secundaria']],p.rejilla)}
+${seg('data-pl-estilo',[['centrado','Ejes al centro'],['cuadrante','1er cuadrante'],['borde','Ejes al borde']],p.estilo)}
+${[['igual','Misma escala en x y y'],['flechas','Flechas en los ejes'],['origen','El «0» del origen'],['ecuaciones','Ecuaciones junto a las gráficas'],['moverVista','Mover la vista del plano (con ✋)']].map(([k,n])=>`<label class="dib-check"><input type="checkbox" data-plb="${k}" ${p[k]?'checked':''}> ${n}</label>`).join('')}
+<label class="dib-check"><input type="checkbox" data-pref-plano ${P.planoAjustar!==false?'checked':''}> Ajustar los puntos a la cuadrícula</label>
+<div class="dib-rango4"><label>Eje x <input data-pl="ejeX" value="${esc(p.ejeX)}" maxlength="6"></label><label>Eje y <input data-pl="ejeY" value="${esc(p.ejeY)}" maxlength="6"></label></div>
+${colores(PALETA.slice(0,7),p.color,'data-pl-color')}<label class="dib-rango">Grosor <input type="range" min="0.8" max="4" step=".2" value="${p.ancho}" data-pl="ancho"></label>
+<h3 class="dib-opc-sub">Objetos del plano</h3>${p.objetos.length?`<ul class="dib-objs">${p.objetos.map(o=>`<li><span style="color:${o.color||'inherit'}">${esc(describir(o))}</span><button type="button" class="btn-icono" data-plo="${o.id}" aria-label="Opciones de ${esc(describir(o))}">⋯</button></li>`).join('')}</ul>`:'<p class="nota">Todavía nada: usa ➕ Agregar.</p>'}
+<button type="button" class="btn ghost btn-chico" data-d="pl-agregar">➕ Agregar al plano</button>`;
+  }
+  function entradaPlano(el){
+    const p=planoDe(planoPanel);if(!p)return;const k=el.dataset.pl;
+    if(k==='ejeX'||k==='ejeY'){cambiarPlano(p,{[k]:el.value.slice(0,6)});return}
+    if(k==='ancho'){cambiarPlano(p,{ancho:+el.value});return}
+    const v=numDe(el.value);if(!Number.isFinite(v))return;
+    if(k==='numCada'){cambiarPlano(p,{numCada:v});return}
+    if(k==='pasoX'||k==='pasoY'){if(v>0&&((k==='pasoX'?p.xMax-p.xMin:p.yMax-p.yMin)/v)<=200)cambiarPlano(p,{[k]:v});return}
+    const q={...p,[k]:v};if(q.xMax>q.xMin&&q.yMax>q.yMin)cambiarPlano(p,{[k]:v,...(k[0]==='y'?{igual:false}:{})});
+  }
+  // ⊹ Fondo «plano cartesiano»: origen, unidad y paso (no son objetos: se guardan con el dibujo)
+  function htmlFondoPlano(){const c=d.cartesiano||{unidad:CM,paso:1};
+    return `<label class="dib-rango">Tamaño de la unidad <input type="range" min="16" max="96" step="2" value="${c.unidad}" data-fp="unidad"></label>
+<label>Número cada <select data-fp="paso">${[0.5,1,2,5,10].map(n=>`<option ${c.paso===n?'selected':''} value="${n}">${numero(n)}</option>`).join('')}</select></label>
+<div class="row" style="flex-wrap:wrap;gap:8px"><button type="button" class="btn ghost btn-chico" data-d="fp-origen">📍 Mover el origen</button><button type="button" class="btn ghost btn-chico" data-d="fp-objeto">📈 Convertir en plano editable</button><button type="button" class="btn ghost btn-chico" data-d="fp-reset">Restablecer</button></div>`}
+  function fondoPlano(cambios){const [ox,oy]=origenCartesiano(d);d.cartesiano={ox,oy,unidad:unidadCartesiano(d),paso:pasoCartesiano(d),...cambios};cambiado=true;version++;pintarTodo();clearTimeout(autoTimer);autoTimer=setTimeout(autoguardarYa,800)}
+  function fondoAObjeto(){
+    const [ox,oy]=origenCartesiano(d),U=unidadCartesiano(d),m=16/vista.z,x0=vista.x+m,y0=vista.y+m,w=W/vista.z-2*m,h=H/vista.z-2*m-60/vista.z;
+    const p=nuevoPlano(x0,y0,w,h,{xMin:(x0-ox)/U,xMax:(x0+w-ox)/U,yMin:(oy-(y0+h))/U,yMax:(oy-y0)/U,pasoX:pasoCartesiano(d),pasoY:pasoCartesiano(d),numCada:1,igual:true,rejilla:'secundaria'});
+    d.fondo='liso';aplicar([...objs,p]);cerrarPanel();seleccionar(conGrupos(objs,new Set([p.id])));aviso('📈 Ahora es un plano editable: tócalo para cambiarlo.',2200);
+  }
+
   /* ---------- ✌️ Dos dedos ---------- */
   let medicion=null;   // la última medida de 📐 Medir, para «Dejar en la hoja»
   const r2=v=>Math.round(v*100)/100,gruesoDos=()=>Math.max(1.5,P.pluma.ancho);
@@ -516,7 +743,9 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
   function dosPuntos(){
     const [i1,i2]=g.orden,A=g.unico?g.a0:g.ptr.get(i1),B=g.unico?g.ptr.get(i1):g.ptr.get(i2);
     let a=aMundo(...A),b=aMundo(...B);const m=P.dos.modo;
-    if(P.dos.ajustar&&conRejilla(d)&&(m==='regla'||m==='medir')){a=ajustarRejilla(a,d);b=ajustarRejilla(b,d)}
+    const pl=(m==='regla'||m==='medir')&&planoEn(objs,a[0],a[1]);
+    if(P.dos.ajustar&&pl){a=aLienzo(pl,ajustarAPaso(pl,aPlanoDe(pl,a)));b=aLienzo(pl,ajustarAPaso(pl,aPlanoDe(pl,b)))}
+    else if(P.dos.ajustar&&conRejilla(d)&&(m==='regla'||m==='medir')){a=ajustarRejilla(a,d);b=ajustarRejilla(b,d)}
     return [a,b,A,B];
   }
   function dosInicio(){const [a,b]=dosPuntos();g.activo=true;g.pista=null;g.giro=0;g.ang0=g.angPrev=Math.atan2(b[1]-a[1],b[0]-a[0]);dosVivo()}
@@ -531,7 +760,7 @@ ${colores(PALETA.slice(0,7).concat(P.recientes.filter(c=>!PALETA.some(x=>x[1]===
       g.vista=[{t:'trazo',id:'dos1',herr:'pluma',tipo:'boli',color:col,ancho:an,recto:true,pts:pts.map(p=>[p[0],p[1],.5])},{t:'trazo',id:'dos2',herr:'pluma',tipo:'boli',color:'#6b7280',ancho:1,recto:true,pts:[[a[0],a[1],.5],[b[0],b[1],.5]]}];
       g.info=[`r = ${(r/CM).toFixed(1)} cm`,g.arco?`θ = ${textoAngulo(g.giro)}`:'Gira el segundo dedo para hacer un arco'];
     }
-    else if(m==='medir'){g.res=medirDos(a,b,d);g.vista=objetosMedida(a,b,d,{color:col,ancho:an}).filter(o=>o.t==='trazo');g.info=lineasMedida(g.res)}
+    else if(m==='medir'){g.res=medirDos(a,b,dd());g.vista=objetosMedida(a,b,d,{color:col,ancho:an}).filter(o=>o.t==='trazo');g.info=lineasMedida(g.res)}
     else if(m==='marco'){g.vista=marcoDos(a,b,{tipo:P.dos.marco,color:col,ancho:an,colorRes:P.resaltador.color});medidaDe(a,b,...B,'caja')}
     else{   // 🌀 barrido: una línea cada «espaciado» px que se mueva cualquiera de los dos dedos
       if(!g.ultA||Math.max(Math.hypot(A[0]-g.ultA[0],A[1]-g.ultA[1]),Math.hypot(B[0]-g.ultB[0],B[1]-g.ultB[1]))>=P.dos.espaciado){
@@ -599,7 +828,7 @@ ${colores(PALETA.slice(0,7),P.pluma.color)}<p class="nota">Mientras está activa
   let herrAntes=null;
   const visible=o=>d.capas[capaDe(o)]!==false;
   function borrarEn(wx,wy){
-    const p=P.borrador,rad=(g.modo==='trazo'?Math.max(10,p.tam*.5):p.tam/2)/vista.z,filtro=o=>visible(o)&&o.t!=='papel'&&(!p.soloRes||o.herr==='resaltador')&&!(o.t==='imagen'&&o.fija);
+    const p=P.borrador,rad=(g.modo==='trazo'?Math.max(10,p.tam*.5):p.tam/2)/vista.z,filtro=o=>visible(o)&&o.t!=='papel'&&o.t!=='plano'&&(!p.soloRes||o.herr==='resaltador')&&!(o.t==='imagen'&&o.fija);
     let nuevos;
     if(g.modo==='trazo'){const fuera=new Set();for(const o of objs)if(filtro(o)&&(tocaObjeto(o,wx,wy,rad)||g.ult&&o.t==='trazo'&&cruzaSegmento(o,g.ult,[wx,wy],rad)))fuera.add(o.id);
       const todos=conGruposSolo(fuera);nuevos=todos.size?objs.filter(o=>!todos.has(o.id)):objs}
@@ -743,13 +972,14 @@ ${colores(PALETA.slice(0,7),P.pluma.color)}<p class="nota">Mientras está activa
 
   /* ---------- menús ---------- */
   async function menuMas(){
-    const r=await menuAcciones({titulo:'Dibujo',opciones:[['imagen','🖼️ Insertar imagen'],['formula','Σ Insertar fórmula'],['fondo','📄 Fondo de la hoja'],['plantilla','🧩 Plantilla'],['capas','🗂️ Capas'],
+    const r=await menuAcciones({titulo:'Dibujo',opciones:[['imagen','🖼️ Insertar imagen'],['formula','Σ Insertar fórmula'],['fondo','📄 Fondo de la hoja'],...(d.fondo==='cartesiano'?[['fondoplano','⊹ Ajustar el plano de fondo']]:[]),['plantilla','🧩 Plantilla'],['capas','🗂️ Capas'],
       ['tapar','🙈 Tapar una parte'],['practica',practica?'🎓 Salir del modo práctica':'🎓 Modo práctica (tocar para ver)'],['ia','✨ Pasar todo a texto (IA)'],...(portapapeles.length?[['pegar','📥 Pegar']]:[]),
       ['exportar','⤓ Exportar o compartir'],['ajustes','⚙️ Ajustes del dibujo'],['borrar-todo','🗑️ Borrar todo','peligro-texto'],['descartar','✕ Descartar los cambios','peligro-texto']]});
     if(!r)return;
     if(r==='imagen'){const q=await menuAcciones({titulo:'Insertar imagen',opciones:[['camara','📷 Tomar foto'],['galeria','🖼️ De la galería']]});if(q==='camara')$('.dib-camara').click();if(q==='galeria')$('.dib-galeria').click()}
     if(r==='formula')editarFormula();
     if(r==='fondo'){const q=await menuAcciones({titulo:'Fondo de la hoja',opciones:FONDOS.map(([id,i,n])=>[id,`${i} ${n}${d.fondo===id?' ✓':''}`])});if(q){d.fondo=q;cambiado=true;pintarTodo();autoguardarYa()}}
+    if(r==='fondoplano')abrirPanel('fondoPlano');
     if(r==='plantilla')elegirPlantilla(false);
     if(r==='capas')dialogoCapas();
     if(r==='tapar'){herrAntes=herr;herr='papel';botones();aviso('🙈 Arrastra sobre lo que quieres tapar.',2200)}
@@ -818,9 +1048,24 @@ ${inicio?`<label class="dib-check"><input type="checkbox" id="dp-pag"> Páginas 
     if(a==='pegar'){cerrarPanel();pegar();return}
     if(a==='regla'||a==='transp'){alternarGuia(a);return}
     if(a==='dos'){elegir('dosdedos');return}
+    if(a==='plano-ajustes'){const pl=planoSel();if(pl)abrirPanelPlano(pl);return}
+    if(a==='plano-agregar'||a==='pl-agregar'){const pl=planoSel()||planoDe(planoPanel);if(pl)agregarAlPlano(pl);return}
+    if(a==='plano-fijar'){const pl=planoSel();if(pl){cambiarPlano(pl,{fijo:!pl.fijo},{fusionar:false});aviso(pl.fijo?'🔓 El plano se puede mover':'🔒 Plano fijo: escribe encima sin moverlo',1500)}return}
+    if(a==='sel-soltar'){cambiarSel(o=>{if(!o.ancla)return o;const {ancla,...r}=o;return {...r,suelto:true}});aviso('⇱ Ya no se mueve con el plano',1300);return}
+    if(a==='pl-ajustar'){const p=planoDe(planoPanel);if(p){const r=rangoDeObjetos(p,objs.filter(o=>o.ancla===p.pid));if(r){cambiarPlano(p,{...r,igual:false});repintarPanel()}else aviso('Todavía no hay nada dibujado en el plano.',1500)}return}
+    if(b.dataset.plPreset){const p=planoDe(planoPanel),pr=PRESETS.find(x=>x[0]===b.dataset.plPreset);if(p&&pr){cambiarPlano(p,{igual:true,...pr[2]});repintarPanel()}return}
+    if(b.dataset.plRejilla){const p=planoDe(planoPanel);if(p){cambiarPlano(p,{rejilla:b.dataset.plRejilla});repintarPanel()}return}
+    if(b.dataset.plEstilo){const p=planoDe(planoPanel);if(p){const e2=b.dataset.plEstilo;cambiarPlano(p,{estilo:e2,...(e2==='cuadrante'?{xMin:Math.max(0,p.xMin),yMin:Math.max(0,p.yMin)}:{})});repintarPanel()}return}
+    if(b.dataset.plColor){const p=planoDe(planoPanel);if(p){cambiarPlano(p,{color:b.dataset.plColor});repintarPanel()}return}
+    if(b.dataset.plo){const p=planoDe(planoPanel),o=p?.objetos.find(x=>x.id===b.dataset.plo);if(o){await menuObjetoPlano(p,o);repintarPanel()}return}
+    if(a==='fp-origen'){moverOrigen=true;cerrarPanel();aviso('📍 Toca (o arrastra) donde quieres el origen (0, 0).',2200);return}
+    if(a==='fp-objeto'){fondoAObjeto();return}
+    if(a==='fp-reset'){delete d.cartesiano;cambiado=true;version++;pintarTodo();autoguardarYa();repintarPanel();return}
     if(a==='dos-salir'){cerrarPanel();elegir('formas');return}
     if(a==='zoom-mas'||a==='zoom-menos'){if(bloqueado)bloquear(false);zoomEn(W/2,H/2,vista.z*(a==='zoom-mas'?1.25:.8));return}
-    if(a==='dos-dejar'){if(medicion){aplicar([...objs,...objetosMedida(medicion.a,medicion.b,d,{color:P.pluma.color,ancho:gruesoDos()})]);medicion=null;botones();pintarVivo();aviso('📌 Medida en la hoja',1200)}return}
+    if(a==='dos-dejar'){const pl=medicion&&planoEn(objs,medicion.a[0],medicion.a[1]);
+      if(pl){cambiarPlano(pl,{objetos:[...pl.objetos,{k:'medida',id:nuevoIdObj(),a:aPlanoDe(pl,medicion.a),b:aPlanoDe(pl,medicion.b),color:P.pluma.color}]},{fusionar:false});medicion=null;botones();pintarVivo();aviso('📌 Medida en el plano',1200);return}
+      if(medicion){aplicar([...objs,...objetosMedida(medicion.a,medicion.b,d,{color:P.pluma.color,ancho:gruesoDos()})]);medicion=null;botones();pintarVivo();aviso('📌 Medida en la hoja',1200)}return}
     if(a==='dos-parabola'){parabolaEjemplo();return}
     if(a==='dos-plano'){d.fondo='cartesiano';cambiado=true;pintarTodo();autoguardarYa();repintarPanel();return}
     if(b.dataset.dosModo){P.dos.modo=b.dataset.dosModo;medicion=null;guardarPrefs(P);botones();repintarPanel();pintarVivo();return}
@@ -848,6 +1093,8 @@ ${inicio?`<label class="dib-check"><input type="checkbox" id="dp-pag"> Páginas 
     if(t.dataset.rango!==undefined&&panel){P[panel].ancho=+t.value;guardarPrefs(P)}
     if(t.dataset.gomaTam!==undefined){P.borrador.tam=+t.value;guardarPrefs(P)}
     if(t.dataset.dosEsp!==undefined){P.dos.espaciado=+t.value;guardarPrefs(P)}
+    if(t.dataset.pl&&t.tagName!=='SELECT')entradaPlano(t);
+    if(t.dataset.fp==='unidad')fondoPlano({unidad:+t.value});
   });
   f.addEventListener('change',e=>{const t=e.target;
     if(t.dataset.propio!==undefined)usarColor(t.value);
@@ -855,6 +1102,10 @@ ${inicio?`<label class="dib-check"><input type="checkbox" id="dp-pag"> Páginas 
     if(t.dataset.soloRes!==undefined){P.borrador.soloRes=t.checked;guardarPrefs(P)}
     if(t.dataset.inteligentes!==undefined){P.inteligentes=t.checked;guardarPrefs(P)}
     if(t.dataset.dosAjustar!==undefined){P.dos.ajustar=t.checked;guardarPrefs(P)}
+    if(t.dataset.pl&&t.tagName==='SELECT')entradaPlano(t);
+    if(t.dataset.plb){const p=planoDe(planoPanel);if(p)cambiarPlano(p,{[t.dataset.plb]:t.checked})}
+    if(t.dataset.prefPlano!==undefined){P.planoAjustar=t.checked;guardarPrefs(P)}
+    if(t.dataset.fp==='paso')fondoPlano({paso:+t.value});
     if(t.dataset.dosDegradado!==undefined){P.dos.degradado=t.checked;guardarPrefs(P);repintarPanel()}
     if(t.dataset.filas!==undefined){P.filas=Math.max(1,Math.min(20,+t.value||3));guardarPrefs(P)}
     if(t.dataset.cols!==undefined){P.cols=Math.max(1,Math.min(12,+t.value||3));guardarPrefs(P)}
@@ -911,7 +1162,8 @@ ${inicio?`<label class="dib-check"><input type="checkbox" id="dp-pag"> Páginas 
   }
   // para las pruebas (npm run dibujo): estado del editor sin tocar nada
   f.__dib={get objs(){return objs},get vista(){return {...vista}},get bloqueado(){return bloqueado},get temporal(){return temporal},get sel(){return sel?[...sel.ids]:[]},
-    get hist(){return hist.length},manijas:()=>sel?.manijas||null,get herr(){return herr},dos:()=>({...P.dos,medicion:medicion?.res||null}),get lento(){return lento},regla:()=>regla,transp:()=>transp,cerrar,pintarAhora:()=>{sucioT=true;sucioV=true;cuadroAhora()},estado:()=>estadoActual(),ajustar,irA};
+    get hist(){return hist.length},manijas:()=>sel?.manijas||null,get herr(){return herr},dos:()=>({...P.dos,medicion:medicion?.res||null}),plano:()=>planoSel(),cambiarPlano:(pid,c)=>cambiarPlano(planoDe(pid),c,{fusionar:false}),
+    modoPlano:(pid,k)=>{modoPlano={k,pid};herr='plano';limpiarSel();botones()},agregarObjetoPlano:(pid,o)=>conObjeto(planoDe(pid),{id:nuevoIdObj(),color:'#2563eb',...o}),get lento(){return lento},regla:()=>regla,transp:()=>transp,cerrar,pintarAhora:()=>{sucioT=true;sucioV=true;cuadroAhora()},estado:()=>estadoActual(),ajustar,irA};
 
   botones();medir();
   if(nuevo&&!objs.length)elegirPlantilla(true);

@@ -761,6 +761,13 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
   const r2=M.transformar({t:'texto',id:'r',x:0,y:0,w:100,h:20,tam:20,texto:'a'},M.mRotar(Math.PI/2,50,10));if(Math.abs(r2.rot-Math.PI/2)>1e-3)mal(e,'rotar un texto');
   const s=M.simplificar(linea(0,0,500,0,500));if(s.length!==2)mal(e,`simplificar una recta deja ${s.length} puntos`);
   if(M.paginasPDF({...M.nuevoDibujo({ancho:400}),objetos:[{t:'trazo',id:'z',ancho:2,pts:[[0,0,.5],[10,1500,.5]]}]}).length<2)mal(e,'el PDF no reparte un dibujo largo en páginas');
+  // 📈 plano editable: el plano viejo de 📐 se migra, lo anclado conserva sus coordenadas y 1/x no se une en la asíntota
+  {const PL=await import(pathToFileURL(join(raiz,'..','nucleo','dibujo','plano.js')).href);
+    const v=M.formaDirecta('planoViejo',[10,20],[310,260]).map(o=>({...o,forma:'plano'})),n=M.normalizarDibujo({objetos:[...v,{t:'trazo',id:'q',ancho:2,pts:[[1,1,.5]]}]});
+    if(n.objetos.length!==2||n.objetos[1].t!=='plano'&&n.objetos[0].t!=='plano')mal(e,'plano viejo: no se convierte al objeto editable');
+    const a=PL.nuevoPlano(0,0,400,400),b={...a,x:50,w:200,xMin:0,xMax:20},m=PL.matrizPlano(a,b),w=PL.aLienzo(a,[3,2]),w2=[m[0]*w[0]+m[4],m[3]*w[1]+m[5]],u=PL.aPlanoDe(b,w2);
+    if(Math.abs(u[0]-3)>1e-9||Math.abs(u[1]-2)>1e-9)mal(e,'plano: lo anclado no conserva sus coordenadas al cambiar el rango');
+    if(PL.tramosFuncion(a,'1/x').length!==2||PL.tramosFuncion(a,'x^2-4').length!==1||PL.funcionDe('2*)')!==null)mal(e,'plano: funciones mal graficadas o expresión inválida aceptada')}
   console.log('dibujos: migración del formato viejo, historial, formas inteligentes y de matemáticas, plantillas, goma, lazo y PDF');
 }
 // Errores de dedo: se aceptan en palabras en español (nomonal → nominal) pero nunca cambian el sentido

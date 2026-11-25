@@ -1,11 +1,11 @@
 {
- "generado": "2026-11-24",
+ "generado": "2026-11-25",
  "materias": {
   "matematicas": {
    "estado": "completo",
    "cobertura": {
-    "completas": 88,
-    "total": 88,
+    "completas": 89,
+    "total": 89,
     "pct": 100
    },
    "temas": {
@@ -17,8 +17,8 @@
     },
     "algebra-basica": {
      "estado": "completo",
-     "completas": 12,
-     "total": 12,
+     "completas": 13,
+     "total": 13,
      "faltan": []
     },
     "precalculo": {
@@ -86,6 +86,10 @@
      "faltan": []
     },
     "productos-notables": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "binomio-newton": {
      "estado": "completa",
      "faltan": []
     },

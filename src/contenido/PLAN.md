@@ -14,7 +14,7 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 
 ## ✅ ➗ Matemáticas `matematicas`
 
-**Cobertura del temario: 100 %** (88 de 88 habilidades ✅)
+**Cobertura del temario: 100 %** (89 de 89 habilidades ✅)
 
 ### ✅ Aritmética y prealgebra `prealgebra`
 
@@ -32,10 +32,11 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 
 ### ✅ Álgebra `algebra-basica`
 
-12/12 habilidades ✅
+13/13 habilidades ✅
 
 - [x] ✅ Términos semejantes y propiedad distributiva `expresiones` — Stewart Precálculo 1.3 – Expresiones algebraicas y polinomios
 - [x] ✅ Productos notables `productos-notables` — Stewart Precálculo 1.3 – Fórmulas de productos especiales
+- [x] ✅ Binomio de Newton `binomio-newton` — Stewart Precálculo 12.6 – El teorema del binomio
 - [x] ✅ Factorización `factorizacion` — Stewart Precálculo 1.3 – Factorización
 - [x] ✅ Fracciones algebraicas `fracciones-algebraicas` — Stewart Precálculo 1.4 – Expresiones racionales
 - [x] ✅ Ecuaciones lineales `ecuaciones-lineales` — Stewart Precálculo 1.5 – Ecuaciones lineales

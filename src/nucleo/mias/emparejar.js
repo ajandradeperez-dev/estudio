@@ -1,87 +1,117 @@
-/* Emparejar los temas de una materia propia con las habilidades de la app (sin IA): sinónimos por habilidad y palabras en común,
-   sin acentos, mayúsculas ni plurales. Sin DOM: lo usa también npm run revisar.
-   catalogo: [{materia, id, titulo, tema?, materiaNombre?}]  →  emparejar(texto, catalogo) → {materia, id, titulo, puntaje} | null */
+/* Emparejar los temas de una materia propia con las habilidades de la app (sin IA). Sin DOM: lo usa también npm run revisar.
+   catalogo: [{materia, id, titulo, tema?, temaId?, materiaNombre?}]
+   opciones(texto, catalogo, {contexto}) → las 3 mejores [{materia, id, titulo, tema, materiaNombre, puntaje}]
+   emparejar(texto, catalogo, {contexto}) → {materia, id, titulo, puntaje, seguro, opciones} | null
+     seguro: una opción clara (≥ 0.8 y bien separada de la segunda) que se empareja sola; si no, hay que preguntar.
+   Cómo puntúa:
+   1. Una frase (título o sinónimo) cuyas palabras están todas en el tema: 0.65 + 0.25·(palabras de la frase / del tema)
+      + 0.1·(parte del tema que conoce la lección).
+   2. Si no hay frase: palabras sueltas del tema que aparecen en el vocabulario de la lección, pesadas por lo raras que son
+      (una palabra que sale en pocas lecciones pesa más): hasta 0.62. Así un tema de una sola palabra ("binomios") empareja.
+   3. Contexto (nombre de la materia y de la unidad): +0.2 a las lecciones del área («Derivadas» → cálculo) y −0.1 a las demás.
+   Tolera singular y plural (matriz ↔ matrices, límite ↔ límites), errores de dedo (1 letra en palabras de 6 o más, como en
+   las respuestas) y la numeración de los temarios ("1.3 Binomios.", "Tema 4: binomios", "U2 – Binomios (parte 1)"). */
+import {SINONIMOS} from './sinonimos.js';
+export {SINONIMOS};
+
 export const normal=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9ñ+#/ ]+/g,' ').replace(/\s+/g,' ').trim();
-const VACIAS=new Set('de la el los las y e en a al del con por para un una unos unas o u su sus se que es son como sobre entre sus tema temas unidad introduccion conceptos concepto basicos basicas basico nociones generales general aplicaciones aplicacion uso usos estudio parte i ii iii iv the of and to in on a an'.split(' '));
-const raiz=w=>w.length>4?w.replace(/(es|s)$/,''):w;
-const palabras=s=>normal(s).split(' ').filter(w=>w&&!VACIAS.has(w)).map(raiz);
+const VACIAS=new Set(('de la el los las lo y e en a al del con por para un una unos unas o u su sus se que es son como sobre entre tema temas unidad unidades '+
+  'introduccion conceptos concepto basicos basicas basico nociones uso usos estudio parte capitulo modulo bloque leccion sesion semana '+
+  'practica ejercicios problemas repaso i ii iii iv vi vii viii ix x the of and to in on an vs y/o').split(' '));
+// Singular sin acentos: matrices → matriz, límites → limit, ecuaciones → ecuacion, vectores → vector
+export function singular(w){
+  if(w.length<=3||/\d/.test(w))return w;
+  if(/ces$/.test(w))w=w.slice(0,-3)+'z';
+  else if(/[^aeiou]es$/.test(w)&&w.length>4)w=w.slice(0,-2);
+  else if(/[aeiou]s$/.test(w))w=w.slice(0,-1);
+  if(w.length>=4&&/e$/.test(w))w=w.slice(0,-1);
+  return w;
+}
+// Palabras con significado: sin numeración ("1.3", "u2", "t4"), sin palabras vacías, en singular
+export const palabras=s=>normal(s).split(' ').filter(w=>w&&!VACIAS.has(w)&&!/^[utms]?\d+(\/\d+)?[a-z]?$/.test(w)).map(singular);
+// Errores de dedo: distancia de Levenshtein ≤ 1
+function cerca1(a,b){
+  if(a===b)return true;if(Math.abs(a.length-b.length)>1)return false;
+  let i=0,j=0,d=0;
+  while(i<a.length&&j<b.length){if(a[i]===b[j]){i++;j++;continue}if(++d>1)return false;
+    if(a.length>b.length)i++;else if(a.length<b.length)j++;else{i++;j++}}
+  return d+(a.length-i)+(b.length-j)<=1;
+}
 
-// Sinónimos y nombres comunes en temarios, por habilidad '<materia>/<id>'
-export const SINONIMOS={
-  'matematicas/expresiones':['expresiones algebraicas','terminos semejantes','reduccion de terminos','evaluar expresiones','lenguaje algebraico'],
-  'matematicas/ecuaciones-lineales':['ecuaciones lineales','ecuacion lineal','ecuaciones de primer grado','ecuacion de primer grado','despejar'],
-  'matematicas/sistemas-2x2':['sistemas de ecuaciones','sistema de ecuaciones','ecuaciones simultaneas','2x2','metodo de sustitucion','metodo de igualacion','metodo de reduccion'],
-  'matematicas/factorizacion':['factorizacion','factorizar','productos notables','factor comun','trinomio','diferencia de cuadrados'],
-  'matematicas/exponentes':['leyes de los exponentes','leyes de exponentes','potencias','potenciacion','exponentes'],
-  'matematicas/vectores':['vectores','vector','magnitud de un vector','norma de un vector','suma de vectores','r2 y r3','espacios vectoriales'],
-  'matematicas/operaciones-producto-punto':['operaciones con vectores','combinacion lineal'],
-  'matematicas/producto-punto':['producto punto','producto escalar','producto interno','dot product'],
-  'matematicas/angulo-vectores':['angulo entre vectores','ortogonalidad','vectores ortogonales','vectores perpendiculares','proyeccion'],
-  'matematicas/matrices':['matrices','matriz','multiplicacion de matrices','producto de matrices','algebra matricial','operaciones con matrices'],
-  'matematicas/gauss':['gauss','gauss jordan','eliminacion gaussiana','sistemas de ecuaciones lineales','escalonamiento'],
-  'matematicas/determinantes':['determinantes','determinante','regla de cramer','cramer','sarrus'],
-  'matematicas/inversa':['matriz inversa','inversa de una matriz','inversas'],
-  'matematicas/limites':['limites','limite','continuidad','limites laterales','limites al infinito','asintotas'],
-  'matematicas/derivada-polinomio':['derivada','derivadas','derivacion','diferenciacion','reglas de derivacion','regla de la potencia','tasa de cambio','razon de cambio'],
-  'matematicas/regla-producto':['regla del producto','derivada de un producto'],
-  'matematicas/regla-cociente':['regla del cociente','derivada de un cociente'],
-  'matematicas/regla-cadena':['regla de la cadena','derivacion implicita','derivada implicita','funcion compuesta','composicion de funciones'],
-  'matematicas/antiderivadas':['antiderivada','antiderivadas','integral indefinida','integrales indefinidas','primitiva','integrales inmediatas'],
-  'matematicas/integral-definida':['integral definida','integrales definidas','teorema fundamental del calculo','sumas de riemann'],
-  'matematicas/sustitucion':['sustitucion','cambio de variable','integracion por sustitucion'],
-  'matematicas/area-curva':['area bajo la curva','area entre curvas','calculo de areas','aplicaciones de la integral'],
-  'excel/buscarv':['buscarv','vlookup','buscar v','funciones de busqueda'],'excel/tabla-dinamica':['tablas dinamicas','tabla dinamica','pivot','tablas pivote'],
-  'excel/si':['funcion si','funciones logicas','condicionales en excel'],'excel/referencias':['referencias absolutas','referencias relativas','referencias mixtas'],
-  'excel/graficos':['graficos en excel','graficas en excel','tipos de graficos'],'excel/sumar-si':['sumar.si','sumar si','sumif'],'excel/contar-si':['contar.si','contar si','countif'],
-  'ciberseguridad/binario-hex':['sistemas numericos','conversion de bases','binario','hexadecimal','sistema binario'],
-  'ciberseguridad/puertos-y-servicios':['puertos','puertos y servicios','tcp y udp','protocolos de aplicacion','servicios de red'],
-  'ciberseguridad/subredes-cidr':['subredes','subred','subnetting','cidr','vlsm','direccionamiento ip','direcciones ip','ipv4'],
-  'ciberseguridad/mascaras':['mascara de red','mascara de subred','mascaras','netmask','wildcard'],
-  'ciberseguridad/prefijo-hosts':['numero de hosts','calculo de hosts','hosts por subred'],
-  'ciberseguridad/politicas-firewall':['firewall','firewalls','cortafuegos','reglas de firewall','politicas de seguridad','acl','listas de control de acceso','filtrado de paquetes'],
-  'ciberseguridad/nat':['nat','traduccion de direcciones','pat','port forwarding','snat','dnat'],
-  'ciberseguridad/vpn-fases':['vpn','ipsec','ike','tuneles','redes privadas virtuales'],
-  'ciberseguridad/cripto':['criptografia','cifrado','hash','firma digital','clave publica','cifrado simetrico','cifrado asimetrico','pki','certificados'],
-  'ciberseguridad/logs':['logs','registros','bitacoras','siem','analisis de eventos','monitoreo'],
-  'ciberseguridad/incidentes':['respuesta a incidentes','incidentes de seguridad','gestion de incidentes','malware','phishing','ataques'],
-  'ciencia-datos/tendencia-central':['tendencia central','media mediana y moda','media','mediana','moda','promedio'],
-  'ciencia-datos/tipos-de-variables':['tipos de variables','variables cualitativas','variables cuantitativas','escalas de medicion'],
-  'ciencia-datos/dispersion':['dispersion','desviacion estandar','varianza','rango','medidas de dispersion','desviacion tipica'],
-  'ciencia-datos/percentiles':['percentiles','cuartiles','deciles','diagrama de caja','boxplot','medidas de posicion'],
-  'ciencia-datos/probabilidad-basica':['probabilidad','probabilidad clasica','regla de laplace','espacio muestral','eventos'],
-  'ciencia-datos/probabilidad-compuesta':['probabilidad condicional','eventos independientes','probabilidad compuesta','eventos compuestos','teorema de bayes','bayes'],
-  'ciencia-datos/pandas-basico':['pandas','dataframe','dataframes','python para datos','manipulacion de datos'],
-  'ciencia-datos/pandas-salida':['lectura de codigo','salida de pandas'],
-  'ciencia-datos/leer-grafica':['graficas','graficos','visualizacion','grafica de barras','histograma','visualizacion de datos'],
-  'ciencia-datos/ml-metricas':['matriz de confusion','precision y recall','exactitud','accuracy','metricas de clasificacion','f1','evaluacion de modelos'],
-  'ingles/verbo-to-be':['verb to be','verbo to be','to be','am is are','verbo ser y estar'],
-  'ingles/presente-simple':['present simple','simple present','presente simple','rutinas'],
-  'ingles/can':['can','modal can','habilidades can','could'],
-  'ingles/there-is-there-are':['there is','there are','there is there are','hay'],
-  'ingles/presente-continuo':['present continuous','present progressive','presente continuo','presente progresivo','ing form'],
-  'ingles/pasado-simple':['past simple','simple past','pasado simple','regular verbs','irregular verbs','verbos regulares','verbos irregulares'],
-  'ingles/futuro-going-to-will':['future','futuro','will','going to','be going to'],
-  'ingles/presente-perfecto':['present perfect','presente perfecto','have has participle'],
-  'ingles/articulos':['articles','articulos','a an the'],
-  'ingles/plurales':['plurals','plurales','plural nouns'],
-  'ingles/preposiciones':['prepositions','preposiciones','in on at'],
-  'ingles/orden-palabras':['word order','orden de las palabras','sentence structure','adverbs of frequency'],
-  'ingles/vocabulario-trabajo':['vocabulary work','vocabulario de trabajo','jobs','occupations','profesiones'],
-  'ingles/traducir':['translation','traduccion'],
-  'ingles/chunks':['useful expressions','expresiones utiles','phrases','frases hechas']
-};
-const contiene=(texto,frase)=>(' '+texto+' ').includes(' '+frase+' ');
+/* ---------- índice del catálogo (se arma una vez por catálogo) ---------- */
+const INDICES=new WeakMap();
+function indice(catalogo){
+  let ix=INDICES.get(catalogo);if(ix)return ix;
+  const df=new Map(),items=catalogo.map(h=>{
+    const clave=`${h.materia}/${h.id}`,frases=[h.titulo,...(SINONIMOS[clave]||[])].map(palabras).filter(f=>f.length);
+    const vocab=new Set(frases.flat());for(const w of vocab)df.set(w,(df.get(w)||0)+1);
+    return {h,clave,frases,vocab,area:areaDe(h)};
+  });
+  ix={items,df,vocab:new Set(df.keys())};INDICES.set(catalogo,ix);return ix;
+}
+// Corrige errores de dedo: una palabra de 6+ letras que no está en el vocabulario y está a 1 letra de una que sí
+function corregir(ws,vocab){
+  return ws.map(w=>{if(w.length<6||vocab.has(w))return w;for(const v of vocab)if(v.length>=5&&v[0]===w[0]&&cerca1(w,v))return v;return w});
+}
 
-export function emparejar(texto,catalogo){
-  const t=normal(texto),tp=new Set(palabras(texto));if(!t)return null;
-  let mejor=null;
-  for(const h of catalogo){
-    const clave=`${h.materia}/${h.id}`;let puntaje=0;
-    // 1. un sinónimo (o el título exacto) aparece completo en el tema: la frase más larga gana
-    for(const f of [normal(h.titulo),...(SINONIMOS[clave]||[]).map(normal)])if(f&&contiene(t,f))puntaje=Math.max(puntaje,.8+Math.min(.2,f.length/100));
-    // 2. palabras del título de la habilidad presentes en el tema
-    if(puntaje<.8){const hp=palabras(h.titulo).filter(w=>w.length>2);if(hp.length){const comunes=hp.filter(w=>tp.has(w)).length;puntaje=Math.max(puntaje,comunes/hp.length*.75)}}
-    if(puntaje>(mejor?.puntaje||0))mejor={materia:h.materia,id:h.id,titulo:h.titulo,puntaje:Math.round(puntaje*100)/100};
+/* ---------- contexto: palabras de la materia/unidad → áreas del catálogo ---------- */
+const CONTEXTO=[
+  {si:['hoja calculo','excel','ofimatica','office','informatica'],areas:['excel']},
+  {si:['calculo integral','integral','integracion'],areas:['matematicas:calculo-integral']},
+  {si:['calculo diferencial','derivada','diferencial','limite'],areas:['matematicas:calculo-diferencial']},
+  {si:['calculo','calculus'],no:['hoja'],areas:['matematicas:calculo-diferencial','matematicas:calculo-integral']},
+  {si:['algebra lineal','matriz','vectorial','vector'],areas:['matematicas:algebra-lineal']},
+  {si:['algebra','ecuacion','polinomio'],no:['lineal','booleana'],areas:['matematicas:algebra-basica','matematicas:prealgebra','matematicas:precalculo']},
+  {si:['precalculo','funcion','geometria analitica'],no:['python','programacion'],areas:['matematicas:precalculo','matematicas:algebra-basica']},
+  {si:['trigonometria','geometria'],areas:['matematicas:trigonometria']},
+  {si:['aritmetica','prealgebra','matematicas basicas','pensamiento matematico'],areas:['matematicas:prealgebra']},
+  {si:['estadistica','probabilidad','inferencia','ciencia dato','analisis dato','bioestadistica','machine learning','aprendizaje automatico'],areas:['ciencia-datos']},
+  {si:['programacion','python','algoritmo','computacion','software'],areas:['python']},
+  {si:['redes','seguridad','ciberseguridad','telecomunicacion','ccna','security+'],areas:['ciberseguridad']},
+  {si:['ingles','english','idioma','lengua extranjera','toefl'],areas:['ingles']}
+];
+const REGLAS=CONTEXTO.map(r=>({si:r.si.map(palabras),no:(r.no||[]).map(singular),areas:r.areas}));
+function areaDe(h){return [h.materia,`${h.materia}:${h.temaId||''}`]}
+export function areasContexto(contexto){
+  const ws=new Set(palabras(contexto||''));if(!ws.size)return null;
+  const out=new Set();
+  for(const r of REGLAS)if(r.si.some(f=>f.every(w=>ws.has(w)))&&!r.no.some(w=>ws.has(w)))for(const a of r.areas)out.add(a);
+  return out.size?out:null;
+}
+
+/* ---------- puntaje ---------- */
+const peso=(df,w)=>1/(1+Math.log(1+(df.get(w)||0)));
+function puntuar(ws,it,ix,areas){
+  const tema=new Set(ws);let s=0;
+  const conocidas=ws.filter(w=>it.vocab.has(w));
+  const cobertura=conocidas.length/ws.length;
+  for(const f of it.frases)if(f.every(w=>tema.has(w)))s=Math.max(s,.65+.25*Math.min(1,f.length/ws.length)+.1*cobertura);
+  if(!s&&conocidas.length){
+    // palabras sueltas: pesan más las raras; las que la app no conoce cuentan en contra
+    let a=0,b=0;for(const w of ws){const p=ix.df.has(w)?peso(ix.df,w):1;b+=p;if(it.vocab.has(w))a+=p}
+    if(conocidas.some(w=>(ix.df.get(w)||0)<=8))s=.62*a/b;
   }
-  return mejor&&mejor.puntaje>=.6?mejor:null;
+  if(s&&areas)s+=it.area.some(a=>areas.has(a))?.2:-.1;
+  return s;
+}
+export function opciones(texto,catalogo,{contexto='',n=3,minimo=.6}={}){
+  const ix=indice(catalogo),ws=[...new Set(corregir(palabras(texto),ix.vocab))];if(!ws.length)return [];
+  const areas=areasContexto(contexto);
+  return ix.items.map(it=>({it,s:puntuar(ws,it,ix,areas)})).filter(x=>x.s>=minimo).sort((a,b)=>b.s-a.s).slice(0,n)
+    .map(({it,s})=>({materia:it.h.materia,id:it.h.id,titulo:it.h.titulo,tema:it.h.tema||'',materiaNombre:it.h.materiaNombre||'',puntaje:Math.round(s*100)/100}));
+}
+export const CLARO=.8,SEPARACION=.12;
+export function emparejar(texto,catalogo,o={}){
+  const ops=opciones(texto,catalogo,o);if(!ops.length)return null;
+  const [a,b]=ops,seguro=a.puntaje>=CLARO&&(!b||a.puntaje-b.puntaje>=SEPARACION);
+  return {materia:a.materia,id:a.id,titulo:a.titulo,puntaje:a.puntaje,seguro,opciones:ops};
+}
+// Buscador «🔗 Elegir práctica de la app»: cada palabra escrita debe aparecer (también a medias: "binom") en el título,
+// los sinónimos, el tema o la materia
+export function buscar(q,catalogo){
+  const qs=normal(q).split(' ').filter(Boolean);
+  return catalogo.filter(h=>{if(!qs.length)return true;
+    const t=' '+normal(`${h.titulo} ${h.tema||''} ${h.materiaNombre||''} ${(SINONIMOS[`${h.materia}/${h.id}`]||[]).join(' ')}`);
+    return qs.every(w=>t.includes(' '+w)||(w.length>=4&&t.includes(w)));
+  });
 }

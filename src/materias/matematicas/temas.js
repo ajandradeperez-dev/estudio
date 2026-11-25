@@ -19,6 +19,7 @@ export default [
    referencias:['Stewart, Precálculo — cap. 1 «Fundamentos» (1.3 a 1.8: expresiones, ecuaciones y desigualdades)','Stewart, Precálculo — cap. 10 «Sistemas de ecuaciones»'],nodos:[
     {id:'expresiones',gen:'alg/expresiones',ref:'Stewart Precálculo 1.3 – Expresiones algebraicas y polinomios',obj:'simplificar expresiones y operar polinomios.'},
     {id:'productos-notables',titulo:'Productos notables',gen:'alg/productos-notables',ref:'Stewart Precálculo 1.3 – Fórmulas de productos especiales',obj:'desarrollar binomios al cuadrado, al cubo y conjugados sin multiplicar término a término.'},
+    {id:'binomio-newton',titulo:'Binomio de Newton',gen:'alg/binomio-newton',ref:'Stewart Precálculo 12.6 – El teorema del binomio',obj:'usar el triángulo de Pascal y C(n,k) para desarrollar (a + b)ⁿ y encontrar cualquier término o coeficiente sin multiplicar.'},
     {id:'factorizacion',titulo:'Factorización',gen:'alg/factorizacion',ref:'Stewart Precálculo 1.3 – Factorización',obj:'factorizar completamente: factor común, diferencia de cuadrados, trinomios y por agrupación.'},
     {id:'fracciones-algebraicas',titulo:'Fracciones algebraicas',gen:'alg/fracciones-algebraicas',ref:'Stewart Precálculo 1.4 – Expresiones racionales',obj:'simplificar, sumar, multiplicar y dividir expresiones racionales.'},
     {id:'ecuaciones-lineales',gen:'alg/ecuacion-lineal',ref:'Stewart Precálculo 1.5 – Ecuaciones lineales',obj:'resolver ecuaciones lineales, también con fracciones y paréntesis.'},

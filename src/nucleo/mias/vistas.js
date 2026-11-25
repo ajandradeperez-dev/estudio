@@ -18,9 +18,9 @@ import {descargar} from '../cuaderno/respaldo.js';
 import {todasLasNotas} from '../cuaderno/db.js';
 import {crearNota} from '../cuaderno/notas.js';
 import {leerTemario} from './temario.js';
-import {normal} from './emparejar.js';
+import {normal,buscar} from './emparejar.js';
 import {comprobarPlan,diasEntre,deFecha,aFecha,sumar} from './plan.js';
-import {misMaterias,miMateria,materiaVacia,temaNuevo,nuevoIdUnidad,nuevoIdExamen,emparejarTodo,catalogo,habilidadDe,guardarMateria,borrarMateria,
+import {misMaterias,miMateria,materiaVacia,temaNuevo,nuevoIdUnidad,nuevoIdExamen,emparejarTodo,catalogo,habilidadDe,habilidadesDe,practicasDe,ponerPracticas,sugerencias,avisoEmparejo,MAX_PRACTICAS,guardarMateria,borrarMateria,
   dominioTema,planDe,proximoExamen,preparacion,temasDebiles,buscarTema,generado,ejerciciosVivos,preguntaGenerada,paqueteMateria,importarMateria,COLORES,ICONOS} from './datos.js';
 import * as IA from './ia.js';
 
@@ -49,12 +49,14 @@ ${barra(pct(v),100)}<span class="nota">${pct(v)} % preparado</span></span></butt
 }
 
 /* ---------- lista ---------- */
+let avisoNuevos=null;
+window.addEventListener('mias-emparejo',e=>{const n=e.detail;if(!n)return;avisoEmparejo();avisoNuevos=n;aviso(`🎯 Ahora ${n} ${n===1?'tema de tus materias tiene':'temas de tus materias tienen'} práctica`,4000)});
 function vistaLista(){
   return {
     titulo:'Mis materias',
     vista(){
-      const ms=misMaterias();
-      return `<h1>🎓 Mis materias</h1><p class="intro">Tus materias de la escuela o la universidad: la app arma un plan hasta el examen con práctica de lo que la app ya tiene y, si quieres, con IA para lo que falta.</p>
+      const ms=misMaterias();if(avisoNuevos===null)avisoNuevos=avisoEmparejo();
+      return `<h1>🎓 Mis materias</h1>${avisoNuevos?`<p class="aviso-linea">🎯 Ahora ${avisoNuevos} ${avisoNuevos===1?'tema de tus materias tiene':'temas de tus materias tienen'} práctica de la app.</p>`:''}<p class="intro">Tus materias de la escuela o la universidad: la app arma un plan hasta el examen con práctica de lo que la app ya tiene y, si quieres, con IA para lo que falta.</p>
 <div class="row" style="margin-bottom:16px"><button class="btn" data-go="mias/nueva">＋ Crear materia</button><label class="btn ghost" for="mp-importar">📥 Importar</label><input type="file" id="mp-importar" accept="application/json,.json" class="oculto-visual"></div>
 ${ms.length?`<div class="lista-nav">${ms.map(tarjeta).join('')}</div>`:vacio({icono:'🎓',titulo:'Aún no tienes materias propias',texto:'Crea una con tu temario (escrito o en foto) y la fecha de tu examen. Un compañero también puede compartirte la suya y la importas aquí.'})}`;
     },
@@ -91,13 +93,13 @@ function vistaAsistente(id){
   const unidadesHtml=()=>m.unidades.map((u,ui)=>`<div class="mp-unidad card" data-unidad="${u.id}">
 <div class="mp-unidad-cab"><input class="mp-input mp-unidad-titulo" data-campo="unidad" data-u="${u.id}" value="${esc(u.titulo)}" aria-label="Nombre de la unidad ${ui+1}">
 <button type="button" class="btn-icono" data-borrar-unidad="${u.id}" aria-label="Borrar la unidad ${esc(u.titulo)}">🗑️</button></div>
-<ul class="mp-temas">${u.temas.map((t,ti)=>{const h=habilidadDe(t.habilidad);
+<ul class="mp-temas">${u.temas.map((t,ti)=>{const hs=habilidadesDe(t);
   return `<li class="mp-tema" data-tema="${t.id}"><div class="mp-tema-fila"><button type="button" class="btn-icono mp-arrastrar" data-arrastrar="${t.id}" aria-label="Arrastrar para reordenar">⠿</button>
 <input class="mp-input" data-campo="tema" data-t="${t.id}" value="${esc(t.titulo)}" aria-label="Tema ${ti+1}">
 <button type="button" class="btn-icono" data-subir="${t.id}" aria-label="Subir">↑</button><button type="button" class="btn-icono" data-bajar="${t.id}" aria-label="Bajar">↓</button>
 <button type="button" class="btn-icono" data-borrar-tema="${t.id}" aria-label="Borrar el tema">🗑️</button></div>
 <div class="mp-tema-opciones"><button type="button" class="chip-filtro" data-sabe="${t.id}" aria-pressed="${t.sabe}">✅ Ya lo sé</button><button type="button" class="chip-filtro" data-dificil="${t.id}" aria-pressed="${t.dificil}">🔥 Difícil</button>
-<button type="button" class="mp-emparejado ${h?'si':'no'}" data-elegir-habilidad="${t.id}">${h?`✓ La app tiene práctica: <b>${esc(h.l.titulo)}</b>`:'Sin práctica todavía'} <span class="nota">· cambiar</span></button></div></li>`}).join('')}</ul>
+<button type="button" class="mp-emparejado ${hs.length?'si':'no'}" data-elegir-habilidad="${t.id}">${hs.length?`✓ La app tiene práctica: <b>${hs.map(h=>esc(h.l.titulo)).join(' + ')}</b>`:'Sin práctica todavía'} <span class="nota">· ${hs.length?'cambiar':'elegir'}</span></button></div></li>`}).join('')}</ul>
 <button type="button" class="btn ghost btn-chico" data-agregar-tema="${u.id}">＋ Tema</button></div>`).join('');
   function moverTema(tid,destino,antes=true){
     let tema=null;for(const u of m.unidades){const i=u.temas.findIndex(t=>t.id===tid);if(i>=0){tema=u.temas.splice(i,1)[0];break}}
@@ -235,23 +237,39 @@ ${m.examenes.map((x,i)=>`<div class="card mp-examen"><div class="row" style="jus
       if(t.id==='mp-agregar-unidad'){m.unidades.push({id:nuevoIdUnidad(),titulo:`Unidad ${m.unidades.length+1}`,temas:[temaNuevo('Tema nuevo')]});
         for(const x of m.examenes)x.unidades.push(m.unidades.at(-1).id);repintar();return true}
       if(t.dataset.elegirHabilidad){const x=buscarTema(m,t.dataset.elegirHabilidad);if(!x)return true;
-        const h=await elegirHabilidad(x.t);if(h!==undefined){x.t.habilidad=h;x.t.emparejado=h?'manual':'ninguno';if(!h)x.t.emparejado='manual';repintar()}return true}
+        const l=await elegirPracticas(m,x.u,x.t);if(l!==undefined){ponerPracticas(x.t,l,'manual');repintar()}return true}
     }
   };
 }
-// Elegir a mano la habilidad de la app para un tema (o ninguna). Devuelve {materia,id} | null | undefined (cancelado)
-function elegirHabilidad(t){
+/* «🔗 Elegir práctica de la app»: buscador con todas las lecciones agrupadas por materia (busca también en los sinónimos:
+   «binom» encuentra Productos notables y Binomio de Newton), las sugerencias arriba y las ya elegidas con ✕.
+   Devuelve la lista nueva de prácticas [{materia,id}] (hasta 3; vacía = sin práctica de la app) o undefined si se cancela. */
+function elegirPracticas(m,u,t){
   return new Promise(res=>{
     const todas=catalogo(),f=document.createElement('div');f.className='modal-fondo';
-    const lista=q=>todas.filter(x=>!q||normal(`${x.materiaNombre} ${x.tema} ${x.titulo}`).includes(normal(q))).slice(0,50)
-      .map(x=>`<button type="button" class="opcion-enlace" data-h="${x.materia}|${x.id}">${esc(x.titulo)} <span class="nota">· ${esc(x.materiaNombre)}${x.tema?` · ${esc(x.tema)}`:''}</span></button>`).join('')||'<p class="nota">Sin resultados.</p>';
-    f.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="eh-t"><h2 id="eh-t">Práctica para «${esc(t.titulo)}»</h2>
-<input type="search" id="eh-buscar" placeholder="Buscar en la app" value="" autocomplete="off"><div class="lista-enlaces" id="eh-lista">${lista('')}</div>
-<button type="button" class="btn ghost ancho" data-ninguna>Sin práctica de la app</button><button type="button" class="btn ghost ancho" data-x style="margin-top:8px">Cancelar</button></div>`;
+    let elegidas=practicasDe(t).map(h=>({materia:h.materia,id:h.id}));
+    const clave=h=>`${h.materia}|${h.id}`,tiene=h=>elegidas.some(x=>x.materia===h.materia&&x.id===h.id);
+    const sugTodas=(sugerencias(m,u,t)?.opciones||[]);
+    const item=x=>`<button type="button" class="opcion-enlace mp-opcion${tiene(x)?' elegida':''}" data-h="${clave(x)}" aria-pressed="${tiene(x)}">${tiene(x)?'✓ ':''}${esc(x.titulo)} <span class="nota">· ${esc(x.tema||x.materiaNombre)}</span></button>`;
+    const lista=q=>{const l=buscar(q,todas);if(!l.length)return '<p class="nota">Sin resultados. Prueba con otra palabra.</p>';
+      const grupos=new Map();for(const x of l){if(!grupos.has(x.materiaNombre))grupos.set(x.materiaNombre,[]);grupos.get(x.materiaNombre).push(x)}
+      return [...grupos].map(([nom,xs])=>`<h3 class="mp-grupo">${esc(nom)} <span class="nota">· ${xs.length}</span></h3>${xs.map(item).join('')}`).join('')};
+    const arriba=()=>{const sug=sugTodas.filter(x=>!tiene(x));return `${elegidas.length?`<p class="nota" style="margin:0">Elegidas (${elegidas.length} de ${MAX_PRACTICAS}): toca una para quitarla.</p><div class="lista-enlaces mp-elegidas">${elegidas.map(h=>{const x=todas.find(y=>y.materia===h.materia&&y.id===h.id);return x?item(x):''}).join('')}</div>`:''}
+${sug.length?`<p class="nota" style="margin:8px 0 0">💡 Sugerencias para «${esc(t.titulo)}»:</p><div class="lista-enlaces mp-elegidas">${sug.map(x=>item(todas.find(y=>y.materia===x.materia&&y.id===x.id)||x)).join('')}</div>`:''}`};
+    f.innerHTML=`<div class="modal mp-modal-practica" role="dialog" aria-modal="true" aria-labelledby="eh-t"><h2 id="eh-t">Práctica para «${esc(t.titulo)}»</h2>
+<p class="nota" style="margin-top:0">Puedes elegir hasta ${MAX_PRACTICAS}: «Practicar» mezcla sus ejercicios.</p><div id="eh-arriba">${arriba()}</div>
+<input type="search" id="eh-buscar" placeholder="Buscar: binomio, derivada, present perfect…" value="" autocomplete="off" aria-label="Buscar una lección de la app"><div class="lista-enlaces" id="eh-lista">${lista('')}</div>
+<button type="button" class="btn ancho" data-listo>Listo</button><div class="row" style="margin-top:8px"><button type="button" class="btn ghost" data-ninguna>Sin práctica de la app</button><button type="button" class="btn ghost" data-x>Cancelar</button></div></div>`;
+    const q=f.querySelector('#eh-buscar');
+    const repintarModal=()=>{f.querySelector('#eh-arriba').innerHTML=arriba();f.querySelector('#eh-lista').innerHTML=lista(q.value)};
     const cerrar=v=>{f.remove();res(v)};
-    f.addEventListener('click',e=>{const b=e.target.closest('button');if(e.target===f||b?.dataset.x!==undefined)cerrar(undefined);else if(b?.dataset.ninguna!==undefined)cerrar(null);
-      else if(b?.dataset.h){const [materia,id]=b.dataset.h.split('|');cerrar({materia,id})}});
-    document.body.appendChild(f);const q=f.querySelector('#eh-buscar');q.addEventListener('input',()=>{f.querySelector('#eh-lista').innerHTML=lista(q.value)});
+    f.addEventListener('click',e=>{const b=e.target.closest('button');if(e.target===f||b?.dataset.x!==undefined)cerrar(undefined);
+      else if(b?.dataset.ninguna!==undefined)cerrar([]);else if(b?.dataset.listo!==undefined)cerrar(elegidas);
+      else if(b?.dataset.h){const [materia,id]=b.dataset.h.split('|'),h={materia,id};
+        if(tiene(h))elegidas=elegidas.filter(x=>!(x.materia===materia&&x.id===id));
+        else if(elegidas.length<MAX_PRACTICAS)elegidas.push(h);else{aviso(`Máximo ${MAX_PRACTICAS} prácticas por tema`);return}
+        repintarModal()}});
+    document.body.appendChild(f);q.addEventListener('input',()=>{f.querySelector('#eh-lista').innerHTML=lista(q.value)});
   });
 }
 async function verFoto(id){
@@ -326,6 +344,25 @@ function sesionGenerada(m,t,{volver}){
 <button class="btn ancho" data-go="${volver}">Volver al tema</button>`}
   });
 }
+// «🔀 Practicar mezclado»: un tema con varias prácticas de la app alterna sus generadores; cada respuesta cuenta en su habilidad
+function sesionMezcla(m,t,hs,{volver}){
+  let n=0;const N=8,vistos=new Set();
+  return crearSesion({
+    titulo:t.titulo,salir:volver,materia:hs[0].m.id,total:()=>N,
+    siguiente:()=>{if(n>=N)return null;
+      for(let k=0;k<hs.length;k++){const h=hs[(n+k)%hs.length],nivel=Math.round(nivelDe(datosHabilidad(progreso(),h.m.id,h.l.id)?.rating||1));
+        try{const p=crear(h.l.gen,nivel,{vistos});if(!p)continue;if(p.clave)vistos.add(p.clave);n++;
+          return {...p,ref:`${h.m.id}/g/${h.l.id}/${nivel}`,materia:h.m.id,habilidad:h.l.id,contexto:`🔀 ${h.l.titulo} · ${m.nombre}`}}catch(e){}}
+      return null},
+    responder(p,r){const bien=r.correcto&&!r.pista,xp=r.correcto?(r.pista?5:10):0;
+      registrarRespuesta(p.materia,p.habilidad,r);registrarEjercicio({materia:p.materia,ref:p.ref,correcto:bien,xp});return {xp}},
+    fin(st){
+      for(const h of hs){const l=st.historial.filter(x=>x.p.habilidad===h.l.id&&x.p.materia===h.m.id);
+        if(l.length)cerrarSesionHabilidad(h.m.id,h.l.id,{ok:l.filter(x=>x.r.correcto&&!x.r.pista).length,total:l.length})}
+      return `<span class="fin-icono" aria-hidden="true">🔀</span><h1>¡Sesión completa!</h1><p class="nota">${st.ok} de ${st.i} bien, mezclando ${hs.map(h=>esc(h.l.titulo)).join(' y ')}.</p>
+<button class="btn ancho" data-go="${volver}">Volver al tema</button>`}
+  });
+}
 function vistaTema(id,tid){
   let ses=null;
   return {
@@ -336,24 +373,31 @@ function vistaTema(id,tid){
       if(ses)return ses.vista();
       const m=miMateria(id),x=m&&buscarTema(m,tid);
       if(!x)return vacio({icono:'📖',titulo:'Ese tema no existe',boton:`<button class="btn" data-go="${m?`mias/${id}`:'mias'}">Volver</button>`});
-      const {t,u}=x,h=habilidadDe(t.habilidad),g=generado(m.id,t.id),v=dominioTema(m,t),vivos=ejerciciosVivos(m,t.id).length;
+      const {t,u}=x,hs=habilidadesDe(t),g=generado(m.id,t.id),v=dominioTema(m,t),vivos=ejerciciosVivos(m,t.id).length;
+      const ops=hs.length?[]:(sugerencias(m,u,t)?.opciones||[]).map(o=>({o,x:habilidadDe(o)})).filter(z=>z.x),conGen=hs.filter(h=>generadorDe(h.l));
+      const estudie=`<button class="btn ghost ancho" id="tp-estudie" style="margin-top:8px">${datosHabilidad(progreso(),m.id,t.id)?.estudiado===hoy()?'✅ Marcado como estudiado hoy':'✅ Lo estudié (con mis apuntes o el libro)'}</button>`;
       return `<div class="mp-pagina" ${estiloMateria(m)}><div class="nota-cab"><button type="button" class="btn-icono" data-go="mias/${m.id}" aria-label="Volver a ${esc(m.nombre)}">←</button><span class="nota">${esc(m.nombre)}</span><span></span></div>
 <p class="etiqueta-actividad">${esc(u.titulo)}</p><h1>${esc(t.titulo)}</h1>${t.subtemas.length?`<ul class="nota">${t.subtemas.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:''}
 <div class="row" style="margin-bottom:12px">${chip(t.sabe?'✅ Ya lo sé':`${pct(v)} % dominado`,v>=.8||t.sabe?'ok':'area')}
 <button type="button" class="chip-filtro" data-t-dificil aria-pressed="${t.dificil}">🔥 Difícil</button><button type="button" class="chip-filtro" data-t-sabe aria-pressed="${t.sabe}">✅ Ya lo sé</button></div>
-${h?`<div class="card"><p style="margin-top:0">🎯 La app tiene práctica para esto: <b>${esc(h.l.titulo)}</b> (${esc(h.m.nombre)}). Lo que practiques cuenta aquí y allá.</p>${boton({texto:`Practicar ${esc(h.l.titulo)}`,go:rutaLeccion(h.m,h.l),clase:'ancho'})}</div>`:''}
+${hs.length?`<div class="card mp-practica"><p style="margin-top:0">🎯 La app tiene práctica para esto: ${hs.map(h=>`<b>${esc(h.l.titulo)}</b> (${esc(h.m.nombre)})`).join(' y ')}. Lo que practiques cuenta aquí y allá.</p>
+${hs.length===1?boton({texto:`Practicar ${esc(hs[0].l.titulo)}`,go:rutaLeccion(hs[0].m,hs[0].l),clase:'ancho'})
+  :`${conGen.length?`<button class="btn ancho" id="tp-mezcla">🔀 Practicar mezclado (${conGen.length} ${conGen.length===1?'práctica':'prácticas'})</button>`:''}<div class="pila" style="margin-top:8px">${hs.map(h=>`<button class="btn ghost ancho" data-go="${rutaLeccion(h.m,h.l)}">Solo ${esc(h.l.titulo)}</button>`).join('')}</div>`}
+<button type="button" class="enlace mp-cambiar" id="tp-cambiar">Cambiar o agregar práctica</button></div>`
+  :`<div class="card mp-practica"><p style="margin-top:0">No encontré práctica automática para «${esc(t.titulo)}». ${ops.length?'¿Es alguno de estos?':'Búscala tú:'}</p>
+${ops.length?`<div class="pila">${ops.map(({o,x})=>`<button class="btn ghost ancho mp-sugerida" data-tp-elegir="${o.materia}|${o.id}">${esc(x.l.titulo)} <span class="nota">· ${esc(o.tema||x.m.nombre)}</span></button>`).join('')}</div>`:''}
+<button class="btn ancho" id="tp-cambiar" style="margin-top:8px">🔗 Elegir práctica de la app</button>${g?'':estudie}</div>`}
 ${g?`<div class="card mp-leccion"><p class="ia-etiqueta">✨ Generado con IA: revisa con tu libro o profesor si algo no cuadra.</p>
 <h3>💡 Idea clave</h3><div>${conFormulas(esc(g.leccion.idea))}</div>
 <h3>👀 Ejemplo resuelto</h3><div class="pregunta">${conFormulas(esc(g.leccion.ejemplo.enunciado))}</div>${htmlPasos(g.leccion.ejemplo.pasos.map(limpiarPaso),{acciones:false})}
 <h3>✍️ Ahora tú</h3><div class="pregunta">${conFormulas(esc(g.leccion.hueco.enunciado))}</div>${htmlPasos(g.leccion.hueco.pasos.map(limpiarPaso),{acciones:false})}
 <p><b>${conFormulas(esc(g.leccion.hueco.pregunta))}</b></p><details><summary>Ver respuesta</summary><p>${conFormulas(esc(String(g.leccion.hueco.respuesta)))}</p></details>
 ${vivos?`<button class="btn ancho" id="tp-practicar">✏️ Practicar (${vivos} ejercicios)</button>`:'<p class="nota">Reportaste todos los ejercicios: genera de nuevo.</p>'}</div>`
-  :!h?`<div class="card"><p style="margin-top:0">La app todavía no tiene práctica para este tema.</p>
-${IA.disponible()?`<button class="btn ancho" id="tp-generar">✨ Generar lección y ejercicios <span class="nota">(${IA.costo('tema')})</span></button>`:`<p class="nota">${IA.SIN_CLAVE}</p>`}
-<button class="btn ghost ancho" id="tp-estudie" style="margin-top:8px">${datosHabilidad(progreso(),m.id,t.id)?.estudiado===hoy()?'✅ Marcado como estudiado hoy':'✅ Lo estudié (con mis apuntes o el libro)'}</button></div>`:''}
+  :!hs.length&&IA.disponible()?`<div class="card"><p style="margin-top:0">¿No está en la app? La IA puede preparar una lección y ejercicios solo para este tema.</p><button class="btn ancho" id="tp-generar">✨ Generar lección y ejercicios <span class="nota">(${IA.costo('tema')})</span></button></div>`:''}
 ${g&&IA.disponible()?`<button class="btn ghost ancho" id="tp-generar">🔄 Generar de nuevo <span class="nota">(${IA.costo('tema')})</span></button>`:''}
 <h2>📝 Mis notas de este tema</h2><div id="tp-notas"><p class="cargando">Buscando</p></div>
-<div class="pila"><button class="btn ghost ancho" id="tp-nota">🗒️ Nota nueva</button><button class="btn ghost ancho" data-go="notas/foto/${m.id}/${t.id}">📸 Foto a nota</button>${IA.disponible()?`<button class="btn ghost ancho" data-go="mias/${m.id}/preguntar/${t.id}">💬 Pregúntale a tu temario</button>`:''}</div></div>`;
+<div class="pila"><button class="btn ghost ancho" id="tp-nota">🗒️ Nota nueva</button><button class="btn ghost ancho" data-go="notas/foto/${m.id}/${t.id}">📸 Foto a nota</button>${IA.disponible()?`<button class="btn ghost ancho" data-go="mias/${m.id}/preguntar/${t.id}">💬 Pregúntale a tu temario</button>`:''}</div>
+${!hs.length&&!g&&!IA.disponible()?`<p class="nota mp-sin-ia">✨ Con una clave de IA gratis (Gemini) también puedes generar ejercicios para temas que la app no tiene. <button type="button" class="enlace" data-go="ajustes-ia">Configurar IA</button></p>`:''}</div>`;
     },
     alMostrar(){
       if(ses){ses.alMostrar?.();return}
@@ -367,6 +411,9 @@ ${g&&IA.disponible()?`<button class="btn ghost ancho" id="tp-generar">🔄 Gener
       if(b.dataset.tDificil!==undefined||b.dataset.tSabe!==undefined){const c=structuredClone(m),y=buscarTema(c,tid);
         if(b.dataset.tDificil!==undefined)y.t.dificil=!y.t.dificil;else y.t.sabe=!y.t.sabe;await guardarMateria(c);repintarV();return true}
       if(b.id==='tp-estudie'){marcarEstudiado(m.id,tid);aviso('✅ Anotado: cuenta para tu plan');repintarV();return true}
+      if(b.id==='tp-cambiar'){const l=await elegirPracticas(m,x.u,x.t);if(l!==undefined){const c=structuredClone(m),y=buscarTema(c,tid);ponerPracticas(y.t,l,'manual');await guardarMateria(c);aviso(l.length?'🔗 Práctica guardada':'Sin práctica de la app');repintarV()}return true}
+      if(b.dataset.tpElegir){const [materia,hid]=b.dataset.tpElegir.split('|'),c=structuredClone(m),y=buscarTema(c,tid);ponerPracticas(y.t,[{materia,id:hid}],'manual');await guardarMateria(c);aviso('🔗 Práctica guardada');repintarV();return true}
+      if(b.id==='tp-mezcla'){const hs=habilidadesDe(x.t).filter(h=>generadorDe(h.l));if(hs.length){ses=sesionMezcla(m,x.t,hs,{volver:`mias/${id}/t/${tid}`});ses.alEntrar();repintarV()}return true}
       if(b.id==='tp-practicar'){ses=sesionGenerada(m,x.t,{volver:`mias/${id}/t/${tid}`});ses.alEntrar();repintarV();return true}
       if(b.id==='tp-generar'){const r=await IA.generarTema(m,x.t,{boton:b});if(r){aviso('✨ Lección y ejercicios listos');repintarV()}return true}
       if(b.id==='tp-nota'){const n=await crearNota({materia:m.id,tema:tid,titulo:x.t.titulo});ir(`notas/n/${n.id}`);return true}
@@ -380,8 +427,7 @@ function preguntasSimulacro(m,ex,n){
   const temas=m.unidades.filter(u=>ex.unidades.includes(u.id)).flatMap(u=>u.temas).filter(t=>!t.sabe);
   const fuentes=[];
   for(const t of temas){
-    const h=habilidadDe(t.habilidad),g=h&&generadorDe(h.l);
-    if(g)fuentes.push(()=>{try{const nivel=nivelDe(datosHabilidad(progreso(),h.m.id,h.l.id)?.rating||2);
+    for(const h of habilidadesDe(t))if(generadorDe(h.l))fuentes.push(()=>{try{const nivel=nivelDe(datosHabilidad(progreso(),h.m.id,h.l.id)?.rating||2);
       const p=crear(h.l.gen,Math.max(2,nivel));return {...p,ref:`${h.m.id}/g/${h.l.id}/${Math.max(2,nivel)}`,materia:h.m.id,habilidad:h.l.id,temaPropio:t.id}}catch(e){return null}});
     const vivos=ejerciciosVivos(m,t.id).filter(e=>e.tipo!=='opcion'||true);
     if(vivos.length)fuentes.push(()=>{const ej=vivos[Math.floor(Math.random()*vivos.length)];return {...preguntaGenerada(m,t,ej),temaPropio:t.id}});

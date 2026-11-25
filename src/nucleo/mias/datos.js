@@ -18,6 +18,7 @@ export function cargarMias(){
     try{const [ms,gs]=await Promise.all([todasLasMaterias(),todosLosGenerados()]);
       cache.materias=new Map(ms.map(m=>[m.id,m]));cache.generados=new Map(gs.map(g=>[g.id,g]))}catch(e){}
     cache.listo=true;
+    reemparejar().catch(()=>{});
   })();
   return carga;
 }
@@ -41,24 +42,60 @@ export function materiaVacia(){
   return {formato:FORMATO,id:nuevoIdMateria(),nombre:'',escuela:'',profesor:'',color:COLORES[0],icono:ICONOS[0],unidades:[],examenes:[],
     disponibilidad:{dias:[1,2,3,4,5],minutos:30},avisos:true,fotos:[],referencias:[],simulacros:[],reportados:{},creada:ahora,editada:ahora};
 }
-export const temaNuevo=(titulo,subtemas=[])=>({id:nuevoIdTema(),titulo,subtemas,sabe:false,dificil:false,habilidad:null,emparejado:'ninguno'});
+export const temaNuevo=(titulo,subtemas=[])=>({id:nuevoIdTema(),titulo,subtemas,sabe:false,dificil:false,habilidad:null,practicas:[],emparejado:'ninguno'});
 
 // Catálogo de la app para emparejar: todas las habilidades con su materia y tema
 let catalogoCache=null;
 export function catalogo(){
-  if(!catalogoCache)catalogoCache=registro.flatMap(m=>(m.lecciones||[]).map(l=>({materia:m.id,id:l.id,titulo:l.titulo,tema:temaDe(m,l.tema)?.titulo||'',materiaNombre:m.nombre})));
+  if(!catalogoCache)catalogoCache=registro.flatMap(m=>(m.lecciones||[]).map(l=>({materia:m.id,id:l.id,titulo:l.titulo,tema:temaDe(m,l.tema)?.titulo||'',temaId:l.tema||'',materiaNombre:m.nombre})));
   return catalogoCache;
 }
 export const habilidadDe=h=>{if(!h)return null;const m=registro.find(x=>x.id===h.materia),l=m&&leccion(m,h.id);return l?{m,l}:null};
-// Empareja los temas sin emparejamiento manual
+/* Prácticas de la app de un tema (hasta 3): 'practicas' y, por compatibilidad, 'habilidad' = la primera.
+   Si otra versión de la app cambió solo 'habilidad', manda 'habilidad'. */
+export const MAX_PRACTICAS=3;
+export function practicasDe(t){
+  const l=(Array.isArray(t?.practicas)?t.practicas:[]).filter(h=>h?.materia&&h?.id);
+  if(!t?.habilidad)return [];
+  return l.length&&l[0].materia===t.habilidad.materia&&l[0].id===t.habilidad.id?l:[t.habilidad];
+}
+export function ponerPracticas(t,lista,modo='manual'){
+  const vistas=new Set(),l=[];for(const h of lista){const k=`${h.materia}/${h.id}`;if(!vistas.has(k)&&habilidadDe(h)){vistas.add(k);l.push({materia:h.materia,id:h.id})}}
+  t.practicas=l.slice(0,MAX_PRACTICAS);t.habilidad=t.practicas[0]||null;t.emparejado=modo==='manual'?'manual':t.practicas.length?'auto':'ninguno';return t;
+}
+export const habilidadesDe=t=>practicasDe(t).map(habilidadDe).filter(Boolean);
+// Contexto para emparejar: el nombre de la materia y el de la unidad («Derivadas» → cálculo)
+export const contextoTema=(m,u)=>`${m.nombre||''} ${u?.titulo||''}`;
+// Opciones de práctica para un tema (las 3 mejores, con su puntaje)
+export function sugerencias(m,u,t){return emparejar(`${t.titulo} ${t.subtemas.join(' ')}`,catalogo(),{contexto:contextoTema(m,u)})}
+// Empareja los temas sin emparejamiento manual: solo con una opción clara; si hay duda, la página del tema pregunta
 export function emparejarTodo(m){
   for(const u of m.unidades)for(const t of u.temas){
     if(t.emparejado==='manual')continue;
-    const r=emparejar(`${t.titulo} ${t.subtemas.join(' ')}`,catalogo());
-    t.habilidad=r?{materia:r.materia,id:r.id}:null;t.emparejado=r?'auto':'ninguno';
+    const r=sugerencias(m,u,t);
+    ponerPracticas(t,r?.seguro?[r]:[],'auto');
   }
+  m.emparejo=VERSION_EMPAREJO;
   return m;
 }
+/* Al actualizar la app (sinónimos nuevos, lecciones nuevas): vuelve a emparejar los temas no manuales de cada materia,
+   una vez por versión del emparejamiento, sin tocar el avance (los ids de los temas no cambian).
+   Si ahora hay temas con práctica que antes no la tenían, avisa una vez. */
+export const VERSION_EMPAREJO=2;
+const conPractica=m=>m.unidades.flatMap(u=>u.temas).filter(t=>practicasDe(t).length).length;
+export async function reemparejar(){
+  let ganados=0;
+  for(const m of [...cache.materias.values()]){
+    if((m.emparejo||0)>=VERSION_EMPAREJO)continue;
+    const c=structuredClone(m),antes=conPractica(c);emparejarTodo(c);ganados+=Math.max(0,conPractica(c)-antes);
+    try{await guardarMateria(c)}catch(e){}
+  }
+  if(ganados){try{localStorage.setItem('ciberlab-emparejo-aviso',String(ganados))}catch(e){}
+    try{window.dispatchEvent(new CustomEvent('mias-emparejo',{detail:ganados}))}catch(e){}}
+  return ganados;
+}
+// El aviso «🎯 Ahora N temas de tus materias tienen práctica» (una vez)
+export function avisoEmparejo(){let n=0;try{n=+localStorage.getItem('ciberlab-emparejo-aviso')||0;localStorage.removeItem('ciberlab-emparejo-aviso')}catch(e){}return n}
 
 export async function guardarMateria(m){
   const x={...m,editada:Date.now()};
@@ -79,7 +116,8 @@ export async function guardarGenerado(g){await guardarGeneradoDb(g);cache.genera
 export function dominioTema(m,t,p=progreso()){
   if(t.sabe)return 1;
   const de=(mid,hid)=>{const d=datosHabilidad(p,mid,hid);if(!d)return 0;if(d.dominada)return 1;const e=estadoDominio(d);return e.n?(e.ok/e.n)*Math.min(1,e.n/5):0};
-  let v=t.habilidad?de(t.habilidad.materia,t.habilidad.id):0;
+  // con varias prácticas, el promedio
+  const ps=practicasDe(t);let v=ps.length?ps.reduce((a,h)=>a+de(h.materia,h.id),0)/ps.length:0;
   const propio=datosHabilidad(p,m.id,t.id);
   if(propio)v=Math.max(v,de(m.id,t.id),propio.estudiado?.3:0);
   // el último simulacro en que salió el tema

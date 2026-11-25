@@ -63,7 +63,7 @@ const PYTHON={'primeros-pasos':['Primeros pasos',['pyc/print','pyc/errores-comun
   archivos:['Archivos y módulos',['pyc/archivos','pyc/modulos'],'Guardar y leer un registro'],
   clases:['Clases y objetos',['pyc/clases','pyc/metodos'],'El sistema de una cuenta bancaria'],
   proyectos:['Proyectos',['pyc/proyectos','pyc/funciones','pyc/diccionarios','pyc/for-range'],'Agenda y reporte de calificaciones']};
-const ALGEBRA=['alg/expresiones','alg/productos-notables','alg/factorizacion','alg/fracciones-algebraicas','alg/ecuacion-lineal','alg/cuadratica','alg/radicales-absoluto','alg/desigualdad','alg/desigualdad-no-lineal','alg/sistema-2x2','alg/sistema-3x3','alg/exponentes'];
+const ALGEBRA=['alg/expresiones','alg/productos-notables','alg/binomio-newton','alg/factorizacion','alg/fracciones-algebraicas','alg/ecuacion-lineal','alg/cuadratica','alg/radicales-absoluto','alg/desigualdad','alg/desigualdad-no-lineal','alg/sistema-2x2','alg/sistema-3x3','alg/exponentes'];
 
 export const RETOS=[
   // ---------- Ciberseguridad ----------

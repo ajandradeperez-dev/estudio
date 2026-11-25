@@ -664,13 +664,32 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
   const l=T.leerTemario('Unidad 1: Límites\n1.1 Definición\n1.2 Laterales\nUnidad 2. Derivadas\n2.1 Regla de la cadena\n  a) Derivación implícita');
   if(l.length!==2||l[0].temas.length!==2||l[1].temas[0].subtemas[0]!=='Derivación implícita')mal(e,'el lector de temarios no reconoce «Unidad N» con «N.M» y letras');
   if(T.leerTemario('- A\n- B\n- C')[0]?.temas.length!==3||T.leerTemario('1. X\n1.1 Y\n2. Z')[1]?.titulo!=='Z')mal(e,'el lector de temarios no reconoce viñetas o numeración de dos niveles');
-  // emparejamiento con el catálogo (de los temas.js de cada materia)
+  // emparejamiento con el catálogo (de los temas.js de cada materia, con el título de cada lección como lo ve la app)
   const cat=[];for(const m of ['ciberseguridad','excel','python','ingles','matematicas','ciencia-datos']){const t=(await import(pathToFileURL(join(raiz,m,'temas.js')).href)).default;
-    for(const x of t)for(const n of x.nodos.filter(n=>n.id))cat.push({materia:m,id:n.id,titulo:n.titulo||n.id.replace(/-/g,' ')})}
-  for(const [q,esperado] of [['Producto escalar','producto-punto'],['Subnetting','subredes-cidr'],['Derivación implícita','regla-cadena'],['Media, mediana y moda','tendencia-central'],['Past simple','pasado-simple']])
+    for(const x of t)for(const n of x.nodos.filter(n=>n.id)){let tit=n.titulo;
+      if(!tit){const d=join(raiz,m,'temas',x.id),a=existsSync(d)&&readdirSync(d).find(z=>z.replace(/^d+-/,'').replace(/.js$/,'')===n.id);if(a)tit=(readFileSync(join(d,a),'utf8').match(/titulo:s*['"`]([^'"`]*)/)||[])[1]}
+      cat.push({materia:m,id:n.id,titulo:tit||n.id.replace(/-/g,' '),tema:x.titulo,temaId:x.id,materiaNombre:m})}}
+  // ninguna lección sin sinónimos, y ningún sinónimo de una lección que no existe
+  for(const h of cat)if(!EM.SINONIMOS[`${h.materia}/${h.id}`]?.length)mal(e,`la lección ${h.materia}/${h.id} no tiene sinónimos en mias/sinonimos.js (los temarios no la encontrarán)`);
+  for(const k of Object.keys(EM.SINONIMOS))if(!cat.some(h=>`${h.materia}/${h.id}`===k))mal(e,`sinónimos de una habilidad que no existe: ${k}`);
+  for(const [k,l] of Object.entries(EM.SINONIMOS))for(const x of l)if(!EM.palabras(x).length)mal(e,`el sinónimo «${x}» de ${k} se queda sin palabras (solo palabras vacías o números)`);
+  // singular y plural, numeración de temarios
+  for(const [a,b] of [['matrices','matriz'],['límites','límite'],['binomios','binomio'],['ecuaciones','ecuación'],['vectores','vector'],['leyes','ley']])if(EM.palabras(a).join()!==EM.palabras(b).join())mal(e,`«${a}» y «${b}» deberían ser la misma palabra`);
+  for(const q of ['1.3 Binomios.','Tema 4: binomios','U2 – Binomios (parte 1)'])if(EM.palabras(q).join()!=='binomio')mal(e,`«${q}» debería quedar como «binomio» (dio ${EM.palabras(q)})`);
+  // tabla de temas reales: ≥ 95 % encuentran su práctica (sola o entre las opciones de «¿Es alguno de estos?»)
+  const TT=await import(pathToFileURL(join(raiz,'..','..','scripts','fixtures','temas-temario.mjs')).href);
+  let encontrados=0,solos=0;const fallan=[];
+  for(const [q,ctx,esp] of TT.TEMAS){const es=[].concat(esp),r=EM.emparejar(q,cat,{contexto:ctx});
+    const ok=r&&(r.seguro?es.includes(r.id):r.opciones.some(o=>es.includes(o.id)));if(ok)encontrados++;else fallan.push(`«${q}» → ${r?r.opciones.map(o=>o.id).join(', '):'nada'} (esperado ${es})`);if(ok&&r.seguro)solos++}
+  if(TT.TEMAS.length<80)mal(e,`la tabla de temas reales debe tener al menos 80 (tiene ${TT.TEMAS.length})`);
+  if(encontrados/TT.TEMAS.length<.95)mal(e,`solo ${encontrados}/${TT.TEMAS.length} temas reales encuentran su práctica (mínimo 95 %): ${fallan.slice(0,5).join('; ')}`);
+  for(const [q,ctx] of TT.SIN_PRACTICA)if(EM.emparejar(q,cat,{contexto:ctx}))mal(e,`«${q}» no debería emparejar con nada (dio ${EM.emparejar(q,cat,{contexto:ctx}).id})`);
+  {const r=EM.emparejar('binomios',cat,{contexto:'Derivadas'}),ids=r?.opciones.map(o=>o.id)||[];
+    if(!r||r.seguro||!ids.includes('regla-cadena')||!ids.includes('productos-notables'))mal(e,`«binomios» en Derivadas debería dudar entre la regla de la cadena y productos notables (dio ${ids})`);}
+  for(const [q,esperado] of [['Producto escalar','producto-punto'],['Subnetting','subredes-cidr'],['Derivación implícita','derivacion-implicita'],['Media, mediana y moda','tendencia-central'],['Past simple','pasado-simple'],['Teorema del binomio','binomio-newton']])
     if(EM.emparejar(q,cat)?.id!==esperado)mal(e,`«${q}» debería emparejar con ${esperado} (dio ${EM.emparejar(q,cat)?.id})`);
-  if(EM.emparejar('Historia de la computación',cat))mal(e,'empareja un tema que la app no tiene');
-  for(const [k,v] of Object.entries(EM.SINONIMOS))if(!cat.some(h=>`${h.materia}/${h.id}`===k))mal(e,`sinónimos de una habilidad que no existe: ${k}`);
+  {const b=EM.buscar('binom',cat).map(h=>h.id);if(!b.includes('productos-notables')||!b.includes('binomio-newton'))mal(e,`buscar «binom» debería mostrar Productos notables y Binomio de Newton (dio ${b.slice(0,5)})`)}
+  const emparejo=`emparejamiento ${Math.round(encontrados/TT.TEMAS.length*100)} % de ${TT.TEMAS.length} temas reales (${solos} solos), ${cat.length} lecciones con sinónimos`;
   // una materia de ejemplo pasa el esquema; el plan con fechas al azar nunca pone un tema el día de su examen o después
   let s=1;const azar=()=>(s=(s*16807)%2147483647)/2147483647,ent=(a,b)=>a+Math.floor(azar()*(b-a+1));
   const hoy='2026-03-02';let planes=0;
@@ -686,7 +705,9 @@ sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
   }
   const mInv={formato:1,id:'x',nombre:'',color:'rojo',icono:'',unidades:[],examenes:[{id:'x-1aa',nombre:'E',fecha:'mañana',unidades:['u-no']}],disponibilidad:{dias:[9],minutos:1},fotos:[],referencias:[],simulacros:[],reportados:{}};
   if(E.validarMateria(mInv).length<5)mal(e,'el esquema no rechaza una materia inválida');
-  console.log(`mis materias: 3 bancos de ejemplo válidos, el inválido rechazado, lector y emparejamiento, ${planes} planes al azar sin temas fuera de plazo`);
+  {const t={id:'t-abc',titulo:'T',subtemas:[],sabe:false,dificil:false,habilidad:null,emparejado:'manual',practicas:[1,2,3,4].map(i=>({materia:'matematicas',id:'x'+i}))};
+    if(!E.validarMateria({formato:1,id:'mp-abcd',nombre:'X',color:'#4652d0',icono:'📘',unidades:[{id:'u-abc',titulo:'U',temas:[t]}],examenes:[],disponibilidad:{dias:[1],minutos:30},fotos:[],referencias:[],simulacros:[],reportados:{}}).some(x=>/prácticas/.test(x)))mal(e,'el esquema acepta más de 3 prácticas por tema');}
+  console.log(`mis materias: 3 bancos de ejemplo válidos, el inválido rechazado, lector, ${emparejo}, ${planes} planes al azar sin temas fuera de plazo`);
 }
 // Racha: hoy sin cumplir sigue viva desde ayer; hoy con la meta cumplida suma aunque falte la marca 'ok'
 {

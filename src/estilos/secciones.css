@@ -441,6 +441,17 @@ body{padding-top:var(--franja,0px)}
 .mp-emparejado.si{background:var(--success-soft);color:var(--success-dark)}
 .mp-emparejado.no{background:var(--surface);color:var(--muted);border:1px dashed var(--line-2)}
 .mp-emparejado:focus-visible{outline:3px solid var(--primary)}
+.mp-grupo{font-size:14px;margin:var(--s3) 0 2px;color:var(--muted)}
+.mp-opcion{overflow-wrap:anywhere;display:block;flex-shrink:0;line-height:1.35}
+.mp-grupo .nota{display:inline}
+.mp-opcion.elegida{background:var(--success-soft);color:var(--success-dark)}
+.mp-elegidas{max-height:none;margin:6px 0}
+.mp-modal-practica .lista-enlaces#eh-lista{max-height:40dvh}
+.mp-cambiar{margin-top:6px;font-size:14px}
+.mp-sugerida{display:block;text-align:left;overflow-wrap:anywhere;white-space:normal;line-height:1.35}
+.mp-sugerida .nota{white-space:nowrap}
+.mp-sin-ia{margin-top:var(--s4)}
+.mp-sin-ia .enlace{min-height:44px}
 .bien-propia{width:100%;margin:0 0 var(--s4);flex-wrap:wrap;border-style:dashed}
 .chat-entrada{display:flex;gap:var(--s2);align-items:flex-end;position:sticky;bottom:calc(var(--nav-alto) + 8px);background:var(--bg);padding:var(--s2) 0}
 .chat-entrada textarea{flex:1;min-width:0;min-height:44px;padding:var(--s2) var(--s3);border:2px solid var(--line);border-radius:var(--r2);background:var(--surface);color:var(--ink);font:inherit;resize:vertical}

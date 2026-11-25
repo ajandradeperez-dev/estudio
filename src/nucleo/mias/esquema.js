@@ -2,11 +2,12 @@
 
    Materia propia (IndexedDB 'materias', ver datos.js):
    {formato:1, id:'mp-…', nombre, escuela?, profesor?, color:'#rrggbb', icono,
-    unidades:[{id:'u-…', titulo, temas:[{id:'t-…', titulo, subtemas:[…], sabe, dificil, habilidad:{materia,id}|null, emparejado:'auto'|'manual'|'ninguno'}]}],
+    unidades:[{id:'u-…', titulo, temas:[{id:'t-…', titulo, subtemas:[…], sabe, dificil, habilidad:{materia,id}|null (la primera práctica),
+              practicas?:[{materia,id}] (hasta 3; «Practicar» las mezcla y el dominio es el promedio), emparejado:'auto'|'manual'|'ninguno'}]}],
     examenes:[{id:'x-…', nombre, fecha:'AAAA-MM-DD', unidades:['u-…']}],
     disponibilidad:{dias:[0–6, 0 = domingo], minutos}, avisos:bool (recordatorio 7 días y 1 día antes),
     fotos:[id de archivo], referencias:[id de archivo de exámenes pasados], simulacros:[{fecha, examen, ok, total, porTema:{t:[ok,total]}}],
-    reportados:{'<tema>/<ejercicio>':fecha}, creada, editada}
+    reportados:{'<tema>/<ejercicio>':fecha}, emparejo? (versión del emparejamiento automático, ver datos.js), creada, editada}
 
    Banco generado de un tema (IndexedDB 'generados', id '<materia>/<tema>'):
    {formato:1, id, materia, tema, creado, modelo,
@@ -45,6 +46,7 @@ export function validarMateria(m){
       if(!Array.isArray(t?.subtemas)||!t.subtemas.every(s=>typeof s==='string'))e.push(`tema «${t?.titulo}»: subtemas inválidos`);
       if(typeof t?.sabe!=='boolean'||typeof t?.dificil!=='boolean')e.push(`tema «${t?.titulo}»: sabe/difícil deben ser sí o no`);
       if(t?.habilidad!==null&&!(t?.habilidad&&typeof t.habilidad.materia==='string'&&typeof t.habilidad.id==='string'))e.push(`tema «${t?.titulo}»: habilidad inválida`);
+      if(t?.practicas!==undefined&&!(Array.isArray(t.practicas)&&t.practicas.length<=3&&t.practicas.every(h=>h&&typeof h.materia==='string'&&typeof h.id==='string')))e.push(`tema «${t?.titulo}»: prácticas inválidas (hasta 3)`);
       if(!['auto','manual','ninguno'].includes(t?.emparejado))e.push(`tema «${t?.titulo}»: emparejado inválido`);
     }
   }

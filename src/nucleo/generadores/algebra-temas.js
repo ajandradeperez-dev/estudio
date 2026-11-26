@@ -8,6 +8,12 @@ import {paso,final,c} from './pasos.js';
 // ---------- utilidades comunes (también las usan algebra-temas2.js y aplicaciones.js) ----------
 export const T=s=>String(s).replace(/\^(-?\d+)/g,'^{$1}');                  // texto → TeX (x^2 → x^{2})
 export const sg=n=>n<0?`- ${-n}`:`+ ${n}`;
+// Término con signo y variable: sgv(-1,'x') → '- x', sgv(3,'x') → '+ 3x' (nunca «1x»)
+export const sgv=(n,v)=>`${n<0?'-':'+'} ${Math.abs(n)===1?'':Math.abs(n)}${v}`;
+// Coeficiente delante de una variable al empezar: cv(1,'x') → 'x', cv(-1,'x') → '-x', cv(0,'x') → '' (nunca «1x» ni «0x»)
+export const cv=(n,v)=>n===0?'':n===1?v:n===-1?`-${v}`:`${n}${v}`;
+// Paréntesis si un término escrito empieza con menos: «+ (-x - 1)» en vez de «+ -x - 1»
+export const parT=t=>/^\s*[-−]/.test(String(t))?`(${t})`:String(t);
 export const plantillas=(rng,ps)=>{const k=rng.elegir(Object.keys(ps));return {...ps[k](),plantilla:k}};
 export const mal=(valor,por,o={})=>({valor,si:e=>equivalente(e,valor,o),por});
 // Número como texto: entero, fracción con denominador ≤ 12 o 4 decimales
@@ -35,7 +41,7 @@ const expresiones={
     const r=(a,b)=>rng.noCero(a,b);let vars=['x'];
     const P={
       1:{
-        'semejantes-x':()=>{let a,b,d;do{a=r(-9,9);b=r(-9,9);d=r(-9,9)}while(a+b+d===0||a+b+d===1);const s=a+b+d,e=lineal([[a,'x'],[b,'x'],[d,'x']]);
+        'semejantes-x':()=>{let a,b,d;do{a=r(-9,9);b=r(-9,9);d=r(-9,9)}while(a+b+d===0||Math.abs(a+b+d)===1);const s=a+b+d,e=lineal([[a,'x'],[b,'x'],[d,'x']]);
           return {e,resp:`${s}x`,regla:R_SEM,pasos:[paso('Los tres términos tienen x',`\\(${e}\\)`,'Son semejantes: misma letra, mismo exponente.'),
             final('Suma los coeficientes',`\\(${a} ${sg(b)} ${sg(d)} = ${c(s)}\\ \\Rightarrow\\ ${s}x\\)`,'La x se conserva; solo se suman los números de adelante.',`${s}x`)],
             errores:[mal(`${Math.abs(a)+Math.abs(b)+Math.abs(d)}x`,'Ignoraste los signos: un término con − se resta.'),mal(`${s}`,'La parte literal se conserva: no se pierde la x.'),mal(`${s}x^3`,'Al sumar términos no se suman los exponentes: x + x = 2x, no x².')],
@@ -54,7 +60,7 @@ const expresiones={
       },
       2:{
         'distributiva':()=>{const a=rng.entero(2,9)*rng.signo(),b=r(-9,9),e=`${a}(${lineal([[1,'x'],[b,'']])})`,resp=lineal([[a,'x'],[a*b,'']]);
-          return {e,resp,regla:R_DIS,pasos:[paso(`Multiplica el ${a} por cada término`,`\\(${a}\\cdot x ${a*b<0?'-':'+'} ${a}\\cdot${par(b)}\\)`,'Lo de afuera multiplica a todo lo de adentro.',{ojo:`El ${a} también multiplica al ${b}.`}),
+          return {e,resp,regla:R_DIS,pasos:[paso(`Multiplica el ${a} por cada término`,`\\(${a}\\cdot x + ${par(a)}\\cdot${par(b)}\\)`,'Lo de afuera multiplica a todo lo de adentro.',{ojo:`El ${a} también multiplica al ${b}.`}),
             final('Calcula',`\\(${c(resp)}\\)`,'Cuida los signos: menos por menos da más.',resp)],
             errores:[mal(lineal([[a,'x'],[b,'']]),`El ${a} también multiplica al ${b}.`),mal(lineal([[a,'x'],[-a*b,'']]),`Signo: ${a}·(${b}) = ${a*b}.`),mal(lineal([[1,'x'],[a*b,'']]),`El ${a} también multiplica a la x.`)],
             comprobar:()=>equivalente(e,resp)}},
@@ -95,7 +101,7 @@ const expresiones={
       4:{
         'binomio-por-binomio':()=>{let a,b;do{a=r(-9,9);b=r(-9,9)}while(a+b===0);const e=`(${lineal([[1,'x'],[a,'']])})(${lineal([[1,'x'],[b,'']])})`,resp=polinomio([a*b,a+b,1],{tex:false});
           return {e,resp,regla:'Para multiplicar dos binomios, multiplica cada término del primero por cada término del segundo y junta semejantes.',
-            pasos:[paso('Multiplica todos contra todos',`\\(x\\cdot x ${sg(b)}x ${sg(a)}x ${sg(a*b)}\\)`,'Son 4 productos: primeros, externos, internos y últimos.'),
+            pasos:[paso('Multiplica todos contra todos',`\\(x\\cdot x ${sgv(b,'x')} ${sgv(a,'x')} ${sg(a*b)}\\)`,'Son 4 productos: primeros, externos, internos y últimos.'),
               final('Junta los términos en x',`\\(${c(T(resp))}\\)`,`\\(${b}x ${sg(a)}x = ${a+b}x\\).`,resp)],
             errores:[mal(polinomio([a*b,0,1],{tex:false}),'Faltan los productos cruzados (el término en x).'),mal(polinomio([a+b,a*b,1],{tex:false}),'Intercambiaste: el término en x es la suma y el número suelto es el producto.'),mal(polinomio([-a*b,a+b,1],{tex:false}),`El último término es \\(${a}\\cdot${par(b)} = ${a*b}\\).`)],
             comprobar:()=>equivalente(e,resp)}},
@@ -130,7 +136,7 @@ const expresiones={
             comprobar:()=>equivalente(e,resp)}},
         'fracciones':()=>{const p=rng.elegir([2,3,4]),q=rng.elegir([2,3,5]);let a,b,d,f;do{a=r(-4,4);b=r(-5,5);d=r(-4,4);f=r(-5,5)}while(a+d===0||b+f===0);
           const e=`\\frac{1}{${p}}(${lineal([[p*a,'x'],[p*b,'']])}) + \\frac{1}{${q}}(${lineal([[q*d,'x'],[q*f,'']])})`,eTxt=`(1/${p})(${lineal([[p*a,'x'],[p*b,'']])}) + (1/${q})(${lineal([[q*d,'x'],[q*f,'']])})`,resp=lineal([[a+d,'x'],[b+f,'']]);
-          return {enunciado:`Simplifica: \\(${e}\\)`,e:eTxt,resp,regla:R_DIS,pasos:[paso('Reparte cada fracción',`\\(${lineal([[a,'x'],[b,'']])} + ${par(lineal([[d,'x'],[f,'']]))}\\)`,`Dividir entre ${p} cada término: \\(${p*a}x \\div ${p} = ${a}x\\).`),
+          return {enunciado:`Simplifica: \\(${e}\\)`,e:eTxt,resp,regla:R_DIS,pasos:[paso('Reparte cada fracción',`\\(${lineal([[a,'x'],[b,'']])} + ${parT(lineal([[d,'x'],[f,'']]))}\\)`,`Dividir entre ${p} cada término: \\(${p*a}x \\div ${p} = ${a}x\\).`),
             final('Junta semejantes',`\\(${c(resp)}\\)`,'x con x y números con números.',resp)],
             errores:[mal(lineal([[a+d,'x'],[p*b+q*f,'']]),'La fracción también reparte a los números de adentro.'),mal(lineal([[p*a+q*d,'x'],[p*b+q*f,'']]),'Te faltó multiplicar por las fracciones.'),mal(lineal([[a-d,'x'],[b+f,'']]),'Revisa el signo del término en x.')],
             comprobar:()=>equivalente(eTxt,resp)}}
@@ -181,7 +187,7 @@ const desig={
         final('Simplifica',`\\(x ${opTex[op2]} ${frac(B,a)}\\)`,'Esa es la solución: todos los x que cumplen.',`x ${op2} ${vt}`)];
       return {e:`${e} ${opTex[op]} ${d}`,resp:[{op:op2,v}],respTxt:`x ${op2} ${vt}`,pasos,orig:x=>cumple(op,a*x+b,d),
         errores:[...(a<0?[{valor:`x ${op} ${vt}`,por:'Dividiste entre un negativo: el signo se tiene que voltear.'}]:[{valor:`x ${voltea[op]} ${vt}`,por:'Solo se voltea al multiplicar o dividir entre un NEGATIVO.'}]),
-          {valor:`x ${op2} ${frac(d+b,a,{tex:false})}`,por:`El ${b} pasa al otro lado con el signo contrario.`},{valor:`x ${op2.length>1?op2[0]:op2+'='} ${vt}`,por:'Cuida si el extremo se incluye (≤, ≥) o no (<, >).'}]}};
+          ...(b?[{valor:`x ${op2} ${frac(d+b,a,{tex:false})}`,por:`El ${b} pasa al otro lado con el signo contrario.`}]:[]),{valor:`x ${op2.length>1?op2[0]:op2+'='} ${vt}`,por:'Cuida si el extremo se incluye (≤, ≥) o no (<, >).'}]}};
     const P={
       1:{
         'suma':()=>{const b=r(-12,12),d=r(-15,15),op=op0();return lineal1(1,b,d,op)},
@@ -304,7 +310,7 @@ const productos={
           return {e,resp,pasos:[paso('Fórmula del cubo de una resta',`\\((a - b)^{3} = a^{3} - 3a^{2}b + 3ab^{2} - b^{3}\\)`,'Los signos se alternan.'),paso('Sustituye',`\\(x^{3} - 3x^{2}\\cdot${a} + 3x\\cdot${a}^{2} - ${a}^{3}\\)`,'Coeficientes 1, 3, 3, 1.'),final('Calcula',`\\(${c(T(resp))}\\)`,'Resultado desarrollado.',resp)],
             errores:[mal(polinomio([-(a**3),0,0,1],{tex:false}),'Faltan los términos del medio.'),mal(polinomio([-(a**3),-3*a*a,-3*a,1],{tex:false}),'Los signos se alternan: − + −.'),mal(polinomio([a**3,3*a*a,-3*a,1],{tex:false}),`El último término es −${a}³ = −${a**3}.`)]}},
         'termino-comun':()=>{let a,b;do{a=rng.noCero(-9,9);b=rng.noCero(-9,9)}while(a===b||a===-b);const e=`(x ${sg(a)})(x ${sg(b)})`,resp=polinomio([a*b,a+b,1],{tex:false});
-          return {e,resp,pasos:[paso('Binomios con término común',`\\((x + a)(x + b) = x^{2} + (a + b)x + ab\\)`,'Suma en el medio y producto al final.'),final('Sustituye',`\\(x^{2} + (${a} ${sg(b)})x + ${a}\\cdot${par(b)} = ${c(T(resp))}\\)`,'Calcula la suma y el producto.',resp)],
+          return {e,resp,pasos:[paso('Binomios con término común',`\\((x + a)(x + b) = x^{2} + (a + b)x + ab\\)`,'Suma en el medio y producto al final.'),final('Sustituye',`\\(x^{2} + (${a} ${sg(b)})x + ${par(a)}\\cdot${par(b)} =${c(T(resp))}\\)`,'Calcula la suma y el producto.',resp)],
             errores:[mal(polinomio([a*b,0,1],{tex:false}),'Falta el término en x: (a + b)x.'),mal(polinomio([a+b,a*b,1],{tex:false}),'La suma va con la x y el producto es el número suelto.'),mal(polinomio([-a*b,a+b,1],{tex:false}),'Revisa el signo del producto.')]}}
       },
       5:{

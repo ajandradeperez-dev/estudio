@@ -29,6 +29,8 @@ function expr({enunciado,resp,pasos,errores,comprobar}){
 const termino=(c,r)=>polinomio(Array.from({length:r+1},(_,i)=>i===r?c:0),{tex:false})||'0';
 
 const binomioNewton=crearGen({titulo:'Binomio de Newton',niveles:NIV,
+  // En el desarrollo término a término se escribe x¹ y 3⁰ a propósito: se ve cómo baja un exponente y sube el otro
+  auditoria:{permitir:{'*':['x^1']}},
   explicacion:'Para elevar un binomio a una potencia n sin multiplicar n veces: (a + b)ⁿ = Σ C(n,k)·a^(n−k)·b^k. Los coeficientes C(n,k) = n!/(k!(n−k)!) son la fila n del triángulo de Pascal (1; 1 1; 1 2 1; 1 3 3 1…). La potencia de a baja de n a 0 y la de b sube de 0 a n; si b es negativo, los signos se alternan.',
   alternativa:'Piensa en (a + b)³ = (a + b)(a + b)(a + b): de cada paréntesis eliges a o b. ¿De cuántas formas eliges b exactamente una vez? De 3: ese es el 3 de 3a²b. Contar esas formas es justo lo que hace C(n,k), y el triángulo de Pascal las cuenta sumando los dos números de arriba.',
   referencia:'Stewart, Precálculo 12.6 – El teorema del binomio',

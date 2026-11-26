@@ -1,6 +1,7 @@
 /* Matemáticas — habilidades nuevas (2): trigonometría (radianes, gráficas, suma y ángulo doble, leyes de senos y cosenos)
    y álgebra lineal (rectas y planos, base y dimensión, rango, núcleo e imagen, diagonalización, Gram-Schmidt). */
 import {prob,paso,final,marca,fmt,cerca,crearGen} from './extensiones/base.js';
+import {rango as rangoNum,detEliminacion} from './auditoria.js';
 
 const NIV={1:['b1','b2','p1'],2:['b1','b2','p1','p2'],3:['p1','p2','a1'],4:['p1','p2','a1','a2'],5:['p2','a1','a2']};
 const rad=g=>g*Math.PI/180,gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
@@ -130,7 +131,7 @@ const baseDim=crearGen({titulo:'Base y dimensión',niveles:NIV,
     a1:{prof:'aplicacion',f:(n,r)=>{const c=r.entero(3,6),dep=r.entero(1,c-1);return prob({enunciado:`Una estación mide ${c} variables, pero ${dep} de ellas se calculan exactamente a partir de las demás. ¿Cuántas mediciones independientes hay (dimensión del espacio de datos)?`,v:c-dep,dec:0,
       pasos:[paso('Quita las dependientes',`${c} − ${dep}`,'No aportan dirección nueva.'),final('Dimensión',marca(c-dep),'Independientes.')],errores:[[c,'Las calculadas no son independientes.'],[dep,'Esas son las dependientes.']],comprobar:()=>c-dep>0})}},
     a2:{prof:'aplicacion',f:(n,r)=>{const v=3;return prob({enunciado:`Los colores de una pantalla se forman mezclando rojo, verde y azul (RGB). ¿Cuál es la dimensión del espacio de colores?`,v,dec:0,
-      pasos:[paso('Base','rojo, verde, azul','Tres canales independientes.'),final('Dimensión',marca(3),'R³.')],errores:[[2,'Son tres canales.'],[256,'256 son los niveles de cada canal, no la dimensión.']],comprobar:()=>true})}}
+      pasos:[paso('Base','rojo, verde, azul','Tres canales independientes.'),final('Dimensión',marca(3),'R³.')],errores:[[2,'Son tres canales.'],[256,'256 son los niveles de cada canal, no la dimensión.']],comprobar:()=>rangoNum([[1,0,0],[0,1,0],[0,0,1]])===v})}}
   }});
 
 /* ---------- Rango ---------- */
@@ -185,7 +186,8 @@ const diagonal=crearGen({titulo:'Diagonalización',niveles:NIV,
     b1:{prof:'basico',f:(n,r)=>{const l=r.entero(-3,4)||2,k=r.entero(2,5),v=l**k;return prob({enunciado:`D es diagonal con un ${l} en la posición (1, 1). ¿Qué entrada hay en (1, 1) de D^${k}?`,v,dec:0,
       pasos:[paso('Potencia de una diagonal','Se elevan las entradas de la diagonal','Sin mezclar.'),final('Calcula',`${l}^${k} = ${marca(v)}`,'Entrada.')],errores:[[l*k,'Es una potencia, no un producto por k.'],[l,'Falta elevar.']],comprobar:()=>v===l**k})}},
     b2:{prof:'basico',f:(n,r)=>{const d=[r.entero(-5,5),r.entero(-5,5),r.entero(-5,5)];return prob({enunciado:`Una matriz triangular tiene diagonal (${d.join(', ')}). ¿Cuál es su valor propio MAYOR?`,v:Math.max(...d),dec:0,
-      pasos:[paso('Triangular','Los valores propios son la diagonal','det(A − λI) es el producto de la diagonal.'),final('Mayor',marca(Math.max(...d)),'Valor propio.')],errores:[[Math.min(...d),'Ese es el menor.'],[d[0]+d[1]+d[2],'Esa es la traza.']].filter(([x])=>x!==Math.max(...d)),comprobar:()=>true})}},
+      pasos:[paso('Triangular','Los valores propios son la diagonal','det(A − λI) es el producto de la diagonal.'),final('Mayor',marca(Math.max(...d)),'Valor propio.')],errores:[[Math.min(...d),'Ese es el menor.'],[d[0]+d[1]+d[2],'Esa es la traza.']].filter(([x])=>x!==Math.max(...d)),
+      comprobar:()=>{const A=[[d[0],2,-1],[0,d[1],3],[0,0,d[2]]],m=Math.max(...d),c=l=>detEliminacion(A.map((f,i)=>f.map((x,j)=>x-(i===j?l:0))));return Math.abs(c(m))<1e-9&&[m+0.5,m+1,m+2.5].every(l=>Math.abs(c(l))>1e-9)}})}},
     p1:{prof:'procedimiento',f:(n,r)=>{const l1=r.entero(-3,3)||2,l2=r.entero(-3,3)||-1,k=r.entero(2,4),v=l1**k+l2**k;return prob({enunciado:`A es diagonalizable con valores propios ${l1} y ${l2}. ¿Cuánto vale la traza de A^${k}?`,v,dec:0,
       pasos:[paso('Valores propios de A^'+k,`${l1}^${k} y ${l2}^${k}`,'Dᵏ.'),final('Traza = suma',`${l1**k} + ${l2**k} = ${marca(v)}`,'La traza no cambia con P.')],errores:[[(l1+l2)**k,'Se elevan por separado.'],[(l1+l2)*k,'No es la traza por k.']],comprobar:()=>v===l1**k+l2**k})}},
     p2:{prof:'procedimiento',f:(n,r)=>{const l1=r.entero(-3,3)||2,l2=r.entero(-3,3)||3,k=r.entero(2,4),v=(l1*l2)**k;return prob({enunciado:`A tiene valores propios ${l1} y ${l2}. ¿Cuánto vale det(A^${k})?`,v,dec:0,

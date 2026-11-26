@@ -1,6 +1,7 @@
 /* Matemáticas: tarjetas de conceptos clave y problemas de aplicación con contexto real (ver extender.js).
    Cada problema usa sus propios números, trae pasos, errores típicos y comprobar() con un segundo cálculo. */
 import {prob,paso,final,marca,fmt,simpson,derivNum,cerca} from './base.js';
+import {rango as rangoNum,detEliminacion,resolverSistema} from '../auditoria.js';
 
 const T=(...l)=>l;   // tarjetas
 const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
@@ -107,7 +108,7 @@ export default {
     aplicaciones:{
       boletos:(n,r)=>{const a=r.entero(5,30),c=r.entero(5,30),pa=r.entero(8,15)*10,pc=r.entero(3,7)*10;return prob({enunciado:`Se vendieron ${a+c} boletos: adultos a $${pa} y niños a $${pc}, y se recaudaron $${a*pa+c*pc}. ¿Cuántos boletos de adulto se vendieron?`,v:a,dec:0,unidad:'boletos',
         pasos:[paso('Plantea',`x + y = ${a+c} ; ${pa}x + ${pc}y = ${a*pa+c*pc}`,'Cantidad y dinero.'),paso('Sustituye y = '+(a+c)+' − x',`${pa}x + ${pc}(${a+c} − x) = ${a*pa+c*pc}`,'Una sola incógnita.'),final('Despeja',`${pa-pc}x = ${(pa-pc)*a} → x = ${marca(a)}`,'Boletos de adulto.')],
-        errores:[[c,'Esos son los de niño.'],[(a*pa+c*pc)/pa,'No todo lo recaudado es de adultos.']],regla:'Dos datos (cantidad y dinero) → dos ecuaciones.',pista:'x + y = total; precios por cantidades = recaudado.',comprobar:()=>a+c===a+c&&pa*a+pc*c===a*pa+c*pc})},
+        errores:[[c,'Esos son los de niño.'],[(a*pa+c*pc)/pa,'No todo lo recaudado es de adultos.']],regla:'Dos datos (cantidad y dinero) → dos ecuaciones.',pista:'x + y = total; precios por cantidades = recaudado.',comprobar:()=>{const s=resolverSistema([[1,1],[pa,pc]],[a+c,a*pa+c*pc]);return !!s&&Math.abs(s[0]-a)<1e-9}})},
       mezcla:(n,r)=>{const x=r.entero(2,10),y=r.entero(2,10),p1=r.entero(150,250),p2=r.entero(300,400);return prob({enunciado:`Un café se mezcla con ${x+y} kg de dos granos: uno de $${p1}/kg y otro de $${p2}/kg, y la mezcla cuesta $${p1*x+p2*y} en total. ¿Cuántos kg del grano de $${p2} lleva?`,v:y,dec:0,unidad:'kg',
         pasos:[paso('Plantea',`x + y = ${x+y} ; ${p1}x + ${p2}y = ${p1*x+p2*y}`,'Kilos y costo.'),paso('Elimina x',`${p2-p1}y = ${p1*x+p2*y} − ${p1}·${x+y} = ${(p2-p1)*y}`,'Multiplica la 1.ª por '+p1+' y resta.'),final('Despeja',`y = ${marca(y)}`,'Kilos del grano caro.')],
         errores:[[x,'Ese es el grano barato.'],[(x+y)/2,'La mezcla no es mitad y mitad.']],regla:'Cantidades y costos totales forman un sistema 2×2.',pista:'Usa eliminación.',comprobar:()=>p1*x+p2*y===p1*(x+y-y)+p2*y})}}},
@@ -118,7 +119,7 @@ export default {
         errores:[[a,'Esa es la pluma.'],[c,'Esa es la regla.']],regla:'Reduce el 3×3 a una sola incógnita por sustitución o eliminación.',pista:'Despeja las otras dos en función del cuaderno.',comprobar:()=>{const y=b,x=(2*a+b-y)/2,z=(b+2*c-y)/2;return x+y+z===a+b+c}})},
       dieta:(n,r)=>{const x=r.entero(1,5),y=r.entero(1,5),z=r.entero(1,5);return prob({enunciado:`Una dieta combina tres alimentos (porciones x, y, z). Proteína: 2x + y + z = ${2*x+y+z} g; grasa: x + 2y + z = ${x+2*y+z} g; carbohidratos: x + y + 2z = ${x+y+2*z} g. ¿Cuántas porciones z del tercero?`,v:z,dec:0,unidad:'porciones',
         pasos:[paso('Suma las tres ecuaciones',`4(x + y + z) = ${4*(x+y+z)} → x + y + z = ${x+y+z}`,'Simetría útil.'),final('Resta a la 3.ª',`z = ${x+y+2*z} − ${x+y+z} = ${marca(z)}`,'Porciones del tercero.')],
-        errores:[[x,'Esa es x.'],[(x+y+2*z)/2,'No basta con dividir la 3.ª entre 2.']],regla:'Combinar ecuaciones (sumar o restar) elimina incógnitas.',pista:'Suma las tres.',comprobar:()=>2*x+y+z===2*x+y+z&&x+y+2*z-(x+y+z)===z})}}},
+        errores:[[x,'Esa es x.'],[(x+y+2*z)/2,'No basta con dividir la 3.ª entre 2.']],regla:'Combinar ecuaciones (sumar o restar) elimina incógnitas.',pista:'Suma las tres.',comprobar:()=>{const s=resolverSistema([[2,1,1],[1,2,1],[1,1,2]],[2*x+y+z,x+2*y+z,x+y+2*z]);return !!s&&Math.abs(s[2]-z)<1e-9}})}}},
   'alg/exponentes':{tarjetas:T(['a^m / a^n =','a^(m−n).'],['a^(−n) =','1/a^n.'],['(a^m)^n =','a^(m·n).']),
     aplicaciones:{
       bacterias:(n,r)=>{const N0=r.entero(1,9)*100,T=r.elegir([20,30]),h=r.entero(1,4),v=N0*2**(h*60/T);return prob({enunciado:`Una colonia de ${N0} bacterias se duplica cada ${T} minutos. ¿Cuántas habrá en ${h} hora${h>1?'s':''}?`,v,dec:0,unidad:'bacterias',
@@ -176,18 +177,18 @@ export default {
     aplicaciones:{
       nutri:(n,r)=>{const x=r.entero(1,6),y=r.entero(1,6),z=r.entero(1,6);return prob({enunciado:`Tres granos aportan proteína según: x + y + z = ${x+y+z}; x + 2y + 3z = ${x+2*y+3*z}; x + 3y + 6z = ${x+3*y+6*z} (en porciones). Resuelve por Gauss: ¿cuánto vale x?`,v:x,dec:0,unidad:'porciones',
         pasos:[paso('Elimina x de las filas 2 y 3',`y + 2z = ${y+2*z} ; 2y + 5z = ${2*y+5*z}`,'F2 − F1, F3 − F1.'),paso('Elimina y',`z = ${2*y+5*z-2*(y+2*z)}`,'F3 − 2F2.'),final('Sustituye hacia atrás',`y = ${y}, x = ${marca(x)}`,'Desde abajo.')],
-        errores:[[z,'Esa es z.'],[y,'Esa es y.']],regla:'Escalona y resuelve hacia atrás.',pista:'Primero ceros debajo del primer pivote.',comprobar:()=>x+3*y+6*z===x+3*y+6*z&&(2*y+5*z)-2*(y+2*z)===z})},
+        errores:[[z,'Esa es z.'],[y,'Esa es y.']],regla:'Escalona y resuelve hacia atrás.',pista:'Primero ceros debajo del primer pivote.',comprobar:()=>{const s=resolverSistema([[1,1,1],[1,2,3],[1,3,6]],[x+y+z,x+2*y+3*z,x+3*y+6*z]);return !!s&&Math.abs(s[0]-x)<1e-9}})},
       trafico:(n,r)=>{const a=r.entero(100,300),b=r.entero(100,300),c=r.entero(100,300);return prob({enunciado:`En una glorieta entran autos por hora: x + y = ${a+b}; y + z = ${b+c}; x + z = ${a+c}. ¿Cuántos autos por hora pasan por la calle y?`,v:b,dec:0,unidad:'autos/h',
         pasos:[paso('Suma las tres',`2(x + y + z) = ${2*(a+b+c)}`,'Combinación de filas.'),final('Resta la tercera',`y = ${a+b+c} − ${a+c} = ${marca(b)}`,'x + y + z − (x + z).')],
         errores:[[a,'Esa es x.'],[(a+b)/2,'No se reparten por igual.']],regla:'Combina filas para eliminar variables.',pista:'Suma las tres ecuaciones.',comprobar:()=>a+b+c-(a+c)===b})}}},
   'al/gauss-jordan':{tarjetas:T(['Forma escalonada reducida','Pivotes iguales a 1 y ceros arriba y abajo de cada pivote.'],['Rango de una matriz','Número de filas no nulas (pivotes) en su forma escalonada.'],['Sistema con infinitas soluciones','Hay variables libres: menos pivotes que incógnitas (y es consistente).']),
     aplicaciones:{
-      mezcla:(n,r)=>{const a=r.entero(1,5),b=r.entero(1,5),c=r.entero(1,5);return prob({enunciado:`Tres fertilizantes (a, b, c bolsas) deben dar: a + b + c = ${a+b+c}; 2a + b = ${2*a+b}; b + 2c = ${b+2*c}. Con Gauss-Jordan, ¿cuántas bolsas c?`,v:c,dec:0,unidad:'bolsas',
-        pasos:[paso('Reduce la matriz aumentada',`[[1,1,1|${a+b+c}],[2,1,0|${2*a+b}],[0,1,2|${b+2*c}]] → forma reducida`,'Operaciones de fila.'),final('Lee la solución',`a = ${a}, b = ${b}, c = ${marca(c)}`,'En la forma reducida la solución se lee directo.')],
-        errores:[[a,'Esa es a.'],[b,'Esa es b.']],regla:'En la forma escalonada reducida cada pivote da una variable.',pista:'Reduce hasta la identidad.',comprobar:()=>a+b+c===a+b+c&&b+2*c===b+2*c})},
-      rango:(n,r)=>{const k=r.entero(2,5),v=2;return prob({enunciado:`Tres sensores dan las filas (1, 2, 3), (2, 4, 6)·… en concreto: (1, ${k}, 1), (2, ${2*k}, 2) y (0, 1, 1). ¿Cuál es el rango de la matriz de datos? (cuántas mediciones son independientes)`,v,dec:0,
+      mezcla:(n,r)=>{const a=r.entero(1,5),b=r.entero(1,5),c=r.entero(1,5);return prob({enunciado:`Tres fertilizantes (a, b, c bolsas) deben dar: a + b + c = ${a+b+c}; 2a + b = ${2*a+b}; b + 3c = ${b+3*c}. Con Gauss-Jordan, ¿cuántas bolsas c?`,v:c,dec:0,unidad:'bolsas',
+        pasos:[paso('Reduce la matriz aumentada',`[[1,1,1|${a+b+c}],[2,1,0|${2*a+b}],[0,1,3|${b+3*c}]] → forma reducida`,'Operaciones de fila.'),final('Lee la solución',`a = ${a}, b = ${b}, c = ${marca(c)}`,'En la forma reducida la solución se lee directo.')],
+        errores:[[a,'Esa es a.'],[b,'Esa es b.']],regla:'En la forma escalonada reducida cada pivote da una variable.',pista:'Reduce hasta la identidad.',comprobar:()=>{const s=resolverSistema([[1,1,1],[2,1,0],[0,1,3]],[a+b+c,2*a+b,b+3*c]);return !!s&&Math.abs(s[2]-c)<1e-9}})},
+      rango:(n,r)=>{const k=r.entero(2,5),v=2;return prob({enunciado:`Tres sensores dan las mediciones (1, ${k}, 1), (2, ${2*k}, 2) y (0, 1, 1), una por fila. ¿Cuál es el rango de la matriz de datos? (cuántas mediciones son independientes)`,v,dec:0,comprobar:()=>rangoNum([[1,k,1],[2,2*k,2],[0,1,1]])===v,
         pasos:[paso('F2 − 2F1',`(0, 0, 0)`,'La segunda fila es el doble de la primera.'),final('Cuenta filas no nulas',`(1, ${k}, 1) y (0, 1, 1): rango ${marca(2)}`,'Pivotes.')],
-        errores:[[3,'La segunda fila depende de la primera.'],[1,'(0, 1, 1) no es múltiplo de (1, '+k+', 1).']],regla:'Rango = número de pivotes en la forma escalonada.',pista:'¿Alguna fila es múltiplo de otra?',comprobar:()=>true})}}},
+        errores:[[3,'La segunda fila depende de la primera.'],[1,'(0, 1, 1) no es múltiplo de (1, '+k+', 1).']],regla:'Rango = número de pivotes en la forma escalonada.',pista:'¿Alguna fila es múltiplo de otra?'})}}},
   'al/matriz-producto':{tarjetas:T(['¿Cuándo existe A·B?','Si columnas de A = filas de B.'],['Entrada (i, j) de A·B','Fila i de A por columna j de B (producto punto).'],['¿A·B = B·A?','En general no: el producto de matrices no es conmutativo.']),
     aplicaciones:{
       ventas:(n,r)=>{const q=[r.entero(5,30),r.entero(5,30),r.entero(5,30)],p=[r.entero(10,50),r.entero(10,50),r.entero(10,50)],v=q[0]*p[0]+q[1]*p[1]+q[2]*p[2];return prob({enunciado:`Una tienda vendió [${q.join(', ')}] unidades de tres productos a precios [${p.join(', ')}]ᵀ. La entrada del producto fila × columna es el ingreso. ¿Cuánto ingresó?`,v,dec:0,unidad:'pesos',
@@ -259,7 +260,7 @@ export default {
         errores:[[b,'Ese es b.'],[2*a+b,'Ese es el cobre total.']],regla:'Escribir w como a·u + b·v lleva a un sistema.',pista:'Iguala componentes.',comprobar:()=>2*a+b===u[0]*a+w[0]*b&&a+3*b===u[1]*a+w[1]*b})},
       color:(n,r)=>{const a=r.entero(1,4),b=r.entero(1,4);return prob({enunciado:`Mezclas pintura: el tono 1 aporta (rojo 3, azul 1) y el tono 2 aporta (1, 2) por cucharada. Para obtener (${3*a+b}, ${a+2*b}), ¿cuántas cucharadas del tono 2?`,v:b,dec:0,unidad:'cucharadas',
         pasos:[paso('Sistema',`3a + b = ${3*a+b} ; a + 2b = ${a+2*b}`,'Combinación lineal.'),final('Resuelve',`b = ${marca(b)}`,'Elimina a.')],
-        errores:[[a,'Ese es a.'],[(a+2*b)/2,'Falta considerar el tono 1.']],regla:'Los coeficientes de la combinación salen del sistema.',pista:'Elimina a.',comprobar:()=>3*a+b===3*a+b&&a+2*b===a+2*b})}}},
+        errores:[[a,'Ese es a.'],[(a+2*b)/2,'Falta considerar el tono 1.']],regla:'Los coeficientes de la combinación salen del sistema.',pista:'Elimina a.',comprobar:()=>{const s=resolverSistema([[3,1],[1,2]],[3*a+b,a+2*b]);return !!s&&Math.abs(s[1]-b)<1e-9}})}}},
   'al/independencia':{tarjetas:T(['Vectores linealmente independientes','Ninguno es combinación lineal de los otros.'],['Prueba rápida para 2 vectores en R²','Son independientes si det ≠ 0.'],['n vectores en Rⁿ son una base…','si son linealmente independientes.']),
     aplicaciones:{
       sensores:(n,r)=>{const a=r.entero(1,6),b=r.entero(1,6),c=r.entero(2,5),v=b*c/a;return prob({enunciado:`Dos sensores dan las direcciones (${a}, ${b}) y (${c}, k). ¿Para qué k las mediciones son redundantes (linealmente dependientes)?`,v,dec:2,
@@ -281,9 +282,9 @@ export default {
       poblacion:(n,r)=>{const l1=r.entero(2,4),l2=r.entero(-1,1)||1,tr=l1+l2,det=l1*l2;return prob({enunciado:`Una población por edades evoluciona con una matriz de traza ${tr} y determinante ${det}. ¿Cuál es el valor propio dominante (el mayor), que da el factor de crecimiento a largo plazo?`,v:Math.max(l1,l2),dec:2,
         pasos:[paso('Ecuación característica',`λ² − ${tr}λ + ${det} = 0`,'λ² − traza·λ + det.'),final('El mayor',`λ = ${marca(Math.max(l1,l2))}`,'Factor de crecimiento.')],
         errores:[[Math.min(l1,l2),'Ese es el menor.'],[tr,'La traza es la suma de los dos.']],regla:'λ² − (traza)λ + det = 0 para 2×2.',pista:'Resuelve la cuadrática.',comprobar:()=>cerca(l1*l1-tr*l1+det,0)})},
-      markov:(n,r)=>{const v=1;return prob({enunciado:`Una matriz de transición de clientes entre dos compañías tiene columnas que suman 1. ¿Qué valor propio garantiza que existe un estado estable?`,v,dec:0,
+      markov:(n,r)=>{const v=1;return prob({comprobar:()=>[[.7,.4],[.2,.9],[.5,.5]].every(([a,b])=>Math.abs(detEliminacion([[a-1,b],[1-a,1-b-1]]))<1e-12),enunciado:`Una matriz de transición de clientes entre dos compañías tiene columnas que suman 1. ¿Qué valor propio garantiza que existe un estado estable?`,v,dec:0,
         pasos:[paso('Columnas que suman 1','(1, 1) es vector propio izquierdo con λ = 1','Propiedad de las matrices estocásticas.'),final('Valor propio',marca(1),'Estado estable: Ax = x.')],
-        errores:[[0,'Con 0 todo desaparece.'],[2,'Una probabilidad no puede crecer.']],regla:'Una matriz estocástica siempre tiene λ = 1.',pista:'Ax = x.',comprobar:()=>true})}}},
+        errores:[[0,'Con 0 todo desaparece.'],[2,'Una probabilidad no puede crecer.']],regla:'Una matriz estocástica siempre tiene λ = 1.',pista:'Ax = x.'})}}},
 
   /* ---------- Cálculo diferencial ---------- */
   'cd/limites':{tarjetas:T(['Primer intento al calcular un límite','Sustituir directamente.'],['Si sale 0/0…','factoriza, simplifica o racionaliza y vuelve a sustituir.'],['El límite existe si…','los límites laterales existen y son iguales.']),

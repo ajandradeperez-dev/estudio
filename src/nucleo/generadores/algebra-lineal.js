@@ -81,8 +81,8 @@ const productoPunto={
     if(n===5){const a=rng.noCero(-6,6),b=rng.noCero(-6,6),cc=rng.noCero(-6,6),k=-a*cc/b;
       return {enunciado:`¿Cuánto vale k para que \\(${vec([a,b])}\\) y \\(${vec([cc,'k'])}\\) sean perpendiculares?`,respuesta:`k = ${frac(-a*cc,b,{tex:false})}`,verificar:e=>igualNum(e,k),
         pasos:[paso('Perpendiculares → producto punto 0',`\\(${vec([a,b])}\\cdot${vec([cc,'k'])} = 0\\)`,'Dos vectores forman 90° exactamente cuando su producto punto es 0.'),
-          paso('Escribe el producto punto',`\\(${a}\\cdot${par(cc)} + ${b}k = 0\\ \\Rightarrow\\ ${c(a*cc)} + ${b}k = 0\\)`,'Primera por primera más segunda por segunda.'),
-          paso('Despeja k',`\\(${b}k = ${c(-a*cc)}\\)`,`El ${a*cc} pasa al otro lado con signo contrario.`),
+          paso('Escribe el producto punto',`\\(${a}\\cdot${par(cc)} ${b<0?'-':'+'} ${Math.abs(b)===1?'':Math.abs(b)}k = 0\\ \\Rightarrow\\ ${c(a*cc)} ${b<0?'-':'+'} ${Math.abs(b)===1?'':Math.abs(b)}k = 0\\)`,'Primera por primera más segunda por segunda.'),
+          paso('Despeja k',`\\(${b===1?'':b===-1?'-':b}k = ${c(-a*cc)}\\)`,`El ${a*cc} pasa al otro lado con signo contrario.`),
           final('Divide',`\\(k = \\dfrac{${-a*cc}}{${b}} = ${c(frac(-a*cc,b))}\\)`,`El ${b} multiplica a k: pasa dividiendo.`,`k = ${frac(-a*cc,b,{tex:false})}`)],
         errores:[{valor:`k = ${frac(a*cc,b,{tex:false})}`,si:e=>igualNum(e,a*cc/b)&&a*cc!==0,por:'Revisa el signo al despejar k.'}],regla:R,pista:'Iguala el producto punto a 0.',teclado:'mat'}}
     const d=n<=2?2:3,u=vecAl(rng,d,n===1?5:9),v=vecAl(rng,d,n===1?5:9),prods=u.map((x,i)=>x*v[i]),r=prods.reduce((s,x)=>s+x,0);

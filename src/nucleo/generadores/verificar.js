@@ -120,3 +120,25 @@ export function fraccion(n,d=1){if(d<0){n=-n;d=-d}const g=mcd(n,d);n/=g;d/=g;ret
 export function fraccionTex(n,d=1){if(d<0){n=-n;d=-d}const g=mcd(n,d);n/=g;d/=g;return d===1?String(n):`${n<0?'-':''}\\frac{${Math.abs(n)}}{${d}}`}
 // Número para escribir: entero, o con 2 decimales como máximo
 export const redondear=(x,dec=2)=>Math.round(x*10**dec)/10**dec;
+
+// ¿Factorizada por completo? Cada paréntesis con dos o más términos (en x) no debe tener factor común: ni un número
+// (4x + 6 = 2(2x + 3)) ni x (x² + 4x = x(x + 4)). Los coeficientes salen de evaluar en x = 0…6 (diferencias finitas).
+export function factoresPrimitivos(e){
+  let s;try{s=limpiar(e).replace(/\s/g,'')}catch(x){return true}
+  const grupos=[];let p=0,ini=-1;
+  for(let i=0;i<s.length;i++){if(s[i]==='('){if(p===0)ini=i+1;p++}else if(s[i]===')'){p--;if(p===0)grupos.push(s.slice(ini,i))}}
+  for(const g of grupos){
+    if(!/x/.test(g)||!/[+-]/.test(g.replace(/^[+-]/,'').replace(/\^\(?-?\d+\)?/g,'')))continue;
+    let f;try{f=compilar(g)}catch(x){continue}
+    const y=[0,1,2,3,4,5,6].map(x=>f({x}));if(!y.every(Number.isFinite))continue;
+    // coeficientes del polinomio por diferencias de Newton → potencias
+    const n=y.length,d=[...y];const dif=[d[0]];for(let k=1;k<n;k++){for(let i=n-1;i>=k;i--)d[i]=d[i]-d[i-1];dif.push(d[k])}
+    let poli=[0];const mul=(a,b)=>{const r=Array(a.length+b.length-1).fill(0);a.forEach((x,i)=>b.forEach((z,j)=>r[i+j]+=x*z));return r};
+    let base=[1],fact=1;for(let k=0;k<n;k++){if(k>0){base=mul(base,[-(k-1),1]);fact*=k}const t=dif[k]/fact;base.forEach((b,i)=>{poli[i]=(poli[i]||0)+t*b})}
+    if(!poli.every(x=>Math.abs(x-Math.round(x))<1e-6))continue;
+    const co=poli.map(Math.round);
+    if(co[0]===0)return false;
+    if(co.reduce((a,b)=>mcd(a,b),0)>1)return false;
+  }
+  return true;
+}

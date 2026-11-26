@@ -1,10 +1,10 @@
 /* Más plantillas para los generadores de Álgebra que ya existían (ecuaciones lineales, sistemas 2×2, factorización y
    exponentes): cada nivel queda con 3 (la "clásica" del generador original + 2 nuevas), con comprobar() independiente.
    Mismos ids: index.js las registra encima de las originales; el progreso no cambia. Sin DOM. */
-import {num,casi,equivalente,limpiar,igualNum,compilar} from './verificar.js';
+import {num,casi,equivalente,limpiar,igualNum,compilar,mcd,factoresPrimitivos} from './verificar.js';
 import {lineal,polinomio,frac,par} from './formato.js';
 import {paso,final,c} from './pasos.js';
-import {T,sg,mal,malNum,numTxt} from './algebra-temas.js';
+import {T,sg,sgv,cv,mal,malNum,numTxt} from './algebra-temas.js';
 import {parXY,esProducto} from './algebra-basica.js';
 import orig1 from './matematicas.js';
 import orig2 from './algebra-basica.js';
@@ -56,7 +56,7 @@ const ecuacion=conVariantes(orig1['alg/ecuacion-lineal'],{
         [malNum((d-b)/a,'Lo que divide pasa multiplicando.'),malNum(a*(d+b),`El ${b} pasa con el signo contrario.`),malNum(d-b,`Falta multiplicar por ${a}.`)],{comprobar:()=>x/a+b===d})}
   },
   3:{
-    'decimales':rng=>{const [a1,a2]=rng.elegir([[0.5,0.25],[1.5,0.5],[0.6,0.2],[0.8,0.3],[1.2,0.7],[2.5,1.5]]),A=+(a1-a2).toFixed(2),x=rng.noCero(-8,8)*(A===0.25?4:A===0.4?5:2),b1=rng.noCero(-9,9),b2=+(A*x+b1).toFixed(2);
+    'decimales':rng=>{const [a1,a2]=rng.elegir([[0.5,0.25],[1.5,0.3],[0.6,0.2],[0.8,0.3],[1.2,0.7],[2.5,0.9]]),A=+(a1-a2).toFixed(2),x=rng.noCero(-8,8)*(A===0.25?4:A===0.4?5:2),b1=rng.noCero(-9,9),b2=+(A*x+b1).toFixed(2);
       return ecu(`${a1}x ${sg(b1)} = ${a2}x ${sg(b2)}`,x,[paso('Junta las x',`\\(${a1}x - ${a2}x = ${b2} ${sg(-b1)} \\Rightarrow ${A}x = ${c(+(b2-b1).toFixed(2))}\\)`,'Los decimales se restan como siempre.'),paso(`Divide entre ${A}`,`\\(x = \\dfrac{${+(b2-b1).toFixed(2)}}{${A}} = ${c(x)}\\)`,'Puedes multiplicar arriba y abajo por 10 o 100 para quitar los decimales.'),fin(x,`\\(${a1}\\cdot${par(x)} ${sg(b1)} = ${+(a1*x+b1).toFixed(2)}\\) y \\(${a2}\\cdot${par(x)} ${sg(b2)} = ${+(a2*x+b2).toFixed(2)}\\)`)],
         [malNum(+((b2-b1)/(a1+a2)).toFixed(4),`Al pasar ${a2}x se resta: ${a1} − ${a2} = ${A}.`),malNum(+((b2+b1)/A).toFixed(4),`El ${b1} pasa con el signo contrario.`),malNum(+(b2-b1).toFixed(2),`Falta dividir entre ${A}.`)],{comprobar:()=>casi(a1*x+b1,a2*x+b2)})},
     'coef-fraccion':rng=>{const p=rng.entero(2,5),q=rng.elegir([2,3,4,5,7].filter(z=>z!==p)),x=q*rng.noCero(-6,6),b=rng.noCero(-9,9),d=p*x/q-b;
@@ -78,7 +78,7 @@ const ecuacion=conVariantes(orig1['alg/ecuacion-lineal'],{
       return ecu(`\\dfrac{x}{${a}} + \\dfrac{x}{${b}} = ${cc}`,x,[paso(`Multiplica todo por ${a*b}`,`\\(${b}x + ${a}x = ${a*b*cc}\\)`,'Así desaparecen los denominadores.'),paso('Junta las x',`\\(${a+b}x = ${a*b*cc}\\)`,'Suma los coeficientes.'),final('Divide',`\\(x = ${c(frac(a*b*cc,a+b))}\\)`,'Simplifica la fracción si se puede.',`x = ${numTxt(x)}`)],
         [malNum(cc*(a+b),'Se suman las fracciones, no los denominadores.'),malNum(cc*a*b,`Falta dividir entre ${a+b}.`),malNum(2*cc/(1/a+1/b)/2*2,'Revisa: x/'+a+' + x/'+b+' = ('+b+'x + '+a+'x)/'+a*b+'.')],{comprobar:()=>casi(x/a+x/b,cc)})},
     'proporcion':rng=>{let a,b,cc,d;do{a=rng.noCero(-8,8);b=rng.entero(2,6);cc=rng.noCero(-8,8);d=rng.entero(2,7)}while(b===d);const x=-(b*cc+d*a)/(d-b);
-      return ecu(`\\dfrac{x ${sg(a)}}{${b}} = \\dfrac{x ${sg(-cc)}}{${d}}`,x,[paso('Multiplica en cruz',`\\(${d}(x ${sg(a)}) = ${b}(x ${sg(-cc)})\\)`,'Para quitar los dos denominadores.'),paso('Distribuye y junta las x',`\\(${d-b}x = ${-b*cc-d*a}\\)`,'x a un lado, números al otro.'),final('Despeja',`\\(x = ${c(frac(-b*cc-d*a,d-b))}\\)`,'Puede quedar fracción.',`x = ${numTxt(x)}`)],
+      return ecu(`\\dfrac{x ${sg(a)}}{${b}} = \\dfrac{x ${sg(-cc)}}{${d}}`,x,[paso('Multiplica en cruz',`\\(${d}(x ${sg(a)}) = ${b}(x ${sg(-cc)})\\)`,'Para quitar los dos denominadores.'),paso('Distribuye y junta las x',`\\(${cv(d-b,'x')} = ${-b*cc-d*a}\\)`,'x a un lado, números al otro.'),final('Despeja',`\\(x = ${c(frac(-b*cc-d*a,d-b))}\\)`,'Puede quedar fracción.',`x = ${numTxt(x)}`)],
         [malNum((b*cc+d*a)/(d-b),'Revisa los signos al pasar los números.'),malNum((-cc-a)/(d-b),'Al multiplicar en cruz, el número de cada lado también se multiplica.'),malNum(-(b*cc+d*a)/(d+b),`Al pasar ${b}x se resta: ${d} − ${b}.`)],{comprobar:()=>casi((x+a)/b,(x-cc)/d)})}
   }
 },'ecuacion');
@@ -101,19 +101,19 @@ const sistema2=conVariantes(orig2['alg/sistema-2x2'],{
     'suma-resta':rng=>{const x=rng.entero(-9,9),y=rng.entero(-9,9),s=x+y,d=x-y;
       return {...sis(`x + y = ${s}`,`x - y = ${d}`,x,y,[paso('Suma las dos ecuaciones',`\\(2x = ${s+d}\\Rightarrow x = ${c(x)}\\)`,'La y se cancela: +y − y = 0.'),paso('Sustituye en la primera',`\\(${x} + y = ${s}\\Rightarrow y = ${c(y)}\\)`,'Con x conocida sale y.')]),comprobar:()=>x+y===s&&x-y===d}},
     'y-despejada':rng=>{const x=rng.entero(-6,6),y0=rng.entero(-8,8),m=rng.noCero(-4,4),b=y0-m*x,a=rng.noCero(-5,5),cc=rng.noCero(-5,5),e=a*x+cc*y0;if(a+cc*m===0)return sistema2.generar(1,rng);
-      return {...sis(`y = ${lineal([[m,'x'],[b,'']])}`,`${lineal([[a,'x'],[cc,'y']])} = ${e}`,x,y0,[paso('Sustituye y en la segunda',`\\(${a}x ${sg(cc)}(${lineal([[m,'x'],[b,'']])}) = ${e}\\)`,'La primera ya da y: métela en la otra.'),paso('Resuelve para x',`\\(${a+cc*m}x = ${e-cc*b} \\Rightarrow x = ${c(x)}\\)`,'Distributiva y despeje.'),paso('Calcula y',`\\(y = ${m}\\cdot${par(x)} ${sg(b)} = ${c(y0)}\\)`,'Usa la ecuación con y despejada.')]),comprobar:()=>y0===m*x+b&&a*x+cc*y0===e}}
+      return {...sis(`y = ${lineal([[m,'x'],[b,'']])}`,`${lineal([[a,'x'],[cc,'y']])} = ${e}`,x,y0,[paso('Sustituye y en la segunda',`\\(${cv(a,'x')} ${sg(cc)}(${lineal([[m,'x'],[b,'']])}) = ${e}\\)`,'La primera ya da y: métela en la otra.'),paso('Resuelve para x',`\\(${cv(a+cc*m,'x')} = ${e-cc*b} \\Rightarrow x = ${c(x)}\\)`,'Distributiva y despeje.'),paso('Calcula y',`\\(y = ${m}\\cdot${par(x)} ${sg(b)} = ${c(y0)}\\)`,'Usa la ecuación con y despejada.')]),comprobar:()=>y0===m*x+b&&a*x+cc*y0===e}}
   },
   2:{
     'igualacion':rng=>{const x=rng.entero(-6,6),y=rng.entero(-9,9);let m1,m2;do{m1=rng.noCero(-5,5);m2=rng.noCero(-5,5)}while(m1===m2);const b1=y-m1*x,b2=y-m2*x;
-      return {...sis(`y = ${lineal([[m1,'x'],[b1,'']])}`,`y = ${lineal([[m2,'x'],[b2,'']])}`,x,y,[paso('Iguala las dos expresiones de y',`\\(${lineal([[m1,'x'],[b1,'']])} = ${lineal([[m2,'x'],[b2,'']])}\\)`,'Si las dos valen y, son iguales entre sí.'),paso('Despeja x',`\\(${m1-m2}x = ${b2-b1} \\Rightarrow x = ${c(x)}\\)`,'x a un lado, números al otro.'),paso('Calcula y',`\\(y = ${m1}\\cdot${par(x)} ${sg(b1)} = ${c(y)}\\)`,'En cualquiera de las dos.')]),comprobar:()=>y===m1*x+b1&&y===m2*x+b2}},
+      return {...sis(`y = ${lineal([[m1,'x'],[b1,'']])}`,`y = ${lineal([[m2,'x'],[b2,'']])}`,x,y,[paso('Iguala las dos expresiones de y',`\\(${lineal([[m1,'x'],[b1,'']])} = ${lineal([[m2,'x'],[b2,'']])}\\)`,'Si las dos valen y, son iguales entre sí.'),paso('Despeja x',`\\(${cv(m1-m2,'x')} = ${b2-b1} \\Rightarrow x = ${c(x)}\\)`,'x a un lado, números al otro.'),paso('Calcula y',`\\(y = ${m1}\\cdot${par(x)} ${sg(b1)} = ${c(y)}\\)`,'En cualquiera de las dos.')]),comprobar:()=>y===m1*x+b1&&y===m2*x+b2}},
     'x-despejada':rng=>{const x0=rng.entero(-9,9),y=rng.entero(-6,6),k=rng.noCero(-4,4),b=x0-k*y,a=rng.noCero(-5,5),cc=rng.noCero(-5,5),e=a*x0+cc*y;if(a*k+cc===0)return sistema2.generar(2,rng);
-      return {...sis(`x = ${lineal([[k,'y'],[b,'']])}`,`${lineal([[a,'x'],[cc,'y']])} = ${e}`,x0,y,[paso('Sustituye x en la segunda',`\\(${a}(${lineal([[k,'y'],[b,'']])}) ${sg(cc)}y = ${e}\\)`,'La primera ya da x.'),paso('Resuelve para y',`\\(${a*k+cc}y = ${e-a*b} \\Rightarrow y = ${c(y)}\\)`,'Distributiva y despeje.'),paso('Calcula x',`\\(x = ${k}\\cdot${par(y)} ${sg(b)} = ${c(x0)}\\)`,'Con la ecuación despejada.')]),comprobar:()=>x0===k*y+b&&a*x0+cc*y===e}}
+      return {...sis(`x = ${lineal([[k,'y'],[b,'']])}`,`${lineal([[a,'x'],[cc,'y']])} = ${e}`,x0,y,[paso('Sustituye x en la segunda',`\\(${a}(${lineal([[k,'y'],[b,'']])}) ${sgv(cc,'y')} = ${e}\\)`,'La primera ya da x.'),paso('Resuelve para y',`\\(${cv(a*k+cc,'y')} = ${e-a*b} \\Rightarrow y = ${c(y)}\\)`,'Distributiva y despeje.'),paso('Calcula x',`\\(x = ${k}\\cdot${par(y)} ${sg(b)} = ${c(x0)}\\)`,'Con la ecuación despejada.')]),comprobar:()=>x0===k*y+b&&a*x0+cc*y===e}}
   },
   3:{
     'coef-opuestos':rng=>{const x=rng.entero(-7,7),y=rng.entero(-7,7),a=rng.noCero(-6,6),b=rng.entero(2,7),d=rng.noCero(-6,6);if(a+d===0)return sistema2.generar(3,rng);const c1=a*x+b*y,c2=d*x-b*y;
-      return {...sis(`${lineal([[a,'x'],[b,'y']])} = ${c1}`,`${lineal([[d,'x'],[-b,'y']])} = ${c2}`,x,y,[paso('Suma las ecuaciones',`\\(${a+d}x = ${c1+c2} \\Rightarrow x = ${c(x)}\\)`,`+${b}y y −${b}y se cancelan.`),paso('Sustituye',`\\(${a}\\cdot${par(x)} + ${b}y = ${c1} \\Rightarrow y = ${c(y)}\\)`,'En la primera ecuación.')]),comprobar:()=>a*x+b*y===c1&&d*x-b*y===c2}},
+      return {...sis(`${lineal([[a,'x'],[b,'y']])} = ${c1}`,`${lineal([[d,'x'],[-b,'y']])} = ${c2}`,x,y,[paso('Suma las ecuaciones',`\\(${cv(a+d,'x')} = ${c1+c2} \\Rightarrow x = ${c(x)}\\)`,`+${b}y y −${b}y se cancelan.`),paso('Sustituye',`\\(${a}\\cdot${par(x)} + ${b}y = ${c1} \\Rightarrow y = ${c(y)}\\)`,'En la primera ecuación.')]),comprobar:()=>a*x+b*y===c1&&d*x-b*y===c2}},
     'multiplica-una':rng=>{const x=rng.entero(-7,7),y=rng.entero(-7,7),a=rng.noCero(-4,4),b=rng.noCero(-4,4),k=rng.elegir([2,3,-2,-3]),d=rng.noCero(-6,6);if(d===k*a)return sistema2.generar(3,rng);const c1=a*x+b*y,c2=d*x+k*b*y;
-      return {...sis(`${lineal([[a,'x'],[b,'y']])} = ${c1}`,`${lineal([[d,'x'],[k*b,'y']])} = ${c2}`,x,y,[paso(`Multiplica la primera por ${k}`,`\\(${lineal([[k*a,'x'],[k*b,'y']])} = ${k*c1}\\)`,'Así la y tiene el mismo coeficiente en las dos.'),paso('Resta la segunda',`\\(${k*a-d}x = ${k*c1-c2} \\Rightarrow x = ${c(x)}\\)`,'La y desaparece.'),paso('Sustituye',`\\(y = ${c(y)}\\)`,'En la primera ecuación.')]),comprobar:()=>a*x+b*y===c1&&d*x+k*b*y===c2}}
+      return {...sis(`${lineal([[a,'x'],[b,'y']])} = ${c1}`,`${lineal([[d,'x'],[k*b,'y']])} = ${c2}`,x,y,[paso(`Multiplica la primera por ${k}`,`\\(${lineal([[k*a,'x'],[k*b,'y']])} = ${k*c1}\\)`,'Así la y tiene el mismo coeficiente en las dos.'),paso('Resta la segunda',`\\(${cv(k*a-d,'x')} = ${k*c1-c2} \\Rightarrow x = ${c(x)}\\)`,'La y desaparece.'),paso('Sustituye',`\\(y = ${c(y)}\\)`,'En la primera ecuación.')]),comprobar:()=>a*x+b*y===c1&&d*x+k*b*y===c2}}
   },
   4:{
     'tipo-solucion':tipoSolucion,
@@ -128,14 +128,15 @@ const sistema2=conVariantes(orig2['alg/sistema-2x2'],{
 },'sistema');
 
 /* ---------- Factorización ---------- */
-const fac=(exp,resp,pasos,errores,regla,extra={})=>{const vars=extra.vars||['x'];return {enunciado:`Factoriza: \\(${T(exp)}\\)`,respuesta:resp,verificar:e=>esProducto(e)&&equivalente(e,exp,{vars}),pasos,
-  errores:[{si:e=>!esProducto(e)&&equivalente(e,exp,{vars}),por:'Eso es la misma expresión: escríbela como producto (con paréntesis).'},...errores.map(er=>({...er,si:e=>equivalente(e,er.valor,{vars})&&esProducto(e)}))],regla,pista:'¿Hay factor común? ¿Es un producto notable?',teclado:'mat',comprobar:()=>equivRel(resp,exp),...extra}};
+const fac=(exp,resp,pasos,errores,regla,extra={})=>{const vars=extra.vars||['x'],una=vars.length===1;return {enunciado:`Factoriza: \\(${T(exp)}\\)`,respuesta:resp,verificar:e=>esProducto(e)&&equivalente(e,exp,{vars})&&(!una||factoresPrimitivos(e)),pasos,
+  errores:[{si:e=>!esProducto(e)&&equivalente(e,exp,{vars}),por:'Eso es la misma expresión: escríbela como producto (con paréntesis).'},
+    {si:e=>una&&esProducto(e)&&equivalente(e,exp,{vars})&&!factoresPrimitivos(e),por:'Vas bien, pero todavía queda un factor común dentro de un paréntesis: factoriza por completo.'},...errores.map(er=>({...er,si:e=>equivalente(e,er.valor,{vars})&&esProducto(e)}))],regla,pista:'¿Hay factor común? ¿Es un producto notable?',teclado:'mat',comprobar:()=>equivRel(resp,exp),...extra}};
 const factorizacion=conVariantes(orig2['alg/factorizacion'],{
   1:{
-    'factor-x':rng=>{let a,b;do{a=rng.entero(1,9);b=rng.noCero(-9,9)}while(Math.abs(b)%a===0&&a>1);const exp=lineal([[a,'x^2'],[b,'x']]),resp=`x(${lineal([[a,'x'],[b,'']])})`;
+    'factor-x':rng=>{let a,b;do{a=rng.entero(1,9);b=rng.noCero(-9,9)}while(a>1&&mcd(a,b)>1);const exp=lineal([[a,'x^2'],[b,'x']]),resp=`x(${lineal([[a,'x'],[b,'']])})`;
       return fac(exp,resp,[paso('La x está en los dos términos',`\\(${T(exp)} = x\\cdot ${a===1?'':a}x ${sg(b)}\\cdot x\\)`,'Factor común: lo que se repite.'),final('Sácala',`\\(${c(resp)}\\)`,'x²/x = x y '+b+'x/x = '+b+'.',resp)],
         [{valor:`x(${lineal([[a,'x^2'],[b,'']])})`,por:'Al sacar x, x² queda como x.'},{valor:`x^2(${lineal([[a,''],[b,'x']])})`,por:'Solo puedes sacar x una vez: '+b+'x no tiene x².'},{valor:`x(${lineal([[a,'x'],[-b,'']])})`,por:'Revisa el signo.'}],'Factor común: saca lo que se repite en todos los términos: ax² + bx = x(ax + b).')},
-    'factor-monomio':rng=>{const k=rng.entero(2,6),a=rng.entero(1,5),b=rng.noCero(-7,7);if(Math.abs(b)%a===0&&a>1)return factorizacion.generar(1,rng);const exp=lineal([[k*a,'x^3'],[k*b,'x^2']]),resp=`${k}x^2(${lineal([[a,'x'],[b,'']])})`;
+    'factor-monomio':rng=>{const k=rng.entero(2,6),a=rng.entero(1,5),b=rng.noCero(-7,7);if(mcd(a,b)>1)return factorizacion.generar(1,rng);const exp=lineal([[k*a,'x^3'],[k*b,'x^2']]),resp=`${k}x^2(${lineal([[a,'x'],[b,'']])})`;
       return fac(exp,resp,[paso('Máximo factor común',`\\(${k}x^{2}\\)`,`${k} divide a ${k*a} y ${k*b}; x² es la menor potencia.`),final('Divide cada término',`\\(${c(T(resp))}\\)`,`\\(${k*a}x^{3} \\div ${k}x^{2} = ${a}x\\).`,resp)],
         [{valor:`${k}x(${lineal([[a,'x^2'],[b,'x']])})`,por:'Todavía hay x en común: saca x².'},{valor:`x^2(${lineal([[k*a,'x'],[k*b,'']])})`,por:`También puedes sacar el ${k}.`},{valor:`${k}x^2(${lineal([[a,'x'],[-b,'']])})`,por:'Revisa el signo.'}],'Saca el máximo factor común: el mayor número que divide a todos y la menor potencia de x.')}
   },
@@ -149,7 +150,7 @@ const factorizacion=conVariantes(orig2['alg/factorizacion'],{
   },
   3:{
     'agrupacion':rng=>{const a=rng.noCero(-6,6),b=rng.noCero(-6,6),exp=polinomio([a*b,b,a,1],{tex:false}),resp=`(x ${sg(a)})(x^2 ${sg(b)})`;
-      return fac(exp,resp,[paso('Agrupa de dos en dos',`\\((x^{3} ${sg(a)}x^{2}) + (${b}x ${sg(a*b)})\\)`,'Cuatro términos: prueba agrupar.'),paso('Factor común en cada grupo',`\\(x^{2}(x ${sg(a)}) ${sg(b)}(x ${sg(a)})\\)`,'Cada grupo deja el mismo binomio.'),final('Saca el binomio común',`\\(${c(T(resp))}\\)`,'(x + a) se repite.',resp)],
+      return fac(exp,resp,[paso('Agrupa de dos en dos',`\\((x^{3} ${sgv(a,'x^{2}')}) + (${cv(b,'x')} ${sg(a*b)})\\)`,'Cuatro términos: prueba agrupar.'),paso('Factor común en cada grupo',`\\(x^{2}(x ${sg(a)}) ${sg(b)}(x ${sg(a)})\\)`,'Cada grupo deja el mismo binomio.'),final('Saca el binomio común',`\\(${c(T(resp))}\\)`,'(x + a) se repite.',resp)],
         [{valor:`(x ${sg(-a)})(x^2 ${sg(b)})`,por:'Revisa el signo del binomio.'},{valor:`(x ${sg(a)})(x^2 ${sg(-b)})`,por:'Revisa el signo del segundo factor.'},{valor:`x^2(x ${sg(a)})`,por:'Faltó el segundo grupo.'}],'Factorización por agrupación: agrupa términos, saca factor común de cada grupo y luego el binomio que se repite.')},
     'trinomio-dos-letras':rng=>{let a,b;do{a=rng.noCero(-7,7);b=rng.noCero(-7,7)}while(a+b===0);const exp=`x^2 ${sg(a+b)}xy ${sg(a*b)}y^2`.replace(/ ([+-]) 1xy/,' $1 xy').replace(/ ([+-]) 1y\^2/,' $1 y^2'),resp=`(x ${sg(a)}y)(x ${sg(b)}y)`.replace(/ 1y/g,' y');
       return fac(exp,resp,[paso('Como un trinomio x² + bx + c, con y',`Producto \\(${a*b}\\), suma \\(${a+b}\\): \\(${a}\\) y \\(${b}\\)`,'Los mismos dos números, acompañados de y.'),final('Escribe los factores',`\\(${c(resp)}\\)`,'Cada número va con y.',resp)],
@@ -181,28 +182,28 @@ const exponentes=conVariantes(orig2['alg/exponentes'],{
     'producto-tres':rng=>{const a=rng.entero(2,7),b=rng.entero(2,7),d=rng.entero(2,7),resp=`x^${a+b+d}`;
       return ex(`x^{${a}}\\cdot x^{${b}}\\cdot x^{${d}}`,resp,[paso('Misma base: suma todos los exponentes',`\\(x^{${a}+${b}+${d}}\\)`,'Se multiplican potencias de x.'),final('Resultado',`\\(${c(T(resp))}\\)`,`${a} + ${b} + ${d} = ${a+b+d}.`,resp)],
         [{valor:`x^${a*b*d}`,por:'Al multiplicar se suman los exponentes, no se multiplican.'},{valor:`3x^${a+b+d}`,por:'No aparece un 3: es una sola x elevada.'},{valor:`x^${a+b}`,por:'Falta el tercer exponente.'}],['x'],{orig:`x^${a}*x^${b}*x^${d}`})},
-    'coeficientes':rng=>{const p=rng.entero(2,6),q=rng.entero(2,6),a=rng.entero(1,6),b=rng.entero(2,6),resp=`${p*q}x^${a+b}`;
+    'coeficientes':rng=>{const p=rng.entero(2,6),q=rng.entero(2,6),a=rng.entero(2,6),b=rng.entero(2,6),resp=`${p*q}x^${a+b}`;
       return ex(`(${p}x^{${a}})(${q}x^{${b}})`,resp,[paso('Multiplica los coeficientes',`\\(${p}\\cdot${q} = ${c(p*q)}\\)`,'Los números se multiplican.'),final('Suma los exponentes',`\\(${c(T(resp))}\\)`,'Misma base.',resp)],
         [{valor:`${p+q}x^${a+b}`,por:'Los coeficientes se multiplican.'},{valor:`${p*q}x^${a*b}`,por:'Los exponentes se suman.'},{valor:`${p*q}x^${a+b+1}`,por:'Solo suma los exponentes que hay.'}],['x'],{orig:`(${p}x^${a})*(${q}x^${b})`})}
   },
   2:{
-    'potencia-producto':rng=>{const a=rng.entero(1,5),b=rng.entero(1,5),k=rng.entero(2,4),resp=`x^${a*k}y^${b*k}`;
+    'potencia-producto':rng=>{const a=rng.entero(2,5),b=rng.entero(2,5),k=rng.entero(2,4),resp=`x^${a*k}y^${b*k}`;
       return ex(`(x^{${a}}y^{${b}})^{${k}}`,resp,[paso('La potencia afecta a cada factor',`\\((x^{${a}})^{${k}}(y^{${b}})^{${k}}\\)`,'(ab)ⁿ = aⁿbⁿ.'),final('Multiplica exponentes',`\\(${c(T(resp))}\\)`,'Potencia de potencia.',resp)],
         [{valor:`x^${a+k}y^${b+k}`,por:'Potencia de potencia: se multiplican.'},{valor:`x^${a*k}y^${b}`,por:'La potencia también afecta a y.'},{valor:`x^${a}y^${b*k}`,por:'La potencia también afecta a x.'}],['x','y'],{orig:`(x^${a}*y^${b})^${k}`})},
-    'cociente-coef':rng=>{const m=rng.entero(2,5),k=m*rng.entero(2,5),a=rng.entero(4,9),b=rng.entero(1,a-1),resp=`${k/m}x^${a-b}`;
+    'cociente-coef':rng=>{const m=rng.entero(2,5),k=m*rng.entero(2,5),a=rng.entero(4,9),b=rng.entero(2,a-2),resp=`${k/m}x^${a-b}`;
       return ex(`\\dfrac{${k}x^{${a}}}{${m}x^{${b}}}`,resp,[paso('Divide los coeficientes',`\\(${k}\\div${m} = ${c(k/m)}\\)`,'Los números se dividen.'),final('Resta los exponentes',`\\(${c(T(resp))}\\)`,'Arriba menos abajo.',resp)],
         [{valor:`${k/m}x^${a+b}`,por:'Al dividir se restan los exponentes.'},{valor:`${k-m}x^${a-b}`,por:'Los coeficientes se dividen.'},{valor:`${k/m}x^${b-a}`,por:'Es el de arriba menos el de abajo.'}],['x'],{orig:`(${k}x^${a})/(${m}x^${b})`})}
   },
   3:{
-    'exponente-negativo':rng=>{const a=rng.entero(2,8),b=rng.entero(2,9),resp=`x^${b-a}`;if(a===b)return exponentes.generar(3,rng);
+    'exponente-negativo':rng=>{const a=rng.entero(2,8),b=rng.entero(2,9),resp=b-a===1?'x':`x^${b-a}`;if(a===b)return exponentes.generar(3,rng);
       return ex(`x^{-${a}}\\cdot x^{${b}}`,resp,[paso('Suma los exponentes (con su signo)',`\\(x^{-${a}+${b}}\\)`,'Misma regla con negativos.'),final('Resultado',`\\(${c(T(resp))}\\)`,`−${a} + ${b} = ${b-a}.`,resp)],
         [{valor:`x^${a+b}`,por:'El exponente −'+a+' es negativo: −'+a+' + '+b+'.'},{valor:`x^${-a*b}`,por:'Al multiplicar se suman.'},{valor:`x^${a-b}`,por:'Revisa el signo: −'+a+' + '+b+' = '+(b-a)+'.'}],['x'],{orig:`x^(-${a})*x^${b}`})},
-    'fraccion-potencia':rng=>{const a=rng.entero(1,4),b=rng.entero(1,4),k=rng.entero(2,4),resp=`x^${a*k}/y^${b*k}`;
+    'fraccion-potencia':rng=>{const a=rng.entero(2,4),b=rng.entero(2,4),k=rng.entero(2,4),resp=`x^${a*k}/y^${b*k}`;
       return ex(`\\left(\\dfrac{x^{${a}}}{y^{${b}}}\\right)^{${k}}`,resp,[paso('Eleva arriba y abajo',`\\(\\dfrac{(x^{${a}})^{${k}}}{(y^{${b}})^{${k}}}\\)`,'(a/b)ⁿ = aⁿ/bⁿ.'),final('Multiplica exponentes',`\\(${c(`\\dfrac{x^{${a*k}}}{y^{${b*k}}}`)}\\)`,'Potencia de potencia.',resp)],
         [{valor:`x^${a*k}/y^${b}`,por:'La potencia también afecta al denominador.'},{valor:`x^${a+k}/y^${b+k}`,por:'Potencia de potencia: se multiplican.'},{valor:`x^${a}/y^${b*k}`,por:'La potencia también afecta al numerador.'}],['x','y'],{orig:`(x^${a}/y^${b})^${k}`})}
   },
   4:{
-    'mixto':rng=>{const a=rng.entero(2,4),b=rng.entero(2,3),cc=rng.entero(1,5),d=rng.entero(1,6),resp=`x^${a*b+cc-d}`;
+    'mixto':rng=>{const a=rng.entero(2,4),b=rng.entero(2,3),cc=rng.entero(2,5),d=rng.entero(2,6);if(a*b+cc-d<=1)return exponentes.generar(4,rng);const resp=`x^${a*b+cc-d}`;
       return ex(`\\dfrac{(x^{${a}})^{${b}}\\cdot x^{${cc}}}{x^{${d}}}`,resp,[paso('Potencia de potencia',`\\(\\dfrac{x^{${a*b}}\\cdot x^{${cc}}}{x^{${d}}}\\)`,'Se multiplican.'),paso('Producto',`\\(\\dfrac{x^{${a*b+cc}}}{x^{${d}}}\\)`,'Se suman.'),final('Cociente',`\\(${c(T(resp))}\\)`,'Se restan.',resp)],
         [{valor:`x^${a+b+cc-d}`,por:'(xᵃ)ᵇ: los exponentes se multiplican.'},{valor:`x^${a*b*cc-d}`,por:'Al multiplicar se suman.'},{valor:`x^${a*b+cc+d}`,por:'Al dividir se restan.'}],['x'],{orig:`((x^${a})^${b}*x^${cc})/x^${d}`})},
     'divide-negativo':rng=>{const a=rng.entero(2,8),b=rng.entero(2,6),resp=`x^${a+b}`;
@@ -213,7 +214,7 @@ const exponentes=conVariantes(orig2['alg/exponentes'],{
     'coef-negativo':rng=>{const k=rng.entero(2,3),a=rng.entero(1,4),m=rng.entero(2,3),resp=`x^${a*m}/${k**m}`;
       return ex(`(${k}x^{-${a}})^{-${m}}`,resp,[paso('Eleva cada factor a −'+m,`\\(${k}^{-${m}}\\cdot x^{${a*m}}\\)`,'(−'+a+')·(−'+m+') = '+a*m+'.'),final('k⁻ⁿ = 1/kⁿ',`\\(${c(`\\dfrac{x^{${a*m}}}{${k**m}}`)}\\)`,`\\(${k}^{-${m}} = \\dfrac{1}{${k**m}}\\)`,resp)],
         [{valor:`${k**m}x^${a*m}`,por:`${k}⁻${m} es 1/${k**m}: va abajo.`},{valor:`x^${-a*m}/${k**m}`,por:'Menos por menos da más en el exponente de x.'},{valor:`${-k*m}x^${a*m}`,por:'Un exponente negativo no hace negativo al número.'}],['x'],{orig:`(${k}*x^(-${a}))^(-${m})`})},
-    'dos-letras':rng=>{const p=rng.entero(2,4),a=rng.entero(1,3),b=rng.entero(1,3),resp=`${p*p}x^${2*a-1}y^${3-2*b}`;
+    'dos-letras':rng=>{const p=rng.entero(3,5),a=rng.entero(2,3),b=rng.entero(2,3),resp=`${p*p}x^${2*a-1}y^${3-2*b}`;
       return ex(`(${p}x^{${a}}y^{-${b}})^{2}\\cdot x^{-1}y^{3}`,resp,[paso('Eleva al cuadrado',`\\(${p*p}x^{${2*a}}y^{-${2*b}}\\cdot x^{-1}y^{3}\\)`,'Cada factor al cuadrado.'),final('Suma exponentes de cada letra',`\\(${c(T(resp))}\\)`,'x y y por separado.',resp)],
         [{valor:`${2*p}x^${2*a-1}y^${3-2*b}`,por:`El ${p} también se eleva: ${p}² = ${p*p}.`},{valor:`${p*p}x^${2*a+1}y^${3-2*b}`,por:'x⁻¹ resta 1 al exponente.'},{valor:`${p*p}x^${2*a-1}y^${3+2*b}`,por:'y tiene exponente −'+2*b+' después de elevar.'}],['x','y'],{orig:`(${p}*x^${a}*y^(-${b}))^2*x^(-1)*y^3`})}
   }

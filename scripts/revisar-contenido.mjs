@@ -533,6 +533,25 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   console.log('sincronizar: dos teléfonos convergen (XP exacta, notas, fotos, materias, lápidas, carreras, sin conexión); RLS probado en Postgres: nadie ve ni toca lo de otra persona');
 }
 sinGenerador.forEach(x=>mal('habilidad sin generador ni banco',x));
+// Auditoría de exactitud de Álgebra, Funciones y Álgebra lineal (PROMPT-ALGEBRA-PULIR; completa con npm run auditar-mate):
+// comprobación independiente de la respuesta, cuentas de cada paso, escritura (-0, 1x, + -3, x^1, NaN…), errores típicos y pistas
+{
+  const {auditar}=await import(pathToFileURL(join(raiz,'..','..','scripts','auditar-mate.mjs')).href);
+  const {informe,total}=auditar({n:40});
+  for(const [id,r] of Object.entries(informe))for(const [t,x] of Object.entries(r.prob))mal(`auditoría ${id}`,`${t}: ${x.n} (${x.ej}) · detalle con npm run auditar-mate -- --solo ${id} --detalle`);
+  // el verificador independiente sí detecta una respuesta equivocada
+  const {verificarLineal}=await import(pathToFileURL(join(raiz,'..','nucleo','generadores','auditoria.js')).href);
+  const {num:numV}=await import(pathToFileURL(join(raiz,'..','nucleo','generadores','verificar.js')).href);
+  const {crear}=await import(pathToFileURL(join(raiz,'..','nucleo','generadores','index.js')).href);
+  let atrapados=0,probados=0;
+  for(const [g,n] of [['al/inversa',1],['al/gauss',3],['al/determinante',4],['al/valores-propios',2],['al/producto-cruz',2],['al/matriz-producto',1]])for(let i=0;i<30;i++){
+    const p=crear(g,n,{semilla:i*31+5}),r0=verificarLineal(p);if(!r0)continue;probados++;
+    const malo={...p};if(p.celdas){malo.celdas=p.celdas.map((x,j)=>j===0?String(numV(x)+1):x)}else malo.respuesta=String(p.respuesta).replace(/-?\d+(\.\d+)?/,m=>String(+m+1));
+    const r1=verificarLineal(malo);if(r0.ok&&r1&&!r1.ok)atrapados++;else if(!r0.ok)mal('auditoría',`${g}: el verificador rechaza una respuesta correcta (${r0.por})`);}
+  if(atrapados<probados*0.9)mal('auditoría',`el verificador independiente solo atrapó ${atrapados} de ${probados} respuestas alteradas`);
+  console.log(`auditoría de Matemáticas: ${Object.keys(informe).length} generadores de Álgebra, Funciones y Álgebra lineal, ${total} ejercicios; el verificador independiente atrapa ${atrapados}/${probados} respuestas alteradas`);
+}
+
 // Generadores: 200 ejercicios por nivel sin errores, cuya respuesta pasa su propio verificar, con fórmulas válidas y sin repetirse demasiado
 {
   const {crear}=await import(pathToFileURL(join(raiz,'..','nucleo','generadores','index.js')).href);

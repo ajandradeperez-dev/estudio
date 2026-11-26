@@ -2,6 +2,8 @@
    desigualdades no lineales y funciones de precálculo (transformaciones, composición e inversa, polinomiales,
    racionales, exponenciales y modelado). Cada plantilla con sus números, pasos, errores típicos y comprobar(). */
 import {prob,paso,final,marca,fmt,cerca,crearGen} from './extensiones/base.js';
+import {compilar} from './verificar.js';
+import {argMin} from './auditoria.js';
 
 // Plantillas por nivel: b = básico, p = procedimiento, a = aplicación (≥ 3 por nivel)
 const NIV={1:['b1','b2','p1'],2:['b1','b2','p1','p2'],3:['p1','p2','a1'],4:['p1','p2','a1','a2'],5:['p2','a1','a2']};
@@ -100,10 +102,10 @@ const transformaciones=crearGen({titulo:'Gráficas y transformaciones',niveles:N
   referencia:'Stewart, Precálculo 2.6 – Transformaciones de funciones',regla:'f(x − h) + k: h a la derecha, k arriba; a·f(x) estira y, si a < 0, refleja.',pista:'Lo de adentro mueve en x; lo de afuera, en y.',
   tarjetas:[['f(x − h)','Desplaza la gráfica h unidades a la derecha.'],['f(x) + k','Desplaza la gráfica k unidades hacia arriba.'],['Vértice de a(x − h)² + k','(h, k).']],
   plantillas:{
-    b1:{prof:'basico',f:(n,r)=>{const h=r.entero(-6,6),k=r.entero(-6,6);return prob({enunciado:`La parábola y = x² se mueve a y = (x ${h<0?'+':'−'} ${Math.abs(h)})² ${k<0?'−':'+'} ${Math.abs(k)}. ¿Cuál es la coordenada x de su vértice?`,v:h,dec:0,
-      pasos:[paso('Forma a(x − h)² + k',`h = ${h}, k = ${k}`,'Lee h y k.'),final('Vértice',`(${marca(h)}, ${k})`,'x del vértice = h.')],errores:[[-h,'(x − h): el signo dentro se invierte.'],[k,'Esa es la coordenada y.']],comprobar:()=>(h-h)**2+k===k})}},
+    b1:{prof:'basico',f:(n,r)=>{const h=r.entero(-6,6)||3,k=r.entero(-6,6)||-2,fx=`(x ${h<0?'+':'-'} ${Math.abs(h)})^2 ${k<0?'-':'+'} ${Math.abs(k)}`;return prob({enunciado:`La parábola y = x² se mueve a y = (x ${h<0?'+':'−'} ${Math.abs(h)})² ${k<0?'−':'+'} ${Math.abs(k)}. ¿Cuál es la coordenada x de su vértice?`,v:h,dec:0,
+      pasos:[paso('Forma a(x − h)² + k',`h = ${h}, k = ${k}`,'Lee h y k.'),final('Vértice',`(${marca(h)}, ${k})`,'x del vértice = h.')],errores:[[-h,'(x − h): el signo dentro se invierte.'],[k,'Esa es la coordenada y.']],comprobar:()=>{const f=compilar(fx);return argMin(x=>f({x}))===h}})}},
     b2:{prof:'basico',f:(n,r)=>{const k=r.entero(-9,9),a=r.entero(-5,5);return prob({enunciado:`Si f(x) = x² y g(x) = f(x) ${k<0?'−':'+'} ${Math.abs(k)}, ¿cuánto vale g(${a})?`,v:a*a+k,dec:0,
-      pasos:[paso('Evalúa f',`f(${a}) = ${a*a}`,'Primero f.'),final('Suma '+k,`${a*a} ${k<0?'−':'+'} ${Math.abs(k)} = ${marca(a*a+k)}`,'Desplazamiento vertical.')],errores:[[(a+k)**2,'k se suma afuera, no adentro.'],[a*a,'Falta el desplazamiento.']],comprobar:()=>a*a+k===a*a+k})}},
+      pasos:[paso('Evalúa f',`f(${a}) = ${a*a}`,'Primero f.'),final('Suma '+k,`${a*a} ${k<0?'−':'+'} ${Math.abs(k)} = ${marca(a*a+k)}`,'Desplazamiento vertical.')],errores:[[(a+k)**2,'k se suma afuera, no adentro.'],[a*a,'Falta el desplazamiento.']],comprobar:()=>compilar(`x^2 ${k<0?'-':'+'} ${Math.abs(k)}`)({x:a})===a*a+k})}},
     p1:{prof:'procedimiento',f:(n,r)=>{const a=r.elegir([-3,-2,2,3]),h=r.entero(-4,4),k=r.entero(-5,5),x=r.entero(-5,5),v=a*(x-h)**2+k;return prob({enunciado:`g(x) = ${a}(x ${h<0?'+':'−'} ${Math.abs(h)})² ${k<0?'−':'+'} ${Math.abs(k)} es una transformación de x². Calcula g(${x}).`,v,dec:0,
       pasos:[paso('Desplazamiento horizontal',`(${x} − (${h}))² = ${(x-h)**2}`,'Adentro.'),paso('Estiramiento',`${a}·${(x-h)**2} = ${a*(x-h)**2}`,'Multiplica.'),final('Desplazamiento vertical',`+ (${k}) = ${marca(v)}`,'Afuera.')],errores:[[a*(x+h)**2+k,'(x − h): resta h.'],[(a*(x-h))**2+k,'a multiplica al cuadrado, no se eleva.']],comprobar:()=>v===a*(x-h)*(x-h)+k})}},
     p2:{prof:'procedimiento',f:(n,r)=>{const a=r.elegir([-2,-1,2,3]),h=r.entero(-4,4),k=r.entero(-8,8),v=k;return prob({enunciado:`La gráfica de y = ${a}(x ${h<0?'+':'−'} ${Math.abs(h)})² ${k<0?'−':'+'} ${Math.abs(k)}, ¿qué valor ${a>0?'mínimo':'máximo'} alcanza?`,v,dec:0,

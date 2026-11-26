@@ -1,8 +1,10 @@
 /* Generadores de álgebra básica: sistemas 2×2, factorización y leyes de exponentes.
    Los pasos se calculan con los números de cada ejercicio (ver pasos.js). */
-import {num,lista,casi,equivalente,limpiar} from './verificar.js';
+import {num,lista,casi,equivalente,limpiar,factoresPrimitivos,mcd} from './verificar.js';
 import {lineal,frac,par,polinomio} from './formato.js';
 import {paso,final,c} from './pasos.js';
+// Coeficiente y término con signo sin «1x» ni «+ -1y»
+const cvB=(n,v)=>n===1?v:n===-1?`-${v}`:`${n}${v}`,sgvB=(n,v)=>`${n<0?'-':'+'} ${Math.abs(n)===1?'':Math.abs(n)}${v}`;
 
 // "x = 2, y = -1", "(2, -1)", "2, -1" → [x, y]
 export function parXY(e){
@@ -36,10 +38,10 @@ const sistema={
     // eliminar y: (ec. 1)·b2 − (ec. 2)·b1
     const pasos=[
       paso('Elige una letra para eliminar: la y',`Multiplica la ecuación 1 por \\(${b2}\\) y la 2 por \\(${b1}\\):<br>\\(${lineal([[a1*b2,'x'],[b1*b2,'y']])} = ${c1*b2}\\)<br>\\(${lineal([[a2*b1,'x'],[b1*b2,'y']])} = ${c2*b1}\\)`,'Así la y tiene el mismo coeficiente en las dos y al restarlas desaparece.'),
-      paso('Resta las ecuaciones',`\\((${a1*b2} - ${par(a2*b1)})x = ${c1*b2} - ${par(c2*b1)}\\ \\Rightarrow\\ ${c(det)}x = ${c(nx)}\\)`,'Restar miembro a miembro elimina la y.',{ojo:'Resta TODO el segundo lado, incluidos los signos.'}),
+      paso('Resta las ecuaciones',`\\((${a1*b2} - ${par(a2*b1)})x = ${c1*b2} - ${par(c2*b1)}\\ \\Rightarrow\\ ${c(cvB(det,'x'))} = ${c(nx)}\\)`,'Restar miembro a miembro elimina la y.',{ojo:'Resta TODO el segundo lado, incluidos los signos.'}),
       paso('Despeja x',`\\(x = \\dfrac{${nx}}{${det}} = ${c(frac(nx,det))}\\)`,'Lo que multiplica a x pasa dividiendo.'),
-      paso('Sustituye x en la ecuación 1 y despeja y',`\\(${a1}\\cdot${par(frac(nx,det))} + ${b1}y = ${c1}\\ \\Rightarrow\\ y = ${c(frac(ny,det))}\\)`,'Con una letra conocida, la otra sale de cualquiera de las dos ecuaciones.'),
-      final('Comprueba en la ecuación 2',`\\(${a2}\\cdot${par(frac(nx,det))} + ${b2}\\cdot${par(frac(ny,det))} = ${c2}\\) ✓`,'La solución tiene que cumplir las dos ecuaciones.',`x = ${fx}, y = ${fy}`)
+      paso('Sustituye x en la ecuación 1 y despeja y',`\\(${a1}\\cdot${par(frac(nx,det))} ${sgvB(b1,'y')} = ${c1}\\ \\Rightarrow\\ y = ${c(frac(ny,det))}\\)`,'Con una letra conocida, la otra sale de cualquiera de las dos ecuaciones.'),
+      final('Comprueba en la ecuación 2',`\\(${a2}\\cdot${par(frac(nx,det))} + ${par(b2)}\\cdot${par(frac(ny,det))} = ${c2}\\) ✓`,'La solución tiene que cumplir las dos ecuaciones.',`x = ${fx}, y = ${fy}`)
     ];
     const errores=[];
     if(!casi(x,y))errores.push({valor:`x = ${fy}, y = ${fx}`,si:e=>{const v=parXY(e);return !!v&&casi(v[0],y)&&casi(v[1],x)},por:'Intercambiaste los valores: escribe primero x y luego y.'});
@@ -68,7 +70,7 @@ const factorizacion={
         final('Escribe el producto',`\\(${c(`${k}(x ${sg(m)})`)}\\)`,'ka + kb = k(a + b): comprueba multiplicando que vuelves al original.',resp)];
       regla='Factor común: saca lo que divide a todos los términos: ka + kb = k(a + b).';
       errores=[mal(`${k}(x ${sg(k*m)})`,`Al sacar el ${k}, divide también el número: ${k*m} ÷ ${k} = ${m}.`)]}
-    else if(n===2){const cc=rng.prob(0.5)?1:rng.entero(2,5),a=rng.entero(1,12),cx=cc===1?'x':`${cc}x`;exp=`${cc===1?'':cc*cc}x^2 - ${a*a}`;resp=`(${cx} - ${a})(${cx} + ${a})`;
+    else if(n===2){const cc=rng.prob(0.5)?1:rng.entero(2,5);let a;do a=rng.entero(1,12);while(mcd(cc,a)>1);const cx=cc===1?'x':`${cc}x`;exp=`${cc===1?'':cc*cc}x^2 - ${a*a}`;resp=`(${cx} - ${a})(${cx} + ${a})`;
       pasos=[paso('Reconoce dos cuadrados restados',`\\(${cc===1?'':cc*cc}x^2 = (${c(cx)})^2\\) y \\(${a*a} = ${c(a)}^2\\)`,'Es una diferencia de cuadrados: algo al cuadrado menos otra cosa al cuadrado.'),
         paso('Usa la fórmula',`\\(a^2 - b^2 = (a - b)(a + b)\\) con \\(a = ${cx}\\), \\(b = ${a}\\)`,'Siempre se factoriza como (resta)(suma) de las bases.'),
         final('Escribe el producto',`\\(${c(resp)}\\)`,'Multiplicando, los términos del medio se cancelan y vuelves al original.',resp,{ojo:'No es (a − b)²: ese cuadrado tiene término del medio.'})];
@@ -81,10 +83,10 @@ const factorizacion={
         final('Escribe los factores',`\\(${c(resp)}\\)`,'Cada número va sumado a la x en su paréntesis.',resp)];
       regla='Trinomio x² + bx + c: busca dos números que multipliquen c y sumen b; quedan (x + m)(x + n).';
       errores=[mal(`(x ${sg(r1)})(x ${sg(r2)})`,`Los signos están al revés: \\(${-r1}\\) y \\(${-r2}\\) suman \\(${b}\\).`)]}
-    else if(n===4){const p=rng.entero(2,5),r=rng.noCero(-7,7);let q;do q=rng.noCero(-7,7);while(p*r+q===0||q===p*r);exp=polinomio([q*r,p*r+q,p],{tex:false});resp=`(${p}x ${sg(q)})(x ${sg(r)})`;
+    else if(n===4){const p=rng.entero(2,5),r=rng.noCero(-7,7);let q;do q=rng.noCero(-7,7);while(p*r+q===0||q===p*r||mcd(p,q)>1);exp=polinomio([q*r,p*r+q,p],{tex:false});resp=`(${p}x ${sg(q)})(x ${sg(r)})`;
       pasos=[paso('Multiplica a·c',`\\(${p}\\cdot${par(q*r)} = ${c(p*q*r)}\\)`,'En ax² + bx + c se buscan dos números cuyo producto sea a·c.'),
         paso('Busca dos números: producto a·c, suma b',`\\(${c(p*r)}\\) y \\(${c(q)}\\): producto \\(${p*q*r}\\), suma \\(${p*r+q}\\)`,'Con ellos separas el término del medio en dos.'),
-        paso('Separa el término del medio y agrupa',`\\(${p}x^2 ${sg(p*r)}x ${sg(q)}x ${sg(q*r)} = ${c(`${p}x(x ${sg(r)}) ${sg(q)}(x ${sg(r)})`)}\\)`,'Sacas factor común de cada pareja de términos.'),
+        paso('Separa el término del medio y agrupa',`\\(${p}x^2 ${sgvB(p*r,'x')} ${sgvB(q,'x')} ${sg(q*r)} = ${c(`${p}x(x ${sg(r)}) ${sg(q)}(x ${sg(r)})`)}\\)`,'Sacas factor común de cada pareja de términos.'),
         final('Saca el paréntesis común',`\\(${c(resp)}\\)`,'(x + r) aparece en los dos grupos: es el factor común.',resp)];
       regla='ax² + bx + c: busca dos números que multipliquen a·c y sumen b, separa bx con ellos y agrupa.';
       errores=[mal(`(${p}x ${sg(-q)})(x ${sg(-r)})`,'Los signos de los factores están cambiados.')]}
@@ -95,8 +97,8 @@ const factorizacion={
         final('Junta todo',`\\(${c(resp)}\\)`,'El factor común queda delante de los dos paréntesis.',resp,{ojo:`No olvides el ${k} de adelante.`})];
       regla='Primero el factor común; después factoriza lo que queda dentro.';
       errores=[{si:e=>esProducto(e)&&equivalente(e,`(x ${sg(-r1)})(x ${sg(-r2)})`),por:`Falta el factor común ${k} al frente.`}]}
-    errores.unshift({si:e=>!esProducto(e)&&equivalente(e,exp),por:'Eso es la misma expresión desarrollada: escríbela como producto (con paréntesis).'});
-    return {enunciado:`Factoriza: \\(${texPot(exp)}\\)`,respuesta:resp,verificar:e=>esProducto(e)&&equivalente(e,exp),pasos,errores,regla,
+    errores.unshift({si:e=>esProducto(e)&&equivalente(e,exp)&&!factoresPrimitivos(e),por:'Vas bien, pero todavía queda un factor común dentro de un paréntesis: factoriza por completo.'},{si:e=>!esProducto(e)&&equivalente(e,exp),por:'Eso es la misma expresión desarrollada: escríbela como producto (con paréntesis).'});
+    return {enunciado:`Factoriza: \\(${texPot(exp)}\\)`,respuesta:resp,verificar:e=>esProducto(e)&&equivalente(e,exp)&&factoresPrimitivos(e),pasos,errores,regla,
       pista:n===2?'¿Es una resta de dos cuadrados?':n===1?'¿Qué número divide a los dos términos?':'Busca dos números: su producto y su suma.',teclado:'mat'};
   }
 };
@@ -119,10 +121,10 @@ const exponentes={
         paso('Multiplica los exponentes',`\\(x^{${a}\\cdot${b}} = x^{${c(a*b)}}\\)`,`${b} grupos de ${a} x son ${a*b} x.`,{ojo:'Aquí no se suman: se multiplican.'}),
         final('Resultado',`\\(x^{${a*b}}\\)`,'Potencia de potencia: se multiplican los exponentes.',resp)];
       if(a*b!==a+b)errores=[mal(`x^${a+b}`,'Sumaste los exponentes: en una potencia de potencia se multiplican.')]}
-    else if(n===3){const a=rng.entero(2,9);let b;do b=rng.entero(2,9);while(b===a);enun=`\\dfrac{x^{${a}}}{x^{${b}}}`;resp=`x^${a-b}`;regla='Cociente de igual base: se restan los exponentes, xᵃ/xᵇ = xᵃ⁻ᵇ (y x⁻ⁿ = 1/xⁿ).';
+    else if(n===3){const a=rng.entero(2,9);let b;do b=rng.entero(2,9);while(b===a||a-b===1);enun=`\\dfrac{x^{${a}}}{x^{${b}}}`;resp=`x^${a-b}`;regla='Cociente de igual base: se restan los exponentes, xᵃ/xᵇ = xᵃ⁻ᵇ (y x⁻ⁿ = 1/xⁿ).';
       pasos=[paso('Misma base arriba y abajo',`\\(\\dfrac{x^{${a}}}{x^{${b}}}\\)`,'Cada x de abajo cancela una x de arriba.'),
         paso('Resta los exponentes (arriba menos abajo)',`\\(x^{${a}-${b}} = x^{${c(a-b)}}\\)`,'Al dividir potencias de igual base se restan los exponentes.',{ojo:'Es el de arriba menos el de abajo, en ese orden.'}),
-        final('Resultado',a-b<0?`\\(x^{${a-b}} = \\dfrac{1}{x^{${b-a}}}\\)`:`\\(x^{${a-b}}\\)`,'Un exponente negativo significa que la x queda abajo.',resp)];
+        final('Resultado',a-b<0?`\\(x^{${a-b}} = \\dfrac{1}{${b-a===1?'x':`x^{${b-a}}`}}\\)`:`\\(x^{${a-b}}\\)`,'Un exponente negativo significa que la x queda abajo.',resp)];
       errores=[mal(`x^${a+b}`,'Al dividir potencias de igual base se restan los exponentes.'),mal(`x^${b-a}`,'Es el exponente de arriba menos el de abajo.')]}
     else if(n===4){const k=rng.entero(2,5),a=rng.entero(2,6),b=rng.entero(2,3);enun=`(${k}x^{${a}})^{${b}}`;resp=`${k**b}x^${a*b}`;regla='La potencia afecta a cada factor: (kxᵃ)ᵇ = kᵇ·xᵃᵇ.';
       pasos=[paso('La potencia afecta a cada factor',`\\((${k}x^{${a}})^{${b}} = ${k}^{${b}}\\cdot(x^{${a}})^{${b}}\\)`,'Elevar un producto es elevar cada factor.'),
@@ -130,7 +132,7 @@ const exponentes={
         paso('Multiplica los exponentes de x',`\\((x^{${a}})^{${b}} = x^{${c(a*b)}}\\)`,'Potencia de potencia.'),
         final('Junta',`\\(${k**b}x^{${a*b}}\\)`,'Coeficiente elevado por la x con su exponente.',resp)];
       errores=[mal(`${k}x^${a*b}`,`El ${k} también se eleva a ${b}: \\(${k}^{${b}} = ${k**b}\\).`)];if(k*b!==k**b)errores.push(mal(`${k*b}x^${a*b}`,`\\(${k}^{${b}}\\) no es \\(${k}\\cdot${b}\\).`))}
-    else{vars=['x','y'];const m=rng.entero(2,4),k=m*rng.entero(2,4),a=rng.entero(3,7),cc=rng.entero(1,a-1),b=rng.entero(1,4);let d;do d=rng.entero(1,5);while(d===b);
+    else{vars=['x','y'];const m=rng.entero(2,4),k=m*rng.entero(2,4),a=rng.entero(4,7),cc=rng.entero(2,a-2),b=rng.entero(2,5);let d;do d=rng.entero(2,6);while(d===b||b-d===1);
       enun=`\\dfrac{${k}x^{${a}}y^{${b}}}{${m}x^{${cc}}y^{${d}}}`;const ey=b-d;resp=`${k/m}x^${a-cc}y^${ey}`;
       regla='Divide los coeficientes y resta los exponentes de cada letra por separado.';
       pasos=[paso('Divide los coeficientes',`\\(${k} \\div ${m} = ${c(k/m)}\\)`,'Los números se dividen como siempre.'),

@@ -6,6 +6,22 @@ import {frac,par,mat,vec,lineal,polinomio} from './formato.js';
 import {paso,final,c} from './pasos.js';
 import {plantillas,malNum,numTxt,sg} from './algebra-temas.js';
 import {celdasIguales,vecAl,comoVector,comoMatriz,det2,det3} from './algebra-lineal.js';
+import {rango as rangoNum} from './auditoria.js';
+// Para comprobar «¿es subespacio?» sin creerle al texto: cada caso (en el orden de la lista) con su pertenencia y una
+// muestra de puntos; es subespacio si contiene al 0 y la suma y los múltiplos de muestras siguen dentro
+const crearRngLocal=s=>{let x=s*9301+49297;return ()=>{x=(x*9301+49297)%233280;return Math.round(x/233280*12-6)}};
+const SUBESP=[
+  {en:([x,y])=>y===2*x,m:r=>{const t=r();return [t,2*t]},n:2},
+  {en:([x,y])=>y===2*x+1,m:r=>{const t=r();return [t,2*t+1]},n:2},
+  {en:([x,y,z])=>x+y+z===0,m:r=>{const a=r(),b=r();return [a,b,-a-b]},n:3},
+  {en:([x,y,z])=>x+y+z===3,m:r=>{const a=r(),b=r();return [a,b,3-a-b]},n:3},
+  {en:([x])=>x>=0,m:r=>[Math.abs(r())+1,r()],n:2},
+  {en:v=>v.every(x=>x===0),m:()=>[0,0,0],n:3},
+  {en:([x,y])=>x*y===0,m:r=>{const t=r()||1;return r()>0?[t,0]:[0,t]},n:2},
+  {en:([x,y,z])=>y===2*x&&z===-x,m:r=>{const t=r();return [t,2*t,-t]},n:3}];
+function subespacioNumerico(i){const S=SUBESP[i];if(!S.en(Array(S.n).fill(0)))return false;
+  for(let s=1;s<=40;s++){const r=crearRngLocal(s),u=S.m(r),v=S.m(r),k=r()||-1;if(!S.en(u.map((x,j)=>x+v[j]))||!S.en(u.map(x=>k*x)))return false}
+  return true}
 
 const cruz=(u,v)=>[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
 const punto=(u,v)=>u.reduce((s,x,i)=>s+x*v[i],0);
@@ -214,9 +230,9 @@ const combinacion={
       3:{
         'combinacion-3d':()=>{let U;do U=Array.from({length:3},()=>vecAl(rng,3,2));while(det3(U)===0);return coefRes(w=>`Escribe \\(w = ${vec(w)}\\) como \\(a\\,u + b\\,v + c\\,t\\) con \\(u = ${vec(U[0])}\\), \\(v = ${vec(U[1])}\\), \\(t = ${vec(U[2])}\\). Escribe a, b, c.`,U,vecAl(rng,3,3))},
         'es-subespacio':()=>{const casos=[['la recta \\(y = 2x\\) (en \\(\\mathbb{R}^2\\))',true,'Pasa por el origen y sumar o escalar puntos de la recta deja en la recta.'],['la recta \\(y = 2x + 1\\)',false,'No contiene al (0, 0).'],['el plano \\(x + y + z = 0\\)',true,'Pasa por el origen y es cerrado bajo suma y escalares.'],['el plano \\(x + y + z = 3\\)',false,'No contiene al origen.'],['los vectores \\((x, y)\\) con \\(x \\ge 0\\)',false,'(1, 0) está, pero −1·(1, 0) no: no es cerrado bajo escalares.'],['el conjunto \\(\\{(0, 0, 0)\\}\\)',true,'El subespacio cero: contiene al 0 y es cerrado.'],['los \\((x, y)\\) con \\(xy = 0\\) (los dos ejes)',false,'(1, 0) + (0, 1) = (1, 1) no está: no es cerrado bajo la suma.'],['los vectores \\((t, 2t, -t)\\)',true,'Es el span de (1, 2, −1).']];
-          const [txt,es,porque]=rng.elegir(casos);
+          const elegido=rng.elegir(casos),[txt,es,porque]=elegido,i=casos.indexOf(elegido);
           return {enunciado:`Conjunto: ${txt}. ¿Es un subespacio vectorial? Responde sí o no.`,clave:txt,respuesta:es?'Sí':'No',verificar:siNo(es),pasos:[paso('Revisa las 3 condiciones',`¿Contiene al 0? ¿Es cerrado bajo la suma? ¿Y bajo la multiplicación por escalar?`,'Las tres tienen que cumplirse.'),final(es?'Cumple las tres':'Falla una',porque,'Con una sola que falle, ya no es subespacio.',es?'Sí':'No')],
-            errores:[{valor:es?'No':'Sí',si:siNo(!es),por:porque}],comprobar:()=>true}},
+            errores:[{valor:es?'No':'Sí',si:siNo(!es),por:porque}],comprobar:()=>subespacioNumerico(i)===es}},
         'dimension-span':()=>{const r=rng.elegir([1,2,3]);let U;do{const a=vecAl(rng,3,3),b=vecAl(rng,3,3);U=r===1?[a,a.map(x=>2*x),a.map(x=>-x)]:r===2?[a,b,a.map((x,i)=>x+b[i])]:[a,b,vecAl(rng,3,3)]}while(gaussJordan(U.map(f=>[...f,0])).rango!==r);
           return {enunciado:`¿Qué dimensión tiene el espacio generado por \\(${vec(U[0])}\\), \\(${vec(U[1])}\\) y \\(${vec(U[2])}\\)?`,respuesta:String(r),verificar:e=>igualNum(e,r),
             pasos:[paso('Ponlos como filas y escalona',`\\(${matNum(U)}\\)`,'Las filas que no se anulan son independientes.'),final('Dimensión = rango',`\\(${c(r)}\\)`,'Cuántos vectores independientes hay.',String(r))],
@@ -226,7 +242,7 @@ const combinacion={
         'combinacion-3d':()=>{let U;do U=Array.from({length:3},()=>vecAl(rng,3,3));while(det3(U)===0);return coefRes(w=>`Escribe \\(w = ${vec(w)}\\) como \\(a\\,u + b\\,v + c\\,t\\) con \\(u = ${vec(U[0])}\\), \\(v = ${vec(U[1])}\\), \\(t = ${vec(U[2])}\\). Escribe a, b, c.`,U,vecAl(rng,3,4))},
         'k-en-span':()=>{const u=[1,rng.entero(-3,3),rng.entero(-3,3)],v=[0,1,rng.entero(-3,3)],a=rng.noCero(-3,3),b=rng.noCero(-3,3),w=u.map((x,i)=>a*x+b*v[i]);
           return {enunciado:`¿Qué valor de k hace que \\((${w[0]}, ${w[1]}, k)\\) esté en el espacio generado por \\(u = ${vec(u)}\\) y \\(v = ${vec(v)}\\)?`,respuesta:`k = ${w[2]}`,verificar:e=>igualNum(e,w[2]),
-            pasos:[paso('Usa las dos primeras componentes para a y b',`\\(a = ${c(a)}\\) (primera) y \\(${u[1]}a + b = ${w[1]} \\Rightarrow b = ${c(b)}\\)`,'Dos ecuaciones, dos incógnitas.'),final('La tercera da k',`\\(k = ${a}\\cdot${par(u[2])} + ${b}\\cdot${par(v[2])} = ${c(w[2])}\\)`,'k tiene que coincidir con la combinación.',`k = ${w[2]}`)],
+            pasos:[paso('Usa las dos primeras componentes para a y b',`\\(a = ${c(a)}\\) (primera) y \\(${u[1]===0?'':`${u[1]===1?'':u[1]===-1?'-':u[1]}a + `}b = ${w[1]} \\Rightarrow b = ${c(b)}\\)`,'Dos ecuaciones, dos incógnitas.'),final('La tercera da k',`\\(k = ${a}\\cdot${par(u[2])} + ${par(b)}\\cdot${par(v[2])} = ${c(w[2])}\\)`,'k tiene que coincidir con la combinación.',`k = ${w[2]}`)],
             errores:[malNum(a*u[2]-b*v[2],'Revisa el signo de b.'),malNum(u[2]+v[2],'Faltan los coeficientes a y b.'),malNum(0,'No cualquier k sirve: solo uno.')],comprobar:()=>det3([u,v,w])===0}},
         'dimension-span':()=>{const r=rng.elegir([1,2]);let U;do{const a=vecAl(rng,3,4),b=vecAl(rng,3,4);U=r===1?[a,a.map(x=>-3*x),a.map(x=>2*x)]:[a,b,a.map((x,i)=>2*x-b[i])]}while(gaussJordan(U.map(f=>[...f,0])).rango!==r);
           return {enunciado:`¿Qué dimensión tiene el espacio generado por \\(${vec(U[0])}\\), \\(${vec(U[1])}\\) y \\(${vec(U[2])}\\)?`,respuesta:String(r),verificar:e=>igualNum(e,r),
@@ -276,7 +292,7 @@ const independencia={
         'tres-3d':()=>{const ind=rng.prob(0.5);let U;do{const a=vecAl(rng,3,3),b=vecAl(rng,3,3);U=[a,b,ind?vecAl(rng,3,3):a.map((x,i)=>rng.elegir([1,2,-1])*x+b[i])]}while((det3(U)!==0)!==ind||!noCeroV(U[0]));return pregInd(U,det3(U),`\\(${vec(U[0])}\\), \\(${vec(U[1])}\\) y \\(${vec(U[2])}\\)`)},
         'k-dependientes':()=>{const a=rng.noCero(-5,5),b=rng.noCero(-5,5),m=rng.elegir([2,3,-2,4]),cc=a*m,k=b*m;// (a, b) y (cc, k) dependientes ⇔ a·k − b·cc = 0
           return {enunciado:`¿Para qué valor de k son linealmente <b>dependientes</b> \\(${vec([a,b])}\\) y \\((${cc}, k)\\)?`,respuesta:`k = ${k}`,verificar:e=>igualNum(e,k),
-            pasos:[paso('Dependientes ⇔ determinante 0',`\\(${a}k - ${par(b)}\\cdot${par(cc)} = 0\\)`,'ad − bc = 0.'),final('Despeja',`\\(k = \\dfrac{${b*cc}}{${a}} = ${c(k)}\\)`,'Así el segundo es múltiplo del primero.',`k = ${k}`)],
+            pasos:[paso('Dependientes ⇔ determinante 0',`\\(${Math.abs(a)===1?(a<0?'-':''):a}k - ${par(b)}\\cdot${par(cc)} = 0\\)`,'ad − bc = 0.'),final('Despeja',`\\(k = \\dfrac{${b*cc}}{${a}} = ${c(k)}\\)`,'Así el segundo es múltiplo del primero.',`k = ${k}`)],
             errores:[malNum(-k,'Revisa el signo al despejar.'),malNum(cc/b===Math.round(cc/b)?cc/b:a*b,'Plantea ad − bc = 0.'),malNum(b,'k tiene que hacer proporcionales a los dos vectores.')],comprobar:()=>a*k-b*cc===0}},
         'base-r2':()=>{let u,v;const base=rng.prob(0.6);do{u=vecAl(rng,2,5);v=base?vecAl(rng,2,5):u.map(x=>2*x)}while(!noCeroV(u)||(det2([u,v])!==0)!==base);
           return {enunciado:`¿Forman \\(${vec(u)}\\) y \\(${vec(v)}\\) una base de \\(\\mathbb{R}^2\\)? Responde sí o no.`,respuesta:base?'Sí':'No',verificar:siNo(base),
@@ -304,7 +320,7 @@ const independencia={
             errores:[{si:e=>celdasIguales(e,w),por:'Esas son las coordenadas usuales.'},{si:e=>celdasIguales(e,[b,a]),por:'Intercambiaste a y b.'}],comprobar:()=>w.every((x,i)=>x===a*u[i]+b*v[i])}},
         'cuatro-en-r3':()=>({enunciado:`¿Pueden ser linealmente independientes 4 vectores de \\(\\mathbb{R}^3\\)? Responde sí o no.`,clave:'cuatro-r3-'+rng.entero(1,9),respuesta:'No',verificar:esNo,
           pasos:[paso('Dimensión de ℝ³',`\\(\\dim \\mathbb{R}^3 = 3\\)`,'Como máximo 3 independientes.'),final('Conclusión','Con 4 vectores, alguno es combinación de los otros.','En ℝⁿ hay como máximo n independientes.','No')],
-          errores:[{valor:'Sí',si:esSi,por:'En ℝ³ como máximo hay 3 vectores independientes.'}],comprobar:()=>true})
+          errores:[{valor:'Sí',si:esSi,por:'En ℝ³ como máximo hay 3 vectores independientes.'}],comprobar:()=>[1,2,3,4,5].every(s=>{const r=crearRngLocal(s);return rangoNum(Array.from({length:4},()=>[r(),r(),r()]))<4})})
       },
       5:{
         'coordenadas-3d':()=>{let U;do U=[[1,rng.entero(-2,2),rng.entero(-2,2)],[0,1,rng.entero(-2,2)],[0,0,1]];while(det3(U)!==1);const ab=vecAl(rng,3,4),w=[0,1,2].map(i=>U.reduce((s,u,k)=>s+ab[k]*u[i],0));
@@ -355,7 +371,7 @@ const transformaciones={
           return {enunciado:`Una figura de área ${a0} se transforma con \\(A = ${matNum(A)}\\). ¿Qué área tiene la imagen?`,respuesta:String(f*a0),verificar:e=>igualNum(e,f*a0),pasos:[paso('Factor de área = |det A|',`\\(|${det2(A)}| = ${c(f)}\\)`,'El determinante mide cómo cambian las áreas.'),final('Multiplica',`\\(${a0}\\cdot${f} = ${c(f*a0)}\\)`,'Área nueva = |det| × área original.',String(f*a0))],
             errores:[malNum(det2(A)*a0,'El área no es negativa: usa |det|.'),malNum(f,'Multiplica por el área original.'),malNum(a0,'Falta el factor |det A|.')].filter(e=>e.valor!==String(f*a0)),comprobar:()=>f===Math.abs(A[0][0]*A[1][1]-A[0][1]*A[1][0])}},
         'preimagen':()=>{let A;do A=[vecAl(rng,2,3),vecAl(rng,2,3)];while(Math.abs(det2(A))!==1);const v=vecAl(rng,2,5),w=mulMV(A,v);
-          return {...comoVector(v),enunciado:`Con \\(A = ${matNum(A)}\\), ¿qué vector v cumple \\(A v = ${vec(w)}\\)?`,pasos:[paso('Plantea el sistema',`\\(\\begin{cases}${A[0][0]}x ${sg(A[0][1])}y = ${w[0]} \\\\ ${A[1][0]}x ${sg(A[1][1])}y = ${w[1]}\\end{cases}\\)`,'A·v = w.'),final('Resuelve',`\\(v = ${c(vec(v))}\\)`,'O usa v = A⁻¹w.',vec(v))],
+          return {...comoVector(v),enunciado:`Con \\(A = ${matNum(A)}\\), ¿qué vector v cumple \\(A v = ${vec(w)}\\)?`,pasos:[paso('Plantea el sistema',`\\(\\begin{cases}${lineal([[A[0][0],'x'],[A[0][1],'y']])} = ${w[0]} \\\\ ${lineal([[A[1][0],'x'],[A[1][1],'y']])} = ${w[1]}\\end{cases}\\)`,'A·v = w.'),final('Resuelve',`\\(v = ${c(vec(v))}\\)`,'O usa v = A⁻¹w.',vec(v))],
             errores:[{si:e=>celdasIguales(e,mulMV(A,w)),por:'Aplicaste A otra vez: hay que deshacerla (A⁻¹).'},{si:e=>celdasIguales(e,w),por:'w es la imagen; v es el que entra.'}],comprobar:()=>iguales(mulMV(A,v),w)}}
       },
       4:{
@@ -364,7 +380,7 @@ const transformaciones={
             pasos:[paso('Matriz de rotación',`\\(\\begin{pmatrix}\\cos ${ang}^\\circ & -\\sin ${ang}^\\circ \\\\ \\sin ${ang}^\\circ & \\cos ${ang}^\\circ\\end{pmatrix}\\)`,'cos '+ang+'° ≈ '+co.toFixed(3)+', sen '+ang+'° ≈ '+se.toFixed(3)+'.'),final('Multiplica',`\\(${c(vec(r))}\\)`,'(x cos θ − y sen θ, x sen θ + y cos θ).',vec(r))],
             errores:[{si:e=>Array.isArray(e)&&e.length===2&&Math.abs(num(e[0])-(co*v[0]+se*v[1]))<0.015&&Math.abs(num(e[1])-(-se*v[0]+co*v[1]))<0.015&&se!==0,por:'Esa es la rotación en sentido horario.'}],comprobar:()=>casi(Math.hypot(...r),Math.hypot(...v),0.01)}},
         'nucleo':()=>{const a=rng.noCero(-4,4),b=rng.noCero(-4,4),m=rng.noCero(-3,3),A=[[a,b],[m*a,m*b]],k=-a/b;
-          return {enunciado:`La matriz \\(${matNum(A)}\\) manda al vector \\((1, k)\\) al cero. ¿Cuánto vale k?`,respuesta:`k = ${numTxt(k)}`,verificar:e=>igualNum(e,k),pasos:[paso('A(1, k) = 0',`\\(${a} ${sg(b)}k = 0\\)`,'La primera fila basta (la segunda es múltiplo).'),final('Despeja',`\\(k = ${c(frac(-a,b))}\\)`,'Ese vector está en el núcleo.',`k = ${numTxt(k)}`)],
+          return {enunciado:`La matriz \\(${matNum(A)}\\) manda al vector \\((1, k)\\) al cero. ¿Cuánto vale k?`,respuesta:`k = ${numTxt(k)}`,verificar:e=>igualNum(e,k),pasos:[paso('A(1, k) = 0',`\\(${a} ${b<0?'-':'+'} ${Math.abs(b)===1?'':Math.abs(b)}k = 0\\)`,'La primera fila basta (la segunda es múltiplo).'),final('Despeja',`\\(k = ${c(frac(-a,b))}\\)`,'Ese vector está en el núcleo.',`k = ${numTxt(k)}`)],
             errores:[malNum(a/b,'Revisa el signo al despejar.'),malNum(-b/a,'Al revés: k = −a/b.'),malNum(0,'Con k = 0 no da cero.')],comprobar:()=>casi(a+b*k,0)&&casi(m*a+m*b*k,0)}},
         'composicion':()=>P[3]['composicion']()
       },
@@ -375,7 +391,7 @@ const transformaciones={
             errores:[{si:e=>celdasIguales(e,[ux,uy].map(x=>x*(v[0]*ux+v[1]*uy))),por:'Falta dividir entre u·u.'},{si:e=>celdasIguales(e,v),por:'Ese es v, no su proyección.'}],comprobar:()=>casi(punto(resta(v,r),[ux,uy]),0)}},
         'punto-fijo':()=>{const k=rng.noCero(-3,3),A=[[1,k],[0,1]],t=rng.noCero(-5,5);
           return {enunciado:`El corte \\(A = ${matNum(A)}\\) deja fijos los vectores del eje x. Si \\(A(t, 0) = (t, 0)\\), ¿qué vector es \\(A(${t}, 1)\\)? Escribe (x, y).`,respuesta:`(${t+k}, 1)`,verificar:e=>{const l=lista(e);return l.length===2&&casi(l[0],t+k)&&casi(l[1],1)},
-            pasos:[paso('Multiplica',`\\((1\\cdot${par(t)} + ${k}\\cdot1,\\ 0\\cdot${par(t)} + 1)\\)`,'Fila por vector.'),final('Resultado',`\\(${c(`(${t+k}, 1)`)}\\)`,'El corte desplaza según la altura.',`(${t+k}, 1)`)],
+            pasos:[paso('Multiplica',`\\((1\\cdot${par(t)} + ${par(k)}\\cdot1,\\ 0\\cdot${par(t)} + 1)\\)`,'Fila por vector.'),final('Resultado',`\\(${c(`(${t+k}, 1)`)}\\)`,'El corte desplaza según la altura.',`(${t+k}, 1)`)],
             errores:[{valor:`(${t}, 1)`,si:e=>{const l=lista(e);return l.length===2&&casi(l[0],t)&&casi(l[1],1)},por:'Solo los del eje x quedan fijos; este se desplaza k.'},{valor:`(${t}, ${1+k})`,si:e=>{const l=lista(e);return l.length===2&&casi(l[0],t)&&casi(l[1],1+k)},por:'Se desplaza la x, no la y.'}],comprobar:()=>iguales(mulMV(A,[t,1]),[t+k,1])}},
         'composicion-3':()=>{const R=[[0,-1],[1,0]],S=[[1,0],[0,-1]],v=vecAl(rng,2,5),r=mulMV(S,mulMV(R,v));
           return {...comoVector(r),enunciado:`Primero rotas \\(${vec(v)}\\) 90° (antihorario) y después lo reflejas en el eje x. ¿Dónde queda?`,pasos:[paso('Rota 90°',`\\(${vec(mulMV(R,v))}\\)`,'(x, y) → (−y, x).'),final('Refleja en el eje x',`\\(${c(vec(r))}\\)`,'(x, y) → (x, −y).',vec(r))],
@@ -403,7 +419,7 @@ const propios={
     const valores=(A,ls,enun)=>{const tr=A[0][0]+A[1][1],dt=det2(A),resp=[...new Set(ls)].map(l=>`λ = ${l}`).join(', ');
       return {enunciado:enun||`Valores propios de \\(A = ${matNum(A)}\\) (sepáralos con coma).`,respuesta:resp,verificar:e=>raicesSet(e,ls),
         pasos:[paso('Polinomio característico',`\\(\\lambda^{2} - (${tr})\\lambda + (${dt}) = 0\\)`,'λ² − traza·λ + det.'),final('Raíces',`\\(${ls.map(l=>`\\lambda = ${c(l)}`).join(',\\ ')}\\)`,'Factoriza o usa la fórmula.',resp)],
-        errores:[{valor:ls.map(l=>`λ = ${-l}`).join(', '),si:e=>raicesSet(e,ls.map(l=>-l))&&ls.some(l=>!ls.includes(-l)),por:'Signos al revés: revisa la factorización.'},{valor:`λ = ${A[0][0]}, λ = ${A[1][1]}`,si:e=>raicesSet(e,[A[0][0],A[1][1]])&&(A[0][1]*A[1][0]!==0),por:'La diagonal solo da los valores propios si la matriz es triangular.'},{valor:`λ = ${tr}, λ = ${dt}`,si:e=>raicesSet(e,[tr,dt])&&!raicesSet(`${tr}, ${dt}`,ls),por:'La traza y el det no son los valores propios: son su suma y su producto.'}],
+        errores:[{valor:ls.map(l=>`λ = ${-l}`).join(', '),si:e=>raicesSet(e,ls.map(l=>-l))&&ls.some(l=>!ls.includes(-l)),por:'Signos al revés: revisa la factorización.'},...(A[0][1]*A[1][0]!==0?[{valor:`λ = ${A[0][0]}, λ = ${A[1][1]}`,si:e=>raicesSet(e,[A[0][0],A[1][1]]),por:'La diagonal solo da los valores propios si la matriz es triangular.'}]:[]),{valor:`λ = ${tr}, λ = ${dt}`,si:e=>raicesSet(e,[tr,dt])&&!raicesSet(`${tr}, ${dt}`,ls),por:'La traza y el det no son los valores propios: son su suma y su producto.'}],
         comprobar:()=>ls.every(l=>casi(det2([[A[0][0]-l,A[0][1]],[A[1][0],A[1][1]-l]]),0))}};
     const P={
       1:{
@@ -418,7 +434,7 @@ const propios={
         'enteros':()=>{const l1=rng.noCero(-5,5);let l2;do l2=rng.noCero(-5,5);while(l2===l1);return valores(conPropios(l1,l2).A,[l1,l2])},
         'polinomio':()=>{const {A}=conPropios(rng.noCero(-4,4),rng.noCero(-4,4)),tr=A[0][0]+A[1][1],dt=det2(A),resp=`λ^2 ${tr?(-tr>0?'+ ':'- ')+Math.abs(tr)+'λ':''} ${dt>=0?'+':'-'} ${Math.abs(dt)}`.replace(/\s+/g,' ').replace(/ 1λ/,' λ');
           return {enunciado:`Escribe el polinomio característico de \\(A = ${matNum(A)}\\) en λ.`,respuesta:resp,verificar:e=>equivalente(limpiar(e).replace(/λ/g,'x').replace(/^.*=\s*(?=[^=]*$)/,'').replace(/\s*=\s*0\s*$/,''),`x^2 - ${tr}x + ${dt}`),
-            pasos:[paso('det(A − λI)',`\\((${A[0][0]} - \\lambda)(${A[1][1]} - \\lambda) - (${A[0][1]})(${A[1][0]})\\)`,'Resta λ en la diagonal.'),final('Desarrolla',`\\(\\lambda^{2} - ${par(tr)}\\lambda + ${par(dt)}\\)`,'λ² − traza·λ + det.',resp)],
+            pasos:[paso('det(A − λI)',`\\((${A[0][0]} - \\lambda)(${A[1][1]} - \\lambda) - (${A[0][1]})(${A[1][0]})\\)`,'Resta λ en la diagonal.'),final('Desarrolla',`\\(\\lambda^{2} ${tr?`- ${tr===1?'':par(tr)}\\lambda `:''}+ ${par(dt)} = ${c(resp.replace(/λ\^2/,'\\lambda^{2}').replace(/λ/g,'\\lambda'))}\\)`,'λ² − traza·λ + det.',resp)],
             errores:[{valor:`λ^2 + ${tr}λ + ${dt}`,si:e=>equivalente(limpiar(e).replace(/λ/g,'x'),`x^2 + ${tr}x + ${dt}`)&&tr!==0,por:'El término en λ lleva −traza.'},{valor:`λ^2 - ${tr}λ - ${dt}`,si:e=>equivalente(limpiar(e).replace(/λ/g,'x'),`x^2 - ${tr}x - ${dt}`)&&dt!==0,por:'El término independiente es +det.'}],comprobar:()=>casi(tr,A[0][0]+A[1][1])}},
         'vector-propio':()=>{const l1=rng.noCero(-4,4);let l2;do l2=rng.noCero(-4,4);while(l2===l1);const {A,v1}=conPropios(l1,l2);
           return {forma:{filas:1,cols:2},celdas:v1.map(String),respuesta:vec(v1),verificar:e=>proporcional(e,v1),enunciado:`\\(\\lambda = ${l1}\\) es valor propio de \\(A = ${matNum(A)}\\). Da un vector propio (cualquier múltiplo sirve).`,

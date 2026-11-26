@@ -3,7 +3,7 @@
 import {num,casi,equivalente,limpiar,igualNum,lista,compilar} from './verificar.js';
 import {lineal,polinomio,frac,par} from './formato.js';
 import {paso,final,c} from './pasos.js';
-import {T,sg,plantillas,mal,malNum,terminos,numTxt} from './algebra-temas.js';
+import {T,sg,sgv,cv,plantillas,mal,malNum,terminos,numTxt} from './algebra-temas.js';
 
 /* ---------- Sistemas 3×3 ---------- */
 // "x = 1, y = 2, z = 3", "(1, 2, 3)", "1, 2, 3" → [x, y, z]
@@ -59,7 +59,7 @@ const sistema3={
     // ¿ya está en cascada (triangular)?
     const triang=triangular(filas);let el=null;
     if(triang){
-      pasos.push(paso('Despeja z de la última ecuación',`\\(${filas[2][2]}z = ${filas[2][3]}\\ \\Rightarrow\\ z = ${c(Z)}\\)`,'La última ecuación solo tiene z.'));
+      pasos.push(paso('Despeja z de la última ecuación',`\\(${lineal([[filas[2][2],'z']])} = ${filas[2][3]}\\ \\Rightarrow\\ z = ${c(Z)}\\)`,'La última ecuación solo tiene z.'));
       pasos.push(paso('Sustituye z en la segunda',`\\(${lineal([[filas[1][1],'y']])} ${sg(filas[1][2]*Z)} = ${filas[1][3]}\\ \\Rightarrow\\ y = ${c(Y)}\\)`,'Con z conocida, la segunda solo tiene y.'));
       pasos.push(paso('Sustituye y y z en la primera',`\\(${lineal([[filas[0][0],'x']])} ${sg(filas[0][1]*Y)} ${sg(filas[0][2]*Z)} = ${filas[0][3]}\\ \\Rightarrow\\ x = ${c(X)}\\)`,'Hacia atrás: cada ecuación da una letra.'));
     }else{
@@ -95,7 +95,7 @@ const fracciones={
     const P={
       1:{
         'monomios':()=>{const b=rng.entero(2,6),k=rng.entero(2,5)*rng.signo(),m=rng.entero(3,7),j=rng.entero(1,m-1),e=`(${k*b}x^${m})/(${b}x^${j})`,resp=`${k}x^${m-j}`.replace(/x\^1$/,'x');
-          return {tex:`\\dfrac{${k*b}x^{${m}}}{${b}x^{${j}}}`,e,resp,pasos:[paso('Divide los coeficientes',`\\(${k*b} \\div ${b} = ${c(k)}\\)`,'Los números se dividen.'),final('Resta los exponentes de x',`\\(x^{${m}-${j}} = x^{${m-j}} \\Rightarrow ${c(T(resp))}\\)`,'Misma base al dividir: se restan los exponentes.',resp)],
+          return {tex:`\\dfrac{${k*b}x^{${m}}}{${b}${j===1?'x':`x^{${j}}`}}`,e,resp,pasos:[paso('Divide los coeficientes',`\\(${k*b} \\div ${b} = ${c(k)}\\)`,'Los números se dividen.'),final('Resta los exponentes de x',`\\(x^{${m}-${j}} = ${m-j===1?'x':`x^{${m-j}}`} \\Rightarrow ${c(T(resp))}\\)`,'Misma base al dividir: se restan los exponentes.',resp)],
             errores:[mal(`${k}x^${m+j}`,'Al dividir se RESTAN los exponentes.'),mal(`${k*b-b}x^${m-j}`,'Los coeficientes se dividen, no se restan.'),mal(`${k}x^${Math.round(m/j*100)/100}`,'Los exponentes se restan, no se dividen.')],
             comprobar:()=>equivalente(e,resp)}},
         'factor-comun-num':()=>{const k=rng.entero(2,9),a=r(-9,9),e=`(${k}x ${sg(k*a)})/${k}`,resp=bin(a);
@@ -122,7 +122,7 @@ const fracciones={
             comprobar:()=>equivalente(e,resp)}}
       },
       3:{
-        'multiplicar':()=>{const a=rng.entero(1,8),k=rng.entero(2,6),e=`((x^2 - ${a*a})/(${k}x))*((${k}x^2)/(x + ${a}))`,resp=`x^2 - ${a}x`;
+        'multiplicar':()=>{const a=rng.entero(1,8),k=rng.entero(2,6),e=`((x^2 - ${a*a})/(${k}x))*((${k}x^2)/(x + ${a}))`,resp=`x^2 - ${a===1?'':a}x`;
           return {tex:`\\dfrac{x^{2} - ${a*a}}{${k}x}\\cdot\\dfrac{${k}x^{2}}{x + ${a}}`,e,resp,pasos:[paso('Factoriza todo',`\\(\\dfrac{(x - ${a})(x + ${a})}{${k}x}\\cdot\\dfrac{${k}x\\cdot x}{x + ${a}}\\)`,'Diferencia de cuadrados y factores de '+k+'x².'),
             paso('Cancela factores repetidos',`\\((x - ${a})\\cdot ${c('x')}\\)`,`Se cancelan \\(x + ${a}\\) y \\(${k}x\\).`),final('Desarrolla',`\\(${c(T(resp))}\\)`,'Multiplica lo que quedó.',resp)],
             errores:[mal(`x - ${a}`,'Sobra una x: '+k+'x² entre '+k+'x deja x.'),mal(`x^2 + ${a}x`,'Se cancela (x + '+a+'), queda (x − '+a+').'),mal(`${k}x^2 - ${k*a}x`,`El ${k} se cancela con el de abajo.`)],
@@ -154,7 +154,7 @@ const fracciones={
       5:{
         'distinto-denominador':()=>{const p=r(-6,6),q=r(-6,6),a=r(-7,7),e=`${p}/x + ${par(q)}/(${bin(a)})`,resp=`(${lineal([[p+q,'x'],[p*a,'']])})/(x(${bin(a)}))`;
           return {tex:`\\dfrac{${p}}{x} + \\dfrac{${q}}{${bin(a)}}`,e,resp,pasos:[paso('Denominador común',`\\(x(${bin(a)})\\)`,'El producto de los dos denominadores (no tienen factores en común).'),
-            paso('Ajusta cada numerador',`\\(\\dfrac{${p}(${bin(a)}) + ${par(q)}x}{x(${bin(a)})}\\)`,'Cada numerador se multiplica por lo que le falta a su denominador.'),final('Simplifica el numerador',`\\(${c(`\\dfrac{${lineal([[p+q,'x'],[p*a,'']])}}{x(${bin(a)})}`)}\\)`,`\\(${p}x ${sg(p*a)} ${sg(q)}x\\).`,resp)],
+            paso('Ajusta cada numerador',`\\(\\dfrac{${p}(${bin(a)}) ${sgv(q,'x')}}{x(${bin(a)})}\\)`,'Cada numerador se multiplica por lo que le falta a su denominador.'),final('Simplifica el numerador',`\\(${c(`\\dfrac{${lineal([[p+q,'x'],[p*a,'']])}}{x(${bin(a)})}`)}\\)`,`\\(${cv(p,'x')} ${sg(p*a)} ${sgv(q,'x')}\\).`,resp)],
             errores:[mal(`${p+q}/(2x ${sg(a)})`,'No se suman los denominadores: busca el denominador común.'),mal(`(${lineal([[p+q,'x'],[a,'']])})/(x(${bin(a)}))`,`El ${p} multiplica a todo (x ${sg(a)}): ${p}·${par(a)} = ${p*a}.`),mal(`${p+q}/(x(${bin(a)}))`,'Cada numerador se multiplica por el denominador que le falta.')],
             comprobar:()=>equivalente(e,resp)}},
         'resta-conjugados':()=>{const a=rng.entero(1,9),e=`1/(x - ${a}) - 1/(x + ${a})`,resp=`${2*a}/(x^2 - ${a*a})`;
@@ -246,7 +246,7 @@ const logaritmos={
           return {tex:`\\log_{${b}} ${x}`,pre:'Calcula (puede ser fracción)',v:k/p,
           pasos:[paso(`Escribe base y número como potencias de ${B}`,`\\(${b} = ${B}^{${p}},\\ ${x} = ${B}^{${k}}\\)`,'Misma base.'),paso('Plantea',`\\((${B}^{${p}})^{y} = ${B}^{${k}} \\Rightarrow ${p}y = ${k}\\)`,'El log es el exponente y.'),final('Despeja',`\\(y = ${c(frac(k,p))}\\)`,'Exponente fraccionario.',frac(k,p,{tex:false}))],
           errores:[malNum(k,'Ese sería el log en base '+B+'.'),malNum(k*p,'Se divide entre '+p+'.'),malNum(p/k,'Al revés.')],comprobar:Math.abs(L(b,x)-k/p)<1e-9}},
-        'ln':()=>{const cc=rng.elegir([2,3,5,7,10,20]),a=rng.entero(1,3);return {tex:`e^{${a}x} = ${cc}`,pre:'Resuelve (2 decimales)',v:Math.log(cc)/a,tol:0.006,
+        'ln':()=>{const cc=rng.elegir([2,3,5,7,10,20]),a=rng.entero(2,4);return {tex:`e^{${a}x} = ${cc}`,pre:'Resuelve (2 decimales)',v:Math.log(cc)/a,tol:0.006,
           pasos:[paso('Aplica ln a los dos lados',`\\(${a}x = \\ln ${cc}\\)`,'ln es el logaritmo en base e: ln(eᵘ) = u.'),final('Despeja',`\\(x = \\dfrac{\\ln ${cc}}{${a}} \\approx ${c((Math.log(cc)/a).toFixed(2))}\\)`,'ln '+cc+' ≈ '+Math.log(cc).toFixed(3)+'.',(Math.log(cc)/a).toFixed(2))],
           errores:[malNum(+(cc/a).toFixed(2),'Aplica ln: e no se "pasa dividiendo".'),malNum(+Math.log(cc).toFixed(2),a>1?`Falta dividir entre ${a}.`:'Revisa el despeje.'),malNum(+(Math.log10(cc)/a).toFixed(2),'Es ln (base e), no log base 10.')],comprobar:Math.abs(Math.exp(a*Math.log(cc)/a)-cc)<1e-9}},
         'duplicar':()=>{const d=rng.entero(2,9),k=rng.entero(2,6),f=pot(2,k);return {pre:'',tex:'',enunciado:`Una inversión se duplica cada ${d} años. ¿En cuántos años se multiplica por ${f}?`,v:k*d,
@@ -352,7 +352,7 @@ const funciones={
           errores:[{valor:`(${Y}, ${X})`,por:'Primero va x y luego y.'},{valor:`(${X}, ${m2*X+b1})`,por:'Revisa el cálculo de y.'},{valor:`(${-X}, ${Y})`,por:'Revisa el signo de x.'}],comprobar:()=>m1*X+b1===Y&&m2*X+b2===Y}},
         'vertice-punto':()=>{const h=r(-5,5),k=rng.entero(-9,9),a=rng.elegir([1,-1,2]),b=-2*a*h,cc=a*h*h+k,e=polinomio([cc,b,a],{tex:false});
           return {enun:`¿Cuál es el vértice de \\(y = ${T(e)}\\)? Escribe (x, y).`,punto:[h,k],resp:`(${h}, ${k})`,
-          pasos:[paso('x del vértice',`\\(x_v = -\\dfrac{${b}}{2\\cdot${par(a)}} = ${c(h)}\\)`,'−b/(2a).'),final('y del vértice: evalúa',`\\(y_v = ${a===1?'':a===-1?'-':a}${par(h)}^{2} ${sg(b)}\\cdot${par(h)} ${sg(cc)} = ${c(k)}\\)`,'Sustituye x_v en la parábola.',`(${h}, ${k})`)],
+          pasos:[paso('x del vértice',`\\(x_v = -\\dfrac{${b}}{2\\cdot${par(a)}} = ${c(h)}\\)`,'−b/(2a).'),final('y del vértice: evalúa',`\\(y_v = ${a===1?'':a===-1?'-':`${a}\\cdot`}${par(h)}^{2} ${sg(b)}\\cdot${par(h)} ${sg(cc)} = ${c(k)}\\)`,'Sustituye x_v en la parábola.',`(${h}, ${k})`)],
           errores:[{valor:`(${-h}, ${k})`,por:'x del vértice = −b/(2a): cuida el signo.'},{valor:`(${h}, ${cc})`,por:'La y del vértice se obtiene evaluando en x_v, no es c.'},{valor:`(${k}, ${h})`,por:'Primero x, luego y.'}],comprobar:()=>a*h*h+b*h+cc===k}}
       }
     };

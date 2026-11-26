@@ -23,20 +23,20 @@ const tonoDe=m=>{const a=areaDe(m);return m.tono||a.tono||a.id};
 const respuestaDe=p=>p.tipo==='opcion'?p.opciones?.[p.correcta]:p.respuesta;
 
 /* Sesión de examen: preguntas ya generadas; alTerminar({ok,total,pct,historial}) se llama una vez */
-export function sesionExamen({titulo,m,salir,preguntas,ref,alTerminar,pieFin=''}){
+export function sesionExamen({titulo,m,salir,preguntas,ref,alTerminar,pieFin='',minutos,todas=false}){
   let ses=null;
-  ses=crearSesion({titulo,tono:tonoDe(m),salir,materia:m.id,sinPistas:true,sinFeedback:true,crono:preguntas.length*SEG_POR_PREGUNTA,
+  ses=crearSesion({titulo,tono:tonoDe(m),salir,materia:m.id,sinPistas:true,sinFeedback:true,crono:minutos?minutos*60:preguntas.length*SEG_POR_PREGUNTA,
     total:()=>preguntas.length,siguiente:st=>preguntas[st.i]?{...preguntas[st.i],ref:preguntas[st.i].ref||ref,cuenta:true}:null,
     responder(p,r){registrarEjercicio({materia:m.id,ref:p.ref||ref,correcto:r.correcto,xp:r.correcto?10:0,repasar:false});return {xp:r.correcto?10:0}},
     fin(st){
       const ok=st.historial.filter(x=>x.r.correcto).length,total=preguntas.length,pct=ok/total,sin=total-st.historial.length;
       if(!st.guardado){st.guardado=true;alTerminar?.({ok,total,pct,historial:st.historial})}
-      st.errores=st.historial.filter(x=>!x.r.correcto);
+      st.errores=todas?st.historial:st.historial.filter(x=>!x.r.correcto);
       return `<span class="fin-icono" aria-hidden="true">${pct>=.9?'🏆':pct>=APROBAR?'🎉':'📚'}</span><h1>${ok} de ${total}</h1>
 <p class="nota">Calificación: <b>${(pct*10).toFixed(1)}</b> / 10${sin?` · ${sin} sin responder (se acabó el tiempo)`:''}</p>
-${st.errores.length?`<h2>Revisa tus errores</h2><ol class="mp-revision">${st.errores.map((x,k)=>`<li><div class="pregunta">${conFormulas(x.p.enunciado)}</div>
+${st.errores.length?`<h2>${todas?'Solución completa, inciso por inciso':'Revisa tus errores'}</h2><ol class="mp-revision">${st.errores.map((x,k)=>`<li>${todas?`<p class="nota">${x.r.correcto?'✅ Correcto':'❌ Incorrecto'}</p>`:''}<div class="pregunta">${conFormulas(x.p.enunciado)}</div>
 <p class="nota">Tu respuesta: «${esc(String(x.r.entrada??''))}» · Correcta: ${conFormulas(esc(String(respuestaDe(x.p)??'')))}</p>${x.p.regla?`<p class="nota">📏 ${x.p.regla}</p>`:''}
-${x.p.pasos?.length?`<button type="button" class="btn ghost btn-chico" data-ex-proc="${k}">📖 Ver procedimiento</button>`:''}</li>`).join('')}</ol>`:'<p>¡Sin errores! 🎉</p>'}
+${x.p.pasos?.length?`<button type="button" class="btn ghost btn-chico" data-ex-proc="${k}">📖 ${todas?'Ver la solución paso a paso':'Ver procedimiento'}</button>`:''}</li>`).join('')}</ol>`:'<p>¡Sin errores! 🎉</p>'}
 ${pieFin}${boton({texto:'Volver',go:salir,clase:'ancho'})}`;
     }});
   const original=ses.alClic.bind(ses);

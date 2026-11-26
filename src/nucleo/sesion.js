@@ -35,6 +35,7 @@ import {casiIgual} from './comparar.js';
 import {htmlHoja,activarHoja,insertarRef,previa,olvidarRef} from './excel/hoja.js';
 import {escalera} from './pistas.js';
 import {gemelo as gemeloGen} from './generadores/index.js';
+import {herramientaDe} from './herramientas-mate.js';
 
 // ¿Se puede responder escribiendo o eligiendo? (las de solo lectura no llevan pistas ni «No sé cómo empezar»)
 const respondible=p=>p&&!['ejemplo','teoria','porque'].includes(p.tipo);
@@ -67,7 +68,8 @@ const TECLADOS={
 };
 const etiqueta=(icono,txt)=>`<p class="etiqueta-actividad"><span aria-hidden="true">${icono}</span>${txt}</p>`;
 // p.hoja: mini hoja de cálculo (Excel); con teclado 'xl' los toques en las celdas escriben su referencia en la respuesta
-const enunciado=p=>`<div class="pregunta">${conFormulas(p.enunciado||'')}</div>${p.hoja?htmlHoja(p.hoja):''}${p.codigo?`<pre class="ej-codigo" style="margin-bottom:16px">${esc(p.codigo)}</pre>`:''}${p.oir?`<div class="row" style="margin-bottom:16px">${htmlOir(p.oir)}</div>`:''}`;
+const htmlHerr=p=>{const hs=herramientaDe(p);return hs?`<div class="row herr-mate" style="gap:8px;flex-wrap:wrap;margin:-4px 0 12px">${hs.map((h,i)=>`<button type="button" class="btn ghost btn-chico" data-herr-mate="${i}">${h.titulo}</button>`).join('')}</div>`:''};
+const enunciado=p=>`<div class="pregunta">${conFormulas(p.enunciado||'')}</div>${htmlHerr(p)}${p.hoja?htmlHoja(p.hoja):''}${p.codigo?`<pre class="ej-codigo" style="margin-bottom:16px">${esc(p.codigo)}</pre>`:''}${p.oir?`<div class="row" style="margin-bottom:16px">${htmlOir(p.oir)}</div>`:''}`;
 // Con teclado físico (atajos.js) el teclado de símbolos se esconde; «⌨️ Símbolos» lo vuelve a mostrar
 const teclado=p=>p.teclado&&TECLADOS[p.teclado]?`<button type="button" class="btn ghost btn-chico ver-simbolos" data-ver-simbolos>⌨️ Símbolos</button><div class="teclado" aria-label="Símbolos">${TECLADOS[p.teclado].map(k=>`<button type="button" class="tecla" data-tecla="${esc(k)}">${esc(k)}</button>`).join('')}</div>`:'';
 const casillaFoco={el:null};
@@ -411,6 +413,11 @@ ${st.noseSeguidos>=2&&cfg.minileccion?`<p class="hoja-linea">¿Lo vemos desde el
         if(st.fase!=='fin'&&st.i>0&&!(await confirmar({atrasConfirma:true,titulo:'¿Salir de la lección?',texto:'Perderás el avance de esta ronda (lo que ya respondiste sí queda guardado).',si:'Salir',no:'Seguir'})))return true;
         cerrarHoja();clearInterval(reloj);ir(cfg.salir);return true;
       }
+      if(t.dataset.herrMate!==undefined){const p=st.fase!=='pregunta'&&st.historial.at(-1)?st.historial.at(-1).p:st.actual,d=dondeDe(p),h=herramientaDe(p)?.[+t.dataset.herrMate];
+        if(!h)return true;if(!d.materia){aviso('Este ejercicio no tiene un cuaderno donde guardarlo.');return true}
+        const html=document.querySelector('#vista .pregunta')?.innerHTML||conFormulas(p.enunciado||'');
+        try{const n=await resolverEnCuaderno(d,html,textoPlano(p.enunciado||''),{herramienta:h});if(n)aviso(`📝 Guardado en «${n.titulo}»`)}catch(e){aviso('No se pudo abrir el cuaderno.')}
+        return true}
       if(t.id==='ses-borrador'){st.borrador.abierto=!st.borrador.abierto;if(st.borrador.abierto)st.panelOculto=false;repintar();return true}
       if(t.dataset.borr){const a=t.dataset.borr;
         if(a==='lapiz'||a==='borrar'){st.borrador.herr=a;lienzo?.herramienta(a);document.querySelectorAll('[data-borr="lapiz"],[data-borr="borrar"]').forEach(x=>x.setAttribute('aria-pressed',String(x===t)));return true}

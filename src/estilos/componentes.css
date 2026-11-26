@@ -262,7 +262,8 @@ button{font:inherit}
 .diagrama .v0,.diagrama .punta.v0{stroke:var(--primary);fill:var(--primary)}
 .diagrama .v1,.diagrama .punta.v1{stroke:var(--error);fill:var(--error)}
 .diagrama .v2,.diagrama .punta.v2{stroke:var(--success);fill:var(--success)}
-.diagrama line.v0,.diagrama line.v1,.diagrama line.v2{fill:none}
+.diagrama .v3,.diagrama .punta.v3{stroke:var(--accent,#7c3aed);fill:var(--accent,#7c3aed)}
+.diagrama line.v0,.diagrama line.v1,.diagrama line.v2,.diagrama line.v3{fill:none}
 .diagrama .zona{fill:var(--area-soft,var(--primary-soft));stroke:none}
 .diagrama .curva{fill:none;stroke:var(--area,var(--primary));stroke-width:2.5}
 .diagrama .punto{fill:var(--area,var(--primary))}

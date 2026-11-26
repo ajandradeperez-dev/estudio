@@ -14,6 +14,7 @@
     "cuaderno": "node scripts/cuaderno.mjs",
     "principiante": "node scripts/principiante.mjs",
     "emparejar": "node scripts/emparejar-ui.mjs",
+    "algebra": "node scripts/algebra-ui.mjs",
     "python": "node scripts/python.mjs",
     "lectura": "node scripts/lectura.mjs",
     "datos": "node scripts/datos.mjs",

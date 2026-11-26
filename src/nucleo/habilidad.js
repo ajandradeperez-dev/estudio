@@ -8,6 +8,7 @@
      "¿por qué?" (autoexplicación).
    - Dominio: ≥80 % de las últimas 10 respuestas sin pista y práctica en 2 días distintos. Al dominarla: resumen para Mis notas.
    También: cofres (repaso intercalado de 3 habilidades) y jefe del tema (mezcla cronometrada). */
+import {INTUICION} from './generadores/lineal-intuicion.js';
 import {$,esc} from '../utilidades.js';
 import {progreso,datosMateria,datosHabilidad,registrarEjercicio,registrarRespuesta,cerrarSesionHabilidad,guardarNota,abrirCofre,guardarJefe,sumarXP,basicoRetirado,registrarBasico,pedirRefuerzo,tomarRefuerzo,retiradosDe,reactivarBasicos,programarRepaso} from './progreso.js';
 import {SESION,ULTIMAS,DIAS_DOMINIO,DOMINIO,estadoDominio,nivelDe,frases} from './metodo.js';
@@ -166,7 +167,8 @@ export function vistaHabilidad(m,h){
     const explicacion=h.explicacion?.length?teoriaLeccion(h):g?.explicacion?`<p class="lec-p">${conFormulas(g.explicacion)}</p>`:'';
     const pasosH=ps=>`<ol class="pasos-proc">${ps.map(normalPaso).map((x,i)=>htmlPaso(x,i,{acciones:false})).join('')}</ol>`;
     let cuerpo='';
-    if(mini.paso===1)cuerpo=`<h2>La idea</h2>${explicacion||`<p class="lec-p">${h.resumen||''}</p>`}${g?.alternativa?`<details class="nota-datos"><summary>🤔 Dicho de otra forma</summary><p>${conFormulas(g.alternativa)}</p></details>`:''}`;
+    const vis=g&&INTUICION[h.gen];
+    if(mini.paso===1)cuerpo=`<h2>La idea</h2>${explicacion||`<p class="lec-p">${h.resumen||''}</p>`}${vis?`<div class="diagrama-caja">${vis.intuicion}</div><p class="nota">👀 ${vis.pie}</p><p class="lec-p">🎯 <b>¿Para qué sirve?</b> ${vis.paraQue}</p>`:''}${g?.alternativa?`<details class="nota-datos"><summary>🤔 Dicho de otra forma</summary><p>${conFormulas(g.alternativa)}</p></details>`:''}`;
     if(mini.paso===2){mini.ej??=g?crear(h.gen,1):null;const e=mini.ej;
       cuerpo=e?`<h2>Un ejemplo resuelto</h2><div class="pregunta">${conFormulas(e.enunciado)}</div>${e.diagrama?`<div class="diagrama-caja">${e.diagrama}</div>`:''}${pasosH(e.pasos||[])}<p class="hoja-linea"><b>Respuesta:</b> ${conFormulas(String(e.respuesta))}</p>${e.regla?`<p class="nota">${conFormulas(e.regla)}</p>`:''}`
         :`<h2>Ejemplos</h2><ul class="ejemplos">${(h.ejemplos||[]).map(([t,nt])=>`<li><span>${conFormulas(t)}</span>${nt?`<span class="nota">${nt}</span>`:''}</li>`).join('')}</ul>`}

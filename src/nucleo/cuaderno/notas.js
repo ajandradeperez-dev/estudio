@@ -101,7 +101,9 @@ ${marca}`);
 }
 /* «✏️ Resolver en el Cuaderno» (desde un ejercicio): abre el editor de dibujo con el enunciado arriba como imagen fija; al
    terminar, el dibujo queda en la nota del tema (con su texto) y se puede volver a editar desde ahí. */
-export async function resolverEnCuaderno(donde,enunciadoHtml,texto){
+// Con `herramienta` (herramientas-mate.js), debajo del enunciado queda la matriz del ejercicio (editor de matrices, «Lo hago
+// yo») o un plano cartesiano con sus vectores o rectas.
+export async function resolverEnCuaderno(donde,enunciadoHtml,texto,{herramienta}={}){
   const [{abrirEditorDibujo},{htmlAPng},M]=await Promise.all([import('../dibujo/editor.js'),import('../dibujo/raster.js'),import('../dibujo/modelo.js')]);
   const m=buscarMateria(donde.materia),h=m&&donde.habilidad&&leccion(m,donde.habilidad),t=h?.tema&&buscarTema(m,h.tema),nota=`tema-${m?.id||'general'}-${t?.id||'general'}`;
   const ancho=Math.round(Math.min(720,Math.max(320,innerWidth-16))),d=M.nuevoDibujo({ancho,fondo:'cuadricula'}),nuevas=[];
@@ -109,6 +111,7 @@ export async function resolverEnCuaderno(donde,enunciadoHtml,texto){
   const png=await htmlAPng(enunciadoHtml,{ancho:Math.min(ancho-32,560)}).catch(()=>null);
   if(png){const id=await guardarImg(png);d.objetos.push({t:'imagen',id:M.nuevoIdObj(),x:16,y:16,w:png.w,h:png.h,archivo:id,fija:true,capa:'fondo'})}
   else d.objetos.push({t:'texto',id:M.nuevoIdObj(),x:16,y:16,...M.medidasTexto(texto.slice(0,80),17),texto:texto.slice(0,80),tam:17,color:M.TINTA,capa:'fondo'});
+  if(herramienta){const {objetosHerramienta}=await import('../herramientas-mate.js');const y0=16+(png?png.h:28);d.objetos.push(...await objetosHerramienta(herramienta,{y0,ancho}))}
   d.historial=[];
   const r=await abrirEditorDibujo({dibujo:d,titulo:h?.titulo||'Resolver',cargarImagen:async id=>(await leerArchivo(id).catch(()=>null))?.blob||null,nuevaImagen:guardarImg});
   const usadas=new Set(M.imagenesDibujo(r.dibujo));

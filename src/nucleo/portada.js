@@ -188,6 +188,7 @@ function htmlEstadoTema(m,t){
   return `<div class="card tema-estado"><p style="margin:0"><b>${est.icono} ${est.texto}</b> · Cobertura del tema: ${e.total?Math.round(e.completas/e.total*100):0} % (${e.completas} de ${e.total} habilidades ✅)</p>
 ${e.faltan?.length?`<details class="como-se-usa"><summary>¿Qué falta para ✅?</summary><ul class="nota">${e.faltan.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></details>`:''}
 <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">${boton({texto:'📄 Hoja del tema',go:`notas/tema/${m.id}/${t.id}`,clase:'ghost'})}</div>
+${t.glosario?.length?`<details class="como-se-usa"><summary>📖 Glosario español–inglés</summary><ul class="glosario">${t.glosario.map(([es,en,sin,def])=>`<li><b>${esc(es)}</b> · <i lang="en">${esc(en)}</i>${sin&&sin!=='—'?` <span class="nota">(también: ${esc(sin)})</span>`:''}<br><span class="nota">${esc(def)}</span></li>`).join('')}</ul></details>`:''}
 ${t.referencias?.length?`<details class="como-se-usa"><summary>📚 Para profundizar</summary><ul class="nota">${t.referencias.map(r=>`<li>${esc(r)}</li>`).join('')}</ul></details>`:''}</div>`;
 }
 function htmlExamenFinal(m){

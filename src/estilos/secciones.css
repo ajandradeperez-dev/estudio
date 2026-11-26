@@ -803,3 +803,9 @@ body{padding-top:var(--franja,0px)}
 .dib-plantillas-mat{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
 .dib-pl-mat{display:flex;flex-direction:column;gap:4px}
 .dib-plantillas .dib-pl-mat .btn-chico{min-height:44px;flex-direction:row}
+
+/* Glosario español–inglés de un tema (PROMPT-ALGEBRA-PULIR) */
+.glosario{list-style:none;padding:0;margin:8px 0 0}
+.glosario li{padding:8px 0;border-bottom:1px solid var(--line);line-height:1.45}
+.glosario li:last-child{border-bottom:0}
+.herr-mate .btn{min-height:44px}

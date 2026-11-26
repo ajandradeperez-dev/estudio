@@ -469,7 +469,7 @@ ${st.noseSeguidos>=2&&cfg.minileccion?`<p class="hoja-linea">¿Lo vemos desde el
       if(t.id==='ses-panel-abrir'){st.panelOculto=false;repintar();return true}
       if(t.dataset.sigPaso){st[t.dataset.sigPaso]=(st[t.dataset.sigPaso]||1)+1;repintar();document.querySelector(`#ses-cuerpo .pasos-proc li:nth-child(${st[t.dataset.sigPaso]})`)?.scrollIntoView({block:'nearest'});return true}
       if(t.dataset.verTodos){st[t.dataset.verTodos]=99;repintar();return true}
-      if(t.id==='ses-pista'){st.pista++;st.panelOculto=false;repintar();if(st.pista>=2)document.querySelector('#ses-cuerpo .pista:last-of-type,#ses-cuerpo .ayuda-caja')?.scrollIntoView({block:'nearest'});return true}
+      if(t.id==='ses-pista'){st.pista++;st.panelOculto=false;repintar();if(st.pista>=2)document.querySelector('#ses-cuerpo .pista:last-of-type,#ses-cuerpo .ayuda-caja')?.scrollIntoView({block:'nearest'});if(st.pista>=2)document.querySelector('#ses-cuerpo [data-sig-paso]')?.scrollIntoView({block:'nearest'});return true}
       // «No sé cómo empezar»: la solución completa y luego un gemelo; no es un fallo (no se registra respuesta)
       if(t.id==='ses-nosecomo'){st.nose=true;st.panelOculto=false;st.noseSeguidos++;cfg.visto?.(p);repintar();document.querySelector('#ses-cuerpo .ayuda-caja')?.scrollIntoView({block:'start'});return true}
       if(t.id==='ses-ahora-tu'){const g=gemeloDe(p);if(g){st.actual=g;st.e={};st.pista=0;st.nose=false;st.v2=1;st.v3=1;st.t0=Date.now()}else{st.nose=false;avanzar()}repintar();window.scrollTo(0,0);return true}

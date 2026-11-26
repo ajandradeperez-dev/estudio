@@ -293,3 +293,6 @@ details.paso-porque summary{cursor:pointer;min-height:44px;display:flex;align-it
 details.paso-porque p{margin:4px 0 0}
 .formula-caja .katex-display>.katex{font-size:1.05em}
 @media (max-width:400px){.formula-caja .katex-display>.katex{font-size:.98em}}
+
+/* Lo que se abre en la práctica (pista, «No sé cómo empezar», pasos) no queda detrás de la barra fija de «Comprobar» */
+#ses-cuerpo .pista,#ses-cuerpo .ayuda-caja,#ses-cuerpo .pasos-proc li,#ses-cuerpo [data-sig-paso]{scroll-margin-bottom:140px;scroll-margin-top:72px}

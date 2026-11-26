@@ -1,7 +1,7 @@
 ext {
     // Versión del APK nativo (PROMPT-APP-NATIVA): la TWA llegó a 1.2.0 (código 3); cada APK nuevo necesita un código mayor
-    appVersionCode = 207
-    appVersionName = '2.0.7'
+    appVersionCode = 208
+    appVersionName = '2.0.8'
     minSdkVersion = 26
     compileSdkVersion = 36
     targetSdkVersion = 36

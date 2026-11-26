@@ -49,6 +49,7 @@ const kb=b=>b<1024*1024?`${Math.max(1,Math.round(b/1024))} KB`:`${(b/1024/1024).
 const fechaLarga=f=>f?new Date(f.length===10?f+'T12:00':f).toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'}):'—';
 const puedeCompartirArchivo=()=>{try{return !!navigator.canShare?.({files:[new File(['x'],'x.estudio',{type:'application/octet-stream'})]})}catch(e){return false}};
 export const htmlRespaldo=()=>`<div class="card respaldo">
+<p class="aviso-linea" style="margin-top:0">📦 Respaldo completo (solo se abre en Estudio+). Para ver o mandar tus notas usa <b>⤓ Descargar</b> en PDF.</p>
 <p style="margin-top:0">Tu progreso, tus notas y tus fotos viven <b>en este teléfono</b>. Con un respaldo no los pierdes y los pasas a otro teléfono o a la laptop:</p>
 <ol class="nota" style="padding-left:20px"><li><b>Exportar</b>: se crea un archivo <code>.estudio</code> (comprimido) con todo.</li><li>Guárdalo o mándatelo (Drive, correo, WhatsApp a ti mismo…).</li><li>En el otro dispositivo abre la app y toca <b>Importar</b>: eliges <b>Combinar</b> (no se pierde nada de ningún lado) o <b>Reemplazar</b>.</li></ol>
 <div class="row" style="flex-wrap:wrap"><button type="button" class="btn ghost btn-chico" id="resp-exportar">💾 Exportar</button>${puedeCompartirArchivo()?`<button type="button" class="btn ghost btn-chico" id="resp-compartir">📤 Compartir</button>`:''}<label class="btn ghost btn-chico" for="resp-archivo">📥 Importar</label>
@@ -189,7 +190,7 @@ function vistaLista(){
 ${enMemoria?'<p class="aviso-linea">⚠️ Este navegador no deja guardar notas: se perderán al cerrar la app (¿modo privado?).</p>':''}
 ${conNotas()?`${htmlBuscar()}${chipsFiltro()}
 ${seleccion?`<div class="nota-seleccion" role="region" aria-label="Seleccionar notas"><span id="notas-contador" class="nota" aria-live="polite"><b>${seleccion.size===1?'1 seleccionada':`${seleccion.size} seleccionadas`}</b></span>
-<span class="row"><button type="button" class="btn ghost btn-chico" id="sel-todas">Todas</button><button type="button" class="btn ghost btn-chico" id="sel-cancelar">Cancelar</button><button type="button" class="btn peligro btn-chico" id="sel-borrar"${seleccion.size?'':' disabled'}>🗑️ Borrar</button></span></div>`
+<span class="row"><button type="button" class="btn ghost btn-chico" id="sel-todas">Todas</button><button type="button" class="btn ghost btn-chico" id="sel-cancelar">Cancelar</button><button type="button" class="btn ghost btn-chico" id="sel-exportar"${seleccion.size?'':' disabled'}>⤓ Descargar</button><button type="button" class="btn peligro btn-chico" id="sel-borrar"${seleccion.size?'':' disabled'}>🗑️ Borrar</button></span></div>`
 :`<div class="notas-herr"><label class="notas-orden"><span class="nota">Ordenar</span><select id="notas-orden" aria-label="Ordenar las notas">${[['recientes','Recientes'],['az','A–Z'],['cuaderno','Por cuaderno']].map(([v,t])=>`<option value="${v}"${orden===v?' selected':''}>${t}</option>`).join('')}</select></label>
 <span class="row"><button type="button" class="btn ghost btn-chico" data-go="notas/foto" aria-label="Foto a nota" title="Foto a nota">📸<span class="solo-ancho"> Foto a nota</span></button><button type="button" class="btn ghost btn-chico" id="sel-empezar" aria-label="Seleccionar notas" title="Seleccionar">☑️<span class="solo-ancho"> Seleccionar</span></button></span></div>`}`:''}
 <div id="notas-lista">${htmlLista()}</div>
@@ -212,10 +213,12 @@ ${conNotas()&&!seleccion?'<button type="button" class="notas-fab" id="nota-nueva
       if(t.id==='sel-cancelar'){seleccion=null;repintar();return true}
       if(t.id==='sel-todas'){const vis=ordenar(filtrar(cache||[]));seleccion=vis.every(n=>seleccion.has(n.id))?new Set():new Set(vis.map(n=>n.id));repintar();return true}
       if(t.dataset.sel){const id=t.dataset.sel;seleccion.has(id)?seleccion.delete(id):seleccion.add(id);repintar();return true}
+      if(t.id==='sel-exportar'){const l=(cache||[]).filter(n=>seleccion.has(n.id));const {abrirExportar}=await import('./cuaderno/exportar-ui.js');await abrirExportar(l);return true}
       if(t.id==='sel-borrar'){const l=(cache||[]).filter(n=>seleccion.has(n.id));await borrarConConfirmar(l,()=>{seleccion=null});repintar();return true}
       if(t.dataset.menu){const n=(cache||[]).find(x=>x.id===t.dataset.menu);if(!n)return true;
-        const r=await menuAcciones({titulo:esc(n.titulo||'Sin título'),opciones:[['abrir','✏️ Abrir'],['fijar',n.fijada?'📌 Desfijar':'📍 Fijar arriba'],['borrar','🗑️ Borrar','peligro-texto']]});
+        const r=await menuAcciones({titulo:esc(n.titulo||'Sin título'),opciones:[['abrir','✏️ Abrir'],['exportar','⤓ Descargar o compartir'],['fijar',n.fijada?'📌 Desfijar':'📍 Fijar arriba'],['borrar','🗑️ Borrar','peligro-texto']]});
         if(r==='abrir')ir(`notas/n/${n.id}`);
+        else if(r==='exportar'){const {abrirExportar}=await import('./cuaderno/exportar-ui.js');await abrirExportar([n])}
         else if(r==='fijar'){Object.assign(n,await guardar({...n,fijada:!n.fijada},{tocada:false}));repintar()}
         else if(r==='borrar'){await borrarConConfirmar([n]);repintar()}
         return true}
@@ -573,7 +576,8 @@ ${rep.ver?`<div class="ed-calif" role="group" aria-label="¿Qué tan bien la rec
       const cab=`<div class="nota-cab ed-cab"><button type="button" class="btn-icono" data-go="notas" aria-label="Volver a mis notas">←</button><span id="nota-estado" class="nota ed-estado" aria-live="polite">${estado}</span>
 <span class="ed-cab-der">${modo==='editar'?`<button type="button" class="btn-icono" id="nota-leer" aria-label="Modo lectura" title="Modo lectura">👁️</button>`:`<button type="button" class="btn-icono" id="nota-editar" aria-label="Editar la nota" title="Editar">✏️</button>`}
 <button type="button" class="btn-icono" id="nota-repasar" aria-label="Repasar las tarjetas de esta nota" title="Repasar${nt?` (${nt})`:''}" aria-pressed="${modo==='repasar'}">🧠</button>
-<button type="button" class="btn-icono" id="nota-mas" aria-label="Más: fijar, compartir, PDF, borrar">⋯</button></span></div>`;
+<button type="button" class="btn-icono" id="nota-exportar" aria-label="Descargar o compartir" title="Descargar o compartir">⤓</button>
+<button type="button" class="btn-icono" id="nota-mas" aria-label="Más: fijar, descargar, compartir, borrar">⋯</button></span></div>`;
       const meta=`<div class="ed-meta"><label class="ed-meta-cuaderno"><span class="oculto-visual">Cuaderno</span><select id="nota-cuaderno" aria-label="Materia o tema de la nota">${opcionesCuaderno(n)}</select></label>
 <label class="ed-meta-etq"><span aria-hidden="true">#</span><input id="nota-etiquetas" value="${esc((n.etiquetas||[]).join(', '))}" placeholder="etiquetas" aria-label="Etiquetas, separadas por comas" autocomplete="off"></label>
 <span class="nota">${n.fijada?'📌 · ':''}${fechaRelativa(n.editada)}</span></div>`;
@@ -591,7 +595,7 @@ ${modo==='tapar'?'<p class="intro">Las palabras en negrita están tapadas: inten
 <article class="nota-render nota-leer">${html||'<p class="nota">La nota está vacía.</p>'}</article>
 <button type="button" id="ed-tarjeta-sel" class="btn ed-tsel-flota" data-fmt="tarjeta-sel" hidden>🃏 Crear tarjeta</button>
 ${modo==='tapar'?'<button type="button" class="btn ghost ancho" id="nota-destapar">Destapar todo</button>':`<div class="row hoja-acciones nota-compartir">
-<button type="button" class="btn ghost btn-chico" id="nota-compartir">📤 Compartir</button><button type="button" class="btn ghost btn-chico" id="nota-pdf">🖨️ PDF</button><button type="button" class="btn ghost btn-chico" id="nota-md">⬇️ Markdown</button></div>`}</div>`;
+<button type="button" class="btn ghost btn-chico" id="nota-compartir">📤 Compartir</button><button type="button" class="btn btn-chico" id="nota-exportar">⤓ Descargar o compartir</button></div>`}</div>`;
     },
     alMostrar(){
       activarBuscar(pintarLado);
@@ -655,13 +659,15 @@ ${modo==='tapar'?'<button type="button" class="btn ghost ancho" id="nota-destapa
       if(b.dataset.fmt==='tarjeta-sel'){tarjetaDeSeleccion();return true}
       if(b.dataset.fmt){await accion(b.dataset.fmt,b);return true}
       if(b.id==='nota-mas'){
-        const r=await menuAcciones({titulo:esc(n.titulo||'Nota'),opciones:[['fijar',n.fijada?'📌 Desfijar':'📍 Fijar arriba'],['compartir','📤 Compartir'],['pdf','🖨️ Guardar como PDF'],['md','⬇️ Descargar Markdown'],['borrar','🗑️ Borrar la nota','peligro-texto']]});
+        const r=await menuAcciones({titulo:esc(n.titulo||'Nota'),opciones:[['exportar','⤓ Descargar o compartir'],['fijar',n.fijada?'📌 Desfijar':'📍 Fijar arriba'],['compartir','📤 Compartir como texto'],['borrar','🗑️ Borrar la nota','peligro-texto']]});
+        if(r==='exportar')return this.alClic({id:'nota-exportar',dataset:{}},ir,repintarV);
         if(r==='fijar'){n.fijada=!n.fijada;pendiente=true;await guardarYa();repintarV()}
         if(r==='compartir')return this.alClic({id:'nota-compartir',dataset:{}},ir,repintarV);
         if(r==='pdf')return this.alClic({id:'nota-pdf',dataset:{}},ir,repintarV);
         if(r==='md')return this.alClic({id:'nota-md',dataset:{}},ir,repintarV);
         if(r==='borrar')return this.alClic({id:'nota-borrar',dataset:{}},ir,repintarV);
         return true}
+      if(b.id==='nota-exportar'){await guardarYa();const {abrirExportar}=await import('./cuaderno/exportar-ui.js');await abrirExportar([n]);return true}
       if(b.id==='nota-compartir'){
         const texto=`${n.titulo||'Nota'}\n\n${plano(n.cuerpo)}`;
         try{

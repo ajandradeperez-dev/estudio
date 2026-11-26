@@ -44,12 +44,12 @@ async function sePuede(img){
   return permite;
 }
 const formulas=new Map();
-const html=tex=>{try{return katex.renderToString(prepararTex(tex),{...OPCIONES,output:'html',displayMode:true})}catch(e){return null}};
+const html=(tex,enLinea=false)=>{try{return katex.renderToString(prepararTex(tex),{...OPCIONES,output:'html',displayMode:!enLinea})}catch(e){return null}};
 /* Imagen de una fórmula: {img, w, h} (w y h en px CSS para tam px de letra). Se cachea por fórmula y color. */
-export function imagenFormula(tex,{tam=22,color='#1f2430'}={}){
-  const clave=`${color}|${tam}|${tex}`;if(formulas.has(clave))return formulas.get(clave);
+export function imagenFormula(tex,{tam=22,color='#1f2430',enLinea=false}={}){
+  const clave=`${color}|${tam}|${enLinea?'L':'B'}|${tex}`;if(formulas.has(clave))return formulas.get(clave);
   const pr=(async()=>{
-    const h=html(tex);if(!h)return null;
+    const h=html(tex,enLinea);if(!h)return null;
     const m=medir(h,{tam,color}),img=await svgDe(h,{...m,tam,color});
     if(!img||!(await sePuede(img)))return {img:null,...m};
     return {img,...m};

@@ -15,7 +15,7 @@
    - Desde la nota: 🗑️ en la cabecera, confirmar y vuelve a la lista.
    Compila, levanta `vite preview` en el puerto 4797 y lo apaga al terminar. */
 import {existsSync} from 'node:fs';
-import {spawn,execSync} from 'node:child_process';
+import {spawn,execSync,spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {dirname,join} from 'node:path';
 import {chromium} from 'playwright-core';
@@ -355,4 +355,6 @@ try{
   await editorLaptop(b);
 }catch(e){console.log('FALLO',e.message);f++}
 finally{await b.close();apagar()}
-console.log(f?`${f} fallos`:'Todo bien');process.exit(f?1:0);
+{const r=spawnSync(process.execPath,[join(raiz,'scripts','exportar-notas.mjs'),'--sin-build'],{stdio:'inherit'});if(r.status)f++}
+console.log(f?`${f} fallos`:'Todo bien');
+process.exit(f?1:0);

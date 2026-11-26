@@ -96,6 +96,9 @@ export function verificarLineal(p){
     const dice=/no tiene|ninguna|sin soluci/.test(r)?'ninguna':/infinit/.test(r)?'infinitas':/una|única|unica/.test(r)?'una':null;
     return dice===tipo?bien:mal(`el tipo de solución es «${tipo}» (rangos ${ra} y ${rb}) y la respuesta dice «${p.respuesta}»`);
   }
+  // 2a) matriz de T en otra base: [T]_B = P⁻¹AP ⇔ P·[T]_B = A·P
+  if(/\[T\]_B = P\^\{-1\}AP/.test(en)&&mats[0]){const bs=[...en.matchAll(/\((-?\d+),\s*(-?\d+)\)/g)].map(m=>[+m[1],+m[2]]),R=respuestaMatriz(p);if(bs.length<2||!R)return null;
+    const P=[[bs[0][0],bs[1][0]],[bs[0][1],bs[1][1]]];return igualM(mul(P,R),mul(mats[0],P))?bien:mal('P·[T]_B ≠ A·P')}
   // 2) inversa
   if(/inversa|\^\{-1\}/i.test(en)&&!/tiene inversa|es .*la inversa|no tiene inversa|valor de k|\\det/i.test(en)){
     const R=respuestaMatriz(p);

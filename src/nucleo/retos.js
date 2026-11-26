@@ -7,6 +7,7 @@
 import {crear,BANCOS} from './generadores/index.js';
 import {escenarioNegocio,escenarioCohete,escenarioPresa,escenarioCerro,escenarioFiesta} from './generadores/aplicaciones.js';
 import {escenarioFabrica} from './generadores/aplicaciones-lineal.js';
+import {PARCIALES} from './generadores/parciales-lineal.js';
 import {escenarioApp} from './generadores/escenarios-mat.js';
 import {escenarioCotizacion,escenarioNomina,escenarioBoleta,escenarioRegiones,escenarioInventarioBusca,escenarioClientes,escenarioLibro,escenarioOrganizar,escenarioGraficoJunta,escenarioAtajos,escenarioAsistencia} from './generadores/excel-escenarios2.js';
 import {escenarioEntregas,escenarioCalidad,escenarioAB,escenarioPandas,escenarioChurn} from './generadores/escenarios-datos.js';
@@ -23,7 +24,7 @@ const delBanco=(id,n)=>rng=>{const l=BANCOS[id]?.()||[];return rng.barajar(l).sl
 const aplicacion=(id,niveles)=>()=>niveles.map(n=>crear(id,n)).filter(Boolean);
 // Simulacro de un tema: n preguntas mezcladas de sus generadores, de nivel 2 a 4, sin repetir habilidad seguida
 const simulacro=(gens,n=12)=>rng=>{const orden=rng.barajar(gens);return Array.from({length:n},(_,i)=>{const p=crear(orden[i%orden.length],2+(i%3));return p&&{...p,etiqueta:'📝 Simulacro'}}).filter(Boolean)};
-const LINEAL=['al/gauss','al/gauss-jordan','al/matriz-producto','al/inversa','al/determinante','al/vector-magnitud','al/vector-operaciones','al/producto-punto','al/angulo','al/producto-cruz','al/rectas-planos','al/combinacion-lineal','al/independencia','al/base-dimension','al/rango','al/transformaciones','al/nucleo-imagen','al/valores-propios','al/diagonalizacion','al/gram-schmidt'];
+const LINEAL=['al/gauss','al/gauss-jordan','al/matriz-producto','al/inversa','al/lu','al/determinante','al/cramer','al/vector-magnitud','al/vector-operaciones','al/producto-punto','al/angulo','al/producto-cruz','al/rectas-planos','al/combinacion-lineal','al/independencia','al/base-dimension','al/cambio-base','al/rango','al/transformaciones','al/matriz-transformacion','al/nucleo-imagen','al/valores-propios','al/diagonalizacion','al/gram-schmidt','al/minimos-cuadrados','al/diagonalizacion-ortogonal'];
 const DIFERENCIAL=['cd/limites','cd/limites-infinito','cd/continuidad','cd/definicion','cd/derivada-polinomio','cd/producto','cd/cociente','cd/cadena','cd/trascendentes','cd/implicita','cd/inversas-log','cd/razon-cambio','cd/linealizacion','cd/maximos','cd/valor-medio','cd/trazado-curvas','cd/optimizacion','cd/lhopital'];
 const INTEGRAL=['ci/antiderivada','ci/riemann','ci/definida','ci/sustitucion','ci/partes','ci/trigonometricas','ci/sustitucion-trig','ci/fracciones-parciales','ci/impropias','ci/area','ci/volumenes','ci/cascarones','ci/longitud-arco','ci/valor-promedio','ci/aplicaciones'];
 const TRIGO=['tri/radianes','tri/razones','tri/circulo','tri/graficas','tri/identidades','tri/suma-doble','tri/ecuaciones','tri/leyes'];
@@ -63,7 +64,7 @@ const PYTHON={'primeros-pasos':['Primeros pasos',['pyc/print','pyc/errores-comun
   archivos:['Archivos y módulos',['pyc/archivos','pyc/modulos'],'Guardar y leer un registro'],
   clases:['Clases y objetos',['pyc/clases','pyc/metodos'],'El sistema de una cuenta bancaria'],
   proyectos:['Proyectos',['pyc/proyectos','pyc/funciones','pyc/diccionarios','pyc/for-range'],'Agenda y reporte de calificaciones']};
-const ALGEBRA=['alg/expresiones','alg/productos-notables','alg/binomio-newton','alg/factorizacion','alg/fracciones-algebraicas','alg/ecuacion-lineal','alg/cuadratica','alg/radicales-absoluto','alg/desigualdad','alg/desigualdad-no-lineal','alg/sistema-2x2','alg/sistema-3x3','alg/exponentes'];
+const ALGEBRA=['alg/expresiones','alg/productos-notables','alg/binomio-newton','alg/factorizacion','alg/division-polinomios','alg/fracciones-algebraicas','alg/ecuacion-lineal','alg/cuadratica','alg/complejos','alg/radicales-absoluto','alg/ecuaciones-racionales','alg/desigualdad','alg/desigualdad-no-lineal','alg/sistema-2x2','alg/sistema-3x3','alg/exponentes','alg/sucesiones','alg/induccion'];
 
 export const RETOS=[
   // ---------- Ciberseguridad ----------
@@ -238,6 +239,8 @@ export const RETOS=[
    desc:'Recursos, costos, ganancia y producción con matrices: un caso en 4 preguntas.',crear:escenarioFabrica},
   {id:'mat-simulacro-lineal',materia:'matematicas',tema:'algebra-lineal',titulo:'Simulacro de Álgebra lineal',profundidad:'escenario',dificultad:3,simulacro:true,
    desc:'12 preguntas mezcladas de todo el tema, como un examen.',crear:simulacro(LINEAL)},
+  // Parciales estilo universidad: problemas largos con incisos que comparten datos (parciales-lineal.js)
+  ...PARCIALES.map(p=>({id:p.id,materia:'matematicas',tema:'algebra-lineal',titulo:p.titulo,profundidad:'escenario',dificultad:4,simulacro:true,parcial:true,minutos:p.minutos,desc:p.desc,crear:p.crear})),
   // ---------- Matemáticas · Cálculo diferencial ----------
   {id:'mat-optimizar',materia:'matematicas',tema:'calculo-diferencial',titulo:'Optimiza: cercas, cajas y ganancias',profundidad:'aplicacion',dificultad:3,
    desc:'Problemas reales de máximo y mínimo resueltos con la derivada.',crear:aplicacion('cd/optimizacion',[2,3,4,5])},

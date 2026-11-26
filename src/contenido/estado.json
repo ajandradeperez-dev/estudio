@@ -4,8 +4,8 @@
   "matematicas": {
    "estado": "completo",
    "cobertura": {
-    "completas": 89,
-    "total": 89,
+    "completas": 100,
+    "total": 100,
     "pct": 100
    },
    "temas": {
@@ -17,8 +17,8 @@
     },
     "algebra-basica": {
      "estado": "completo",
-     "completas": 13,
-     "total": 13,
+     "completas": 18,
+     "total": 18,
      "faltan": []
     },
     "precalculo": {
@@ -35,8 +35,8 @@
     },
     "algebra-lineal": {
      "estado": "completo",
-     "completas": 20,
-     "total": 20,
+     "completas": 26,
+     "total": 26,
      "faltan": []
     },
     "calculo-diferencial": {
@@ -97,6 +97,10 @@
      "estado": "completa",
      "faltan": []
     },
+    "division-polinomios": {
+     "estado": "completa",
+     "faltan": []
+    },
     "fracciones-algebraicas": {
      "estado": "completa",
      "faltan": []
@@ -109,7 +113,15 @@
      "estado": "completa",
      "faltan": []
     },
+    "numeros-complejos": {
+     "estado": "completa",
+     "faltan": []
+    },
     "radicales-valor-absoluto": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "ecuaciones-racionales": {
      "estado": "completa",
      "faltan": []
     },
@@ -130,6 +142,14 @@
      "faltan": []
     },
     "exponentes": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "sucesiones-series": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "induccion": {
      "estado": "completa",
      "faltan": []
     },
@@ -213,7 +233,15 @@
      "estado": "completa",
      "faltan": []
     },
+    "factorizacion-lu": {
+     "estado": "completa",
+     "faltan": []
+    },
     "determinantes": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "regla-cramer": {
      "estado": "completa",
      "faltan": []
     },
@@ -253,11 +281,19 @@
      "estado": "completa",
      "faltan": []
     },
+    "cambio-base": {
+     "estado": "completa",
+     "faltan": []
+    },
     "rango": {
      "estado": "completa",
      "faltan": []
     },
     "transformaciones-lineales": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "matriz-transformacion": {
      "estado": "completa",
      "faltan": []
     },
@@ -274,6 +310,14 @@
      "faltan": []
     },
     "gram-schmidt": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "minimos-cuadrados": {
+     "estado": "completa",
+     "faltan": []
+    },
+    "diagonalizacion-ortogonal": {
      "estado": "completa",
      "faltan": []
     },

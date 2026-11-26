@@ -4,6 +4,7 @@
    Los ids de tema van en la URL y los de habilidad en el progreso: no los cambies (una habilidad se puede mover de tema).
    Cada nodo: ref (dónde está en el temario de referencia) y obj (objetivo: «Al terminar puedes…»). Los nodos
    {titulo, proximo:true} son lo que el temario pide y todavía no existe. referencias: «📚 Para profundizar» del tema. */
+import {GLOSARIO_LINEAL} from './glosario.js';
 export default [
   {id:'prealgebra',titulo:'Aritmética y prealgebra',icono:'🔢',descripcion:'Fracciones, decimales, porcentajes, razones, potencias, raíces y notación científica.',
    referencias:['Stewart, Precálculo — cap. 1 «Fundamentos» (números reales, exponentes y radicales)','Khan Academy — Aritmética y prealgebra (gratis, en español)'],nodos:[
@@ -21,15 +22,20 @@ export default [
     {id:'productos-notables',titulo:'Productos notables',gen:'alg/productos-notables',ref:'Stewart Precálculo 1.3 – Fórmulas de productos especiales',obj:'desarrollar binomios al cuadrado, al cubo y conjugados sin multiplicar término a término.'},
     {id:'binomio-newton',titulo:'Binomio de Newton',gen:'alg/binomio-newton',ref:'Stewart Precálculo 12.6 – El teorema del binomio',obj:'usar el triángulo de Pascal y C(n,k) para desarrollar (a + b)ⁿ y encontrar cualquier término o coeficiente sin multiplicar.'},
     {id:'factorizacion',titulo:'Factorización',gen:'alg/factorizacion',ref:'Stewart Precálculo 1.3 – Factorización',obj:'factorizar completamente: factor común, diferencia de cuadrados, trinomios y por agrupación.'},
+    {id:'division-polinomios',titulo:'División de polinomios (larga y sintética)',gen:'alg/division-polinomios',ref:'Stewart Precálculo 3.2 – División de polinomios',obj:'dividir polinomios con división larga y sintética, y usar que el residuo de P(x) ÷ (x − a) es P(a).'},
     {id:'fracciones-algebraicas',titulo:'Fracciones algebraicas',gen:'alg/fracciones-algebraicas',ref:'Stewart Precálculo 1.4 – Expresiones racionales',obj:'simplificar, sumar, multiplicar y dividir expresiones racionales.'},
     {id:'ecuaciones-lineales',gen:'alg/ecuacion-lineal',ref:'Stewart Precálculo 1.5 – Ecuaciones lineales',obj:'resolver ecuaciones lineales, también con fracciones y paréntesis.'},
     {id:'ecuaciones-cuadraticas',titulo:'Ecuaciones cuadráticas',gen:'alg/cuadratica',ref:'Stewart Precálculo 1.5 – Ecuaciones cuadráticas y discriminante',obj:'resolver cuadráticas por factorización y fórmula general, e interpretar el discriminante.'},
+    {id:'numeros-complejos',titulo:'Números complejos',gen:'alg/complejos',ref:'Stewart Precálculo 1.6 – Números complejos; 8.3 – Forma polar',obj:'sumar, multiplicar y dividir complejos (con el conjugado) y calcular su módulo y argumento.'},
     {id:'radicales-valor-absoluto',titulo:'Ecuaciones con radicales y valor absoluto',gen:'alg/radicales-absoluto',ref:'Stewart Precálculo 1.5 – Otros tipos de ecuaciones',obj:'resolver ecuaciones con raíces (comprobando soluciones) y con valor absoluto.'},
+    {id:'ecuaciones-racionales',titulo:'Ecuaciones racionales',gen:'alg/ecuaciones-racionales',ref:'Stewart Precálculo 1.5 – Ecuaciones racionales',obj:'resolver ecuaciones con la incógnita en el denominador y descartar las soluciones extrañas.'},
     {id:'desigualdades',titulo:'Desigualdades lineales',gen:'alg/desigualdad',ref:'Stewart Precálculo 1.8 – Desigualdades lineales',obj:'resolver desigualdades lineales y escribir la solución como intervalo.'},
     {id:'desigualdades-no-lineales',titulo:'Desigualdades cuadráticas y con valor absoluto',gen:'alg/desigualdad-no-lineal',ref:'Stewart Precálculo 1.8 – Desigualdades no lineales y con valor absoluto',obj:'resolver desigualdades cuadráticas y con valor absoluto y escribir el intervalo.'},
     {id:'sistemas-2x2',gen:'alg/sistema-2x2',ref:'Stewart Precálculo 10.1 – Sistemas de dos ecuaciones',obj:'resolver sistemas 2×2 por sustitución, igualación o eliminación.'},
     {id:'sistemas-3x3',titulo:'Sistemas 3×3',gen:'alg/sistema-3x3',ref:'Stewart Precálculo 10.2 – Sistemas de ecuaciones con varias variables',obj:'resolver sistemas de tres ecuaciones con tres incógnitas por eliminación.'},
-    {id:'exponentes',titulo:'Leyes de exponentes',gen:'alg/exponentes',ref:'Stewart Precálculo 1.2 – Leyes de los exponentes',obj:'simplificar expresiones con exponentes enteros, negativos y fraccionarios.'}
+    {id:'exponentes',titulo:'Leyes de exponentes',gen:'alg/exponentes',ref:'Stewart Precálculo 1.2 – Leyes de los exponentes',obj:'simplificar expresiones con exponentes enteros, negativos y fraccionarios.'},
+    {id:'sucesiones-series',titulo:'Sucesiones y series',gen:'alg/sucesiones',ref:'Stewart Precálculo 12.1–12.3 – Sucesiones aritméticas y geométricas',obj:'encontrar cualquier término y la suma de sucesiones aritméticas y geométricas.'},
+    {id:'induccion',titulo:'Inducción matemática',gen:'alg/induccion',ref:'Stewart Precálculo 12.5 – Inducción matemática',obj:'hacer el caso base y el paso inductivo de pruebas por inducción guiadas.'}
   ]},
   {id:'precalculo',titulo:'Funciones (precálculo)',icono:'📉',descripcion:'Dominio y rango, gráficas y transformaciones, composición e inversa, polinomiales, racionales, exponenciales y logarítmicas.',
    referencias:['Stewart, Precálculo — cap. 2 «Funciones»','Stewart, Precálculo — cap. 3 «Funciones polinomiales y racionales» y cap. 4 «Funciones exponenciales y logarítmicas»'],nodos:[
@@ -53,13 +59,15 @@ export default [
     {id:'ecuaciones-trigonometricas',titulo:'Ecuaciones trigonométricas',gen:'tri/ecuaciones',ref:'Stewart Precálculo 7.4–7.5 – Ecuaciones trigonométricas',obj:'resolver ecuaciones trigonométricas básicas en un intervalo.'},
     {id:'leyes-senos-cosenos',titulo:'Ley de senos y ley de cosenos',gen:'tri/leyes',ref:'Stewart Precálculo 6.5–6.6 – Leyes de senos y cosenos',obj:'resolver cualquier triángulo con la ley de senos o de cosenos'}
   ]},
-  {id:'algebra-lineal',titulo:'Álgebra lineal',icono:'🧭',descripcion:'Sistemas, matrices, determinantes, vectores, espacios vectoriales, transformaciones y valores propios.',
+  {id:'algebra-lineal',titulo:'Álgebra lineal',icono:'🧭',glosario:GLOSARIO_LINEAL,descripcion:'Sistemas, matrices, determinantes, vectores, espacios vectoriales, transformaciones y valores propios.',
    referencias:['Lay, Álgebra lineal y sus aplicaciones — caps. 1 a 6','Grossman, Álgebra lineal — vectores en R² y R³, producto cruz, rectas y planos'],nodos:[
     {id:'gauss',titulo:'Sistemas por eliminación de Gauss',gen:'al/gauss',ref:'Lay 1.1 – Sistemas de ecuaciones lineales',obj:'resolver sistemas lineales por eliminación gaussiana.'},
     {id:'gauss-jordan',titulo:'Gauss-Jordan, forma escalonada y rango',gen:'al/gauss-jordan',ref:'Lay 1.2 – Reducción por filas y formas escalonadas',obj:'llevar una matriz a forma escalonada reducida y leer el tipo de solución y el rango.'},
     {id:'matrices',titulo:'Matrices y sus operaciones',gen:'al/matriz-producto',ref:'Lay 2.1 – Operaciones con matrices',obj:'sumar, multiplicar y transponer matrices, y saber cuándo el producto existe.'},
     {id:'inversa',titulo:'Inversa de una matriz',gen:'al/inversa',ref:'Lay 2.2 – La inversa de una matriz',obj:'calcular la inversa de una matriz y usarla para resolver sistemas.'},
+    {id:'factorizacion-lu',titulo:'Matrices elementales y factorización LU',gen:'al/lu',ref:'Lay 2.2 y 2.5 – Matrices elementales y factorización LU',obj:'escribir matrices elementales, factorizar A = LU y resolver Ax = b con L y U.'},
     {id:'determinantes',titulo:'Determinantes y sus propiedades',gen:'al/determinante',ref:'Lay 3.1–3.2 – Determinantes y sus propiedades',obj:'calcular determinantes por cofactores y usar sus propiedades.'},
+    {id:'regla-cramer',titulo:'Regla de Cramer',gen:'al/cramer',ref:'Lay 3.3 – Regla de Cramer; Grossman 3.5',obj:'resolver sistemas 2×2 y 3×3 como cocientes de determinantes.'},
     {id:'vectores',gen:'al/vector-magnitud',ref:'Grossman – Vectores en R² y R³; Lay 1.3 – Ecuaciones vectoriales',obj:'calcular la magnitud y el vector unitario de un vector.'},
     {id:'operaciones-producto-punto',gen:'al/vector-operaciones',ref:'Lay 1.3 – Combinaciones de vectores',obj:'sumar vectores y multiplicarlos por un escalar, en R² y R³.'},
     {id:'producto-punto',titulo:'Producto punto',gen:'al/producto-punto',ref:'Lay 6.1 – Producto interno, longitud y ortogonalidad',obj:'calcular el producto punto e identificar vectores ortogonales.'},
@@ -69,12 +77,16 @@ export default [
     {id:'espacios-vectoriales',titulo:'Espacios vectoriales y combinación lineal',gen:'al/combinacion-lineal',ref:'Lay 1.3 y 4.1 – Combinaciones lineales; espacios y subespacios vectoriales',obj:'decidir si un vector es combinación lineal de otros y encontrar los coeficientes.'},
     {id:'independencia-lineal',titulo:'Independencia lineal',gen:'al/independencia',ref:'Lay 1.7 – Independencia lineal',obj:'decidir si un conjunto de vectores es linealmente independiente.'},
     {id:'base-dimension',titulo:'Base y dimensión',gen:'al/base-dimension',ref:'Lay 4.3 y 4.5 – Bases y dimensión',obj:'reconocer una base y calcular la dimensión de un espacio'},
+    {id:'cambio-base',titulo:'Coordenadas y cambio de base',gen:'al/cambio-base',ref:'Lay 4.4 y 4.7 – Coordenadas y cambio de base',obj:'calcular coordenadas en otra base y la matriz de cambio de base (y su inversa).'},
     {id:'rango',titulo:'Rango y teorema de la dimensión',gen:'al/rango',ref:'Lay 4.6 – Rango',obj:'calcular el rango y usar rango + nulidad = columnas'},
     {id:'transformaciones-lineales',titulo:'Transformaciones lineales y su matriz',gen:'al/transformaciones',ref:'Lay 1.8–1.9 – Transformaciones lineales y su matriz',obj:'aplicar una transformación lineal y encontrar su matriz estándar.'},
+    {id:'matriz-transformacion',titulo:'Matriz de una transformación lineal',gen:'al/matriz-transformacion',ref:'Lay 1.9 y 5.4 – La matriz de una transformación lineal',obj:'encontrar la matriz estándar de una transformación, componerlas y escribirla en otra base (P⁻¹AP).'},
     {id:'nucleo-imagen',titulo:'Núcleo (kernel) e imagen',gen:'al/nucleo-imagen',ref:'Lay 4.2 – Espacios nulos y columna',obj:'decidir si un vector está en el núcleo y calcular las dimensiones del núcleo y la imagen'},
     {id:'valores-propios',titulo:'Valores y vectores propios (eigenvalores)',gen:'al/valores-propios',ref:'Lay 5.1–5.2 – Vectores propios y ecuación característica',obj:'calcular valores y vectores propios con la ecuación característica.'},
     {id:'diagonalizacion',titulo:'Diagonalización',gen:'al/diagonalizacion',ref:'Lay 5.3 – Diagonalización',obj:'usar A = PDP⁻¹ para calcular potencias, trazas y determinantes'},
-    {id:'gram-schmidt',titulo:'Ortogonalidad y Gram-Schmidt',gen:'al/gram-schmidt',ref:'Lay 6.2 y 6.4 – Conjuntos ortogonales y proceso de Gram-Schmidt',obj:'proyectar vectores y ortogonalizar una base con Gram-Schmidt'}
+    {id:'gram-schmidt',titulo:'Ortogonalidad y Gram-Schmidt',gen:'al/gram-schmidt',ref:'Lay 6.2 y 6.4 – Conjuntos ortogonales y proceso de Gram-Schmidt',obj:'proyectar vectores y ortogonalizar una base con Gram-Schmidt'},
+    {id:'minimos-cuadrados',titulo:'Producto interno y mínimos cuadrados',gen:'al/minimos-cuadrados',ref:'Lay 6.1–6.2 y 6.5–6.6 – Producto interno, proyección y mínimos cuadrados',obj:'proyectar ortogonalmente, plantear AᵀA x̂ = Aᵀb y ajustar una recta por mínimos cuadrados.'},
+    {id:'diagonalizacion-ortogonal',titulo:'Matrices simétricas y formas cuadráticas',gen:'al/diagonalizacion-ortogonal',ref:'Lay 7.1–7.2 – Matrices simétricas y formas cuadráticas',obj:'diagonalizar ortogonalmente una simétrica 2×2 y clasificar formas cuadráticas.'}
   ]},
   {id:'calculo-diferencial',titulo:'Cálculo diferencial',icono:'📈',descripcion:'Límites, continuidad, derivadas, sus reglas y sus aplicaciones.',
    referencias:['Stewart, Cálculo de una variable — cap. 2 «Límites y derivadas»','Stewart, Cálculo de una variable — caps. 3 y 4 «Reglas de derivación» y «Aplicaciones de la derivada»'],nodos:[

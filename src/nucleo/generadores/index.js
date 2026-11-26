@@ -27,6 +27,7 @@ import matNuevos1 from './mat-nuevos1.js';
 import matNuevos2 from './mat-nuevos2.js';
 import matNuevos3 from './mat-nuevos3.js';
 import matBinomio from './mat-binomio.js';
+import matPulir from './mat-pulir.js';
 import inglesA1 from './ingles-a1.js';
 import inglesA1b from './ingles-a1b.js';
 import inglesA2 from './ingles-a2.js';
@@ -59,7 +60,7 @@ import {bancos} from './bancos.js';
 import {clasificar} from './profundidad.js';
 
 import {desglosarPasos} from './desglosar.js';
-export const GENERADORES={...matematicas,...algebraBasica,...algebraTemas,...algebraTemas2,...aplicaciones,...algebraVariantes,...algebraLineal2,...aplicacionesLineal,...algebraLineal,...calculo,...redes,...redes2,...seguridad,...datos,...ingles,...calculoDif,...calculoInt,...trigonometria,...prealgebra,...excel,...excel2,...matNuevos1,...matNuevos2,...matNuevos3,...matBinomio,...inglesA1,...inglesA1b,...inglesA2,...inglesB1,...inglesB2,...ciberRedes,...ciberFwVpn,...ciberDefensa,...inglesMejoras,...ciberMejoras,...excelMejoras,...datosEst,...datosInf,...datosPy,...python1,...python2,...python3,...algebraLinealVariantes,...calculoDifVariantes,...calculoIntVariantes};
+export const GENERADORES={...matematicas,...algebraBasica,...algebraTemas,...algebraTemas2,...aplicaciones,...algebraVariantes,...algebraLineal2,...aplicacionesLineal,...algebraLineal,...calculo,...redes,...redes2,...seguridad,...datos,...ingles,...calculoDif,...calculoInt,...trigonometria,...prealgebra,...excel,...excel2,...matNuevos1,...matNuevos2,...matNuevos3,...matBinomio,...matPulir,...inglesA1,...inglesA1b,...inglesA2,...inglesB1,...inglesB2,...ciberRedes,...ciberFwVpn,...ciberDefensa,...inglesMejoras,...ciberMejoras,...excelMejoras,...datosEst,...datosInf,...datosPy,...python1,...python2,...python3,...algebraLinealVariantes,...calculoDifVariantes,...calculoIntVariantes};
 // Extensiones (tarjetas y problemas de aplicación con contexto) sobre los generadores ya registrados: ver extender.js
 for(const ext of [extMatematicas,extCiber])for(const [id,e] of Object.entries(ext))if(GENERADORES[id])GENERADORES[id]=extender(GENERADORES[id],e);
 // Prueba de nivel y simulacros de Inglés: mezclan generadores ya registrados

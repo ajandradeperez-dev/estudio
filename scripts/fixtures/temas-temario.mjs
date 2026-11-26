@@ -46,7 +46,7 @@ export const TEMAS=[
   // Álgebra lineal
   ['Eliminación de Gauss-Jordan','Álgebra lineal','gauss-jordan'],
   ['Matriz inversa','Álgebra lineal','inversa'],
-  ['Determinantes y regla de Cramer','Álgebra lineal','determinantes'],
+  ['Determinantes y regla de Cramer','Álgebra lineal',['determinantes','regla-cramer']],
   ['Valores y vectores propios','Álgebra lineal','valores-propios'],
   ['Eigenvalores','Álgebra lineal','valores-propios'],
   ['Eigenvalores y eigenvectores','Álgebra lineal','valores-propios'],
@@ -133,6 +133,20 @@ export const TEMAS=[
   ['Comparatives and superlatives','Inglés','comparativos'],
   ['First and second conditional','Inglés','condicionales'],
   ['Reported speech','Inglés IV','reported-speech'],
+  // Parte 2 de PROMPT-ALGEBRA-PULIR
+  ['División sintética','Álgebra',['division-polinomios','funciones-polinomiales']],
+  ['Regla de Ruffini','Álgebra','division-polinomios'],
+  ['Números complejos','Álgebra','numeros-complejos'],
+  ['Forma polar de un número complejo','Álgebra superior','numeros-complejos'],
+  ['Ecuaciones racionales','Álgebra','ecuaciones-racionales'],
+  ['Progresiones aritméticas y geométricas','Álgebra','sucesiones-series'],
+  ['Inducción matemática','Álgebra superior','induccion'],
+  ['Regla de Cramer','Álgebra lineal','regla-cramer'],
+  ['Factorización LU','Álgebra lineal','factorizacion-lu'],
+  ['Cambio de base','Álgebra lineal','cambio-base'],
+  ['Matriz asociada a una transformación lineal','Álgebra lineal','matriz-transformacion'],
+  ['Mínimos cuadrados','Álgebra lineal',['minimos-cuadrados','regresion-simple']],
+  ['Formas cuadráticas','Álgebra lineal','diagonalizacion-ortogonal'],
   // errores de dedo
   ['Factorisacion','Álgebra','factorizacion'],
   ['Derivacion implisita','Cálculo','derivacion-implicita']

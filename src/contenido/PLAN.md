@@ -14,7 +14,7 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 
 ## ✅ ➗ Matemáticas `matematicas`
 
-**Cobertura del temario: 100 %** (89 de 89 habilidades ✅)
+**Cobertura del temario: 100 %** (100 de 100 habilidades ✅)
 
 ### ✅ Aritmética y prealgebra `prealgebra`
 
@@ -32,21 +32,26 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 
 ### ✅ Álgebra `algebra-basica`
 
-13/13 habilidades ✅
+18/18 habilidades ✅
 
 - [x] ✅ Términos semejantes y propiedad distributiva `expresiones` — Stewart Precálculo 1.3 – Expresiones algebraicas y polinomios
 - [x] ✅ Productos notables `productos-notables` — Stewart Precálculo 1.3 – Fórmulas de productos especiales
 - [x] ✅ Binomio de Newton `binomio-newton` — Stewart Precálculo 12.6 – El teorema del binomio
 - [x] ✅ Factorización `factorizacion` — Stewart Precálculo 1.3 – Factorización
+- [x] ✅ División de polinomios (larga y sintética) `division-polinomios` — Stewart Precálculo 3.2 – División de polinomios
 - [x] ✅ Fracciones algebraicas `fracciones-algebraicas` — Stewart Precálculo 1.4 – Expresiones racionales
 - [x] ✅ Ecuaciones lineales `ecuaciones-lineales` — Stewart Precálculo 1.5 – Ecuaciones lineales
 - [x] ✅ Ecuaciones cuadráticas `ecuaciones-cuadraticas` — Stewart Precálculo 1.5 – Ecuaciones cuadráticas y discriminante
+- [x] ✅ Números complejos `numeros-complejos` — Stewart Precálculo 1.6 – Números complejos; 8.3 – Forma polar
 - [x] ✅ Ecuaciones con radicales y valor absoluto `radicales-valor-absoluto` — Stewart Precálculo 1.5 – Otros tipos de ecuaciones
+- [x] ✅ Ecuaciones racionales `ecuaciones-racionales` — Stewart Precálculo 1.5 – Ecuaciones racionales
 - [x] ✅ Desigualdades lineales `desigualdades` — Stewart Precálculo 1.8 – Desigualdades lineales
 - [x] ✅ Desigualdades cuadráticas y con valor absoluto `desigualdades-no-lineales` — Stewart Precálculo 1.8 – Desigualdades no lineales y con valor absoluto
 - [x] ✅ Sistemas de ecuaciones 2×2 `sistemas-2x2` — Stewart Precálculo 10.1 – Sistemas de dos ecuaciones
 - [x] ✅ Sistemas 3×3 `sistemas-3x3` — Stewart Precálculo 10.2 – Sistemas de ecuaciones con varias variables
 - [x] ✅ Leyes de exponentes `exponentes` — Stewart Precálculo 1.2 – Leyes de los exponentes
+- [x] ✅ Sucesiones y series `sucesiones-series` — Stewart Precálculo 12.1–12.3 – Sucesiones aritméticas y geométricas
+- [x] ✅ Inducción matemática `induccion` — Stewart Precálculo 12.5 – Inducción matemática
 
 📚 Para profundizar: Stewart, Precálculo — cap. 1 «Fundamentos» (1.3 a 1.8: expresiones, ecuaciones y desigualdades) · Stewart, Precálculo — cap. 10 «Sistemas de ecuaciones»
 
@@ -82,13 +87,15 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 
 ### ✅ Álgebra lineal `algebra-lineal`
 
-20/20 habilidades ✅
+26/26 habilidades ✅
 
 - [x] ✅ Sistemas por eliminación de Gauss `gauss` — Lay 1.1 – Sistemas de ecuaciones lineales
 - [x] ✅ Gauss-Jordan, forma escalonada y rango `gauss-jordan` — Lay 1.2 – Reducción por filas y formas escalonadas
 - [x] ✅ Matrices y sus operaciones `matrices` — Lay 2.1 – Operaciones con matrices
 - [x] ✅ Inversa de una matriz `inversa` — Lay 2.2 – La inversa de una matriz
+- [x] ✅ Matrices elementales y factorización LU `factorizacion-lu` — Lay 2.2 y 2.5 – Matrices elementales y factorización LU
 - [x] ✅ Determinantes y sus propiedades `determinantes` — Lay 3.1–3.2 – Determinantes y sus propiedades
+- [x] ✅ Regla de Cramer `regla-cramer` — Lay 3.3 – Regla de Cramer; Grossman 3.5
 - [x] ✅ Vectores `vectores` — Grossman – Vectores en R² y R³; Lay 1.3 – Ecuaciones vectoriales
 - [x] ✅ Operaciones con vectores y producto punto `operaciones-producto-punto` — Lay 1.3 – Combinaciones de vectores
 - [x] ✅ Producto punto `producto-punto` — Lay 6.1 – Producto interno, longitud y ortogonalidad
@@ -98,12 +105,16 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 - [x] ✅ Espacios vectoriales y combinación lineal `espacios-vectoriales` — Lay 1.3 y 4.1 – Combinaciones lineales; espacios y subespacios vectoriales
 - [x] ✅ Independencia lineal `independencia-lineal` — Lay 1.7 – Independencia lineal
 - [x] ✅ Base y dimensión `base-dimension` — Lay 4.3 y 4.5 – Bases y dimensión
+- [x] ✅ Coordenadas y cambio de base `cambio-base` — Lay 4.4 y 4.7 – Coordenadas y cambio de base
 - [x] ✅ Rango y teorema de la dimensión `rango` — Lay 4.6 – Rango
 - [x] ✅ Transformaciones lineales y su matriz `transformaciones-lineales` — Lay 1.8–1.9 – Transformaciones lineales y su matriz
+- [x] ✅ Matriz de una transformación lineal `matriz-transformacion` — Lay 1.9 y 5.4 – La matriz de una transformación lineal
 - [x] ✅ Núcleo (kernel) e imagen `nucleo-imagen` — Lay 4.2 – Espacios nulos y columna
 - [x] ✅ Valores y vectores propios (eigenvalores) `valores-propios` — Lay 5.1–5.2 – Vectores propios y ecuación característica
 - [x] ✅ Diagonalización `diagonalizacion` — Lay 5.3 – Diagonalización
 - [x] ✅ Ortogonalidad y Gram-Schmidt `gram-schmidt` — Lay 6.2 y 6.4 – Conjuntos ortogonales y proceso de Gram-Schmidt
+- [x] ✅ Producto interno y mínimos cuadrados `minimos-cuadrados` — Lay 6.1–6.2 y 6.5–6.6 – Producto interno, proyección y mínimos cuadrados
+- [x] ✅ Matrices simétricas y formas cuadráticas `diagonalizacion-ortogonal` — Lay 7.1–7.2 – Matrices simétricas y formas cuadráticas
 
 📚 Para profundizar: Lay, Álgebra lineal y sus aplicaciones — caps. 1 a 6 · Grossman, Álgebra lineal — vectores en R² y R³, producto cruz, rectas y planos
 

@@ -417,7 +417,8 @@ Todo vive en `localStorage['ciberlab-progreso']` (formato `v: 11`; los formatos 
   dibuja dentro se ancla (`ancla` = `pid`, fijo; el `id` cambia en cada versión) y se transforma con el plano (`matrizPlano`
   conserva sus coordenadas del plano; «⇱ Soltar del plano» lo separa). El fondo «plano cartesiano» se ajusta (`d.cartesiano`:
   origen, unidad, paso; ⋯ → «Ajustar el plano de fondo», «Convertir en plano editable»). Los planos viejos de 📐 (grupo de
-  trazos con `forma:'plano'`) se convierten al abrirlos (`migrarPlanosViejos`, mismo tamaño y escala).
+  trazos con `forma:'plano'`) se convierten al abrirlos (`migrarPlanosViejos`, mismo tamaño y escala).
+
   **▦ Matrices** (PROMPT-PLANOS-MATRICES, `dibujo/matriz.js` el objeto y su pintado, `dibujo/matriz-ui.js` la interfaz,
   `nucleo/matrices.js` las cuentas con **fracciones exactas** y `nucleo/matriz-dialogo.js` el diálogo): botón ▦ en la barra y
   en 📐. Objeto `t:'matriz'` {`mid` fijo, filas, cols, celdas (texto), aumentada (columna antes de la línea), paren `[]`/`()`/
@@ -838,6 +839,7 @@ Meta por habilidad de Matemáticas: 2 ejemplos resueltos, 1 con huecos, generado
 
 ## Calidad
 
+- **Después de cada push, comprueba que los workflows terminen en verde** (`gh run list -L 3`; si uno falla, `gh run view <id> --log-failed`, corrige y vuelve a hacer push) y que la web publicada muestre el commit nuevo en Acerca de, antes de dar algo por terminado. `publicar.yml` espera y reintenta el despliegue (a veces la API todavía no ve el artefacto recién subido) y `apk.yml` reintenta Gradle si Maven Central responde 429.
 - `npm run revisar` (también lo corre la publicación): método de las lecciones, jerarquía (áreas, temas, nodos, enlaces a secciones, ids), contenido de habla de Inglés, migración del progreso, los generadores (200 ejercicios por nivel que pasan su `verificar`, fórmulas KaTeX válidas, regla, profundidad, comprobación independiente y variedad), PLAN.md ↔ temas.js y los retos.
 - `npm run calidad` también recorre los pasos de **cada generador** en la ruta oculta `#diag-pasos/<generador>` a 360 px y falla si una fórmula se parte en dos renglones o se sale de la pantalla (`--solo-formulas` corre solo eso).
 - `npm run calidad` (`scripts/calidad.mjs`) detecta textos encimados comparando los rectángulos de cada texto visible (`getClientRects`), además de scroll horizontal y toques chicos. Evita anchos fijos y posiciones absolutas en elementos con texto; usa filas con `flex-wrap` (como el Mapa MCER). No reutilices nombres de clase genéricos entre secciones (`.casilla` del mapa chocó con las casillas del cuaderno): usa un prefijo (`mapa-`, `nota-`).

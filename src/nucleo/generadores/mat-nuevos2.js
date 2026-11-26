@@ -155,7 +155,7 @@ const rango=crearGen({titulo:'Rango y teorema de la dimensión',niveles:NIV,
   }});
 
 /* ---------- Núcleo e imagen ---------- */
-const nucleo=crearGen({titulo:'Núcleo e imagen',niveles:NIV,
+const nucleo=crearGen({titulo:'Núcleo (kernel) e imagen',niveles:NIV,
   explicacion:'El núcleo (espacio nulo) de A son los vectores x con Ax = 0; la imagen (espacio columna) son todos los Ax posibles. dim(imagen) = rango(A) y dim(núcleo) = columnas − rango. Un vector está en el núcleo si al multiplicarlo por A da el vector cero.',
   alternativa:'El núcleo es lo que la transformación «aplasta» hasta el origen; la imagen es todo lo que puede producir.',
   referencia:'Lay 4.2 – Espacios nulos y columna',regla:'v ∈ Nul A ⇔ Av = 0. dim Col A = rango; dim Nul A = n − rango.',pista:'Multiplica A por el vector.',

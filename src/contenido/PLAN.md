@@ -100,8 +100,8 @@ Organización de Aprender: 🎓 Mis materias · 📘 Estudio (Inglés, Matemáti
 - [x] ✅ Base y dimensión `base-dimension` — Lay 4.3 y 4.5 – Bases y dimensión
 - [x] ✅ Rango y teorema de la dimensión `rango` — Lay 4.6 – Rango
 - [x] ✅ Transformaciones lineales y su matriz `transformaciones-lineales` — Lay 1.8–1.9 – Transformaciones lineales y su matriz
-- [x] ✅ Núcleo e imagen `nucleo-imagen` — Lay 4.2 – Espacios nulos y columna
-- [x] ✅ Valores y vectores propios `valores-propios` — Lay 5.1–5.2 – Vectores propios y ecuación característica
+- [x] ✅ Núcleo (kernel) e imagen `nucleo-imagen` — Lay 4.2 – Espacios nulos y columna
+- [x] ✅ Valores y vectores propios (eigenvalores) `valores-propios` — Lay 5.1–5.2 – Vectores propios y ecuación característica
 - [x] ✅ Diagonalización `diagonalizacion` — Lay 5.3 – Diagonalización
 - [x] ✅ Ortogonalidad y Gram-Schmidt `gram-schmidt` — Lay 6.2 y 6.4 – Conjuntos ortogonales y proceso de Gram-Schmidt
 

@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.despliegue.outputs.page_url }}
+      url: ${{ steps.intento1.outputs.page_url || steps.intento2.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -41,5 +41,14 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
-      - id: despliegue
+      # deploy-pages a veces busca el artefacto antes de que la API lo registre («Found 0 artifact(s)»):
+      # espera un poco y, si aun así falla, lo intenta otra vez
+      - run: sleep 20
+      - id: intento1
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      - if: steps.intento1.outcome == 'failure'
+        run: sleep 45
+      - id: intento2
+        if: steps.intento1.outcome == 'failure'
         uses: actions/deploy-pages@v5

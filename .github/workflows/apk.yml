@@ -21,9 +21,16 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+          cache: gradle
       - run: npm ci
       - run: chmod +x android-app/gradlew
-      - run: node scripts/app/apk.mjs --debug
+      # Maven Central a veces responde 429 (Too Many Requests): hasta 3 intentos con espera
+      - run: |
+          for i in 1 2 3; do
+            node scripts/app/apk.mjs --debug && exit 0
+            echo "Intento $i falló; espero y vuelvo a intentar"; sleep $((60*i))
+          done
+          exit 1
       - uses: actions/upload-artifact@v5
         with:
           name: EstudioPlus-debug

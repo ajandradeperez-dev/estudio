@@ -71,8 +71,8 @@ export default [
     {id:'base-dimension',titulo:'Base y dimensión',gen:'al/base-dimension',ref:'Lay 4.3 y 4.5 – Bases y dimensión',obj:'reconocer una base y calcular la dimensión de un espacio'},
     {id:'rango',titulo:'Rango y teorema de la dimensión',gen:'al/rango',ref:'Lay 4.6 – Rango',obj:'calcular el rango y usar rango + nulidad = columnas'},
     {id:'transformaciones-lineales',titulo:'Transformaciones lineales y su matriz',gen:'al/transformaciones',ref:'Lay 1.8–1.9 – Transformaciones lineales y su matriz',obj:'aplicar una transformación lineal y encontrar su matriz estándar.'},
-    {id:'nucleo-imagen',titulo:'Núcleo e imagen',gen:'al/nucleo-imagen',ref:'Lay 4.2 – Espacios nulos y columna',obj:'decidir si un vector está en el núcleo y calcular las dimensiones del núcleo y la imagen'},
-    {id:'valores-propios',titulo:'Valores y vectores propios',gen:'al/valores-propios',ref:'Lay 5.1–5.2 – Vectores propios y ecuación característica',obj:'calcular valores y vectores propios con la ecuación característica.'},
+    {id:'nucleo-imagen',titulo:'Núcleo (kernel) e imagen',gen:'al/nucleo-imagen',ref:'Lay 4.2 – Espacios nulos y columna',obj:'decidir si un vector está en el núcleo y calcular las dimensiones del núcleo y la imagen'},
+    {id:'valores-propios',titulo:'Valores y vectores propios (eigenvalores)',gen:'al/valores-propios',ref:'Lay 5.1–5.2 – Vectores propios y ecuación característica',obj:'calcular valores y vectores propios con la ecuación característica.'},
     {id:'diagonalizacion',titulo:'Diagonalización',gen:'al/diagonalizacion',ref:'Lay 5.3 – Diagonalización',obj:'usar A = PDP⁻¹ para calcular potencias, trazas y determinantes'},
     {id:'gram-schmidt',titulo:'Ortogonalidad y Gram-Schmidt',gen:'al/gram-schmidt',ref:'Lay 6.2 y 6.4 – Conjuntos ortogonales y proceso de Gram-Schmidt',obj:'proyectar vectores y ortogonalizar una base con Gram-Schmidt'}
   ]},

@@ -391,7 +391,7 @@ const transformaciones={
 const raicesSet=(e,rs)=>{const l=lista(String(e).replace(/λ\s*[₁₂12]?\s*=|l\s*=/gi,'').replace(/\by\b/g,','));const a=[...new Set(l.map(x=>Math.round(x*1e6)/1e6))].sort((p,q)=>p-q),b=[...new Set(rs)].sort((p,q)=>p-q);return a.length===b.length&&a.every((x,i)=>casi(x,b[i]))};
 const proporcional=(e,v)=>{const l=Array.isArray(e)?e.map(num):lista(e);return l.length===v.length&&l.some(x=>x!==0)&&l.every(Number.isFinite)&&casi(l[0]*v[1],l[1]*v[0])};
 const propios={
-  titulo:'Valores y vectores propios',
+  titulo:'Valores y vectores propios (eigenvalores)',
   explicacion:'v ≠ 0 es vector propio de A con valor propio λ si A·v = λ·v: la matriz solo lo estira (no lo gira). Los valores propios son las raíces de det(A − λI) = 0; en una 2×2, λ² − (traza)λ + det = 0.',
   alternativa:'Imagina que la matriz es un viento que empuja todo el plano. Casi todas las flechas cambian de dirección, pero algunas solo se estiran o encogen: esas son los vectores propios, y el valor propio dice cuánto se estiran (2 = el doble, −1 = se dan vuelta).',
   referencia:'Ver: Grossman, Álgebra lineal, cap. 8; Lay, sec. 5.1 y 5.2.',

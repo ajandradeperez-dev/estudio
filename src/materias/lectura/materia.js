@@ -4,6 +4,9 @@
    {leidos:{<capítulo>: 'AAAA-MM-DD'}, ultimo}. Las palabras guardadas son tarjetas del repaso ('lectura/t/<id>').
    No tiene habilidades ni examen de ubicación: su página es la biblioteca (vistaPropia). */
 import {vistaBiblioteca,rutaLibro} from './lector.js';
+import {rutaMis} from './mis-libros-ui.js';
+import {cargarMisLibros} from './mis-libros.js';
+if(typeof indexedDB!=='undefined')cargarMisLibros();
 
 export default {
   nombre:'Lectura',icono:'📚',area:'estudio',orden:9,
@@ -13,6 +16,7 @@ export default {
   vistaPropia:m=>vistaBiblioteca(m),
   // La clave forma la ruta (#estudio/lectura/libro/<id>/<capítulo>): no la cambies.
   secciones:{
-    libro:{titulo:'Libro',grupo:'Libros',desc:'Portada y capítulos de un libro.',modulo:{ruta:rutaLibro},propia:true}
+    libro:{titulo:'Libro',grupo:'Libros',desc:'Portada y capítulos de un libro.',modulo:{ruta:rutaLibro},propia:true},
+    mis:{titulo:'Mis libros',grupo:'Libros',desc:'Importar y editar tus propios libros (solo en este dispositivo).',modulo:{ruta:rutaMis},propia:true}
   }
 };

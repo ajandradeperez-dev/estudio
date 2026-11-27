@@ -8,7 +8,7 @@
    - Sin conexión: un capítulo ya abierto se vuelve a abrir (caché 'libros' del service worker).
    Compila (salvo --sin-build), levanta `vite preview` en el puerto 4793 y lo apaga al terminar. --capturas <dir> [--oscuro]. */
 import {existsSync} from 'node:fs';
-import {spawn,execSync} from 'node:child_process';
+import {spawn,execSync,spawnSync} from 'node:child_process';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {dirname,join} from 'node:path';
 import {chromium} from 'playwright-core';
@@ -118,4 +118,5 @@ try{
   check(!err.length,`sin errores en la página${err.length?': '+err.join(' | '):''}`);
 }catch(e){console.log('FALLO',e.message);f++}
 finally{await b.close();apagar()}
+{const r=spawnSync(process.execPath,[join(raiz,'scripts','mis-libros.mjs'),'--sin-build'],{stdio:'inherit'});if(r.status)f++}   // 🔒 Mis libros
 console.log(f?`${f} fallos`:'Todo bien');process.exit(f?1:0);

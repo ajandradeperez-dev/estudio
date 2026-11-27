@@ -217,8 +217,10 @@ function go(ruta,{modo='push'}={}){
   cur=nueva;
   if(cur.seccion)visitar(cur.m.id,cur.seccion);
   // Historial de sesiones por materia (para que "¿Qué sigue?" alterne materias)
-  if(cur.m&&!['materia','tema','area'].includes(cur.tipo))registrarSesion(cur.m.id,cur.ruta);
-  if(cur.ultimo)guardarUltimo({ruta:cur.ruta,materia:cur.m.id});
+  const libroPropio=/\/(libro|mis)\/mio-/.test(cur.ruta||'');
+  if(cur.m&&!['materia','tema','area'].includes(cur.tipo))registrarSesion(cur.m.id,libroPropio?'estudio/lectura':cur.ruta);
+  // los libros propios (🔒 Mis libros) no van al progreso que se sincroniza: ni siquiera su ruta
+  if(cur.ultimo&&!/\/(libro|mis)\/mio-/.test(cur.ruta))guardarUltimo({ruta:cur.ruta,materia:cur.m.id});
   cur.v.alEntrar?.();
   pintar();pintarBarra();
   if(cur.ruta!==anterior){const v=$('#vista');v.classList.remove('entrando');void v.offsetWidth;v.classList.add('entrando');anterior=cur.ruta}

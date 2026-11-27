@@ -56,7 +56,7 @@ export default defineConfig({
     },
     workbox:{
       // Todo lo de la app queda en caché para funcionar sin internet (incluidas las fuentes de KaTeX en woff2)
-      globPatterns:['**/*.{js,css,html,svg,png,webmanifest,woff2}'],
+      globPatterns:['**/*.{js,mjs,css,html,svg,png,webmanifest,woff2}'],
       // Los generadores de ejercicios van en un chunk grande (~2 MB y creciendo): sin esto no se precachean y no hay modo sin conexión
       maximumFileSizeToCacheInBytes:6*1024*1024,
       cleanupOutdatedCaches:true,

@@ -54,11 +54,12 @@ export const htmlRespaldo=()=>`<div class="card respaldo">
 <ol class="nota" style="padding-left:20px"><li><b>Exportar</b>: se crea un archivo <code>.estudio</code> (comprimido) con todo.</li><li>Guárdalo o mándatelo (Drive, correo, WhatsApp a ti mismo…).</li><li>En el otro dispositivo abre la app y toca <b>Importar</b>: eliges <b>Combinar</b> (no se pierde nada de ningún lado) o <b>Reemplazar</b>.</li></ol>
 <div class="row" style="flex-wrap:wrap"><button type="button" class="btn ghost btn-chico" id="resp-exportar">💾 Exportar</button>${puedeCompartirArchivo()?`<button type="button" class="btn ghost btn-chico" id="resp-compartir">📤 Compartir</button>`:''}<label class="btn ghost btn-chico" for="resp-archivo">📥 Importar</label>
 <input type="file" id="resp-archivo" class="oculto-visual"></div>
+<label class="exp-casilla resp-casilla"><input type="checkbox" id="resp-libros" class="oculto-visual"><span class="casilla-falsa" aria-hidden="true"></span> <span>Incluir mis libros (archivo más pesado; no lo compartas)</span></label>
 <details class="nota-datos"><summary>¿Y por código QR?</summary><p class="nota">Un QR guarda como mucho unos 3 KB y un respaldo pesa mucho más (con fotos, varios MB), así que no cabe sin un servidor de por medio. Por eso se pasa como archivo.</p></details>
 <p class="nota" style="margin-bottom:0">La clave de IA no se incluye: es personal y se pega de nuevo en cada dispositivo.</p></div>`;
 export async function clicRespaldo(t){
   if(t.id==='resp-exportar'||t.id==='resp-compartir'){t.disabled=true;
-    try{const r=await archivoRespaldo();
+    try{const r=await archivoRespaldo({libros:!!document.getElementById('resp-libros')?.checked});
       if(t.id==='resp-compartir'){try{await navigator.share({files:[new File([r.blob],r.nombre,{type:'application/octet-stream'})],title:r.nombre})}catch(e){if(e?.name!=='AbortError')descargar(r.blob,r.nombre)}}
       else descargar(r.blob,r.nombre);
       aviso(`💾 Respaldo listo (${kb(r.bytes)}): ${r.notas} notas y ${r.archivos} imágenes`)}

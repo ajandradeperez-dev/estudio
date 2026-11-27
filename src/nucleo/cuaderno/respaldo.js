@@ -18,12 +18,13 @@ async function deDataUrl(u){const r=await fetch(u);return r.blob()}
 const leerLS=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
 const escribirLS=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 
-export async function crearRespaldo(){
+// Mis libros (PROMPT-MIS-LIBROS) solo entran si se pide: {libros:true} (casilla «Incluir mis libros», desmarcada)
+export async function crearRespaldo({libros=false}={}){
   const notas=await todasLasNotas(),archivos=[];
   for(const a of await todosLosArchivos()){const {blob,...resto}=a;archivos.push({...resto,data:await aDataUrl(blob)})}
   const materias=await todasLasMaterias().catch(()=>[]),generados=await todosLosGenerados().catch(()=>[]);
   return {tipo:TIPO,formato:FORMATO,app:APP_NOMBRE,fecha:new Date().toISOString(),dispositivo:miEquipo(),
-    progreso:marcarAportes(progreso(),miEquipo()),ajustes:leerLS(AJUSTES),usuario:leerLS(USUARIO),notas,archivos,materias,generados,borradas:lapidas()};
+    progreso:marcarAportes(progreso(),miEquipo()),ajustes:leerLS(AJUSTES),usuario:leerLS(USUARIO),notas,archivos,materias,generados,borradas:lapidas(),...(libros?{misLibros:await (await import('../../materias/lectura/mis-libros.js')).librosParaRespaldo()}:{})};
 }
 // gzip con CompressionStream (Chrome 80+, Safari 16.4+); si no hay, el mismo JSON sin comprimir (también se lee)
 async function comprimir(texto){
@@ -40,8 +41,8 @@ async function descomprimir(file){
   return file.text();
 }
 export const nombreRespaldo=()=>`${APP_NOMBRE.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'app'}-respaldo-${hoy()}.estudio`;
-export async function archivoRespaldo(){
-  const r=await crearRespaldo(),blob=await comprimir(JSON.stringify(r));
+export async function archivoRespaldo(opc={}){
+  const r=await crearRespaldo(opc),blob=await comprimir(JSON.stringify(r));
   return {blob,nombre:nombreRespaldo(),notas:r.notas.length,archivos:r.archivos.length,bytes:blob.size};
 }
 export async function descargarRespaldo(){const x=await archivoRespaldo();descargar(x.blob,x.nombre);return x}
@@ -82,12 +83,14 @@ export async function aplicarRespaldo(r,{modo='reemplazar'}={}){
   for(const a of archivos)await guardarArchivo(a);
   for(const m of materiasValidas(r.materias))await guardarMateriaDb(m);
   for(const g of generadosValidos(r.generados))await guardarGeneradoDb(g);
+  if(r.misLibros)await (await import('../../materias/lectura/mis-libros.js')).restaurarDeRespaldo(r.misLibros);
   ponerLapidas(r.borradas||{});avisarCambio('todo');
   return {notas:r.notas.length,archivos:archivos.length,materias:materiasValidas(r.materias).length};
 }
 /* Combina datos de otro dispositivo (respaldo o nube) con los de este. `d` = {progreso, dispositivo, notas, archivos (con blob),
    materias, generados, borradas, usuario}. Devuelve cuánto se agregó o actualizó de cada cosa. */
 export async function combinarDatos(d){
+  if(d.misLibros)await (await import('../../materias/lectura/mis-libros.js')).restaurarDeRespaldo(d.misLibros);
   const bor=unirLapidas(lapidas(),d.borradas||{});
   if(d.progreso)reemplazarProgreso(fusionarProgreso(progreso(),normalizar(d.progreso),{yo:miEquipo(),el:d.dispositivo||'respaldo',borradas:bor}));
   // notas: escribe solo lo que cambia; quita las que tienen una lápida más nueva

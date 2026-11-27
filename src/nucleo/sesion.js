@@ -68,6 +68,14 @@ const TECLADOS={
 };
 const etiqueta=(icono,txt)=>`<p class="etiqueta-actividad"><span aria-hidden="true">${icono}</span>${txt}</p>`;
 // p.hoja: mini hoja de cálculo (Excel); con teclado 'xl' los toques en las celdas escriben su referencia en la respuesta
+// Que los botones de la ayuda abierta (pista, «Siguiente paso», «Ver todos») no queden debajo de la barra fija de «Comprobar»:
+// se mide después de pintar (las fórmulas cambian el alto) y se desplaza lo que falte
+const asomarAyuda=()=>{requestAnimationFrame(()=>requestAnimationFrame(asomar1));setTimeout(asomar1,220);document.fonts?.ready?.then(asomar1);
+  // si el contenido crece después (fórmulas, imágenes), se vuelve a ajustar durante un segundo
+  const cuerpo=document.getElementById('ses-cuerpo');if(cuerpo&&typeof ResizeObserver==='function'){const ro=new ResizeObserver(()=>asomar1());ro.observe(cuerpo);setTimeout(()=>ro.disconnect(),1200)}};
+const asomar1=()=>{const bs=[...document.querySelectorAll('#ses-cuerpo .pista button,#ses-cuerpo .ayuda-caja button,#ses-cuerpo [data-sig-paso]')].filter(b=>{const pn=b.closest('.ses-panel');return b.offsetParent&&!(pn&&getComputedStyle(pn).position==='sticky')});
+  const ult=bs.sort((x,y)=>x.getBoundingClientRect().bottom-y.getBoundingClientRect().bottom).at(-1),tope=document.getElementById('ses-comprobar')?.getBoundingClientRect().top;
+  if(!ult||!tope)return;const d=ult.getBoundingClientRect().bottom+12-tope;if(d>0)scrollBy(0,d)};
 const htmlHerr=p=>{const hs=herramientaDe(p);return hs?`<div class="row herr-mate" style="gap:8px;flex-wrap:wrap;margin:-4px 0 12px">${hs.map((h,i)=>`<button type="button" class="btn ghost btn-chico" data-herr-mate="${i}">${h.titulo}</button>`).join('')}</div>`:''};
 const enunciado=p=>`<div class="pregunta">${conFormulas(p.enunciado||'')}</div>${htmlHerr(p)}${p.hoja?htmlHoja(p.hoja):''}${p.codigo?`<pre class="ej-codigo" style="margin-bottom:16px">${esc(p.codigo)}</pre>`:''}${p.oir?`<div class="row" style="margin-bottom:16px">${htmlOir(p.oir)}</div>`:''}`;
 // Con teclado físico (atajos.js) el teclado de símbolos se esconde; «⌨️ Símbolos» lo vuelve a mostrar
@@ -469,7 +477,7 @@ ${st.noseSeguidos>=2&&cfg.minileccion?`<p class="hoja-linea">¿Lo vemos desde el
       if(t.id==='ses-panel-abrir'){st.panelOculto=false;repintar();return true}
       if(t.dataset.sigPaso){st[t.dataset.sigPaso]=(st[t.dataset.sigPaso]||1)+1;repintar();document.querySelector(`#ses-cuerpo .pasos-proc li:nth-child(${st[t.dataset.sigPaso]})`)?.scrollIntoView({block:'nearest'});return true}
       if(t.dataset.verTodos){st[t.dataset.verTodos]=99;repintar();return true}
-      if(t.id==='ses-pista'){st.pista++;st.panelOculto=false;repintar();if(st.pista>=2)document.querySelector('#ses-cuerpo .pista:last-of-type,#ses-cuerpo .ayuda-caja')?.scrollIntoView({block:'nearest'});if(st.pista>=2)document.querySelector('#ses-cuerpo [data-sig-paso]')?.scrollIntoView({block:'nearest'});return true}
+      if(t.id==='ses-pista'){st.pista++;st.panelOculto=false;repintar();if(st.pista>=2)document.querySelector('#ses-cuerpo .pista:last-of-type,#ses-cuerpo .ayuda-caja')?.scrollIntoView({block:'nearest'});asomarAyuda();return true}
       // «No sé cómo empezar»: la solución completa y luego un gemelo; no es un fallo (no se registra respuesta)
       if(t.id==='ses-nosecomo'){st.nose=true;st.panelOculto=false;st.noseSeguidos++;cfg.visto?.(p);repintar();document.querySelector('#ses-cuerpo .ayuda-caja')?.scrollIntoView({block:'start'});return true}
       if(t.id==='ses-ahora-tu'){const g=gemeloDe(p);if(g){st.actual=g;st.e={};st.pista=0;st.nose=false;st.v2=1;st.v3=1;st.t0=Date.now()}else{st.nose=false;avanzar()}repintar();window.scrollTo(0,0);return true}

@@ -115,6 +115,8 @@ export function fusionarProgreso(a,b,{yo,el,borradas={}}={}){
     combinarContadores(d,da,db,CAMPOS_DIA,da?yo:null,db?el:null);
     if(da||db)d.habla=Object.assign({frases:0,seg:0,turnos:0,conv:0},d.habla,{conv:Math.max(num(da?.habla?.conv),num(db?.habla?.conv))});
     d.ok=!!(da?.ok||db?.ok||cumple(r.meta||{tipo:'ejercicios',cantidad:20},d));
+    if(da?.dom!==undefined||db?.dom!==undefined)d.dom=Math.max(num(da?.dom),num(db?.dom));   // v12: dominadas al final del día
+
     r.dias[f]=d;
   }
   // repaso

@@ -2,9 +2,10 @@
    Si el almacenamiento no está disponible (modo privado, bloqueado), la app funciona igual sin guardar nada.
    Cada cambio emite el evento 'progreso' en window para que la barra superior se actualice.
 
-   Estructura (v: 11):
+   Estructura (v: 12):
    meta      {tipo:'ejercicios'|'minutos', cantidad}
-   dias      {'AAAA-MM-DD': {ej, seg, xp, ok, habla:{frases, seg, turnos, conv}}}   ok = se cumplió la meta ese día (cuenta para la racha)
+   dias      {'AAAA-MM-DD': {ej, seg, xp, ok, dom, habla:{frases, seg, turnos, conv}}}
+             dom = habilidades dominadas al final de ese día (v12; para el pronóstico de 🧭 Mi análisis; al combinar, el máximo)   ok = se cumplió la meta ese día (cuenta para la racha)
              habla: frases dichas en voz alta, segundos con el micrófono, turnos de conversación y la conversación más larga del día
    mejorRacha
    materias  {[id]: {xp,
@@ -38,7 +39,7 @@
    y `por` {[dispositivo]: valores} con lo que aportó cada OTRO dispositivo; lo de este es el total menos base y los demás. */
 import {DOMINIO,ULTIMAS,estadoDominio,nuevoRating,calidad,sm2,SALE_DEL_REPASO,TOPE_HABILIDAD,INTERVALOS_V6} from './metodo.js';
 
-const CLAVE='ciberlab-progreso',VERSION=11;
+const CLAVE='ciberlab-progreso',VERSION=12;
 const RAPIDO=12000; // ms: responder bien en menos de esto cuenta como "rápido" (sube más la dificultad y el intervalo)
 export const METAS=[['ejercicios',10],['ejercicios',20],['ejercicios',30],['minutos',5],['minutos',10],['minutos',15]];
 const XP_LECCION=20;
@@ -142,6 +143,9 @@ function migrar(p){
       if(Object.keys(b).length)d.base=b}
     p.v=11;
   }
+  if(p.v===11){ // v11 → v12: dias[fecha].dom (dominadas al final del día) se anota desde ahora; lo de antes se aproxima en Mi análisis
+    p.v=12;
+  }
   return p;
 }
 export function progreso(){
@@ -167,7 +171,11 @@ export function normalizar(p,{copiar=true}={}){
   if(!obj(p.ultimo))p.ultimo=null;
   return p;
 }
+// Cuántas habilidades dominadas hay en total (para dias[hoy].dom)
+export const totalDominadas=p=>Object.values(p.materias||{}).reduce((a,m)=>a+Object.values(m?.lecciones||{}).filter(h=>h?.dominada).length,0);
 function guardar(p){
+  // dominadas al final de hoy (solo si hoy ya hay actividad: no se crean días vacíos)
+  {const d=p.dias?.[hoy()];if(d&&typeof d==='object'){const n=totalDominadas(p);if(d.dom!==n)d.dom=n}}
   // Solo se conservan los últimos 400 días
   const corte=sumarDias(hoy(),-400);
   for(const f of Object.keys(p.dias))if(f<corte)delete p.dias[f];

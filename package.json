@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "revisar": "node scripts/revisar-contenido.mjs",
     "auditar-mate": "node scripts/auditar-mate.mjs",
+    "analisis": "node scripts/analisis.mjs",
     "calidad": "node scripts/calidad.mjs",
     "atras": "node scripts/atras.mjs",
     "cuaderno": "node scripts/cuaderno.mjs",

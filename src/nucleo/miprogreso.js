@@ -46,6 +46,7 @@ export const perfil={
     return `<h1>👤 ${u.nombre?esc(u.nombre):'Perfil'}</h1>
 <div class="perfil-dos"><nav class="perfil-indice" aria-label="Secciones del perfil">${indice.map(([id,t])=>`<button type="button" data-ir-a="${id}">${t}</button>`).join('')}</nav><div>
 <div class="prog-grid">${est(`🔥 ${r}`,`Racha (mejor ${Math.max(r,p.mejorRacha)})`)}${est(`⚡ ${xpTotal}`,'XP total')}${est(`👑 ${dominadas}`,'Dominadas')}${est(`🎙️ ${mh.semana}`,'Min. hablados (7 días)')}</div>
+<button class="tarjeta-nav an-entrada" data-go="perfil/analisis"><span class="icono" aria-hidden="true">🧭</span><span><b>Mi análisis</b><span class="nota">¿Llegas al examen? Tu ritmo, el mapa de tus habilidades y lo que dicen tus datos.</span></span></button>
 
 <h2 id="perfil-meta">Meta de hoy</h2>
 <div class="card"><p class="nota" style="margin-bottom:8px">${h.hecho} de ${h.meta} ${h.tipo==='minutos'?'minutos':'ejercicios'}${h.ok?' · ✅ cumplida':''}</p>${barra(h.hecho,h.meta)}

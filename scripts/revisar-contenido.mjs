@@ -443,7 +443,7 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
     notas:{'algebra/expresiones':{texto:'Resumen',fecha:f(3)}},ultimo:{ruta:'algebra/l/ecuaciones-lineales',materia:'algebra'},frases:{},historial:[{materia:'algebra',tipo:'algebra/l/expresiones',fecha:f(0)}]};
   mem['ciberlab-progreso']=JSON.stringify(v5);
   const p=P.progreso(),m=p.materias.matematicas,e='migración v5';
-  if(p.v!==11)mal(e,`queda en la versión ${p.v} (se esperaba 11)`);
+  if(p.v!==12)mal(e,`queda en la versión ${p.v} (se esperaba 12)`);
   if(p.materias.algebra||m?.xp!==230||!m.lecciones.expresiones?.dominada||m.lecciones['ecuaciones-lineales']?.mejor!==0.4)mal(e,'se pierden la XP o las lecciones de Álgebra (ahora Matemáticas)');
   if(!p.materias.ingles?.lecciones['verbo-to-be']?.dominada)mal(e,'se pierden lecciones de otras materias');
   if(!p.repaso['matematicas/l/expresiones/3']||!p.repaso['ingles/l/can/2'])mal(e,'se pierden o no se renombran repasos: '+Object.keys(p.repaso).join(', '));
@@ -475,7 +475,7 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   v9.repaso['ciberseguridad/examen/3']={rep:1,int:1,ef:2.5,proxima:f(0),fallos:1};v9.notas['ciberseguridad/subredes-cidr']={texto:'Red y broadcast',fecha:f(1)};
   mem['ciberlab-progreso']=JSON.stringify(v9);
   const q=P.progreso(),e10='migración v10 (Cursos)';
-  if(q.v!==11)mal(e10,`queda en la versión ${q.v}`);
+  if(q.v!==12)mal(e10,`queda en la versión ${q.v}`);
   if(q.materias.ciberseguridad?.xp!==340||!q.materias.ciberseguridad.lecciones['subredes-cidr']?.dominada)mal(e10,'se pierden la XP o las habilidades de Ciberseguridad');
   if(!q.repaso['ciberseguridad/examen/3']||q.notas['ciberseguridad/subredes-cidr']?.texto!=='Red y broadcast')mal(e10,'se pierden repasos o notas de Ciberseguridad');
   if(q.ultimo?.ruta!=='cursos/ciberseguridad/fw'||q.historial[0]?.tipo!=='cursos/ciberseguridad/quiz')mal(e10,'"continuar" sigue en la ruta vieja: '+q.ultimo?.ruta);
@@ -485,7 +485,7 @@ for(const [id,ms] of Object.entries(areas))if(!ms.length)mal(`área ${id}`,'no t
   console.log(`progreso: un v5 migra a v${p.v} conservando lecciones, XP, racha, repasos y notas; un v9 con Ciberseguridad pasa a Cursos sin perder nada`);
   // Combinar dos dispositivos (sync/fusionar.js): XP exacta sin duplicar, idempotente, racha de la unión, repaso más reciente, lápidas
   const S=await import(pathToFileURL(join(raiz,'..','nucleo','sync','fusionar.js')).href),es='combinar dispositivos',sumar=P.sumarDias;
-  const vacioP=()=>({v:11,meta:{tipo:'ejercicios',cantidad:10},dias:{},mejorRacha:0,materias:{},repaso:{},dominados:0,notas:{},tarjetas:{},basicos:{},refuerzos:{},estrellas:{},ultimo:null,frases:{},historial:[]});
+  const vacioP=()=>({v:12,meta:{tipo:'ejercicios',cantidad:10},dias:{},mejorRacha:0,materias:{},repaso:{},dominados:0,notas:{},tarjetas:{},basicos:{},refuerzos:{},estrellas:{},ultimo:null,frases:{},historial:[]});
   const ganar=(x,mat,xp,ej,dd=0)=>{const m=x.materias[mat]=x.materias[mat]||{xp:0,lecciones:{},extra:{},visitadas:[]};m.xp+=xp;const d=x.dias[f(dd)]=x.dias[f(dd)]||{ej:0,seg:0,xp:0,ok:false};d.ej+=ej;d.xp+=xp;if(d.ej>=10)d.ok=true};
   const A=vacioP();ganar(A,'matematicas',100,10);ganar(A,'matematicas',40,10,1);ganar(A,'matematicas',30,10,2);
   // B importa el respaldo de A (Reemplazar) y sigue practicando; A también

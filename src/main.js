@@ -12,6 +12,7 @@ import {portada,vistaArea,vistaMateria,vistaTema,htmlBarraSup,htmlMigas} from '.
 import {vistaHabilidad,vistaCofre,vistaJefe} from './nucleo/habilidad.js';
 import {repaso} from './nucleo/repaso.js';
 import {perfil} from './nucleo/miprogreso.js';
+import {vistaAnalisis} from './nucleo/analisis/vista.js';
 import {logros} from './nucleo/logros.js';
 import {vistaNotas} from './nucleo/notas.js';
 import {vistaMias} from './nucleo/mias/vistas.js';
@@ -41,7 +42,7 @@ import {acerca,vistaBienvenida,tocaBienvenida,vigilarConexion,avisarVersionNueva
    Cada vista exporta vista() y, si las necesita, alEntrar(), alMostrar(), alSalir(), alClic(t, ir, repintar)
    e inmersiva (true mientras es una sesión de práctica a pantalla completa: sin barras de la app). */
 import {vistaDiagPasos} from './nucleo/diag-pasos.js';
-const ESPECIALES={repaso,logros,perfil,acerca,'ajustes-ia':ajustesIA,cuenta:vistaCuenta,get notas(){return vistaNotas([])},get bienvenida(){return vistaBienvenida()}};
+const ESPECIALES={repaso,logros,perfil,acerca,'ajustes-ia':ajustesIA,cuenta:vistaCuenta,get 'perfil/analisis'(){return vistaAnalisis()},get notas(){return vistaNotas([])},get bienvenida(){return vistaBienvenida()}};
 function resolver(ruta){
   const x=analizar(ruta),{m}=x;
   // La primera vez (sin progreso) la portada es la bienvenida: nombre, qué estudiar y meta diaria
